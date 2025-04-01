@@ -37,21 +37,17 @@ const showingNavigationDropdown = ref(false);
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
                                 <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200"
-                                    />
+                                    <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                                 </Link>
                             </div>
 
                             <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
-                                <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
-                                >
+                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
+                                </NavLink>
+                                <NavLink :href="route('package')" :active="route().current('package')">
+                                    Package
                                 </NavLink>
                             </div>
                         </div>
@@ -59,7 +55,7 @@ const showingNavigationDropdown = ref(false);
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
                             <button
                                 @click="toggleDarkMode"
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-md shadow transition-colors duration-300 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none"
+                                class="hidden inline-flex items-center gap-2 px-4 py-2 rounded-md shadow transition-colors duration-300 text-gray-800 dark:text-gray-100 border border-gray-400 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none"
                                 >
                                 <span v-if="isDarkMode">
                                     <BgColorsOutlined />

@@ -1,19 +1,29 @@
 <?php
 
+namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
-use App\Models\TravelPackage;
-use App\Models\AddOn;
-use App\Models\SeasonConfiguration;
-use App\Models\SeasonDate;
-use App\Models\DateType;
-use App\Models\RoomType;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use App\Models\{
+    SeasonType,
+    Season,
+    DateType,
+    DateTypeRange,
+    Package,
+    PackageAddOn,
+    PackageConfiguration,
+    ConfigurationPrice,
+    User
+};
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
         User::create([
             'name' => 'Admin',
             'email' => 'admin@admin.com',
@@ -21,68 +31,137 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('12345678'), // You can set the password as per your choice
         ]);
 
-        // Seed Travel Package
-        $package = TravelPackage::create([
-            'name' => 'Island Getaway',
-            'description' => 'Enjoy 3 days on a beautiful tropical island.',
-            'icon_photo' => 'images/packages/island.png',
-            'display_price_adult' => 499.99,
-            'display_price_child' => 299.99,
-            'package_days' => 3,
-            'package_min_days' => 3,
-            'package_max_days' => 5,
-            'tnc' => 'Non-refundable within 7 days of departure.',
-            'package_start_date' => now(),
-            'package_end_date' => now()->addMonths(6),
-            'is_active' => true,
-        ]);
+        SeasonType::truncate();
+        Season::truncate();
+        DateType::truncate();
+        DateTypeRange::truncate();
+        Package::truncate();
+        PackageAddOn::truncate();
+        PackageConfiguration::truncate();
+        ConfigurationPrice::truncate();
 
-        // Seed Add-ons
-        AddOn::create([
-            'name' => 'Ferry Ticket',
-            'description' => 'Round trip ferry ticket.',
-            'adult_price' => 50.00,
-            'child_price' => 30.00,
-            'package_id' => $package->id,
-        ]);
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        AddOn::create([
-            'name' => 'Travel Insurance',
-            'description' => 'Full coverage travel insurance.',
-            'adult_price' => 20.00,
-            'child_price' => 10.00,
-            'package_id' => $package->id,
-        ]);
+        // 🟢 SEASON TYPES
+        $earlyBird = SeasonType::create(['name' => 'Early Bird']);
+        $peakSeason = SeasonType::create(['name' => 'Peak Season']);
+        $ph120 = SeasonType::create(['name' => 'Public Holiday 120']);
+        $ph60 = SeasonType::create(['name' => 'Public Holiday 60']);
 
-        // Seed Season Configurations
-        $peakSeason = SeasonConfiguration::create([
-            'name' => 'Peak Season',
+        // 🗓️ SEASONS (date ranges for season types)
+        $earlyBirdSeason = Season::create([
+            'season_type_id' => $earlyBird->id,
+            'start_date' => '2025-01-01',
+            'end_date' => '2025-02-28',
             'priority' => 1,
         ]);
 
-        SeasonDate::create([
-            'season_configuration_id' => $peakSeason->id,
-            'start_date' => '2025-12-01',
-            'end_date' => '2026-01-15',
+        $peakSeasonSeason = Season::create([
+            'season_type_id' => $peakSeason->id,
+            'start_date' => '2025-06-01',
+            'end_date' => '2025-08-31',
+            'priority' => 2,
         ]);
 
-        // Seed Date Types
-        $weekday = DateType::create(['name' => 'Weekday']);
+        // 🟡 DATE TYPES
         $weekend = DateType::create(['name' => 'Weekend']);
+        $weekday = DateType::create(['name' => 'Weekday']);
+        $roomsur60 = DateType::create(['name' => 'Roomsur 60']);
+        $roomsur30 = DateType::create(['name' => 'Roomsur 30']);
 
-        // Seed Room Types
-        RoomType::create([
-            'name' => 'Deluxe Room',
-            'season_configuration_id' => $peakSeason->id,
+        // 📆 DATE TYPE RANGES
+        DateTypeRange::create([
+            'date_type_id' => $weekend->id,
+            'start_date' => '2025-07-05',
+            'end_date' => '2025-07-06',
+        ]);
+
+        DateTypeRange::create([
+            'date_type_id' => $roomsur60->id,
+            'start_date' => '2025-12-01',
+            'end_date' => '2025-12-15',
+        ]);
+
+        // 🧳 PACKAGE
+        $package = Package::create([
+            'name' => 'Beach Getaway Package',
+            'description' => '3D2N relaxing beach resort package.',
+            'icon_photo' => 'packages/beach.png',
+            'display_price_adult' => 399.00,
+            'display_price_child' => 299.00,
+            'package_min_days' => 2,
+            'package_max_days' => 3,
+            'terms_and_conditions' => 'Non-refundable. Subject to availability.',
+            'location' => 'Langkawi',
+            'package_start_date' => '2025-01-01',
+            'package_end_date' => '2025-12-31',
+            'is_active' => true,
+        ]);
+
+        // ➕ PACKAGE ADD-ONS
+        PackageAddOn::create([
+            'package_id' => $package->id,
+            'name' => 'Ferry Ticket',
+            'description' => 'Round trip ferry ticket',
+            'adult_price' => 40.00,
+            'child_price' => 20.00,
+        ]);
+
+        PackageAddOn::create([
+            'package_id' => $package->id,
+            'name' => 'Travel Insurance',
+            'description' => 'Covers up to RM10,000 in emergency cases',
+            'adult_price' => 15.00,
+            'child_price' => 10.00,
+        ]);
+
+        // ⚙️ PACKAGE CONFIGURATIONS
+        $config1 = PackageConfiguration::create([
+            'package_id' => $package->id,
+            'season_id' => $earlyBirdSeason->id,
             'date_type_id' => $weekday->id,
-            'number_of_adults' => 2,
-            'number_of_children' => 2,
-            'base_charge_per_adult' => 100.00,
-            'base_charge_per_child' => 60.00,
-            'surcharge_charge_per_adult' => 20.00,
-            'surcharge_charge_per_child' => 10.00,
-            'ext_charge_per_adult' => 30.00,
-            'ext_charge_per_child' => 15.00,
+            'room_type' => 'Deluxe Room',
+        ]);
+
+        $config2 = PackageConfiguration::create([
+            'package_id' => $package->id,
+            'season_id' => $peakSeasonSeason->id,
+            'date_type_id' => $weekend->id,
+            'room_type' => 'Superior Chalet',
+        ]);
+
+        // 💰 CONFIGURATION PRICES
+        ConfigurationPrice::insert([
+            [
+                'package_configuration_id' => $config1->id,
+                'type' => 'base_charge',
+                'number_of_adults' => 2,
+                'number_of_children' => 1,
+                'adult_price' => 320.00,
+                'child_price' => 180.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'package_configuration_id' => $config2->id,
+                'type' => 'sur_charge',
+                'number_of_adults' => 2,
+                'number_of_children' => 2,
+                'adult_price' => 120.00,
+                'child_price' => 90.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'package_configuration_id' => $config2->id,
+                'type' => 'ext_charge',
+                'number_of_adults' => 1,
+                'number_of_children' => 0,
+                'adult_price' => 80.00,
+                'child_price' => 0.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

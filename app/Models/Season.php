@@ -5,15 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DateType extends Model
+class Season extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['season_type_id', 'start_date', 'end_date', 'priority'];
 
-    public function ranges()
+    public function type()
     {
-        return $this->hasMany(DateTypeRange::class);
+        return $this->belongsTo(SeasonType::class, 'season_type_id');
     }
 
     public function configurations()
