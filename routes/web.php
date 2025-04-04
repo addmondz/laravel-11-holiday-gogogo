@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PackageController;
 use App\Models\Package;
 use App\Models\PackageAddOn;
 use App\Models\Season;
@@ -26,13 +27,17 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/package', function () {
-    return Inertia::render('Package', [
-        'packages' => Package::with('addOns', 'configurations')->get(),
-        'addons' => PackageAddOn::all(),
-        'seasons' => Season::with('type')->get(),
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('packages', PackageController::class)->names([
+        'index' => 'packages.index',
+        'create' => 'packages.create',
+        'store' => 'packages.store',
+        'show' => 'packages.show',
+        'edit' => 'packages.edit',
+        'update' => 'packages.update',
+        'destroy' => 'packages.destroy'
     ]);
-})->middleware(['auth', 'verified'])->name('package');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
