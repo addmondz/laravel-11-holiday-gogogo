@@ -115,6 +115,38 @@ class DatabaseSeeder extends Seeder
             'child_price' => 10.00,
         ]);
 
+        $package = Package::create([
+            'name' => 'Langkawi Package',
+            'description' => '5D4N relaxing beach resort package.',
+            'icon_photo' => 'packages/beach.png',
+            'display_price_adult' => 1299.00,
+            'display_price_child' => 999.00,
+            'package_min_days' => 5,
+            'package_max_days' => 10,
+            'terms_and_conditions' => 'Non-refundable. Subject to availability.',
+            'location' => 'Langkawi',
+            'package_start_date' => '2025-01-01',
+            'package_end_date' => '2025-12-31',
+            'is_active' => true,
+        ]);
+
+        // ➕ PACKAGE ADD-ONS
+        PackageAddOn::create([
+            'package_id' => $package->id,
+            'name' => 'Flight Ticket',
+            'description' => 'Round trip flight ticket',
+            'adult_price' => 1000.00,
+            'child_price' => 500.00,
+        ]);
+
+        PackageAddOn::create([
+            'package_id' => $package->id,
+            'name' => '5D4N Langkawi 5 Star Hotel',
+            'description' => '5D4N Langkawi 5 Star Hotel',
+            'adult_price' => 1500.00,
+            'child_price' => 1000.00,
+        ]);
+
         // ⚙️ PACKAGE CONFIGURATIONS
         $config1 = PackageConfiguration::create([
             'package_id' => $package->id,

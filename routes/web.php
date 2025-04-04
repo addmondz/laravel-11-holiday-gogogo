@@ -4,12 +4,9 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PackageAddOnController;
-use App\Models\Package;
-use App\Models\PackageAddOn;
-use App\Models\Season;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\Api\TravelCalculatorController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -22,6 +19,17 @@ use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
     Route::get('', [AuthenticatedSessionController::class, 'create'])->name('login');
+});
+
+Route::prefix('calculator')->group(function () {
+    Route::get('/', function () {
+        return Inertia::render('Calculator');
+    })->name('calculator');
+
+    Route::prefix('api')->group(function () {
+        Route::get('/get-resources', [TravelCalculatorController::class, 'getResources']);
+        Route::post('/calculate-total', [TravelCalculatorController::class, 'calculate']);
+    });
 });
 
 Route::get('/dashboard', function () {
