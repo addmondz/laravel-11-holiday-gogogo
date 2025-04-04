@@ -39,7 +39,7 @@
                                     </div>
                                 </div>
 
-                                <div>
+                                <div class="hidden">
                                     <label for="icon_photo" class="block text-sm font-medium text-gray-700">Icon Photo</label>
                                     <input
                                         type="file"
