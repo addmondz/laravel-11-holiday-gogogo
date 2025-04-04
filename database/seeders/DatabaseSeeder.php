@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         User::create([
-            'name' => 'Admin',
+            'name' => 'At Ease Admin',
             'email' => 'admin@admin.com',
             'email_verified_at' => now(),
             'password' => Hash::make('12345678'), // You can set the password as per your choice
