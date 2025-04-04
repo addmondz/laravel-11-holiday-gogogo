@@ -207,6 +207,7 @@
 <script setup>
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import Swal from 'sweetalert2';
 
 const form = useForm({
     name: '',
@@ -231,7 +232,14 @@ const submit = () => {
     form.post(route('packages.store'), {
         preserveScroll: true,
         onSuccess: () => {
-            form.reset();
+            Swal.fire({
+                title: 'Success!',
+                text: 'Package has been created successfully.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                form.reset();
+            });
         }
     });
 };

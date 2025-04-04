@@ -114,6 +114,7 @@
 <script setup>
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
     packages: Array
@@ -131,7 +132,14 @@ const submit = () => {
     form.post(route('package-add-ons.store'), {
         preserveScroll: true,
         onSuccess: () => {
-            form.reset();
+            Swal.fire({
+                title: 'Success!',
+                text: 'Package Add-on has been created successfully.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                form.reset();
+            });
         }
     });
 };

@@ -210,6 +210,7 @@
 <script setup>
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
     package: Object
@@ -236,7 +237,17 @@ const handleFileUpload = (event) => {
 
 const submit = () => {
     form.put(route('packages.update', props.package.id), {
-        preserveScroll: true
+        preserveScroll: true,
+         onSuccess: () => {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Package has been updated successfully.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                form.reset();
+            });
+        }
     });
 };
 </script>
