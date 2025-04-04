@@ -96,10 +96,12 @@ class PackageController extends Controller
     public function destroy(Package $package)
     {
         // Delete icon photo if exists
-        if ($package->icon_photo) {
-            Storage::disk('public')->delete($package->icon_photo);
-        }
+        // if ($package->icon_photo) {
+        //     Storage::disk('public')->delete($package->icon_photo);
+        // }
 
+        $package->addOns()->delete();
+        $package->configurations()->delete();
         $package->delete();
 
         return redirect()->route('packages.index')

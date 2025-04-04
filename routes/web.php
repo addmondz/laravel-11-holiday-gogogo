@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PackageController;
+use App\Http\Controllers\PackageAddOnController;
 use App\Models\Package;
 use App\Models\PackageAddOn;
 use App\Models\Season;
@@ -36,6 +37,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'edit' => 'packages.edit',
         'update' => 'packages.update',
         'destroy' => 'packages.destroy'
+    ]);
+
+
+    Route::resource('package-add-ons', PackageAddOnController::class)->names([
+        'index' => 'package-add-ons.index',
+        'create' => 'package-add-ons.create',
+        'store' => 'package-add-ons.store',
+        'show' => 'package-add-ons.show',
+        'edit' => 'package-add-ons.edit',
+        'update' => 'package-add-ons.update',
+        'destroy' => 'package-add-ons.destroy'
     ]);
 });
 
