@@ -7,6 +7,7 @@ use App\Http\Controllers\PackageAddOnController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Api\TravelCalculatorController;
+use App\Http\Controllers\SeasonTypeController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -56,6 +57,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'edit' => 'package-add-ons.edit',
         'update' => 'package-add-ons.update',
         'destroy' => 'package-add-ons.destroy'
+    ]);
+
+
+    Route::resource('season-types', SeasonTypeController::class)->names([
+        'index' => 'season-types.index',
+        'create' => 'season-types.create',
+        'store' => 'season-types.store',
+        'show' => 'season-types.show',
+        'edit' => 'season-types.edit',
+        'update' => 'season-types.update',
+        'destroy' => 'season-types.destroy'
     ]);
 });
 
