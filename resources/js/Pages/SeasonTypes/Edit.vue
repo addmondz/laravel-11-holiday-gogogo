@@ -53,6 +53,8 @@
 <script setup>
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
     seasonType: Object
@@ -62,9 +64,23 @@ const form = useForm({
     name: props.seasonType.name
 });
 
+const router = useRouter();
+
 const submit = () => {
     form.put(route('season-types.update', props.seasonType.id), {
-        preserveScroll: true
+        preserveScroll: true,
+        onSuccess: () => {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Season type updated successfully.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    router.visit(route('season-types.index'));
+                }
+            });
+        }
     });
 };
 </script>

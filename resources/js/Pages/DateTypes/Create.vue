@@ -1,8 +1,8 @@
 <template>
-    <AuthenticatedLayout title="Create Season Type">
+    <AuthenticatedLayout title="Create Date Type">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Create Season Type
+                Create Date Type
             </h2>
         </template>
 
@@ -29,7 +29,7 @@
 
                             <div class="mt-6 flex justify-end">
                                 <Link
-                                    :href="route('season-types.index')"
+                                    :href="route('date-types.index')"
                                     class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 mr-3"
                                 >
                                     Cancel
@@ -39,7 +39,7 @@
                                     class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                                     :disabled="form.processing"
                                 >
-                                    Create Season Type
+                                    Create Date Type
                                 </button>
                             </div>
                         </form>
@@ -54,27 +54,20 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
-import { useRouter } from 'vue-router';
 
 const form = useForm({
     name: ''
 });
 
-const router = useRouter();
-
 const submit = () => {
-    form.post(route('season-types.store'), {
+    form.post(route('date-types.store'), {
         preserveScroll: true,
         onSuccess: () => {
             Swal.fire({
                 title: 'Success!',
-                text: 'Season type created successfully.',
+                text: 'Date type created successfully.',
                 icon: 'success',
                 confirmButtonText: 'OK'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    router.visit(route('season-types.index'));
-                }
             });
         }
     });

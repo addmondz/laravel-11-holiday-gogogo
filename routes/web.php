@@ -7,7 +7,9 @@ use App\Http\Controllers\PackageAddOnController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Api\TravelCalculatorController;
+use App\Http\Controllers\DateTypeController;
 use App\Http\Controllers\SeasonTypeController;
+use App\Http\Controllers\SeasonController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -69,6 +71,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'update' => 'season-types.update',
         'destroy' => 'season-types.destroy'
     ]);
+
+
+    Route::resource('seasons', SeasonController::class)->names([
+        'index' => 'seasons.index',
+        'create' => 'seasons.create',
+        'store' => 'seasons.store',
+        'show' => 'seasons.show',
+        'edit' => 'seasons.edit',
+        'update' => 'seasons.update',
+        'destroy' => 'seasons.destroy'
+    ]);
+
+    Route::resource('date-types', DateTypeController::class)->names([
+        'index' => 'date-types.index',
+        'create' => 'date-types.create',
+        'store' => 'date-types.store',
+        'show' => 'date-types.show',
+        'edit' => 'date-types.edit',
+        'update' => 'date-types.update',
+        'destroy' => 'date-types.destroy'
+    ]);
+
 });
 
 Route::middleware('auth')->group(function () {

@@ -1,0 +1,137 @@
+<template>
+    <AuthenticatedLayout title="Edit Season">
+        <template #header>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                Edit Season
+            </h2>
+        </template>
+
+        <div class="py-12">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900">
+                        <form @submit.prevent="submit">
+                            <div class="grid grid-cols-1 gap-6">
+                                <div>
+                                    <label for="season_type_id" class="block text-sm font-medium text-gray-700">Season Type</label>
+                                    <select
+                                        id="season_type_id"
+                                        v-model="form.season_type_id"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        required
+                                    >
+                                        <option value="">Select a season type</option>
+                                        <option v-for="type in seasonTypes" :key="type.id" :value="type.id">
+                                            {{ type.name }}
+                                        </option>
+                                    </select>
+                                    <div v-if="form.errors.season_type_id" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.season_type_id }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+                                    <input
+                                        type="date"
+                                        id="start_date"
+                                        v-model="form.start_date"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        required
+                                    />
+                                    <div v-if="form.errors.start_date" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.start_date }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                                    <input
+                                        type="date"
+                                        id="end_date"
+                                        v-model="form.end_date"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        required
+                                    />
+                                    <div v-if="form.errors.end_date" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.end_date }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="priority" class="block text-sm font-medium text-gray-700">Priority</label>
+                                    <input
+                                        type="number"
+                                        id="priority"
+                                        v-model="form.priority"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        required
+                                        min="1"
+                                    />
+                                    <div v-if="form.errors.priority" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.priority }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 flex justify-end">
+                                <Link
+                                    :href="route('seasons.index')"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 mr-3"
+                                >
+                                    Cancel
+                                </Link>
+                                <button
+                                    type="submit"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                    :disabled="form.processing"
+                                >
+                                    Update Season
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AuthenticatedLayout>
+</template>
+
+<script setup>
+import { Link, useForm } from '@inertiajs/vue3';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import Swal from 'sweetalert2';
+import { useRouter } from 'vue-router';
+
+const props = defineProps({
+    season: Object,
+    seasonTypes: Array
+});
+
+const form = useForm({
+    season_type_id: props.season.season_type_id,
+    start_date: props.season.start_date,
+    end_date: props.season.end_date,
+    priority: props.season.priority
+});
+
+const router = useRouter();
+
+const submit = () => {
+    form.put(route('seasons.update', props.season.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Season updated successfully.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    router.visit(route('seasons.index'));
+                }
+            });
+        }
+    });
+};
+</script>

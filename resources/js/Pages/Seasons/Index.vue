@@ -1,8 +1,8 @@
 <template>
-    <AuthenticatedLayout title="Season Types">
+    <AuthenticatedLayout title="Seasons">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Season Types
+                Seasons
             </h2>
         </template>
 
@@ -11,12 +11,12 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-lg font-medium">All Season Types</h3>
+                            <h3 class="text-lg font-medium">All Seasons</h3>
                             <Link
-                                :href="route('season-types.create')"
+                                :href="route('seasons.create')"
                                 class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                             >
-                                Create Season Type
+                                Create Season
                             </Link>
                         </div>
 
@@ -24,34 +24,42 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Associated Seasons</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr v-for="seasonType in seasonTypes" :key="seasonType.id">
+                                    <tr v-for="season in seasons" :key="season.id">
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900">{{ seasonType.name }}</div>
+                                            <div class="text-sm font-medium text-gray-900">{{ season.type.name }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">{{ seasonType.seasons.length }} seasons</div>
+                                            <div class="text-sm text-gray-900">{{ season.start_date }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ season.end_date }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ season.priority }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <Link
-                                                :href="route('season-types.show', seasonType.id)"
+                                                :href="route('seasons.show', season.id)"
                                                 class="text-indigo-600 hover:text-indigo-900 mr-3"
                                             >
                                                 View
                                             </Link>
                                             <Link
-                                                :href="route('season-types.edit', seasonType.id)"
+                                                :href="route('seasons.edit', season.id)"
                                                 class="text-indigo-600 hover:text-indigo-900 mr-3"
                                             >
                                                 Edit
                                             </Link>
                                             <button
-                                                @click="deleteSeasonType(seasonType.id)"
+                                                @click="deleteSeason(season.id)"
                                                 class="text-red-600 hover:text-red-900"
                                             >
                                                 Delete
@@ -74,10 +82,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 
 const props = defineProps({
-    seasonTypes: Array
+    seasons: Array
 });
 
-const deleteSeasonType = (id) => {
+const deleteSeason = (id) => {
     Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -88,15 +96,15 @@ const deleteSeasonType = (id) => {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            router.delete(route('season-types.destroy', id), {
+            router.delete(route('seasons.destroy', id), {
                 onSuccess: () => {
                     Swal.fire(
                         'Deleted!',
-                        'Season type has been deleted.',
+                        'Season has been deleted.',
                         'success'
                     ).then((result) => {
                         if (result.isConfirmed) {
-                            router.visit(route('season-types.index'));
+                            router.visit(route('seasons.index'));
                         }
                     });
                 }

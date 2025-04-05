@@ -55,6 +55,12 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink :href="route('season-types.index')" :active="route().current('season-types.*')">
                                     Season Types
                                 </NavLink>
+                                <NavLink :href="route('seasons.index')" :active="route().current('seasons.*')">
+                                    Seasons
+                                </NavLink>
+                                <NavLink :href="route('date-types.index')" :active="route().current('date-types.*')">
+                                    Date Types
+                                </NavLink>
                             </div>
                         </div>
 
