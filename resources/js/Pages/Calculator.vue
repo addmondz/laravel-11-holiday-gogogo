@@ -14,20 +14,8 @@ interface Package {
   package_end_date: string
 }
 
-interface AddOn {
-  id: number
-  package_id: number
-  name: string
-  description: string
-  adult_price: string
-  child_price: string
-}
-
 const packages = ref<Package[]>([])
-const allAddOns = ref<AddOn[]>([])
-
 const selectedPackageId = ref<number | null>(null)
-const selectedAddOnIds = ref<number[]>([])
 const travelStartDate = ref<string>('')
 const adults = ref<number>(1)
 const children = ref<number>(0)
@@ -81,14 +69,6 @@ const selectedPackage = computed(() =>
   packages.value.find(pkg => pkg.id === selectedPackageId.value)
 )
 
-const availableAddOns = computed(() =>
-  allAddOns.value.filter(addon => addon.package_id === selectedPackageId.value)
-)
-
-const selectedAddOns = computed(() =>
-  availableAddOns.value.filter(addon => selectedAddOnIds.value.includes(addon.id))
-)
-
 const travelEndDate = computed(() => {
   if (!selectedPackage.value || !travelStartDate.value) return ''
   const start = new Date(travelStartDate.value)
@@ -104,21 +84,11 @@ const durationText = computed(() => {
   return `${days} day${days > 1 ? 's' : ''}, ${nights} night${nights !== 1 ? 's' : ''}`
 })
 
-const toggleAddOn = (id: number) => {
-  const index = selectedAddOnIds.value.indexOf(id)
-  if (index === -1) {
-    selectedAddOnIds.value.push(id)
-  } else {
-    selectedAddOnIds.value.splice(index, 1)
-  }
-}
-
 const loadData = async () => {
   const response = await fetch('/calculator/api/get-resources')
   const data = await response.json()
 
   packages.value = data.packages
-  allAddOns.value = data.addOns
 }
 
 const calculateBackendTotal = async () => {
@@ -138,7 +108,6 @@ const calculateBackendTotal = async () => {
       },
       body: JSON.stringify({
         package_id: selectedPackageId.value,
-        add_on_ids: selectedAddOnIds.value,
         adults: adults.value,
         children: children.value,
         travel_date: travelStartDate.value,
@@ -164,12 +133,11 @@ onMounted(() => {
   loadData()
 })
 
-watch([selectedPackageId, selectedAddOnIds, travelStartDate, adults, children], () => {
+watch([selectedPackageId, travelStartDate, adults, children], () => {
   calculateBackendTotal()
 })
 
 watch(selectedPackageId, () => {
-  selectedAddOnIds.value = []
   travelStartDate.value = ''
 })
 </script>
@@ -185,32 +153,6 @@ watch(selectedPackageId, () => {
         <option disabled value="">-- Select a package --</option>
         <option v-for="pkg in packages" :key="pkg.id" :value="pkg.id">{{ pkg.name }}</option>
       </select>
-    </div>
-
-    <!-- Add-on Selection -->
-    <div v-if="selectedPackageId" class="space-y-3">
-      <label class="block text-lg font-medium text-gray-700">Select Add-ons</label>
-      <div v-if="availableAddOns.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <div
-          v-for="addon in availableAddOns"
-          :key="addon.id"
-          @click="toggleAddOn(addon.id)"
-          :class="[
-            'cursor-pointer border rounded-xl p-4 space-y-2 transition',
-            selectedAddOnIds.includes(addon.id)
-              ? 'bg-blue-100 border-blue-400 shadow'
-              : 'bg-white hover:bg-gray-50 border-gray-300'
-          ]"
-        >
-          <div class="font-semibold text-lg text-gray-800">{{ addon.name }}</div>
-          <div class="text-sm text-gray-600">{{ addon.description }}</div>
-          <div class="text-sm text-gray-700">
-            Adult: RM {{ parseFloat(addon.adult_price).toFixed(2) }}<br />
-            Child: RM {{ parseFloat(addon.child_price).toFixed(2) }}
-          </div>
-        </div>
-      </div>
-      <div v-else class="text-gray-500 italic">No add-ons available for this package.</div>
     </div>
 
     <!-- Travel Start Date -->

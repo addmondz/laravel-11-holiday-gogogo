@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\PackageConfiguration;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class PackageConfigurationController extends Controller
+{
+    public function index()
+    {
+        $configurations = PackageConfiguration::with(['package', 'season', 'dateType'])
+            ->latest()
+            ->get();
+
+        return Inertia::render('PackageConfigurations/Index', [
+            'configurations' => $configurations
+        ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('PackageConfigurations/Create', [
+            'packages' => \App\Models\Package::all(),
+            'seasons' => \App\Models\Season::all(),
+            'dateTypes' => \App\Models\DateType::all()
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'package_id' => 'required|exists:packages,id',
+            'season_id' => 'required|exists:seasons,id',
+            'date_type_id' => 'required|exists:date_types,id',
+            'room_type' => 'required|string|max:255'
+        ]);
+
+        PackageConfiguration::create($validated);
+
+        return response()->json([
+            'message' => 'Package configuration created successfully.'
+        ]);
+    }
+
+    public function show(PackageConfiguration $packageConfiguration)
+    {
+        $packageConfiguration->load(['package', 'season', 'dateType', 'prices']);
+
+        return Inertia::render('PackageConfigurations/Show', [
+            'configuration' => $packageConfiguration
+        ]);
+    }
+
+    public function edit(PackageConfiguration $packageConfiguration)
+    {
+        return Inertia::render('PackageConfigurations/Edit', [
+            'configuration' => $packageConfiguration,
+            'packages' => \App\Models\Package::all(),
+            'seasons' => \App\Models\Season::all(),
+            'dateTypes' => \App\Models\DateType::all()
+        ]);
+    }
+
+    public function update(Request $request, PackageConfiguration $packageConfiguration)
+    {
+        $validated = $request->validate([
+            'package_id' => 'required|exists:packages,id',
+            'season_id' => 'required|exists:seasons,id',
+            'date_type_id' => 'required|exists:date_types,id',
+            'room_type' => 'required|string|max:255'
+        ]);
+
+        $packageConfiguration->update($validated);
+
+        return response()->json([
+            'message' => 'Package configuration updated successfully.'
+        ]);
+    }
+
+    public function destroy(PackageConfiguration $packageConfiguration)
+    {
+        $packageConfiguration->delete();
+
+        return response()->json([
+            'message' => 'Package configuration deleted successfully.'
+        ]);
+    }
+}

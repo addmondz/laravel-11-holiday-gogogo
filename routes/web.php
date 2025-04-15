@@ -7,9 +7,12 @@ use App\Http\Controllers\PackageAddOnController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Api\TravelCalculatorController;
+use App\Http\Controllers\ConfigurationPriceController;
 use App\Http\Controllers\DateTypeController;
 use App\Http\Controllers\SeasonTypeController;
 use App\Http\Controllers\SeasonController;
+use App\Http\Controllers\DateTypeRangeController;
+use App\Http\Controllers\PackageConfigurationController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -51,15 +54,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ]);
 
 
-    Route::resource('package-add-ons', PackageAddOnController::class)->names([
-        'index' => 'package-add-ons.index',
-        'create' => 'package-add-ons.create',
-        'store' => 'package-add-ons.store',
-        'show' => 'package-add-ons.show',
-        'edit' => 'package-add-ons.edit',
-        'update' => 'package-add-ons.update',
-        'destroy' => 'package-add-ons.destroy'
-    ]);
+    // Route::resource('package-add-ons', PackageAddOnController::class)->names([
+    //     'index' => 'package-add-ons.index',
+    //     'create' => 'package-add-ons.create',
+    //     'store' => 'package-add-ons.store',
+    //     'show' => 'package-add-ons.show',
+    //     'edit' => 'package-add-ons.edit',
+    //     'update' => 'package-add-ons.update',
+    //     'destroy' => 'package-add-ons.destroy'
+    // ]);
 
 
     Route::resource('season-types', SeasonTypeController::class)->names([
@@ -93,6 +96,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'date-types.destroy'
     ]);
 
+    Route::resource('date-type-ranges', DateTypeRangeController::class)->names([
+        'index' => 'date-type-ranges.index',
+        'create' => 'date-type-ranges.create',
+        'store' => 'date-type-ranges.store',
+        'show' => 'date-type-ranges.show',
+        'edit' => 'date-type-ranges.edit',
+        'update' => 'date-type-ranges.update',
+        'destroy' => 'date-type-ranges.destroy'
+    ]);
+
+    Route::resource('package-configurations', PackageConfigurationController::class)->names([
+        'index' => 'package-configurations.index',
+        'create' => 'package-configurations.create',
+        'store' => 'package-configurations.store',
+        'show' => 'package-configurations.show',
+        'edit' => 'package-configurations.edit',
+        'update' => 'package-configurations.update',
+        'destroy' => 'package-configurations.destroy'
+    ]);
+
+    Route::resource('configuration-prices', ConfigurationPriceController::class)->names([
+        'index' => 'configuration-prices.index',
+        'create' => 'configuration-prices.create',
+        'store' => 'configuration-prices.store',
+        'show' => 'configuration-prices.show',
+        'edit' => 'configuration-prices.edit',
+        'update' => 'configuration-prices.update',
+        'destroy' => 'configuration-prices.destroy'
+    ]);
 });
 
 Route::middleware('auth')->group(function () {

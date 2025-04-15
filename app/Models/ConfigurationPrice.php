@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ConfigurationPrice extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'package_configuration_id',
@@ -18,7 +20,7 @@ class ConfigurationPrice extends Model
         'child_price',
     ];
 
-    public function configuration()
+    public function configuration(): BelongsTo
     {
         return $this->belongsTo(PackageConfiguration::class, 'package_configuration_id');
     }

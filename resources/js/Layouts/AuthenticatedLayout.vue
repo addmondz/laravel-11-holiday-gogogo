@@ -49,9 +49,9 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink :href="route('packages.index')" :active="route().current('packages.*')">
                                     Packages
                                 </NavLink>
-                                <NavLink :href="route('package-add-ons.index')" :active="route().current('package-add-ons.*')">
+                                <!-- <NavLink :href="route('package-add-ons.index')" :active="route().current('package-add-ons.*')">
                                     Package Add-Ons
-                                </NavLink>
+                                </NavLink> -->
                                 <NavLink :href="route('season-types.index')" :active="route().current('season-types.*')">
                                     Season Types
                                 </NavLink>
@@ -60,6 +60,15 @@ const showingNavigationDropdown = ref(false);
                                 </NavLink>
                                 <NavLink :href="route('date-types.index')" :active="route().current('date-types.*')">
                                     Date Types
+                                </NavLink>
+                                <NavLink :href="route('date-type-ranges.index')" :active="route().current('date-type-ranges.*')">
+                                    Date Type Ranges
+                                </NavLink>
+                                <NavLink :href="route('package-configurations.index')" :active="route().current('package-configurations.*')">
+                                    Package Configurations
+                                </NavLink>
+                                <NavLink :href="route('configuration-prices.index')" :active="route().current('configuration-prices.*')">
+                                    Configuration Prices
                                 </NavLink>
                             </div>
                         </div>

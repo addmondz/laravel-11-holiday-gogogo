@@ -2,16 +2,27 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DateTypeRange extends Model
 {
-    use SoftDeletes;
+    use HasFactory;
 
-    protected $fillable = ['date_type_id', 'start_date', 'end_date'];
+    protected $fillable = [
+        'date_type_id',
+        'start_date',
+        'end_date',
+        'status'
+    ];
 
-    public function dateType()
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date'
+    ];
+
+    public function dateType(): BelongsTo
     {
         return $this->belongsTo(DateType::class);
     }
