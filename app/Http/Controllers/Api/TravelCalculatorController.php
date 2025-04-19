@@ -51,7 +51,7 @@ class TravelCalculatorController extends Controller
             'package_id' => $package->id,
             'season_id' => $season->id ?? 0,
             'date_type_id' => $dateTypeId,
-            'room_type' => $validated['room_type']
+            'room_type' => $roomType
         ])->first();
 
         // fallback to weekday if weekend package not found
@@ -208,5 +208,15 @@ class TravelCalculatorController extends Controller
             'packages' => $packages,
             'addOns' => $addOns,
         ]);
+    }
+
+    public function getRoomTypes(Request $request, $packageId)
+    {
+        $roomTypes = PackageConfiguration::where('package_id', $packageId)
+            ->distinct()
+            ->pluck('room_type');
+
+
+        return response()->json($roomTypes);
     }
 }

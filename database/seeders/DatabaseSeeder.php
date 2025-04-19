@@ -147,53 +147,74 @@ class DatabaseSeeder extends Seeder
             'child_price' => 1000.00,
         ]);
 
-        // ⚙️ PACKAGE CONFIGURATIONS
-        $config1 = PackageConfiguration::create([
-            'package_id' => $package->id,
-            'season_id' => $earlyBirdSeason->id,
-            'date_type_id' => $weekday->id,
-            'room_type' => 'Deluxe Room',
-        ]);
+        // ⚙️ PACKAGE CONFIGURATIONS & 💰 PRICES FOR ALL COMBINATIONS
+        $roomTypes = ['Deluxe Room', 'Superior Chalet', 'Standard Room'];
+        $combinations = [
+            ['adults' => 1, 'children' => 0],
+            ['adults' => 1, 'children' => 1],
+            ['adults' => 1, 'children' => 2],
+            ['adults' => 1, 'children' => 3],
+            ['adults' => 1, 'children' => 4],
+            ['adults' => 2, 'children' => 0],
+            ['adults' => 2, 'children' => 1],
+            ['adults' => 2, 'children' => 2],
+            ['adults' => 2, 'children' => 3],
+            ['adults' => 3, 'children' => 0],
+            ['adults' => 3, 'children' => 1],
+            ['adults' => 3, 'children' => 2],
+            ['adults' => 4, 'children' => 0],
+            ['adults' => 4, 'children' => 1],
+            ['adults' => 5, 'children' => 0],
+        ];
 
-        $config2 = PackageConfiguration::create([
-            'package_id' => $package->id,
-            'season_id' => $peakSeasonSeason->id,
-            'date_type_id' => $weekend->id,
-            'room_type' => 'Superior Chalet',
-        ]);
+        $packages = Package::all();
+        $seasons = Season::all();
+        $dateTypes = DateType::all();
 
-        // 💰 CONFIGURATION PRICES
-        ConfigurationPrice::insert([
-            [
-                'package_configuration_id' => $config1->id,
-                'type' => 'base_charge',
-                'number_of_adults' => 2,
-                'number_of_children' => 1,
-                'adult_price' => 320.00,
-                'child_price' => 180.00,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'package_configuration_id' => $config2->id,
-                'type' => 'sur_charge',
-                'number_of_adults' => 2,
-                'number_of_children' => 2,
-                'adult_price' => 120.00,
-                'child_price' => 90.00,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'package_configuration_id' => $config2->id,
-                'type' => 'ext_charge',
-                'number_of_adults' => 1,
-                'number_of_children' => 0,
-                'adult_price' => 80.00,
-                'child_price' => 0.00,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        foreach ($packages as $pkg) {
+            foreach ($seasons as $season) {
+                foreach ($dateTypes as $dateType) {
+                    foreach ($roomTypes as $roomType) {
+                        $config = PackageConfiguration::create([
+                            'package_id' => $pkg->id,
+                            'season_id' => $season->id,
+                            'date_type_id' => $dateType->id,
+                            'room_type' => $roomType,
+                        ]);
+
+                        foreach ($combinations as $combo) {
+                            ConfigurationPrice::create([
+                                'package_configuration_id' => $config->id,
+                                'type' => 'base_charge',
+                                'number_of_adults' => $combo['adults'],
+                                'number_of_children' => $combo['children'],
+                                'adult_price' => 100.00,
+                                'child_price' => 50.00,
+                            ]);
+                        }
+
+                        // Example surcharge
+                        ConfigurationPrice::create([
+                            'package_configuration_id' => $config->id,
+                            'type' => 'sur_charge',
+                            'number_of_adults' => 2,
+                            'number_of_children' => 2,
+                            'adult_price' => 60.00,
+                            'child_price' => 30.00,
+                        ]);
+
+                        // Example extra charge
+                        ConfigurationPrice::create([
+                            'package_configuration_id' => $config->id,
+                            'type' => 'ext_charge',
+                            'number_of_adults' => 1,
+                            'number_of_children' => 0,
+                            'adult_price' => 40.00,
+                            'child_price' => 0.00,
+                        ]);
+                    }
+                }
+            }
+        }
     }
 }

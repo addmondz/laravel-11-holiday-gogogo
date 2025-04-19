@@ -15,6 +15,7 @@ interface Package {
 }
 
 const packages = ref<Package[]>([])
+const roomTypes = ref([]);
 const selectedPackageId = ref<number | null>(null)
 const travelStartDate = ref<string>('')
 const adults = ref<number>(1)
@@ -92,8 +93,15 @@ const loadData = async () => {
   packages.value = data.packages
 }
 
+const fetchRoomTypes = async () => {
+  const response = await fetch(`/calculator/api/get-room-types/${selectedPackageId.value}`)
+  const data = await response.json()
+
+  roomTypes.value = data
+}
+
 const calculateBackendTotal = async () => {
-  if (!selectedPackageId.value || !travelStartDate.value) return;
+  if (!selectedPackageId.value || !travelStartDate.value || !roomType.value) return;
 
   calculating.value = true;
 
@@ -135,12 +143,13 @@ onMounted(() => {
   loadData()
 })
 
-watch([selectedPackageId, travelStartDate, adults, children], () => {
+watch([selectedPackageId, travelStartDate, adults, children, roomType], () => {
   calculateBackendTotal()
 })
 
 watch(selectedPackageId, () => {
   travelStartDate.value = ''
+  fetchRoomTypes()
 })
 </script>
 
@@ -187,14 +196,12 @@ watch(selectedPackageId, () => {
         <label class="block text-lg font-medium text-gray-700">Number of Children</label>
         <input type="number" min="0" v-model="children" class="border border-gray-300 rounded-lg p-3 w-full" />
       </div>
-      <div class="space-y-2">
+      <div class="space-y-2" v-if="roomTypes.length > 0">
         <label class="block text-lg font-medium text-gray-700">Room Type</label>
-        <input
-          type="text"
-          v-model="roomType"
-          placeholder="e.g., Deluxe, Suite, Twin Bed"
-          class="border border-gray-300 rounded-lg p-3 w-full"
-        />
+        <select v-model="roomType" class="border border-gray-300 rounded-lg p-3 w-full">
+          <option disabled value="">-- Select a room type --</option>
+          <option v-for="roomType in roomTypes" :key="roomType" :value="roomType">{{ roomType }}</option>
+        </select>
       </div>
     </div>
 

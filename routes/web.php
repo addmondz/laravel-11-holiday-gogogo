@@ -34,6 +34,7 @@ Route::prefix('calculator')->group(function () {
 
     Route::prefix('api')->group(function () {
         Route::get('/get-resources', [TravelCalculatorController::class, 'getResources']);
+        Route::get('/get-room-types/{packageId}', [TravelCalculatorController::class, 'getRoomTypes']);
         Route::post('/calculate-total', [TravelCalculatorController::class, 'calculate']);
     });
 });
