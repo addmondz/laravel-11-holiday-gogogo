@@ -19,6 +19,7 @@ const selectedPackageId = ref<number | null>(null)
 const travelStartDate = ref<string>('')
 const adults = ref<number>(1)
 const children = ref<number>(0)
+const roomType = ref<string>('')
 
 const totalPrice = ref(0)
 const calculating = ref(false)
@@ -111,6 +112,7 @@ const calculateBackendTotal = async () => {
         adults: adults.value,
         children: children.value,
         travel_date: travelStartDate.value,
+        room_type: roomType.value
       }),
     });
 
@@ -184,6 +186,15 @@ watch(selectedPackageId, () => {
       <div class="space-y-2">
         <label class="block text-lg font-medium text-gray-700">Number of Children</label>
         <input type="number" min="0" v-model="children" class="border border-gray-300 rounded-lg p-3 w-full" />
+      </div>
+      <div class="space-y-2">
+        <label class="block text-lg font-medium text-gray-700">Room Type</label>
+        <input
+          type="text"
+          v-model="roomType"
+          placeholder="e.g., Deluxe, Suite, Twin Bed"
+          class="border border-gray-300 rounded-lg p-3 w-full"
+        />
       </div>
     </div>
 
