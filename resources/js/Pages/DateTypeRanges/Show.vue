@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Date Type Range Details">
+    <Head title="Date Type Range Details" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Date Type Range Details
@@ -64,7 +65,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-
+import { Head } from '@inertiajs/vue3';
 const props = defineProps({
     dateTypeRange: Object
 });

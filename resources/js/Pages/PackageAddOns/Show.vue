@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Package Add-on Details">
+    <Head title="Package Add-on Details" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Package Add-on Details
@@ -76,7 +77,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-
+import { Head } from '@inertiajs/vue3';
 defineProps({
     addOn: Object
 });

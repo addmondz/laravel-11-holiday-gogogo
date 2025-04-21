@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Edit Season">
+    <Head title="Edit Season" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Edit Season
@@ -102,7 +103,7 @@ import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
-
+import { Head } from '@inertiajs/vue3';
 const props = defineProps({
     season: Object,
     seasonTypes: Array

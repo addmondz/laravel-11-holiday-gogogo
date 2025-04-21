@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Edit Package">
+    <Head title="Edit Package" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Edit Package
@@ -211,6 +212,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
+import { Head } from '@inertiajs/vue3';
 
 const props = defineProps({
     package: Object

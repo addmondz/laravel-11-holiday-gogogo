@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Create Package Configuration">
+    <Head title="Create Package Configuration" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Create Package Configuration
@@ -120,7 +121,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
-
+import { Head } from '@inertiajs/vue3';
 const props = defineProps({
     packages: Array,
     seasons: Array,

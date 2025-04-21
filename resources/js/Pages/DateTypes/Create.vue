@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Create Date Type">
+    <Head title="Create Date Type" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Create Date Type
@@ -54,7 +55,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
-
+import { Head } from '@inertiajs/vue3';
 const form = useForm({
     name: ''
 });

@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Package Details">
+    <Head title="Package Details" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Package Details
@@ -116,7 +117,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-
+import { Head } from '@inertiajs/vue3';
 defineProps({
     pkg: Object
 });

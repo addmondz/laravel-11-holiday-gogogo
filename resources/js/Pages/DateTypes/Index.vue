@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Date Types">
+    <Head title="Date Types" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Date Types
@@ -72,7 +73,7 @@
 import { Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
-
+import { Head } from '@inertiajs/vue3';
 const props = defineProps({
     dateTypes: Array
 });

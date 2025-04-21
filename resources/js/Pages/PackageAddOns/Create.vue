@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Create Package Add-on">
+    <Head title="Create Package Add-on" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Create Package Add-on
@@ -115,7 +116,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
-
+import { Head } from '@inertiajs/vue3';
 const props = defineProps({
     packages: Array
 });

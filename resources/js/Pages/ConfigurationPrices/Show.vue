@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Configuration Price Details">
+    <Head title="Configuration Price Details" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Configuration Price Details
@@ -76,7 +77,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-
+import { Head } from '@inertiajs/vue3';
 const props = defineProps({
     price: Object
 });

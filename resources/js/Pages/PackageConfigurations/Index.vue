@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Package Configurations">
+    <Head title="Package Configurations" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Package Configurations
@@ -94,7 +95,7 @@
 import { Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
-
+import { Head } from '@inertiajs/vue3';
 defineProps({
     configurations: Array
 });

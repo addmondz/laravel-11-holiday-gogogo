@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Configuration Prices">
+    <Head title="Configuration Prices" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Configuration Prices
@@ -106,7 +107,7 @@
 import { Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
-
+import { Head } from '@inertiajs/vue3';
 defineProps({
     prices: Array
 });

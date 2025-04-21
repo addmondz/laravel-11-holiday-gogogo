@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Edit Date Type Range">
+    <Head title="Edit Date Type Range" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Edit Date Type Range
@@ -87,7 +88,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
-
+import { Head } from '@inertiajs/vue3';
 const props = defineProps({
     dateTypeRange: Object,
     dateTypes: Array

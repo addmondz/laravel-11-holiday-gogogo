@@ -1,5 +1,6 @@
 <template>
-    <AuthenticatedLayout title="Create Package">
+    <Head title="Create Package" />
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Create Package
@@ -208,6 +209,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
+import { Head } from '@inertiajs/vue3';
 
 const form = useForm({
     name: '',
