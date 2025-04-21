@@ -1,0 +1,22 @@
+Options +SymLinksIfOwnerMatch
+RewriteEngine On
+
+# Allow Installatron requests
+RewriteCond %{REQUEST_FILENAME} deleteme\.\w+\.php
+RewriteRule (.*) - [L]
+
+# Ensure proper routing and asset loading in Laravel
+RewriteRule ^(.*)$ public/$1 [L]
+
+# Force trailing slash on URLs
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^(.*)$ /public/$1 [L]
+
+# Prevent access to .env file
+<Files .env>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Redirect to index.php for Laravel routing
+RewriteRule ^ index.php [L]
