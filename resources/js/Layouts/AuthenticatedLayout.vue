@@ -30,7 +30,7 @@ const showingNavigationDropdown = ref(false);
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="min-h-screen bg-indigo-500/5 dark:bg-gray-900">
         <!-- Mobile sidebar backdrop -->
         <div
             v-if="isSidebarOpen"
