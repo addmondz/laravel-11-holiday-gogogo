@@ -45,7 +45,7 @@ const showingNavigationDropdown = ref(false);
                 isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
             ]"
         >
-            <div class="flex h-16 items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700" style="height: 83px;">
                 <Link :href="route('dashboard')" class="flex items-center">
                     <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                 </Link>
@@ -57,7 +57,7 @@ const showingNavigationDropdown = ref(false);
                 </button>
             </div>
 
-            <nav class="mt-5 px-2">
+            <nav class="mt-6 px-2">
                 <div class="space-y-1 flex flex-col">
                     <NavLink :href="route('dashboard')" :active="route().current('dashboard')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
                         Dashboard
@@ -151,8 +151,8 @@ const showingNavigationDropdown = ref(false);
             </header>
 
             <!-- Page Content -->
-            <main class="py-10">
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <main class="pb-10">
+                <div class="mx-auto max-w-9xl px-4 sm:px-6 lg:px-8">
                     <slot />
                 </div>
             </main>
