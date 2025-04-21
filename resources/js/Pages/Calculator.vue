@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { Head } from '@inertiajs/vue3';
 
 interface Package {
   id: number
@@ -154,6 +155,7 @@ watch(selectedPackageId, () => {
 </script>
 
 <template>
+    <Head title="Travel Fee Calculator" />
   <div class="my-7 max-w-7xl mx-auto p-10 bg-white rounded-2xl shadow space-y-10 border border-gray-500">
     <h1 class="text-3xl font-bold text-gray-800">Travel Fee Calculator</h1>
 
