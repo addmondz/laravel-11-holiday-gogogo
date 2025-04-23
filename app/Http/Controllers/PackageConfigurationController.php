@@ -10,7 +10,7 @@ class PackageConfigurationController extends Controller
 {
     public function index()
     {
-        $configurations = PackageConfiguration::with(['package', 'season', 'dateType'])
+        $configurations = PackageConfiguration::with(['package', 'season', 'dateType', 'season.type'])
             ->latest()
             ->get();
 
@@ -23,7 +23,7 @@ class PackageConfigurationController extends Controller
     {
         return Inertia::render('PackageConfigurations/Create', [
             'packages' => \App\Models\Package::all(),
-            'seasons' => \App\Models\Season::all(),
+            'seasons' => \App\Models\Season::with('type')->get(),
             'dateTypes' => \App\Models\DateType::all()
         ]);
     }

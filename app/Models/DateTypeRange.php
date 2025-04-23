@@ -17,10 +17,10 @@ class DateTypeRange extends Model
         'status'
     ];
 
-    protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date'
-    ];
+    // protected $casts = [
+    //     'start_date' => 'date',
+    //     'end_date' => 'date'
+    // ];
 
     public function dateType(): BelongsTo
     {

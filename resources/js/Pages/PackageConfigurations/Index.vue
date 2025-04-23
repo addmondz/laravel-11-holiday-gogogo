@@ -50,7 +50,7 @@
                                             {{ configuration.package.name }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ configuration.season.name }}
+                                            {{ configuration.season.type.name }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {{ configuration.date_type.name }}

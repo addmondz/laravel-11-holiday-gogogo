@@ -11,6 +11,11 @@ class Season extends Model
 
     protected $fillable = ['season_type_id', 'start_date', 'end_date', 'priority'];
 
+    // protected $casts = [
+    //     'start_date' => 'date',
+    //     'end_date' => 'date'
+    // ];
+
     public function type()
     {
         return $this->belongsTo(SeasonType::class, 'season_type_id');

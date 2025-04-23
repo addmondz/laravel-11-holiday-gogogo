@@ -47,7 +47,7 @@
                                     >
                                         <option value="">Select a season</option>
                                         <option v-for="season in seasons" :key="season.id" :value="season.id">
-                                            {{ season.name }}
+                                            {{ season.type.name }}
                                         </option>
                                     </select>
                                     <p v-if="form.errors.season_id" class="mt-2 text-sm text-red-600">
