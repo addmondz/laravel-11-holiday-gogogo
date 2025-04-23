@@ -11,131 +11,156 @@
             <div class="max-w-9xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
-                        <form @submit.prevent="submit">
-                            <div class="grid grid-cols-1 gap-6">
-                                <div>
-                                    <label for="package_configuration_id" class="block text-sm font-medium text-gray-700">
-                                        Configuration
-                                    </label>
-                                    <select
-                                        id="package_configuration_id"
-                                        v-model="form.package_configuration_id"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        :class="{ 'border-red-500': form.errors.package_configuration_id }"
-                                    >
-                                        <option value="">Select a configuration</option>
-                                        <option v-for="config in configurations" :key="config.id" :value="config.id">
-                                            {{ config.room_type }}
-                                        </option>
-                                    </select>
-                                    <p v-if="form.errors.package_configuration_id" class="mt-2 text-sm text-red-600">
-                                        {{ form.errors.package_configuration_id }}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <label for="type" class="block text-sm font-medium text-gray-700">
-                                        Type
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="type"
-                                        v-model="form.type"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        :class="{ 'border-red-500': form.errors.type }"
-                                    />
-                                    <p v-if="form.errors.type" class="mt-2 text-sm text-red-600">
-                                        {{ form.errors.type }}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <label for="number_of_adults" class="block text-sm font-medium text-gray-700">
-                                        Number of Adults
-                                    </label>
-                                    <input
-                                        type="number"
-                                        id="number_of_adults"
-                                        v-model="form.number_of_adults"
-                                        min="1"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        :class="{ 'border-red-500': form.errors.number_of_adults }"
-                                    />
-                                    <p v-if="form.errors.number_of_adults" class="mt-2 text-sm text-red-600">
-                                        {{ form.errors.number_of_adults }}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <label for="number_of_children" class="block text-sm font-medium text-gray-700">
-                                        Number of Children
-                                    </label>
-                                    <input
-                                        type="number"
-                                        id="number_of_children"
-                                        v-model="form.number_of_children"
-                                        min="0"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        :class="{ 'border-red-500': form.errors.number_of_children }"
-                                    />
-                                    <p v-if="form.errors.number_of_children" class="mt-2 text-sm text-red-600">
-                                        {{ form.errors.number_of_children }}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <label for="adult_price" class="block text-sm font-medium text-gray-700">
-                                        Adult Price
-                                    </label>
-                                    <input
-                                        type="number"
-                                        id="adult_price"
-                                        v-model="form.adult_price"
-                                        min="0"
-                                        step="0.01"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        :class="{ 'border-red-500': form.errors.adult_price }"
-                                    />
-                                    <p v-if="form.errors.adult_price" class="mt-2 text-sm text-red-600">
-                                        {{ form.errors.adult_price }}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <label for="child_price" class="block text-sm font-medium text-gray-700">
-                                        Child Price
-                                    </label>
-                                    <input
-                                        type="number"
-                                        id="child_price"
-                                        v-model="form.child_price"
-                                        min="0"
-                                        step="0.01"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        :class="{ 'border-red-500': form.errors.child_price }"
-                                    />
-                                    <p v-if="form.errors.child_price" class="mt-2 text-sm text-red-600">
-                                        {{ form.errors.child_price }}
-                                    </p>
-                                </div>
+                        <!-- Selection Form -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div>
+                                <label for="package" class="block text-sm font-medium text-gray-700">Package</label>
+                                <select
+                                    id="package"
+                                    v-model="form.package_id"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    :class="{ 'border-red-500': form.errors.package_id }"
+                                >
+                                    <option value="">Select Package</option>
+                                    <option v-for="pkg in packages" :key="pkg.id" :value="pkg.id">
+                                        {{ pkg.name }}
+                                    </option>
+                                </select>
+                                <p v-if="form.errors.package_id" class="mt-2 text-sm text-red-600">
+                                    {{ form.errors.package_id }}
+                                </p>
                             </div>
 
-                            <div class="mt-6 flex justify-end space-x-3">
-                                <Link
-                                    :href="route('configuration-prices.index')"
-                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                            <div>
+                                <label for="season" class="block text-sm font-medium text-gray-700">Season</label>
+                                <select
+                                    id="season"
+                                    v-model="form.season_id"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    :class="{ 'border-red-500': form.errors.season_id }"
                                 >
-                                    Cancel
-                                </Link>
-                                <button
-                                    type="submit"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                                    :disabled="form.processing"
-                                >
-                                    Update Price
-                                </button>
+                                    <option value="">Select Season</option>
+                                    <option v-for="season in seasons" :key="season.id" :value="season.id">
+                                        {{ season.type.name }}
+                                    </option>
+                                </select>
+                                <p v-if="form.errors.season_id" class="mt-2 text-sm text-red-600">
+                                    {{ form.errors.season_id }}
+                                </p>
                             </div>
-                        </form>
+
+                            <div>
+                                <label for="dateType" class="block text-sm font-medium text-gray-700">Date Type</label>
+                                <select
+                                    id="dateType"
+                                    v-model="form.date_type_id"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    :class="{ 'border-red-500': form.errors.date_type_id }"
+                                >
+                                    <option value="">Select Date Type</option>
+                                    <option v-for="type in dateTypes" :key="type.id" :value="type.id">
+                                        {{ type.name }}
+                                    </option>
+                                </select>
+                                <p v-if="form.errors.date_type_id" class="mt-2 text-sm text-red-600">
+                                    {{ form.errors.date_type_id }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <label for="roomType" class="block text-sm font-medium text-gray-700">Room Type</label>
+                                <select
+                                    id="roomType"
+                                    v-model="form.room_type"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    :class="{ 'border-red-500': form.errors.room_type }"
+                                >
+                                    <option value="">Select Room Type</option>
+                                    <option v-for="type in roomTypes" :key="type" :value="type">
+                                        {{ type }}
+                                    </option>
+                                </select>
+                                <p v-if="form.errors.room_type" class="mt-2 text-sm text-red-600">
+                                    {{ form.errors.room_type }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Price Type Selection -->
+                        <div class="mb-8">
+                            <label for="priceType" class="block text-sm font-medium text-gray-700">Price Type</label>
+                            <select
+                                id="priceType"
+                                v-model="form.type"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': form.errors.type }"
+                            >
+                                <option value="">Select Price Type</option>
+                                <option value="base_charge">Base Charge</option>
+                                <option value="sur_charge">Surcharge</option>
+                                <option value="ext_charge">Extra Charge</option>
+                            </select>
+                            <p v-if="form.errors.type" class="mt-2 text-sm text-red-600">
+                                {{ form.errors.type }}
+                            </p>
+                        </div>
+
+                        <!-- Price Matrix Table -->
+                        <div class="overflow-x-auto mb-8">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                        <th v-for="children in 6" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            {{ children-1 }} Children
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr v-for="adults in 6" :key="adults">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {{ adults }} Adults
+                                        </td>
+                                        <td v-for="children in 6" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <div class="flex flex-col space-y-2">
+                                                <input
+                                                    type="number"
+                                                    v-model="form.prices[`${adults}-${children-1}`].adult_price"
+                                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    placeholder="Adult Price"
+                                                    step="0.01"
+                                                    min="0"
+                                                />
+                                                <input
+                                                    type="number"
+                                                    v-model="form.prices[`${adults}-${children-1}`].child_price"
+                                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    placeholder="Child Price"
+                                                    step="0.01"
+                                                    min="0"
+                                                />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="flex justify-end space-x-4">
+                            <Link
+                                :href="route('configuration-prices.index')"
+                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                            >
+                                Cancel
+                            </Link>
+                            <button
+                                @click="submit"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                :disabled="form.processing"
+                            >
+                                Update Prices
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -144,39 +169,65 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import Swal from 'sweetalert2';
 import { Head } from '@inertiajs/vue3';
 
 const props = defineProps({
     price: Object,
-    configurations: Array
+    packages: Array,
+    seasons: Array,
+    dateTypes: Array,
+    roomTypes: Array
 });
 
 const form = useForm({
-    package_configuration_id: props.price.package_configuration_id,
+    package_id: props.price.package_id,
+    season_id: props.price.season_id,
+    date_type_id: props.price.date_type_id,
+    room_type: props.price.room_type,
     type: props.price.type,
-    number_of_adults: props.price.number_of_adults,
-    number_of_children: props.price.number_of_children,
-    adult_price: props.price.adult_price,
-    child_price: props.price.child_price
+    prices: {}
+});
+
+// Initialize prices object with empty values for all combinations
+for (let adults = 1; adults <= 6; adults++) {
+    for (let children = 0; children <= 5; children++) {
+        form.prices[`${adults}-${children}`] = {
+            adult_price: '',
+            child_price: ''
+        };
+    }
+}
+
+// Populate prices with existing values
+onMounted(() => {
+    props.price.prices.forEach(price => {
+        const key = `${price.number_of_adults}-${price.number_of_children}`;
+        form.prices[key] = {
+            adult_price: price.adult_price,
+            child_price: price.child_price
+        };
+    });
 });
 
 const submit = () => {
+    // Transform prices object into array format
+    const pricesArray = Object.entries(form.prices).map(([key, value]) => {
+        const [adults, children] = key.split('-');
+        return {
+            number_of_adults: parseInt(adults),
+            number_of_children: parseInt(children),
+            adult_price: value.adult_price,
+            child_price: value.child_price
+        };
+    });
+
     form.put(route('configuration-prices.update', props.price.id), {
         preserveScroll: true,
         onSuccess: () => {
-            Swal.fire({
-                title: 'Success!',
-                text: 'Configuration price updated successfully.',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = route('configuration-prices.index');
-                }
-            });
+            window.location.href = route('configuration-prices.index');
         }
     });
 };
