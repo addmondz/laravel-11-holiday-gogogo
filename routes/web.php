@@ -124,8 +124,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'show' => 'configuration-prices.show',
         'edit' => 'configuration-prices.edit',
         'update' => 'configuration-prices.update',
-        'destroy' => 'configuration-prices.destroy'
+        'destroy' => 'configuration-prices.destroy',
     ]);
+
+    Route::post('configuration-prices/fetch-prices-search-index', [ConfigurationPriceController::class, 'fetchPricesSearchIndex'])
+        ->name('configuration-prices.fetchPricesSearchIndex');
 });
 
 Route::middleware('auth')->group(function () {

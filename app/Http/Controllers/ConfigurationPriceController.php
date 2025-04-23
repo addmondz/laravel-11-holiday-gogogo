@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\ConfigurationPrice;
+use App\Models\Package;
+use App\Models\Season;
+use App\Models\DateType;
+use App\Models\PackageConfiguration;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -10,12 +14,12 @@ class ConfigurationPriceController extends Controller
 {
     public function index()
     {
-        $prices = ConfigurationPrice::with(['configuration'])
-            ->latest()
-            ->get();
-
         return Inertia::render('ConfigurationPrices/Index', [
-            'prices' => $prices
+            'packages' => Package::all(),
+            'seasons' => Season::with('type')->get(),
+            'dateTypes' => DateType::all(),
+            'roomTypes' => \App\Models\PackageConfiguration::distinct()->pluck('room_type'),
+            'prices' => ConfigurationPrice::with(['configuration'])->get()
         ]);
     }
 
@@ -86,5 +90,17 @@ class ConfigurationPriceController extends Controller
         return response()->json([
             'message' => 'Configuration price deleted successfully.'
         ]);
+    }
+
+    public function fetchPricesSearchIndex(Request $request)
+    {
+        $prices = PackageConfiguration::where('package_id', $request->package_configuration_id)
+            ->where('season_id', $request->season_id)
+            ->where('date_type_id', $request->date_type_id)
+            ->where('room_type', $request->room_type)
+            ->with('prices')
+            ->get();
+
+        return response()->json($prices);
     }
 }
