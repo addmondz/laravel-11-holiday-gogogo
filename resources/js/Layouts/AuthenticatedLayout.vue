@@ -152,7 +152,7 @@ const showingNavigationDropdown = ref(false);
 
             <!-- Page Content -->
             <main class="pb-10">
-                <div class="mx-auto max-w-9xl px-4 sm:px-6 lg:px-8">
+                <div class="max-w-9xl">
                     <slot />
                 </div>
             </main>
