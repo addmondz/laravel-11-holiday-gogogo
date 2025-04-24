@@ -3,7 +3,6 @@
     <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Create Season Type
             </h2>
         </template>
 
@@ -11,6 +10,7 @@
             <div class="max-w-9xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
+                        <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-9" />
                         <form @submit.prevent="submit">
                             <div class="grid grid-cols-1 gap-6">
                                 <div>
@@ -57,11 +57,18 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
 import { Head } from '@inertiajs/vue3';
+import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
+import { computed } from 'vue';
 const form = useForm({
     name: ''
 });
 
 const router = useRouter();
+
+const breadcrumbs = computed(() => [
+    { title: 'Season Types', link: route('season-types.index') },
+    { title: 'Create Season Type' }
+]);
 
 const submit = () => {
     form.post(route('season-types.store'), {
