@@ -3,7 +3,6 @@
     <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Season Details
             </h2>
         </template>
 
@@ -12,7 +11,7 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-lg font-medium">Season Information</h3>
+                            <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-9" />
                             <div class="flex space-x-3">
                                 <Link
                                     :href="route('seasons.edit', season.id)"
@@ -72,7 +71,15 @@ import { Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import moment from 'moment';
+import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
+import { computed } from 'vue';
+
 defineProps({
     season: Object
 });
+
+const breadcrumbs = computed(() => [
+    { title: 'Seasons', link: route('seasons.index') },
+    { title: 'Season Details' }
+]);
 </script>
