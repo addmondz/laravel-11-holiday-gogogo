@@ -39,7 +39,7 @@
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-500">Season</h4>
-                                    <p class="mt-1 text-sm text-gray-900">{{ configuration.season.name }}</p>
+                                    <p class="mt-1 text-sm text-gray-900">{{ configuration.season.type.name }}</p>
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-500">Date Type</h4>

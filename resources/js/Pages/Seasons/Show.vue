@@ -37,12 +37,12 @@
 
                             <div>
                                 <h4 class="text-sm font-medium text-gray-500">Start Date</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ season.start_date }}</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ moment(season.start_date).format('DD/MM/YYYY') }}</p>
                             </div>
 
                             <div>
                                 <h4 class="text-sm font-medium text-gray-500">End Date</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ season.end_date }}</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ moment(season.end_date).format('DD/MM/YYYY') }}</p>
                             </div>
 
                             <div>
@@ -52,12 +52,12 @@
 
                             <div>
                                 <h4 class="text-sm font-medium text-gray-500">Created At</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ season.created_at }}</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ moment(season.created_at).format('DD/MM/YYYY HH:mm:ss') }}</p>
                             </div>
 
                             <div>
                                 <h4 class="text-sm font-medium text-gray-500">Updated At</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ season.updated_at }}</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ moment(season.updated_at).format('DD/MM/YYYY HH:mm:ss') }}</p>
                             </div>
                         </div>
                     </div>
@@ -71,6 +71,7 @@
 import { Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import moment from 'moment';
 defineProps({
     season: Object
 });

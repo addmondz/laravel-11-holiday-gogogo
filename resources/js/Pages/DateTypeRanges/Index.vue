@@ -37,10 +37,10 @@
                                             <div class="text-sm font-medium text-gray-900">{{ range.date_type.name }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">{{ range.start_date }}</div>
+                                            <div class="text-sm text-gray-900">{{ moment(range.start_date).format('DD/MM/YYYY') }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">{{ range.end_date }}</div>
+                                            <div class="text-sm text-gray-900">{{ moment(range.end_date).format('DD/MM/YYYY') }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <Link
@@ -78,6 +78,7 @@ import { Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { Head } from '@inertiajs/vue3';
+import moment from 'moment';
 const props = defineProps({
     dateTypeRanges: Array
 });

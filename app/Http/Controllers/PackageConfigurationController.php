@@ -46,7 +46,7 @@ class PackageConfigurationController extends Controller
 
     public function show(PackageConfiguration $packageConfiguration)
     {
-        $packageConfiguration->load(['package', 'season', 'dateType', 'prices']);
+        $packageConfiguration->load(['package', 'season', 'dateType', 'prices', 'season.type']);
 
         return Inertia::render('PackageConfigurations/Show', [
             'configuration' => $packageConfiguration

@@ -37,22 +37,22 @@
 
                             <div>
                                 <h4 class="text-sm font-medium text-gray-500">Start Date</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ dateTypeRange.start_date }}</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ moment(dateTypeRange.start_date).format('DD/MM/YYYY') }}</p>
                             </div>
 
                             <div>
                                 <h4 class="text-sm font-medium text-gray-500">End Date</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ dateTypeRange.end_date }}</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ moment(dateTypeRange.end_date).format('DD/MM/YYYY') }}</p>
                             </div>
 
                             <div>
                                 <h4 class="text-sm font-medium text-gray-500">Created At</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ dateTypeRange.created_at }}</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ moment(dateTypeRange.created_at).format('DD/MM/YYYY HH:mm:ss') }}</p>
                             </div>
 
                             <div>
                                 <h4 class="text-sm font-medium text-gray-500">Updated At</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ dateTypeRange.updated_at }}</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ moment(dateTypeRange.updated_at).format('DD/MM/YYYY HH:mm:ss') }}</p>
                             </div>
                         </div>
                     </div>
@@ -66,6 +66,7 @@
 import { Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import moment from 'moment';
 const props = defineProps({
     dateTypeRange: Object
 });

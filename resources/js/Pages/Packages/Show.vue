@@ -86,24 +86,24 @@
                             <div class="grid grid-cols-2 gap-6">
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-500">Start Date</h4>
-                                    <p class="mt-1 text-sm text-gray-900">{{ pkg.package_start_date }}</p>
+                                    <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.package_start_date).format('DD/MM/YYYY') }}</p>
                                 </div>
 
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-500">End Date</h4>
-                                    <p class="mt-1 text-sm text-gray-900">{{ pkg.package_end_date || 'No end date' }}
+                                    <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.package_end_date).format('DD/MM/YYYY') || 'No end date' }}
                                     </p>
                                 </div>
                             </div>
 
                             <div>
                                 <h4 class="text-sm font-medium text-gray-500">Created At</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ pkg.created_at }}</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.created_at).format('DD/MM/YYYY HH:mm:ss') }}</p>
                             </div>
 
                             <div>
                                 <h4 class="text-sm font-medium text-gray-500">Updated At</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ pkg.updated_at }}</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.updated_at).format('DD/MM/YYYY HH:mm:ss') }}</p>
                             </div>
                         </div>
                     </div>
@@ -117,6 +117,8 @@
 import { Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import moment from 'moment';
+
 defineProps({
     pkg: Object
 });

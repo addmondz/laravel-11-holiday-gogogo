@@ -38,10 +38,10 @@
                                             <div class="text-sm font-medium text-gray-900">{{ season.type.name }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">{{ season.start_date }}</div>
+                                            <div class="text-sm text-gray-900">{{ moment(season.start_date).format('DD/MM/YYYY') }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">{{ season.end_date }}</div>
+                                            <div class="text-sm text-gray-900">{{ moment(season.end_date).format('DD/MM/YYYY') }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">{{ season.priority }}</div>
@@ -82,6 +82,8 @@ import { Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { Head } from '@inertiajs/vue3';
+import moment from 'moment';
+
 const props = defineProps({
     seasons: Array
 });
