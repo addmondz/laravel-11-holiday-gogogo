@@ -3,7 +3,6 @@
     <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Package Configurations
             </h2>
         </template>
 
@@ -13,7 +12,7 @@
                     <div class="p-6 text-gray-900">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-lg font-medium text-gray-900">
-                                All Configurations
+                                All Package Configurations
                             </h3>
                             <Link
                                 :href="route('package-configurations.create')"
@@ -106,9 +105,10 @@ const confirmDelete = (configuration) => {
         text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonColor: '#e3342f',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
             router.delete(route('package-configurations.destroy', configuration.id), {

@@ -3,13 +3,14 @@
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Package Configuration</h2>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight"></h2>
         </template>
 
         <div class="pb-12 pt-6">
             <div class="max-w-9xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
+                        <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-9" />
                         <form @submit.prevent="submit">
                             <div class="mb-4">
                                 <label class="block text-gray-700 text-sm font-bold mb-2" for="package_id">
@@ -87,20 +88,20 @@
                                 </p>
                             </div>
 
-                            <div class="flex items-center justify-between">
-                                <button
-                                    type="submit"
-                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                                    :disabled="form.processing"
-                                >
-                                    Update Configuration
-                                </button>
-                                <a
+                            <div class="mt-6 flex justify-end">
+                                <Link
                                     :href="route('package-configurations.index')"
-                                    class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 mr-3"
                                 >
                                     Cancel
-                                </a>
+                                </Link>
+                                <button
+                                    type="submit"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                    :disabled="form.processing"
+                                >
+                                    Update Package Configuration
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -115,7 +116,9 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import Swal from 'sweetalert2';
-
+import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
+import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 const props = defineProps({
     configuration: {
         type: Object,
@@ -141,6 +144,11 @@ const form = useForm({
     date_type_id: props.configuration.date_type_id,
     room_type: props.configuration.room_type,
 });
+
+const breadcrumbs = computed(() => [
+    { title: 'Package Configurations', link: route('package-configurations.index') },
+    { title: 'Edit Package Configuration' }
+]);
 
 const submit = () => {
     form.put(route('package-configurations.update', props.configuration.id), {

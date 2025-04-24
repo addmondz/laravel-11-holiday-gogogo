@@ -3,7 +3,6 @@
     <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Create Package Configuration
             </h2>
         </template>
 
@@ -13,6 +12,7 @@
                     <div class="p-6 text-gray-900">
                         <form @submit.prevent="submit">
                             <div class="grid grid-cols-1 gap-6">
+                                <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-9" />
                                 <!-- Package Selection -->
                                 <div>
                                     <label for="package_id" class="block text-sm font-medium text-gray-700">
@@ -122,11 +122,19 @@ import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { Head } from '@inertiajs/vue3';
+import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
+import { computed } from 'vue';
+
 const props = defineProps({
     packages: Array,
     seasons: Array,
     dateTypes: Array
 });
+
+const breadcrumbs = computed(() => [
+    { title: 'Package Configurations', link: route('package-configurations.index') },
+    { title: 'Create Package Configuration' }
+]);
 
 const form = useForm({
     package_id: '',

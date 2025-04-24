@@ -3,7 +3,6 @@
     <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Package Configuration Details
             </h2>
         </template>
 
@@ -13,9 +12,7 @@
                     <div class="p-6 text-gray-900">
                         <div class="mb-8">
                             <div class="flex justify-between items-center mb-6">
-                                <h3 class="text-lg font-medium text-gray-900">
-                                    Configuration Information
-                                </h3>
+                                <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-9" />
                                 <div class="flex space-x-3">
                                     <Link
                                         :href="route('package-configurations.edit', configuration.id)"
@@ -111,7 +108,15 @@
 import { Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
+import { computed } from 'vue';
+
 defineProps({
     configuration: Object
 });
+
+const breadcrumbs = computed(() => [
+    { title: 'Package Configurations', link: route('package-configurations.index') },
+    { title: 'Package Configuration Details' }
+]);
 </script>
