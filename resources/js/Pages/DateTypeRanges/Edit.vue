@@ -3,7 +3,6 @@
     <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Edit Date Type Range
             </h2>
         </template>
 
@@ -11,6 +10,7 @@
             <div class="max-w-9xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
+                        <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-9" />
                         <form @submit.prevent="submit">
                             <div class="grid grid-cols-1 gap-6">
                                 <div>
@@ -89,10 +89,18 @@ import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { Head } from '@inertiajs/vue3';
+import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
+import { computed } from 'vue';
+
 const props = defineProps({
     dateTypeRange: Object,
     dateTypes: Array
 });
+
+const breadcrumbs = computed(() => [
+    { title: 'Date Type Ranges', link: route('date-type-ranges.index') },
+    { title: 'Edit Date Type Range' }
+]);
 
 const form = useForm({
     date_type_id: props.dateTypeRange.date_type_id,
