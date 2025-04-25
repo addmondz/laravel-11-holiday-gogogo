@@ -47,7 +47,7 @@ const showingNavigationDropdown = ref(false);
         >
             <div class="flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700" style="height: 83px;">
                 <Link :href="route('dashboard')" class="flex items-center">
-                    <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                    <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" style="max-width: 100px;" />
                 </Link>
                 <button
                     @click="toggleSidebar"
