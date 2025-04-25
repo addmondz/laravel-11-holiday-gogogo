@@ -1,1 +1,0 @@
-import{_ as o}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{g as e,o as c}from"./app-C_w__XOG.js";const t={},r={src:"/images/Logo-Rectangular-for-website.jpeg",alt:"Logo",class:"w-full h-full object-contain"};function s(n,a){return c(),e("img",r)}const _=o(t,[["render",s]]);export{_ as A};
