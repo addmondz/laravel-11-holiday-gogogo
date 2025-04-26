@@ -29,11 +29,6 @@ class PackageController extends Controller
             });
         }
 
-        // Filter by status
-        if ($request->has('status')) {
-            $query->where('is_active', $request->status === 'active');
-        }
-
         // Sort functionality
         $sortField = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');
@@ -72,12 +67,10 @@ class PackageController extends Controller
                 'location' => 'nullable|string|max:255',
                 'package_start_date' => 'required|date',
                 'package_end_date' => 'nullable|date|after:package_start_date',
-                'is_active' => 'boolean',
                 'room_types' => 'required|array|min:1',
                 'room_types.*.name' => 'required|string|max:255',
                 'room_types.*.max_occupancy' => 'required|integer|min:1',
                 'room_types.*.description' => 'nullable|string',
-                'room_types.*.is_active' => 'boolean'
             ]);
 
             if ($request->hasFile('icon_photo')) {
@@ -102,7 +95,6 @@ class PackageController extends Controller
                     'name' => $roomTypeData['name'],
                     'description' => $roomTypeData['description'],
                     'max_occupancy' => $roomTypeData['max_occupancy'],
-                    'is_active' => $roomTypeData['is_active'],
                     'package_id' => $package->id
                 ]);
 
@@ -132,16 +124,17 @@ class PackageController extends Controller
 
     public function show(Package $package)
     {
+        $roomTypes = $package->loadRoomTypes()->latest()->paginate(10);
+
         return Inertia::render('Packages/Show', [
             'pkg' => $package->load([
-                'loadRoomTypes',
                 'configurations',
                 'configurations.roomType',
                 'configurations.season',
                 'configurations.season.type',
                 'configurations.dateType',
                 'configurations.dateType.ranges'
-            ]),
+            ])->setRelation('load_room_types', $roomTypes),
         ]);
     }
 
@@ -166,7 +159,6 @@ class PackageController extends Controller
             'location' => 'nullable|string|max:255',
             'package_start_date' => 'required|date',
             'package_end_date' => 'nullable|date|after:package_start_date',
-            'is_active' => 'boolean'
         ]);
 
         if ($request->hasFile('icon_photo')) {

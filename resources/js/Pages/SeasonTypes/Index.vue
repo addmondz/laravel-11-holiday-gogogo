@@ -86,6 +86,7 @@
                                 :from="seasonTypes.from"
                                 :to="seasonTypes.to"
                                 :total="seasonTypes.total"
+                                @page-change="handlePageChange"
                             />
                         </div>
                     </div>
@@ -164,6 +165,14 @@ const deleteSeasonType = (id) => {
                 }
             });
         }
+    });
+};
+
+const handlePageChange = (url) => {
+    router.visit(url, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['seasonTypes']
     });
 };
 </script>

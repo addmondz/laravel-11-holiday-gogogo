@@ -86,6 +86,7 @@
                                 :from="dateTypes.from"
                                 :to="dateTypes.to"
                                 :total="dateTypes.total"
+                                @page-change="handlePageChange"
                             />
                         </div>
                     </div>
@@ -164,6 +165,14 @@ const deleteDateType = (id) => {
                 }
             });
         }
+    });
+};
+
+const handlePageChange = (url) => {
+    router.visit(url, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['dateTypes']
     });
 };
 </script>

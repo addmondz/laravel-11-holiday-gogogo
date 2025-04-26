@@ -97,7 +97,6 @@ class DatabaseSeeder extends Seeder
             'location' => 'Langkawi',
             'package_start_date' => '2025-01-01',
             'package_end_date' => '2025-12-31',
-            'is_active' => true,
         ]);
 
         // ➕ PACKAGE ADD-ONS
@@ -129,7 +128,6 @@ class DatabaseSeeder extends Seeder
             'location' => 'Langkawi',
             'package_start_date' => '2025-01-01',
             'package_end_date' => '2025-12-31',
-            'is_active' => true,
         ]);
 
         // ➕ PACKAGE ADD-ONS
@@ -157,7 +155,6 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Deluxe Room',
                 'description' => 'Spacious room with modern amenities',
                 'max_occupancy' => 2,
-                'is_active' => true,
                 'package_id' => $pkg->id
             ]);
 
@@ -165,7 +162,6 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Superior Chalet',
                 'description' => 'Luxury chalet with private balcony',
                 'max_occupancy' => 4,
-                'is_active' => true,
                 'package_id' => $pkg->id
             ]);
 
@@ -173,7 +169,6 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Standard Room',
                 'description' => 'Comfortable room with basic amenities',
                 'max_occupancy' => 2,
-                'is_active' => true,
                 'package_id' => $pkg->id
             ]);
         }

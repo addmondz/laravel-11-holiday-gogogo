@@ -32,17 +32,6 @@
                                         @input="debouncedSearch"
                                     />
                                 </div>
-                                <div>
-                                    <select
-                                        v-model="status"
-                                        class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        @change="updateFilters"
-                                    >
-                                        <option value="">All Status</option>
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                    </select>
-                                </div>
                             </div>
                         </div>
 
@@ -64,7 +53,6 @@
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
@@ -78,16 +66,6 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">RM {{ pkg.display_price_adult }}</div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span
-                                                :class="[
-                                                    pkg.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
-                                                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full'
-                                                ]"
-                                            >
-                                                {{ pkg.is_active ? 'Active' : 'Inactive' }}
-                                            </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <Link
@@ -121,6 +99,7 @@
                                 :from="packages.from"
                                 :to="packages.to"
                                 :total="packages.total"
+                                @page-change="handlePageChange"
                             />
                         </div>
                     </div>
@@ -201,6 +180,14 @@ const deletePackage = (id) => {
                 }
             });
         }
+    });
+};
+
+const handlePageChange = (url) => {
+    router.visit(url, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['packages']
     });
 };
 </script>

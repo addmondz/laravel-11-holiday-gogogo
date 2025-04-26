@@ -99,13 +99,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ]);
 
     Route::resource('room-types', RoomTypeController::class)->names([
-        'index' => 'room-types.index',
         'create' => 'room-types.create',
-        'store' => 'room-types.store',
-        'show' => 'room-types.show',
         'edit' => 'room-types.edit',
-        'update' => 'room-types.update',
-        'destroy' => 'room-types.destroy'
     ]);
 
     Route::resource('date-type-ranges', DateTypeRangeController::class)->names([

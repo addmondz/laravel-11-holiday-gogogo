@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->date('package_start_date');
             $table->date('package_end_date')->nullable();
-            $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });
@@ -79,10 +78,9 @@ return new class extends Migration
         Schema::create('room_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('package_id')->constrained()->onDelete('cascade');
+            $table->foreignId('package_id')->constrained()->onDelete('cascade');
             $table->text('description')->nullable();
             $table->integer('max_occupancy')->default(2);
-            $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });

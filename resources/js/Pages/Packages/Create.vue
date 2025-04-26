@@ -170,20 +170,8 @@
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label for="is_active" class="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            id="is_active"
-                                            v-model="form.is_active"
-                                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        />
-                                        <span class="ml-2 text-sm text-gray-700">Active</span>
-                                    </label>
-                                </div>
-
                                 <!-- Room Types Section -->
-                                <div class="mt-6">
+                                <div class="mt-6 border-t border-gray-600 pt-6">
                                     <div class="flex justify-between items-center mb-4">
                                         <h3 class="text-lg font-medium text-gray-900">Room Types</h3>
                                         <button
@@ -292,12 +280,10 @@ const form = useForm({
     location: '',
     package_start_date: '',
     package_end_date: '',
-    is_active: true,
     room_types: [{
         name: '',
         max_occupancy: 2,
         description: '',
-        is_active: true
     }]
 });
 
@@ -306,7 +292,6 @@ const addRoomType = () => {
         name: '',
         max_occupancy: 2,
         description: '',
-        is_active: true
     });
 };
 

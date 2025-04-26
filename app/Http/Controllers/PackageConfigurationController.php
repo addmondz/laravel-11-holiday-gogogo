@@ -26,7 +26,7 @@ class PackageConfigurationController extends Controller
             'packages' => \App\Models\Package::all(),
             'seasons' => \App\Models\Season::with('type')->get(),
             'dateTypes' => \App\Models\DateType::all(),
-            'roomTypes' => RoomType::where('is_active', true)->get()
+            'roomTypes' => RoomType::all()
         ]);
     }
 
@@ -62,7 +62,7 @@ class PackageConfigurationController extends Controller
             'packages' => \App\Models\Package::all(),
             'seasons' => \App\Models\Season::all(),
             'dateTypes' => \App\Models\DateType::all(),
-            'roomTypes' => RoomType::where('is_active', true)->get()
+            'roomTypes' => RoomType::all()
         ]);
     }
 

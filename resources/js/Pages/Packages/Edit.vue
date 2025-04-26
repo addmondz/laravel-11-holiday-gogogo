@@ -172,18 +172,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <div>
-                                    <label for="is_active" class="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            id="is_active"
-                                            v-model="form.is_active"
-                                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        />
-                                        <span class="ml-2 text-sm text-gray-700">Active</span>
-                                    </label>
-                                </div>
                             </div>
 
                             <div class="mt-6 flex justify-end">
@@ -222,7 +210,7 @@ const props = defineProps({
 
 const breadcrumbs = computed(() => [
     { title: 'Packages', link: route('packages.index') },
-	{ title: 'Create Package', },
+	{ title: 'Edit Package', },
 ]);
 
 const form = useForm({
@@ -237,7 +225,6 @@ const form = useForm({
     location: props.package.location,
     package_start_date: props.package.package_start_date,
     package_end_date: props.package.package_end_date,
-    is_active: props.package.is_active
 });
 
 const handleFileUpload = (event) => {

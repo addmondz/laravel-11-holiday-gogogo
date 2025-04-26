@@ -22,8 +22,7 @@ class Package extends Model
         'terms_and_conditions',
         'location',
         'package_start_date',
-        'package_end_date',
-        'is_active',
+        'package_end_date'
     ];
 
     public function addOns(): HasMany
