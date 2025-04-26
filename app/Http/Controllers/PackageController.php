@@ -15,10 +15,38 @@ use Illuminate\Support\Facades\Log;
 
 class PackageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = Package::query();
+
+        // Search functionality
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by status
+        if ($request->has('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        // Sort functionality
+        $sortField = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+        $query->orderBy($sortField, $sortDirection);
+
+        // Pagination
+        $packages = $query->with(['addOns', 'configurations', 'loadRoomTypes'])
+            ->paginate(10)
+            ->withQueryString();
+
         return Inertia::render('Packages/Index', [
-            'packages' => Package::with(['addOns', 'configurations'])->latest()->get()
+            'packages' => $packages,
+            'filters' => $request->only(['search', 'status', 'sort', 'direction'])
         ]);
     }
 
