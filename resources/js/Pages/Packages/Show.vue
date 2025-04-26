@@ -63,8 +63,9 @@
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-500">Display Prices</h4>
                                     <div class="mt-1">
-                                        <p class="text-sm text-gray-900">Adult: ${{ pkg.display_price_adult }}</p>
-                                        <p class="text-sm text-gray-900">Child: ${{ pkg.display_price_child }}</p>
+                                        <p class="text-sm text-gray-900">MYR {{ pkg.display_price_adult }}</p>
+                                        <!-- <p class="text-sm text-gray-900">Adult: ${{ pkg.display_price_adult }}</p> -->
+                                        <!-- <p class="text-sm text-gray-900">Child: ${{ pkg.display_price_child }}</p> -->
                                     </div>
                                 </div>
 
@@ -118,7 +119,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import moment from 'moment';
 import { RightOutlined } from '@ant-design/icons-vue';
-import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue'; 
+import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
 import { computed } from 'vue';
 
 defineProps({

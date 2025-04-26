@@ -59,7 +59,8 @@
 
                                 <div class="grid grid-cols-2 gap-6">
                                     <div>
-                                        <label for="display_price_adult" class="block text-sm font-medium text-gray-700">Display Price (Adult)</label>
+                                        <!-- <label for="display_price_adult" class="block text-sm font-medium text-gray-700">Display Price (Adult)</label> -->
+                                        <label for="display_price_adult" class="block text-sm font-medium text-gray-700">Display Price</label>
                                         <input
                                             type="number"
                                             id="display_price_adult"
@@ -72,7 +73,7 @@
                                         </div>
                                     </div>
 
-                                    <div>
+                                    <!-- <div>
                                         <label for="display_price_child" class="block text-sm font-medium text-gray-700">Display Price (Child)</label>
                                         <input
                                             type="number"
@@ -84,7 +85,7 @@
                                         <div v-if="form.errors.display_price_child" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.display_price_child }}
                                         </div>
-                                    </div>
+                                    </div> -->
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-6">

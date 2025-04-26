@@ -94,36 +94,34 @@ const showingNavigationDropdown = ref(false);
         <!-- Sidebar -->
         <aside
             :class="[
-                'fixed top-16 left-0 z-30 w-64 h-[calc(100vh-4rem)] transform bg-white dark:bg-gray-800 transition-transform duration-200 ease-in-out lg:translate-x-0',
+                'fixed top-16 left-0 z-30 w-64 h-[calc(100vh-4rem)] transform bg-white dark:bg-gray-800 transition-transform duration-200 ease-in-out lg:translate-x-0 border-r border-gray-200 dark:border-gray-700',
                 isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
             ]"
         >
-            <nav class="mt-6 px-2">
-                <div class="space-y-1 flex flex-col">
-                    <NavLink :href="route('dashboard')" :active="route().current('dashboard')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        Dashboard
-                    </NavLink>
-                    <NavLink :href="route('packages.index')" :active="route().current('packages.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        Packages
-                    </NavLink>
-                    <NavLink :href="route('season-types.index')" :active="route().current('season-types.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        Season Types
-                    </NavLink>
-                    <NavLink :href="route('seasons.index')" :active="route().current('seasons.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        Seasons
-                    </NavLink>
-                    <NavLink :href="route('date-types.index')" :active="route().current('date-types.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        Date Types
-                    </NavLink>
-                    <NavLink :href="route('date-type-ranges.index')" :active="route().current('date-type-ranges.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        Date Type Ranges
-                    </NavLink>
-                    <NavLink :href="route('package-configurations.index')" :active="route().current('package-configurations.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        Package Configurations
-                    </NavLink>
-                    <NavLink :href="route('configuration-prices.index')" :active="route().current('configuration-prices.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        Configuration Prices
-                    </NavLink>
+            <nav class="h-full flex flex-col">
+                <div class="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+                    <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Menus</h2>
+                    <div class="mt-3 space-y-1 flex flex-col">
+                        <NavLink :href="route('dashboard')" :active="route().current('dashboard')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            Dashboard
+                        </NavLink>
+                        <NavLink :href="route('packages.index')" :active="route().current('packages.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            Packages
+                        </NavLink>
+                    </div>
+                </div>
+
+                <!-- Configurations Section -->
+                <div class="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+                    <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Configurations</h2>
+                    <div class="mt-3 space-y-1 flex flex-col">
+                        <NavLink :href="route('season-types.index')" :active="route().current('season-types.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            Season Types
+                        </NavLink>
+                        <NavLink :href="route('date-types.index')" :active="route().current('date-types.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            Date Types
+                        </NavLink>
+                    </div>
                 </div>
             </nav>
         </aside>
