@@ -82,7 +82,14 @@ class RoomTypeController extends Controller
 
     public function destroy(RoomType $roomType)
     {
+        $packageId = $roomType->package_id;
         $roomType->delete();
+
+        // If the request has a return_to_package parameter, redirect back to the package page
+        if (request()->has('return_to_package')) {
+            return redirect()->route('packages.show', $packageId)
+                ->with('success', 'Room type deleted successfully.');
+        }
 
         return redirect()->route('room-types.index')
             ->with('success', 'Room type deleted successfully.');

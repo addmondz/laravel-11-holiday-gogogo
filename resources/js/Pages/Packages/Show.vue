@@ -148,6 +148,12 @@
                                                     >
                                                         Edit
                                                     </button>
+                                                    <button
+                                                        @click="deleteRoomType(roomType.id)"
+                                                        class="text-red-600 hover:text-red-900"
+                                                    >
+                                                        Delete
+                                                    </button>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -383,6 +389,7 @@ import moment from 'moment';
 import { useForm } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
 import Pagination from '@/Components/Pagination.vue';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
     pkg: Object,
@@ -452,6 +459,33 @@ const updateRoomType = () => {
             showEditRoomTypeModal.value = false;
             editRoomTypeForm.reset();
             editRoomTypeForm.return_to_package = true;
+        }
+    });
+};
+
+const deleteRoomType = (id) => {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e3342f',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(route('room-types.destroy', id), {
+                data: { return_to_package: true },
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    Swal.fire(
+                        'Deleted!',
+                        'Room type has been deleted.',
+                        'success'
+                    );
+                }
+            });
         }
     });
 };
