@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Package;
 use App\Models\RoomType;
+use App\Models\Season;
+use App\Models\DateType;
+use App\Models\PackageConfiguration;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PackageController extends Controller
 {
@@ -25,42 +29,61 @@ class PackageController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'icon_photo' => 'nullable|image|max:2048',
-            'display_price_adult' => 'nullable|numeric|min:0',
-            'display_price_child' => 'nullable|numeric|min:0',
-            'package_min_days' => 'required|integer|min:1',
-            'package_max_days' => 'required|integer|min:1',
-            'terms_and_conditions' => 'nullable|string',
-            'location' => 'nullable|string|max:255',
-            'package_start_date' => 'required|date',
-            'package_end_date' => 'nullable|date|after:package_start_date',
-            'is_active' => 'boolean',
-            'room_types' => 'required|array|min:1',
-            'room_types.*.name' => 'required|string|max:255',
-            'room_types.*.max_occupancy' => 'required|integer|min:1',
-            'room_types.*.description' => 'nullable|string',
-            'room_types.*.is_active' => 'boolean'
-        ]);
-
         try {
             DB::beginTransaction();
+
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'icon_photo' => 'nullable|image|max:2048',
+                'display_price_adult' => 'nullable|numeric|min:0',
+                'display_price_child' => 'nullable|numeric|min:0',
+                'package_min_days' => 'required|integer|min:1',
+                'package_max_days' => 'required|integer|min:1',
+                'terms_and_conditions' => 'nullable|string',
+                'location' => 'nullable|string|max:255',
+                'package_start_date' => 'required|date',
+                'package_end_date' => 'nullable|date|after:package_start_date',
+                'is_active' => 'boolean',
+                'room_types' => 'required|array|min:1',
+                'room_types.*.name' => 'required|string|max:255',
+                'room_types.*.max_occupancy' => 'required|integer|min:1',
+                'room_types.*.description' => 'nullable|string',
+                'room_types.*.is_active' => 'boolean'
+            ]);
 
             if ($request->hasFile('icon_photo')) {
                 $validated['icon_photo'] = $request->file('icon_photo')->store('packages', 'public');
             }
 
+            // Create the package
             $package = Package::create($validated);
 
-            // Create room types
+            // Get default season and date type
+            $defaultSeason = Season::first();
+            $defaultDateType = DateType::first();
+
+            if (!$defaultSeason || !$defaultDateType) {
+                throw new \Exception('Default season or date type not found. Please create them first.');
+            }
+
+            // Create room types and configurations
             foreach ($request->room_types as $roomTypeData) {
-                RoomType::create([
+                // Create room type
+                $roomType = RoomType::create([
                     'name' => $roomTypeData['name'],
                     'description' => $roomTypeData['description'],
                     'max_occupancy' => $roomTypeData['max_occupancy'],
-                    'is_active' => $roomTypeData['is_active']
+                    'is_active' => $roomTypeData['is_active'],
+                    'package_id' => $package->id
+                ]);
+
+                // Create package configuration
+                PackageConfiguration::create([
+                    'package_id' => $package->id,
+                    'room_type_id' => $roomType->id,
+                    'season_id' => $defaultSeason->id,
+                    'date_type_id' => $defaultDateType->id
                 ]);
             }
 
@@ -70,23 +93,20 @@ class PackageController extends Controller
                 ->with('success', 'Package created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Failed to create package: ' . $e->getMessage());
+            \Log::error('Package creation failed: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to create package: ' . $e->getMessage());
         }
     }
 
     public function show(Package $package)
     {
-        $distinctRoomTypes = $package->configurations()
-            ->with('roomType')
-            ->get()
-            ->pluck('roomType')
-            ->filter()
-            ->unique('id')
-            ->values();
-
         return Inertia::render('Packages/Show', [
             'pkg' => $package->load([
-                'addOns',
+                'loadRoomTypes',
                 'configurations',
                 'configurations.roomType',
                 'configurations.season',
@@ -94,7 +114,6 @@ class PackageController extends Controller
                 'configurations.dateType',
                 'configurations.dateType.ranges'
             ]),
-            'distinctRoomTypes' => $distinctRoomTypes
         ]);
     }
 

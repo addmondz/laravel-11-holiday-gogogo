@@ -14,6 +14,7 @@ class RoomType extends Model
     protected $fillable = [
         'name',
         'description',
+        'package_id',
         'max_occupancy',
         'is_active'
     ];

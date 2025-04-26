@@ -44,28 +44,6 @@ class DatabaseSeeder extends Seeder
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // 🏠 ROOM TYPES
-        $deluxeRoom = RoomType::create([
-            'name' => 'Deluxe Room',
-            'description' => 'Spacious room with modern amenities',
-            'max_occupancy' => 2,
-            'is_active' => true
-        ]);
-
-        $superiorChalet = RoomType::create([
-            'name' => 'Superior Chalet',
-            'description' => 'Luxury chalet with private balcony',
-            'max_occupancy' => 4,
-            'is_active' => true
-        ]);
-
-        $standardRoom = RoomType::create([
-            'name' => 'Standard Room',
-            'description' => 'Comfortable room with basic amenities',
-            'max_occupancy' => 2,
-            'is_active' => true
-        ]);
-
         // 🟢 SEASON TYPES
         $earlyBird = SeasonType::create(['name' => 'Early Bird']);
         $peakSeason = SeasonType::create(['name' => 'Peak Season']);
@@ -171,6 +149,35 @@ class DatabaseSeeder extends Seeder
             'child_price' => 1000.00,
         ]);
 
+        $packages = Package::all();
+
+        foreach ($packages as $pkg) {
+            // 🏠 ROOM TYPES
+            $deluxeRoom = RoomType::create([
+                'name' => 'Deluxe Room',
+                'description' => 'Spacious room with modern amenities',
+                'max_occupancy' => 2,
+                'is_active' => true,
+                'package_id' => $pkg->id
+            ]);
+
+            $superiorChalet = RoomType::create([
+                'name' => 'Superior Chalet',
+                'description' => 'Luxury chalet with private balcony',
+                'max_occupancy' => 4,
+                'is_active' => true,
+                'package_id' => $pkg->id
+            ]);
+
+            $standardRoom = RoomType::create([
+                'name' => 'Standard Room',
+                'description' => 'Comfortable room with basic amenities',
+                'max_occupancy' => 2,
+                'is_active' => true,
+                'package_id' => $pkg->id
+            ]);
+        }
+
         // ⚙️ PACKAGE CONFIGURATIONS & 💰 PRICES FOR ALL COMBINATIONS
         $roomTypes = [
             $deluxeRoom,
@@ -195,7 +202,6 @@ class DatabaseSeeder extends Seeder
             ['adults' => 5, 'children' => 0],
         ];
 
-        $packages = Package::all();
         $seasons = Season::all();
         $dateTypes = DateType::all();
 

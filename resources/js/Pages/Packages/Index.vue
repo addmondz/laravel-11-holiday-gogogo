@@ -50,7 +50,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ pkg.location }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">MYR {{ pkg.display_price_adult }}</div>
+                                            <div class="text-sm text-gray-900">MYR {{ formatNumber(pkg.display_price_adult) }}</div>
                                             <!-- <div class="text-sm text-gray-900">Adult: ${{ pkg.display_price_adult }}</div> -->
                                             <!-- <div class="text-sm text-gray-500">Child: ${{ pkg.display_price_child }}</div> -->
                                         </td>
@@ -134,5 +134,10 @@ const deletePackage = (id) => {
         }
     });
 };
+
+function formatNumber(number) {
+  if (number == null || number === '') return '0.00'
+  return Number(number).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
 </script>
 

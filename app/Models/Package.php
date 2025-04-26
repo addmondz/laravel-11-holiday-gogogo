@@ -4,7 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\RoomType;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Package extends Model
 {
@@ -25,24 +26,25 @@ class Package extends Model
         'is_active',
     ];
 
-    public function addOns()
+    public function addOns(): HasMany
     {
         return $this->hasMany(PackageAddOn::class);
     }
 
-    public function configurations()
+    public function configurations(): HasMany
     {
         return $this->hasMany(PackageConfiguration::class);
     }
 
-    public function distinctRoomTypes()
+    public function loadRoomTypes(): HasMany
     {
-        return RoomType::whereIn('id', function ($query) {
-            $query->select('room_type_id')
-                ->from('package_configurations')
-                ->where('package_id', $this->id)
-                ->distinct();
-        })
-            ->get();
+        return $this->hasMany(RoomType::class);
+    }
+
+    public function roomTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(RoomType::class, 'package_configurations', 'package_id', 'room_type_id')
+            ->withPivot(['season_id', 'date_type_id'])
+            ->withTimestamps();
     }
 }

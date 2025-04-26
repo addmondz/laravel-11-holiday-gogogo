@@ -79,6 +79,7 @@ return new class extends Migration
         Schema::create('room_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('package_id')->constrained()->onDelete('cascade');
             $table->text('description')->nullable();
             $table->integer('max_occupancy')->default(2);
             $table->boolean('is_active')->default(true);

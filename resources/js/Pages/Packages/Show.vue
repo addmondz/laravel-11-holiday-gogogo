@@ -7,7 +7,7 @@
             </h2>
         </template>
 
-        <div class="py-12">
+        <div class="pb-12 pt-6">
             <div class="max-w-9xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
@@ -38,7 +38,7 @@
                             <div v-if="activeTab === 'details'" class="space-y-6">
                                 <div class="grid grid-cols-1 gap-6">
                                     <div class="flex justify-between items-center">
-                                        <h3 class="text-lg font-medium text-gray-900">Package Details</h3>
+                                        <h3 class="text-md font-medium text-gray-900">Package Details</h3>
                                         <Link
                                             :href="route('packages.edit', pkg.id)"
                                         class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
@@ -84,7 +84,7 @@
                                         <div>
                                             <h4 class="text-sm font-medium text-gray-500">Display Prices</h4>
                                             <div class="mt-1">
-                                                <p class="text-sm text-gray-900">MYR {{ pkg.display_price_adult }}</p>
+                                                <p class="text-sm text-gray-900">MYR {{ formatNumber(pkg.display_price_adult) }}</p>
                                                 <!-- <p class="text-sm text-gray-900">Adult: ${{ pkg.display_price_adult }}</p> -->
                                                 <!-- <p class="text-sm text-gray-900">Child: ${{ pkg.display_price_child }}</p> -->
                                             </div>
@@ -132,7 +132,7 @@
                             <!-- Room Types Tab -->
                             <div v-if="activeTab === 'room-types'" class="space-y-6">
                                 <div class="flex justify-between items-center">
-                                    <h3 class="text-lg font-medium text-gray-900">Room Types</h3>
+                                    <h3 class="text-md font-medium text-gray-900">Room Types</h3>
                                     <Link
                                         :href="route('room-types.create')"
                                         class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
@@ -152,7 +152,7 @@
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200">
-                                            <tr v-for="roomType in distinctRoomTypes" :key="roomType.id">
+                                            <tr v-for="roomType in pkg.load_room_types" :key="roomType.id">
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.name }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.max_occupancy }}</td>
                                                 <td class="px-6 py-4 text-sm text-gray-900">{{ roomType.description }}</td>
@@ -183,7 +183,7 @@
                             <!-- Season Types Tab -->
                             <div v-if="activeTab === 'season-types'" class="space-y-6">
                                 <div class="flex justify-between items-center">
-                                    <h3 class="text-lg font-medium text-gray-900">Season Types</h3>
+                                    <h3 class="text-md font-medium text-gray-900">Season Types</h3>
                                     <Link
                                         :href="route('season-types.create')"
                                         class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
@@ -223,7 +223,7 @@
                             <!-- Date Types Tab -->
                             <div v-if="activeTab === 'date-types'" class="space-y-6">
                                 <div class="flex justify-between items-center">
-                                    <h3 class="text-lg font-medium text-gray-900">Date Types</h3>
+                                    <h3 class="text-md font-medium text-gray-900">Date Types</h3>
                                     <Link
                                         :href="route('date-types.create')"
                                         class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
@@ -293,4 +293,9 @@ const breadcrumbs = computed(() => [
     { title: 'Packages', link: route('packages.index') },
     { title: props.pkg.name }
 ]);
+
+function formatNumber(number) {
+  if (number == null || number === '') return '0.00'
+  return Number(number).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
 </script>
