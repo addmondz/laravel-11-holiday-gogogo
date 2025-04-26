@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PackageConfiguration;
+use App\Models\RoomType;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -10,7 +11,7 @@ class PackageConfigurationController extends Controller
 {
     public function index()
     {
-        $configurations = PackageConfiguration::with(['package', 'season', 'dateType', 'season.type'])
+        $configurations = PackageConfiguration::with(['package', 'season', 'dateType', 'roomType', 'season.type'])
             ->latest()
             ->get();
 
@@ -24,7 +25,8 @@ class PackageConfigurationController extends Controller
         return Inertia::render('PackageConfigurations/Create', [
             'packages' => \App\Models\Package::all(),
             'seasons' => \App\Models\Season::with('type')->get(),
-            'dateTypes' => \App\Models\DateType::all()
+            'dateTypes' => \App\Models\DateType::all(),
+            'roomTypes' => RoomType::where('is_active', true)->get()
         ]);
     }
 
@@ -34,7 +36,7 @@ class PackageConfigurationController extends Controller
             'package_id' => 'required|exists:packages,id',
             'season_id' => 'required|exists:seasons,id',
             'date_type_id' => 'required|exists:date_types,id',
-            'room_type' => 'required|string|max:255'
+            'room_type_id' => 'required|exists:room_types,id'
         ]);
 
         PackageConfiguration::create($validated);
@@ -46,7 +48,7 @@ class PackageConfigurationController extends Controller
 
     public function show(PackageConfiguration $packageConfiguration)
     {
-        $packageConfiguration->load(['package', 'season', 'dateType', 'prices', 'season.type']);
+        $packageConfiguration->load(['package', 'season', 'dateType', 'roomType', 'prices', 'season.type']);
 
         return Inertia::render('PackageConfigurations/Show', [
             'configuration' => $packageConfiguration
@@ -59,7 +61,8 @@ class PackageConfigurationController extends Controller
             'configuration' => $packageConfiguration,
             'packages' => \App\Models\Package::all(),
             'seasons' => \App\Models\Season::all(),
-            'dateTypes' => \App\Models\DateType::all()
+            'dateTypes' => \App\Models\DateType::all(),
+            'roomTypes' => RoomType::where('is_active', true)->get()
         ]);
     }
 
@@ -69,7 +72,7 @@ class PackageConfigurationController extends Controller
             'package_id' => 'required|exists:packages,id',
             'season_id' => 'required|exists:seasons,id',
             'date_type_id' => 'required|exists:date_types,id',
-            'room_type' => 'required|string|max:255'
+            'room_type_id' => 'required|exists:room_types,id'
         ]);
 
         $packageConfiguration->update($validated);

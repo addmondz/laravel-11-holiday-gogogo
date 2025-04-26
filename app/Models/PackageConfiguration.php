@@ -16,6 +16,7 @@ class PackageConfiguration extends Model
         'package_id',
         'season_id',
         'date_type_id',
+        'room_type_id',
         'room_type',
     ];
 
@@ -32,6 +33,11 @@ class PackageConfiguration extends Model
     public function dateType(): BelongsTo
     {
         return $this->belongsTo(DateType::class, 'date_type_id');
+    }
+
+    public function roomType(): BelongsTo
+    {
+        return $this->belongsTo(RoomType::class);
     }
 
     public function prices(): HasMany

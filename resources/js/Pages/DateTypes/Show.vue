@@ -16,7 +16,7 @@
                             <div>
                                 <Link
                                     :href="route('date-types.edit', dateType.id)"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 mr-3"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs mr-3"
                                 >
                                     Edit
                                 </Link>

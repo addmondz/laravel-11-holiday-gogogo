@@ -15,7 +15,7 @@
                             <h3 class="text-lg font-medium">All Package Add-ons</h3>
                             <Link
                                 :href="route('package-add-ons.create')"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                             >
                                 Create Add-on
                             </Link>

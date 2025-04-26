@@ -91,13 +91,13 @@
                             <div class="mt-6 flex justify-end">
                                 <Link
                                     :href="route('package-configurations.index')"
-                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 mr-3"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 mr-3 text-xs"
                                 >
                                     Cancel
                                 </Link>
                                 <button
                                     type="submit"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                                     :disabled="form.processing"
                                 >
                                     Update Package Configuration

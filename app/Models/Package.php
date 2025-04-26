@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\RoomType;
 
 class Package extends Model
 {
@@ -32,5 +33,16 @@ class Package extends Model
     public function configurations()
     {
         return $this->hasMany(PackageConfiguration::class);
+    }
+
+    public function distinctRoomTypes()
+    {
+        return RoomType::whereIn('id', function ($query) {
+            $query->select('room_type_id')
+                ->from('package_configurations')
+                ->where('package_id', $this->id)
+                ->distinct();
+        })
+            ->get();
     }
 }

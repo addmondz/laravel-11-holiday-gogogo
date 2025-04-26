@@ -76,13 +76,23 @@ return new class extends Migration
             $table->softDeletes();
         });
 
+        Schema::create('room_types', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->integer('max_occupancy')->default(2);
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
         // Configurations
         Schema::create('package_configurations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('package_id')->constrained()->onDelete('cascade');
             $table->foreignId('season_id')->constrained()->onDelete('cascade');
             $table->foreignId('date_type_id')->constrained()->onDelete('cascade');
-            $table->string('room_type');
+            $table->foreignId('room_type_id')->constrained()->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -105,6 +115,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('configuration_prices');
         Schema::dropIfExists('package_configurations');
+        Schema::dropIfExists('room_types');
         Schema::dropIfExists('date_type_ranges');
         Schema::dropIfExists('date_types');
         Schema::dropIfExists('seasons');

@@ -181,18 +181,84 @@
                                         <span class="ml-2 text-sm text-gray-700">Active</span>
                                     </label>
                                 </div>
+
+                                <!-- Room Types Section -->
+                                <div class="mt-6">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="text-lg font-medium text-gray-900">Room Types</h3>
+                                        <button
+                                            type="button"
+                                            @click="addRoomType"
+                                            class="px-4 py-2 text-xs bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200"
+                                        >
+                                            Add Room Type
+                                        </button>
+                                    </div>
+
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Occupancy</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                <tr v-for="(roomType, index) in form.room_types" :key="index">
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <input
+                                                            type="text"
+                                                            v-model="roomType.name"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            placeholder="Room Type Name"
+                                                            required
+                                                        />
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <input
+                                                            type="number"
+                                                            v-model="roomType.max_occupancy"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            min="1"
+                                                            required
+                                                        />
+                                                    </td>
+                                                    <td class="px-6 py-4">
+                                                        <input
+                                                            type="text"
+                                                            v-model="roomType.description"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            placeholder="Description"
+                                                        />
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                        <button
+                                                            type="button"
+                                                            @click="removeRoomType(index)"
+                                                            class="text-red-600 hover:text-red-900"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="mt-6 flex justify-end">
                                 <Link
                                     :href="route('packages.index')"
-                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 mr-3"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 mr-3 text-xs"
                                 >
                                     Cancel
                                 </Link>
                                 <button
                                     type="submit"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                                     :disabled="form.processing"
                                 >
                                     Create Package
@@ -226,8 +292,27 @@ const form = useForm({
     location: '',
     package_start_date: '',
     package_end_date: '',
-    is_active: true
+    is_active: true,
+    room_types: [{
+        name: '',
+        max_occupancy: 2,
+        description: '',
+        is_active: true
+    }]
 });
+
+const addRoomType = () => {
+    form.room_types.push({
+        name: '',
+        max_occupancy: 2,
+        description: '',
+        is_active: true
+    });
+};
+
+const removeRoomType = (index) => {
+    form.room_types.splice(index, 1);
+};
 
 const handleFileUpload = (event) => {
     form.icon_photo = event.target.files[0];

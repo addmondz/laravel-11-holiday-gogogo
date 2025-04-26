@@ -16,7 +16,7 @@
                                 <div class="flex space-x-3">
                                     <Link
                                         :href="route('package-configurations.edit', configuration.id)"
-                                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                                     >
                                         Edit Configuration
                                     </Link>

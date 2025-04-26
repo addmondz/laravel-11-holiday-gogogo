@@ -23,7 +23,6 @@
 
 <script setup>
 import { RightOutlined } from '@ant-design/icons-vue';
-import { defineProps } from 'vue';
 import { Link } from '@inertiajs/vue3';
 
 const props = defineProps({

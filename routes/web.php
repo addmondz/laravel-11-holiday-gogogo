@@ -13,6 +13,7 @@ use App\Http\Controllers\SeasonTypeController;
 use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\DateTypeRangeController;
 use App\Http\Controllers\PackageConfigurationController;
+use App\Http\Controllers\RoomTypeController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -95,6 +96,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'edit' => 'date-types.edit',
         'update' => 'date-types.update',
         'destroy' => 'date-types.destroy'
+    ]);
+
+    Route::resource('room-types', RoomTypeController::class)->names([
+        'index' => 'room-types.index',
+        'create' => 'room-types.create',
+        'store' => 'room-types.store',
+        'show' => 'room-types.show',
+        'edit' => 'room-types.edit',
+        'update' => 'room-types.update',
+        'destroy' => 'room-types.destroy'
     ]);
 
     Route::resource('date-type-ranges', DateTypeRangeController::class)->names([

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Package;
+use App\Models\RoomType;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class PackageController extends Controller
 {
@@ -35,23 +37,64 @@ class PackageController extends Controller
             'location' => 'nullable|string|max:255',
             'package_start_date' => 'required|date',
             'package_end_date' => 'nullable|date|after:package_start_date',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'room_types' => 'required|array|min:1',
+            'room_types.*.name' => 'required|string|max:255',
+            'room_types.*.max_occupancy' => 'required|integer|min:1',
+            'room_types.*.description' => 'nullable|string',
+            'room_types.*.is_active' => 'boolean'
         ]);
 
-        if ($request->hasFile('icon_photo')) {
-            $validated['icon_photo'] = $request->file('icon_photo')->store('packages', 'public');
+        try {
+            DB::beginTransaction();
+
+            if ($request->hasFile('icon_photo')) {
+                $validated['icon_photo'] = $request->file('icon_photo')->store('packages', 'public');
+            }
+
+            $package = Package::create($validated);
+
+            // Create room types
+            foreach ($request->room_types as $roomTypeData) {
+                RoomType::create([
+                    'name' => $roomTypeData['name'],
+                    'description' => $roomTypeData['description'],
+                    'max_occupancy' => $roomTypeData['max_occupancy'],
+                    'is_active' => $roomTypeData['is_active']
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('packages.index')
+                ->with('success', 'Package created successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to create package: ' . $e->getMessage());
         }
-
-        Package::create($validated);
-
-        return redirect()->route('packages.index')
-            ->with('success', 'Package created successfully.');
     }
 
     public function show(Package $package)
     {
+        $distinctRoomTypes = $package->configurations()
+            ->with('roomType')
+            ->get()
+            ->pluck('roomType')
+            ->filter()
+            ->unique('id')
+            ->values();
+
         return Inertia::render('Packages/Show', [
-            'pkg' => $package->load(['addOns', 'configurations'])
+            'pkg' => $package->load([
+                'addOns',
+                'configurations',
+                'configurations.roomType',
+                'configurations.season',
+                'configurations.season.type',
+                'configurations.dateType',
+                'configurations.dateType.ranges'
+            ]),
+            'distinctRoomTypes' => $distinctRoomTypes
         ]);
     }
 
@@ -96,9 +139,9 @@ class PackageController extends Controller
     public function destroy(Package $package)
     {
         // Delete icon photo if exists
-        // if ($package->icon_photo) {
-        //     Storage::disk('public')->delete($package->icon_photo);
-        // }
+        if ($package->icon_photo) {
+            Storage::disk('public')->delete($package->icon_photo);
+        }
 
         $package->addOns()->delete();
         $package->configurations()->delete();

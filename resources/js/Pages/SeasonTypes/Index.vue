@@ -14,7 +14,7 @@
                             <h3 class="text-lg font-medium">All Season Types</h3>
                             <Link
                                 :href="route('season-types.create')"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                             >
                                 Create Season Type
                             </Link>

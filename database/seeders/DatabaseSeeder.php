@@ -14,7 +14,8 @@ use App\Models\{
     PackageAddOn,
     PackageConfiguration,
     ConfigurationPrice,
-    User
+    User,
+    RoomType
 };
 use Illuminate\Support\Facades\Hash;
 
@@ -39,8 +40,31 @@ class DatabaseSeeder extends Seeder
         PackageAddOn::truncate();
         PackageConfiguration::truncate();
         ConfigurationPrice::truncate();
+        RoomType::truncate();
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        // 🏠 ROOM TYPES
+        $deluxeRoom = RoomType::create([
+            'name' => 'Deluxe Room',
+            'description' => 'Spacious room with modern amenities',
+            'max_occupancy' => 2,
+            'is_active' => true
+        ]);
+
+        $superiorChalet = RoomType::create([
+            'name' => 'Superior Chalet',
+            'description' => 'Luxury chalet with private balcony',
+            'max_occupancy' => 4,
+            'is_active' => true
+        ]);
+
+        $standardRoom = RoomType::create([
+            'name' => 'Standard Room',
+            'description' => 'Comfortable room with basic amenities',
+            'max_occupancy' => 2,
+            'is_active' => true
+        ]);
 
         // 🟢 SEASON TYPES
         $earlyBird = SeasonType::create(['name' => 'Early Bird']);
@@ -148,7 +172,11 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ⚙️ PACKAGE CONFIGURATIONS & 💰 PRICES FOR ALL COMBINATIONS
-        $roomTypes = ['Deluxe Room', 'Superior Chalet', 'Standard Room'];
+        $roomTypes = [
+            $deluxeRoom,
+            $superiorChalet,
+            $standardRoom
+        ];
         $combinations = [
             ['adults' => 1, 'children' => 0],
             ['adults' => 1, 'children' => 1],
@@ -179,7 +207,7 @@ class DatabaseSeeder extends Seeder
                             'package_id' => $pkg->id,
                             'season_id' => $season->id,
                             'date_type_id' => $dateType->id,
-                            'room_type' => $roomType,
+                            'room_type_id' => $roomType->id,
                         ]);
 
                         foreach ($combinations as $combo) {
