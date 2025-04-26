@@ -8,14 +8,29 @@ use Inertia\Inertia;
 
 class DateTypeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $dateTypes = DateType::with('ranges')
-            ->latest()
-            ->get();
+        $query = DateType::query();
+
+        // Search functionality
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Sort functionality
+        $sortField = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+        $query->orderBy($sortField, $sortDirection);
+
+        // Pagination
+        $dateTypes = $query->with('ranges')
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('DateTypes/Index', [
-            'dateTypes' => $dateTypes
+            'dateTypes' => $dateTypes,
+            'filters' => $request->only(['search', 'sort', 'direction'])
         ]);
     }
 

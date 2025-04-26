@@ -8,14 +8,29 @@ use Inertia\Inertia;
 
 class SeasonTypeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $seasonTypes = SeasonType::with('seasons')
-            ->latest()
-            ->get();
+        $query = SeasonType::query();
+
+        // Search functionality
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Sort functionality
+        $sortField = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+        $query->orderBy($sortField, $sortDirection);
+
+        // Pagination
+        $seasonTypes = $query->with('seasons')
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('SeasonTypes/Index', [
-            'seasonTypes' => $seasonTypes
+            'seasonTypes' => $seasonTypes,
+            'filters' => $request->only(['search', 'sort', 'direction'])
         ]);
     }
 
