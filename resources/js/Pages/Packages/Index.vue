@@ -94,12 +94,11 @@
 
                         <!-- Pagination -->
                         <div class="mt-6">
-                            <Pagination
+                            <InertiaPagination
                                 :links="packages.links"
                                 :from="packages.from"
                                 :to="packages.to"
                                 :total="packages.total"
-                                @page-change="handlePageChange"
                             />
                         </div>
                     </div>
@@ -114,7 +113,7 @@ import { Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import Swal from 'sweetalert2';
-import Pagination from '@/Components/Pagination.vue';
+import InertiaPagination from '@/Components/InertiaPagination.vue';
 import { ref, watch } from 'vue';
 import debounce from 'lodash/debounce';
 

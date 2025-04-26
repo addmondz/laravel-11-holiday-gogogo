@@ -132,10 +132,16 @@ class PackageController extends Controller
             ->paginate(10);
 
         $seasons = Season::with('type')
+            ->whereHas('configurations', function($query) use ($package) {
+                $query->where('package_id', $package->id);
+            })
             ->latest()
             ->paginate(10);
 
         $dateTypeRanges = DateTypeRange::with('dateType')
+            ->whereHas('configurations', function($query) use ($package) {
+                $query->where('package_id', $package->id);
+            })
             ->latest()
             ->paginate(10);
 
@@ -162,25 +168,31 @@ class PackageController extends Controller
     {
         $roomTypes = $package->loadRoomTypes()
             ->latest()
-            ->paginate(10, ['*'], 'page');
+            ->paginate(10);
 
         return response()->json($roomTypes);
     }
 
-    public function getSeasons(Request $request)
+    public function getSeasons(Package $package, Request $request)
     {
         $seasons = Season::with('type')
+            ->whereHas('configurations', function($query) use ($package) {
+                $query->where('package_id', $package->id);
+            })
             ->latest()
-            ->paginate(10, ['*'], 'page');
+            ->paginate(10);
 
         return response()->json($seasons);
     }
 
-    public function getDateTypeRanges(Request $request)
+    public function getDateTypeRanges(Package $package, Request $request)
     {
         $dateTypeRanges = DateTypeRange::with('dateType')
+            ->whereHas('configurations', function($query) use ($package) {
+                $query->where('package_id', $package->id);
+            })
             ->latest()
-            ->paginate(10, ['*'], 'page');
+            ->paginate(10);
 
         return response()->json($dateTypeRanges);
     }

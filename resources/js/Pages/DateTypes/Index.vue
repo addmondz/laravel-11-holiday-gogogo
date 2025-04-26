@@ -85,12 +85,11 @@
 
                         <!-- Pagination -->
                         <div class="mt-6">
-                            <Pagination
+                            <InertiaPagination
                                 :links="dateTypes.links"
                                 :from="dateTypes.from"
                                 :to="dateTypes.to"
                                 :total="dateTypes.total"
-                                @page-change="handlePageChange"
                             />
                         </div>
                     </div>
@@ -105,7 +104,7 @@ import { Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import Swal from 'sweetalert2';
-import Pagination from '@/Components/Pagination.vue';
+import InertiaPagination from '@/Components/InertiaPagination.vue';
 import { ref } from 'vue';
 import debounce from 'lodash/debounce';
 
@@ -169,14 +168,6 @@ const deleteDateType = (id) => {
                 }
             });
         }
-    });
-};
-
-const handlePageChange = (url) => {
-    router.visit(url, {
-        preserveState: true,
-        preserveScroll: true,
-        only: ['dateTypes']
     });
 };
 </script>
