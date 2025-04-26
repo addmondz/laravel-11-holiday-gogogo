@@ -25,7 +25,7 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Associated Ranges</th>
+                                        <!-- <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Associated Ranges</th> -->
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
@@ -34,16 +34,16 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">{{ dateType.name }}</div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <!-- <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">{{ dateType.ranges.length }} ranges</div>
-                                        </td>
+                                        </td> -->
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <Link
+                                            <!-- <Link
                                                 :href="route('date-types.show', dateType.id)"
                                                 class="text-indigo-600 hover:text-indigo-900 mr-3"
                                             >
                                                 View
-                                            </Link>
+                                            </Link> -->
                                             <Link
                                                 :href="route('date-types.edit', dateType.id)"
                                                 class="text-indigo-600 hover:text-indigo-900 mr-3"
@@ -83,9 +83,10 @@ const deleteDateType = (id) => {
         text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonColor: '#e3342f',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
             router.delete(route('date-types.destroy', id), {
