@@ -59,6 +59,13 @@ import { Head } from '@inertiajs/vue3';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
 import { computed } from 'vue';
 
+const props = defineProps({
+    packageId: {
+        type: [Number, String],
+        default: null
+    }
+});
+
 const form = useForm({
     name: ''
 });
@@ -69,7 +76,13 @@ const breadcrumbs = computed(() => [
 ]);
 
 const submit = () => {
-    form.post(route('date-types.store'), {
+    const data = {
+        ...form.data(),
+        return_to_package: true,
+        package_id: props.packageId
+    };
+
+    form.post(route('date-types.store'), data, {
         preserveScroll: true,
         onSuccess: () => {
             Swal.fire({

@@ -12,6 +12,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\SeasonType;
+use App\Models\DateTypeRange;
 
 class PackageController extends Controller
 {
@@ -122,9 +124,23 @@ class PackageController extends Controller
         }
     }
 
-    public function show(Package $package)
+    public function show(Package $package, Request $request)
     {
-        $roomTypes = $package->loadRoomTypes()->latest()->paginate(10);
+        // Set up pagination for each section
+        $roomTypes = $package->loadRoomTypes()
+            ->latest()
+            ->paginate(10);
+
+        $seasons = Season::with('type')
+            ->latest()
+            ->paginate(10);
+
+        $dateTypeRanges = DateTypeRange::with('dateType')
+            ->latest()
+            ->paginate(10);
+
+        $seasonTypes = SeasonType::all();
+        $dateTypes = DateType::all();
 
         return Inertia::render('Packages/Show', [
             'pkg' => $package->load([
@@ -135,7 +151,38 @@ class PackageController extends Controller
                 'configurations.dateType',
                 'configurations.dateType.ranges'
             ])->setRelation('load_room_types', $roomTypes),
+            'seasons' => $seasons,
+            'seasonTypes' => $seasonTypes,
+            'dateTypeRanges' => $dateTypeRanges,
+            'dateTypes' => $dateTypes
         ]);
+    }
+
+    public function getRoomTypes(Package $package, Request $request)
+    {
+        $roomTypes = $package->loadRoomTypes()
+            ->latest()
+            ->paginate(10, ['*'], 'page');
+
+        return response()->json($roomTypes);
+    }
+
+    public function getSeasons(Request $request)
+    {
+        $seasons = Season::with('type')
+            ->latest()
+            ->paginate(10, ['*'], 'page');
+
+        return response()->json($seasons);
+    }
+
+    public function getDateTypeRanges(Request $request)
+    {
+        $dateTypeRanges = DateTypeRange::with('dateType')
+            ->latest()
+            ->paginate(10, ['*'], 'page');
+
+        return response()->json($dateTypeRanges);
     }
 
     public function edit(Package $package)

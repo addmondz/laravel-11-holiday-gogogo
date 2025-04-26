@@ -40,6 +40,12 @@ class SeasonController extends Controller
 
         Season::create($validated);
 
+        // If the request has a return_to_package parameter, redirect back to the package page
+        if ($request->has('return_to_package')) {
+            return redirect()->route('packages.show', $request->package_id)
+                ->with('success', 'Season created successfully.');
+        }
+
         return redirect()->route('seasons.index')
             ->with('success', 'Season created successfully.');
     }
@@ -72,13 +78,26 @@ class SeasonController extends Controller
 
         $season->update($validated);
 
+        // If the request has a return_to_package parameter, redirect back to the package page
+        if ($request->has('return_to_package')) {
+            return redirect()->route('packages.show', $request->package_id)
+                ->with('success', 'Season updated successfully.');
+        }
+
         return redirect()->route('seasons.index')
             ->with('success', 'Season updated successfully.');
     }
 
     public function destroy(Season $season)
     {
+        $packageId = request()->package_id;
         $season->delete();
+
+        // If the request has a return_to_package parameter, redirect back to the package page
+        if (request()->has('return_to_package')) {
+            return redirect()->route('packages.show', $packageId)
+                ->with('success', 'Season deleted successfully.');
+        }
 
         return redirect()->route('seasons.index')
             ->with('success', 'Season deleted successfully.');

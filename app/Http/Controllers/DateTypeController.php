@@ -28,15 +28,23 @@ class DateTypeController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('DateTypes/Index', [
+        $data = [
             'dateTypes' => $dateTypes,
             'filters' => $request->only(['search', 'sort', 'direction'])
-        ]);
+        ];
+
+        if ($request->has('package_id')) {
+            $data['package_id'] = $request->package_id;
+        }
+
+        return Inertia::render('DateTypes/Index', $data);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return Inertia::render('DateTypes/Create');
+        return Inertia::render('DateTypes/Create', [
+            'packageId' => $request->package_id
+        ]);
     }
 
     public function store(Request $request)
@@ -46,6 +54,12 @@ class DateTypeController extends Controller
         ]);
 
         DateType::create($validated);
+
+        // If the request has a return_to_package parameter, redirect back to the package page
+        if ($request->has('return_to_package')) {
+            return redirect()->route('packages.show', $request->package_id)
+                ->with('success', 'Date type created successfully.');
+        }
 
         return redirect()->route('date-types.index')
             ->with('success', 'Date type created successfully.');
@@ -58,10 +72,11 @@ class DateTypeController extends Controller
         ]);
     }
 
-    public function edit(DateType $dateType)
+    public function edit(DateType $dateType, Request $request)
     {
         return Inertia::render('DateTypes/Edit', [
-            'dateType' => $dateType
+            'dateType' => $dateType,
+            'packageId' => $request->package_id
         ]);
     }
 
@@ -73,13 +88,26 @@ class DateTypeController extends Controller
 
         $dateType->update($validated);
 
+        // If the request has a return_to_package parameter, redirect back to the package page
+        if ($request->has('return_to_package')) {
+            return redirect()->route('packages.show', $request->package_id)
+                ->with('success', 'Date type updated successfully.');
+        }
+
         return redirect()->route('date-types.index')
             ->with('success', 'Date type updated successfully.');
     }
 
     public function destroy(DateType $dateType)
     {
+        $packageId = request()->package_id;
         $dateType->delete();
+
+        // If the request has a return_to_package parameter, redirect back to the package page
+        if (request()->has('return_to_package')) {
+            return redirect()->route('packages.show', $packageId)
+                ->with('success', 'Date type deleted successfully.');
+        }
 
         return redirect()->route('date-types.index')
             ->with('success', 'Date type deleted successfully.');

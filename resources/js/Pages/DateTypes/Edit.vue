@@ -60,7 +60,11 @@ import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
 import { computed } from 'vue';
 
 const props = defineProps({
-    dateType: Object
+    dateType: Object,
+    packageId: {
+        type: [Number, String],
+        default: null
+    }
 });
 
 const form = useForm({
@@ -73,7 +77,13 @@ const breadcrumbs = computed(() => [
 ]);
 
 const submit = () => {
-    form.put(route('date-types.update', props.dateType.id), {
+    const data = {
+        ...form.data(),
+        return_to_package: true,
+        package_id: props.packageId
+    };
+
+    form.put(route('date-types.update', props.dateType.id), data, {
         preserveScroll: true,
         onSuccess: () => {
             Swal.fire({

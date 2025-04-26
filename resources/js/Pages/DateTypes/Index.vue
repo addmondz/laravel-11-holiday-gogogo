@@ -62,7 +62,11 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <Link
-                                                :href="route('date-types.edit', dateType.id)"
+                                                :href="route('date-types.edit', $page.props.package_id ? {
+                                                    dateType: dateType.id,
+                                                    package_id: $page.props.package_id,
+                                                    return_to_package: true
+                                                } : dateType.id)"
                                                 class="text-indigo-600 hover:text-indigo-900 mr-3"
                                             >
                                                 Edit

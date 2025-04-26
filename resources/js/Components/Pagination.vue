@@ -91,6 +91,8 @@ const props = defineProps({
 const emit = defineEmits(['page-change']);
 
 const handlePageChange = (url) => {
-    emit('page-change', url);
+    // Extract page number from URL or use the provided page number
+    const page = typeof url === 'string' ? new URL(url).searchParams.get('page') : url;
+    emit('page-change', parseInt(page));
 };
 </script>

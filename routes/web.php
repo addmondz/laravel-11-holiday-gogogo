@@ -55,6 +55,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'packages.destroy'
     ]);
 
+    Route::get('/packages/{package}/room-types', [PackageController::class, 'getRoomTypes'])->name('packages.room-types');
+    Route::get('/packages/{package}/seasons', [PackageController::class, 'getSeasons'])->name('packages.seasons');
+    Route::get('/packages/{package}/date-type-ranges', [PackageController::class, 'getDateTypeRanges'])->name('packages.date-type-ranges');
 
     // Route::resource('package-add-ons', PackageAddOnController::class)->names([
     //     'index' => 'package-add-ons.index',

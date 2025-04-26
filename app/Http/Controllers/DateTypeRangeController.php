@@ -39,8 +39,14 @@ class DateTypeRangeController extends Controller
 
         DateTypeRange::create($validated);
 
+        // If the request has a return_to_package parameter, redirect back to the package page
+        if ($request->has('return_to_package')) {
+            return redirect()->route('packages.show', $request->package_id)
+                ->with('success', 'Date range created successfully.');
+        }
+
         return redirect()->route('date-type-ranges.index')
-            ->with('success', 'Date type range created successfully.');
+            ->with('success', 'Date range created successfully.');
     }
 
     public function show(DateTypeRange $dateTypeRange)
@@ -70,15 +76,28 @@ class DateTypeRangeController extends Controller
 
         $dateTypeRange->update($validated);
 
+        // If the request has a return_to_package parameter, redirect back to the package page
+        if ($request->has('return_to_package')) {
+            return redirect()->route('packages.show', $request->package_id)
+                ->with('success', 'Date range updated successfully.');
+        }
+
         return redirect()->route('date-type-ranges.index')
-            ->with('success', 'Date type range updated successfully.');
+            ->with('success', 'Date range updated successfully.');
     }
 
     public function destroy(DateTypeRange $dateTypeRange)
     {
+        $packageId = request()->package_id;
         $dateTypeRange->delete();
 
+        // If the request has a return_to_package parameter, redirect back to the package page
+        if (request()->has('return_to_package')) {
+            return redirect()->route('packages.show', $packageId)
+                ->with('success', 'Date range deleted successfully.');
+        }
+
         return redirect()->route('date-type-ranges.index')
-            ->with('success', 'Date type range deleted successfully.');
+            ->with('success', 'Date range deleted successfully.');
     }
 }
