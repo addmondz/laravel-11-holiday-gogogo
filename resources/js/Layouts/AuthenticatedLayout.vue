@@ -8,6 +8,8 @@ import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
+import { MenuOutlined } from '@ant-design/icons-vue';
+
 const isDarkMode = ref(false);
 const isSidebarOpen = ref(false);
 const showingNavigationDropdown = ref(false);

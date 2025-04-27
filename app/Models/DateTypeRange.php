@@ -14,7 +14,8 @@ class DateTypeRange extends Model
         'date_type_id',
         'start_date',
         'end_date',
-        'status'
+        'status',
+        'package_id'
     ];
 
     // protected $casts = [

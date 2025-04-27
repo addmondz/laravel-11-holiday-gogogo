@@ -9,7 +9,13 @@ class Season extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['season_type_id', 'start_date', 'end_date', 'priority'];
+    protected $fillable = [
+        'season_type_id',
+        'start_date',
+        'end_date',
+        'priority',
+        'package_id'
+    ];
 
     // protected $casts = [
     //     'start_date' => 'date',

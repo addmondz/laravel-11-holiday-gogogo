@@ -115,8 +115,8 @@ class PackageController extends Controller
                 ->with('success', 'Package created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Package creation failed: ' . $e->getMessage());
-            \Log::error($e->getTraceAsString());
+            Log::error('Package creation failed: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
 
             return back()
                 ->withInput()
@@ -132,10 +132,12 @@ class PackageController extends Controller
             ->paginate(10);
 
         $seasons = Season::with('type')
+            ->where('package_id', $package->id)
             ->latest()
             ->paginate(10);
 
         $dateTypeRanges = DateTypeRange::with('dateType')
+            ->where('package_id', $package->id)
             ->latest()
             ->paginate(10);
 
@@ -167,18 +169,20 @@ class PackageController extends Controller
         return response()->json($roomTypes);
     }
 
-    public function getSeasons(Request $request)
+    public function getSeasons(Request $request, Package $package)
     {
         $seasons = Season::with('type')
+            ->where('package_id', $package->id)
             ->latest()
             ->paginate(10, ['*'], 'page');
 
         return response()->json($seasons);
     }
 
-    public function getDateTypeRanges(Request $request)
+    public function getDateTypeRanges(Request $request, Package $package)
     {
         $dateTypeRanges = DateTypeRange::with('dateType')
+            ->where('package_id', $package->id)
             ->latest()
             ->paginate(10, ['*'], 'page');
 

@@ -50,39 +50,11 @@ class DatabaseSeeder extends Seeder
         $ph120 = SeasonType::create(['name' => 'Public Holiday 120']);
         $ph60 = SeasonType::create(['name' => 'Public Holiday 60']);
 
-        // 🗓️ SEASONS (date ranges for season types)
-        $earlyBirdSeason = Season::create([
-            'season_type_id' => $earlyBird->id,
-            'start_date' => '2025-01-01',
-            'end_date' => '2025-02-28',
-            'priority' => 1,
-        ]);
-
-        $peakSeasonSeason = Season::create([
-            'season_type_id' => $peakSeason->id,
-            'start_date' => '2025-06-01',
-            'end_date' => '2025-08-31',
-            'priority' => 2,
-        ]);
-
         // 🟡 DATE TYPES
         $weekend = DateType::create(['name' => 'Weekend']);
         $weekday = DateType::create(['name' => 'Weekday']);
         $roomsur60 = DateType::create(['name' => 'Roomsur 60']);
         $roomsur30 = DateType::create(['name' => 'Roomsur 30']);
-
-        // 📆 DATE TYPE RANGES
-        DateTypeRange::create([
-            'date_type_id' => $weekend->id,
-            'start_date' => '2025-07-05',
-            'end_date' => '2025-07-06',
-        ]);
-
-        DateTypeRange::create([
-            'date_type_id' => $roomsur60->id,
-            'start_date' => '2025-12-01',
-            'end_date' => '2025-12-15',
-        ]);
 
         // 🧳 PACKAGE
         $package = Package::create([
@@ -169,6 +141,38 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Standard Room',
                 'description' => 'Comfortable room with basic amenities',
                 'max_occupancy' => 2,
+                'package_id' => $pkg->id
+            ]);
+
+            // 🗓️ SEASONS (date ranges for season types)
+            $earlyBirdSeason = Season::create([
+                'season_type_id' => $earlyBird->id,
+                'start_date' => '2025-01-01',
+                'end_date' => '2025-02-28',
+                'priority' => 1,
+                'package_id' => $pkg->id
+            ]);
+
+            $peakSeasonSeason = Season::create([
+                'season_type_id' => $peakSeason->id,
+                'start_date' => '2025-06-01',
+                'end_date' => '2025-08-31',
+                'priority' => 2,
+                'package_id' => $pkg->id
+            ]);
+
+            // 📆 DATE TYPE RANGES
+            DateTypeRange::create([
+                'date_type_id' => $roomsur30->id,
+                'start_date' => '2025-07-05',
+                'end_date' => '2025-07-06',
+                'package_id' => $pkg->id
+            ]);
+
+            DateTypeRange::create([
+                'date_type_id' => $roomsur60->id,
+                'start_date' => '2025-12-01',
+                'end_date' => '2025-12-15',
                 'package_id' => $pkg->id
             ]);
         }

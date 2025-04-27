@@ -52,6 +52,7 @@ return new class extends Migration
             $table->foreignId('season_type_id')->constrained()->onDelete('cascade');
             $table->date('start_date');
             $table->date('end_date');
+            $table->foreignId('package_id')->constrained()->onDelete('cascade');
             $table->integer('priority')->default(0);
             $table->timestamps();
             $table->softDeletes();
@@ -71,6 +72,7 @@ return new class extends Migration
             $table->foreignId('date_type_id')->constrained()->onDelete('cascade');
             $table->date('start_date');
             $table->date('end_date');
+            $table->foreignId('package_id')->constrained()->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
         });

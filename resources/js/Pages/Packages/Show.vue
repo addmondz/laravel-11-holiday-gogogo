@@ -156,6 +156,9 @@
                                                     </button>
                                                 </td>
                                             </tr>
+                                            <tr v-if="roomTypesData.data.length === 0">
+                                                <td colspan="4" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No room types found</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -219,6 +222,9 @@
                                                     </button>
                                                 </td>
                                             </tr>
+                                            <tr v-if="seasonsData.data.length === 0">
+                                                <td colspan="5" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No seasons found</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -281,6 +287,9 @@
                                                         Delete
                                                     </button>
                                                 </td>
+                                            </tr>
+                                            <tr v-if="dateTypeRangesData.data.length === 0">
+                                                <td colspan="4" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No date type ranges found</td>
                                             </tr>
                                         </tbody>
                                     </table>
