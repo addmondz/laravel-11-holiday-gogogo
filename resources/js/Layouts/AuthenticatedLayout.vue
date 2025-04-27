@@ -43,7 +43,7 @@ const toggleSidebar = () => {
 <template>
     <div class="min-h-screen bg-indigo-500/5 dark:bg-gray-900">
         <!-- Loading Overlay -->
-        <div v-if="isLoading" class="fixed inset-0 z-50 bg-white/80 dark:bg-gray-800/80 flex items-center justify-center transition-opacity duration-300 ease-in-out">
+        <div v-show="isLoading" class="fixed inset-0 z-50 bg-white/80 dark:bg-gray-800/80 flex items-center justify-center transition-opacity duration-300 ease-in-out">
             <LoadingComponent />
         </div>
 

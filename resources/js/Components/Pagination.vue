@@ -1,6 +1,6 @@
 <template>
     <div v-if="links.length > 3" class="flex items-center justify-between">
-        <div v-if="loading" class="absolute inset-0 bg-white/80 flex items-center justify-center transition-opacity duration-300 ease-in-out">
+        <div v-show="loading" class="absolute inset-0 bg-white/80 flex items-center justify-center transition-opacity duration-300 ease-in-out">
             <LoadingComponent :loading="loading" />
         </div>
         <!-- Record Count -->
