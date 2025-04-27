@@ -1,5 +1,8 @@
 <template>
     <div v-if="links.length > 3" class="flex items-center justify-between">
+        <div v-if="loading" style="position: absolute; background-color: white; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
+            <LoadingComponent :loading="loading" />
+        </div>
         <!-- Record Count -->
         <div class="text-md text-gray-700 select-none">
             Showing
@@ -68,6 +71,8 @@
 
 <script setup>
 import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import LoadingComponent from './LoadingComponent.vue';
 
 const props = defineProps({
     links: {
@@ -88,10 +93,16 @@ const props = defineProps({
     },
 });
 
+const loading = ref(false);
+
 const handlePageChange = (url) => {
+    loading.value = true;
     router.visit(url, {
         preserveState: true,
         preserveScroll: true,
+        onFinish: () => {
+            loading.value = false;
+        }
     });
 };
 </script>

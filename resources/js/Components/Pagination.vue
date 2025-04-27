@@ -1,5 +1,8 @@
 <template>
     <div v-if="links.length > 3" class="flex items-center justify-between">
+        <div v-if="loading" style="position: absolute; background-color: white; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
+            <LoadingComponent :loading="loading" />
+        </div>
         <!-- Record Count -->
         <div class="text-md text-gray-700 select-none">
             Showing
@@ -67,7 +70,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import LoadingComponent from './LoadingComponent.vue';
 
 const props = defineProps({
     links: {
@@ -89,10 +93,13 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['page-change']);
+const loading = ref(false);
 
 const handlePageChange = (url) => {
+    loading.value = true;
     // Extract page number from URL or use the provided page number
     const page = typeof url === 'string' ? new URL(url).searchParams.get('page') : url;
     emit('page-change', parseInt(page));
+    loading.value = false;
 };
 </script>
