@@ -105,18 +105,18 @@ const fakeLoading = ref(true);
 const emit = defineEmits(['page-change']);
 
 const handlePageChange = (url) => {
-    loading.value = true;
 
     if (props.componentLoading) {
+        loading.value = true;
         const page = typeof url === 'string' ? new URL(url).searchParams.get('page') : url;
         emit('page-change', parseInt(page));
     } else {
         router.visit(url, {
             preserveState: true,
             preserveScroll: true,
-            onFinish: () => {
-                loading.value = false;
-            }
+            // onFinish: () => {
+            //     loading.value = false;
+            // }
         });
     }
 };
