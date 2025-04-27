@@ -94,7 +94,7 @@ class DatabaseSeeder extends Seeder
             'package_min_days' => 2,
             'package_max_days' => 3,
             'terms_and_conditions' => 'Non-refundable. Subject to availability.',
-            'location' => 'Langkawi',
+            'location' => 'Pulau Redang',
             'package_start_date' => '2025-01-01',
             'package_end_date' => '2025-12-31',
         ]);
