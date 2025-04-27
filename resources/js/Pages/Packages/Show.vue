@@ -116,7 +116,7 @@
                             </div>
 
                             <!-- Room Types Tab -->
-                            <div v-if="activeTab === 'room-types'" class="space-y-6">
+                            <div v-if="activeTab === 'room-types'" class="space-y-6" style="position: relative;">
                                 <div class="flex justify-between items-center">
                                     <h3 class="text-md font-medium text-gray-900">Room Types</h3>
                                     <button
@@ -178,7 +178,7 @@
                             </div>
 
                             <!-- Season Types Tab -->
-                            <div v-if="activeTab === 'season-types'" class="space-y-6">
+                            <div v-if="activeTab === 'season-types'" class="space-y-6" style="position: relative;">
                                 <div class="flex justify-between items-center">
                                     <h3 class="text-md font-medium text-gray-900">Season Dates</h3>
                                     <button
@@ -244,7 +244,7 @@
                             </div>
 
                             <!-- Date Types Tab -->
-                            <div v-if="activeTab === 'date-types-ranges'" class="space-y-6">
+                            <div v-if="activeTab === 'date-types-ranges'" class="space-y-6" style="position: relative;">
                                 <div class="flex justify-between items-center">
                                     <h3 class="text-md font-medium text-gray-900">Date Type Ranges</h3>
                                     <div class="space-x-3">
