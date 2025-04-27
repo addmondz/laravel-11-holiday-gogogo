@@ -85,7 +85,7 @@
 
                         <!-- Pagination -->
                         <div class="mt-6">
-                            <InertiaPagination
+                            <Pagination
                                 :links="dateTypes.links"
                                 :from="dateTypes.from"
                                 :to="dateTypes.to"
@@ -104,7 +104,7 @@ import { Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import Swal from 'sweetalert2';
-import InertiaPagination from '@/Components/InertiaPagination.vue';
+import Pagination from '@/Components/Pagination.vue';
 import { ref } from 'vue';
 import debounce from 'lodash/debounce';
 

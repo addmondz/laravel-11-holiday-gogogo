@@ -167,6 +167,7 @@
                                         :from="roomTypesPagination.from"
                                         :to="roomTypesPagination.to"
                                         :total="roomTypesPagination.total"
+                                        :component-loading="true"
                                         @page-change="handlePageChange"
                                     />
                                 </div>
@@ -228,6 +229,7 @@
                                         :from="seasonsPagination.from"
                                         :to="seasonsPagination.to"
                                         :total="seasonsPagination.total"
+                                        :component-loading="true"
                                         @page-change="handleSeasonPageChange"
                                     />
                                 </div>
@@ -289,6 +291,7 @@
                                         :from="dateTypeRangesPagination.from"
                                         :to="dateTypeRangesPagination.to"
                                         :total="dateTypeRangesPagination.total"
+                                        :component-loading="true"
                                         @page-change="handleDateTypeRangePageChange"
                                     />
                                 </div>

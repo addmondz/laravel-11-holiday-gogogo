@@ -70,7 +70,8 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import LoadingComponent from './LoadingComponent.vue';
 
 const props = defineProps({
@@ -90,16 +91,30 @@ const props = defineProps({
         type: Number,
         required: true,
     },
+    componentLoading: {
+        type: Boolean,
+        default: false,
+    },
 });
 
-const emit = defineEmits(['page-change']);
 const loading = ref(false);
+const emit = defineEmits(['page-change']);
 
 const handlePageChange = (url) => {
     loading.value = true;
-    // Extract page number from URL or use the provided page number
-    const page = typeof url === 'string' ? new URL(url).searchParams.get('page') : url;
-    emit('page-change', parseInt(page));
-    loading.value = false;
+
+    if (props.componentLoading) {
+        const page = typeof url === 'string' ? new URL(url).searchParams.get('page') : url;
+        emit('page-change', parseInt(page));
+        loading.value = false;
+    } else {
+        router.visit(url, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => {
+                loading.value = false;
+            }
+        });
+    }
 };
 </script>
