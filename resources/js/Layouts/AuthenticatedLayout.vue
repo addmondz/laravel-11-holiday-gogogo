@@ -7,14 +7,13 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
-import { BgColorsOutlined, MenuOutlined, CloseOutlined } from '@ant-design/icons-vue';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
 const isDarkMode = ref(false);
 const isSidebarOpen = ref(false);
 const showingNavigationDropdown = ref(false);
 
 // New 👇
-const isLoading = ref(false);
+const isLoading = ref(true); // Start with loading true for initial page load
 
 // Initialize dark mode based on user's preference
 onMounted(() => {
@@ -31,6 +30,10 @@ onMounted(() => {
       isLoading.value = false;
     }, 300);
   });
+
+  setTimeout(() => {
+      isLoading.value = false;
+    }, 300);
 });
 
 const toggleDarkMode = () => {
