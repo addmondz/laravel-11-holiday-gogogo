@@ -13,7 +13,8 @@ const isSidebarOpen = ref(false);
 const showingNavigationDropdown = ref(false);
 
 // New 👇
-const isLoading = ref(true); // Start with loading true for initial page load
+const isLoading = ref(false);
+const isFakeLoading = ref(true);
 
 // Initialize dark mode based on user's preference
 onMounted(() => {
@@ -32,7 +33,7 @@ onMounted(() => {
   });
 
   setTimeout(() => {
-      isLoading.value = false;
+    isFakeLoading.value = false;
     }, 300);
 });
 
@@ -52,6 +53,10 @@ const toggleSidebar = () => {
         <transition name="fade">
             <div v-show="isLoading" class="fixed inset-0 z-50 bg-white/80 dark:bg-gray-800/80 flex items-center justify-center">
                 <LoadingComponent />
+            </div>
+        </transition>
+        <transition name="fade">
+            <div v-show="isFakeLoading" class="fixed inset-0 z-50 bg-white/80 dark:bg-gray-800/80 flex items-center justify-center">
             </div>
         </transition>
 
