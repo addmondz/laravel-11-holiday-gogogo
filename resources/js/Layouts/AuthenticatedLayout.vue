@@ -43,9 +43,11 @@ const toggleSidebar = () => {
 <template>
     <div class="min-h-screen bg-indigo-500/5 dark:bg-gray-900">
         <!-- Loading Overlay -->
-        <div v-show="isLoading" class="fixed inset-0 z-50 bg-white/80 dark:bg-gray-800/80 flex items-center justify-center transition-opacity duration-300 ease-in-out">
-            <LoadingComponent />
-        </div>
+        <transition name="fade">
+            <div v-show="isLoading" class="fixed inset-0 z-50 bg-white/80 dark:bg-gray-800/80 flex items-center justify-center">
+                <LoadingComponent />
+            </div>
+        </transition>
 
         <!-- Header -->
         <header class="fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -126,3 +128,15 @@ const toggleSidebar = () => {
         </div>
     </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
