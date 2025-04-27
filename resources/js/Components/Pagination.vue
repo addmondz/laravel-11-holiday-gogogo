@@ -106,7 +106,6 @@ const handlePageChange = (url) => {
     if (props.componentLoading) {
         const page = typeof url === 'string' ? new URL(url).searchParams.get('page') : url;
         emit('page-change', parseInt(page));
-        loading.value = false;
     } else {
         router.visit(url, {
             preserveState: true,

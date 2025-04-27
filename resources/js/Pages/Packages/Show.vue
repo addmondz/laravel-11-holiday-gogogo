@@ -169,6 +169,7 @@
                                         :total="roomTypesPagination.total"
                                         :component-loading="true"
                                         @page-change="handlePageChange"
+                                        :key="loadingKey"
                                     />
                                 </div>
                             </div>
@@ -231,6 +232,7 @@
                                         :total="seasonsPagination.total"
                                         :component-loading="true"
                                         @page-change="handleSeasonPageChange"
+                                        :key="loadingKey"
                                     />
                                 </div>
                             </div>
@@ -293,6 +295,7 @@
                                         :total="dateTypeRangesPagination.total"
                                         :component-loading="true"
                                         @page-change="handleDateTypeRangePageChange"
+                                        :key="loadingKey"
                                     />
                                 </div>
                             </div>
@@ -769,6 +772,7 @@ const props = defineProps({
 });
 
 const activeTab = ref('details');
+const loadingKey = ref(0);
 
 const tabs = [
     { id: 'details', name: 'Package Details' },
@@ -887,6 +891,7 @@ const handlePageChange = async (page) => {
             last_page: response.data.last_page,
             per_page: response.data.per_page
         };
+        loadingKey.value++;
     } catch (error) {
         console.error('Error fetching room types:', error);
     }
@@ -938,6 +943,7 @@ const handleSeasonPageChange = async (page) => {
             last_page: response.data.last_page,
             per_page: response.data.per_page
         };
+        loadingKey.value++;
     } catch (error) {
         console.error('Error fetching seasons:', error);
     }
@@ -1050,6 +1056,7 @@ const handleDateTypeRangePageChange = async (page) => {
             last_page: response.data.last_page,
             per_page: response.data.per_page
         };
+        loadingKey.value++;
     } catch (error) {
         console.error('Error fetching date type ranges:', error);
     }
