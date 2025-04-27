@@ -1,8 +1,11 @@
 <template>
     <div v-if="links.length > 3" class="flex items-center justify-between">
-        <div v-show="loading" class="absolute inset-0 bg-white/80 flex items-center justify-center transition-opacity duration-300 ease-in-out">
-            <LoadingComponent :loading="loading" />
-        </div>
+        <transition name="fade">
+            <div v-show="loading" class="absolute inset-0 bg-white/80 flex items-center justify-center transition-opacity duration-300 ease-in-out">
+                <LoadingComponent :loading="loading" />
+            </div>
+        </transition>
+
         <!-- Record Count -->
         <div class="text-md text-gray-700 select-none">
             Showing
@@ -71,8 +74,8 @@
 
 <script setup>
 import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
 import LoadingComponent from './LoadingComponent.vue';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
     links: {
@@ -98,6 +101,7 @@ const props = defineProps({
 });
 
 const loading = ref(false);
+const fakeLoading = ref(true);
 const emit = defineEmits(['page-change']);
 
 const handlePageChange = (url) => {
@@ -117,3 +121,15 @@ const handlePageChange = (url) => {
     }
 };
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>

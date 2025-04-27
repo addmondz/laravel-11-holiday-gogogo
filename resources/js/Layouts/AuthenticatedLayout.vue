@@ -34,7 +34,7 @@ onMounted(() => {
 
   setTimeout(() => {
     isFakeLoading.value = false;
-    }, 300);
+    }, 100);
 });
 
 const toggleDarkMode = () => {
