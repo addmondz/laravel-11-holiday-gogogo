@@ -311,181 +311,263 @@
 
                             <!-- Price Configuration Tab -->
                             <div v-if="activeTab === 'price-configuration'" class="space-y-6">
-                                <div class="flex justify-between items-center">
+                                <div class="flex justify-between items-center" v-if="!showPriceForm">
                                     <h3 class="text-md font-medium text-gray-900">Price Configuration</h3>
                                 </div>
 
-                                <!-- Selection Form -->
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                    <div>
-                                        <label for="season" class="block text-sm font-medium text-gray-700">Season</label>
-                                        <select
-                                            id="season"
-                                            v-model="selectedSeason"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                <!-- Selection Form and Price Matrix -->
+                                <div v-if="!showPriceForm">
+                                    <!-- Selection Form -->
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                        <div>
+                                            <label for="season" class="block text-sm font-medium text-gray-700">Season</label>
+                                            <select
+                                                id="season"
+                                                v-model="selectedSeason"
+                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            >
+                                                <option value="">Select Season</option>
+                                                <option v-for="season in seasonsData.data" :key="season.id" :value="season.id">
+                                                    {{ season.type.name }}
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label for="dateType" class="block text-sm font-medium text-gray-700">Date Type</label>
+                                            <select
+                                                id="dateType"
+                                                v-model="selectedDateType"
+                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            >
+                                                <option value="">Select Date Type</option>
+                                                <option v-for="type in dateTypes" :key="type.id" :value="type.id">
+                                                    {{ type.name }}
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label for="roomType" class="block text-sm font-medium text-gray-700">Room Type</label>
+                                            <select
+                                                id="roomType"
+                                                v-model="selectedRoomType"
+                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            >
+                                                <option value="">Select Room Type</option>
+                                                <option v-for="type in roomTypesData.data" :key="type.id" :value="type.id">
+                                                    {{ type.name }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Search Button -->
+                                    <div class="flex mb-8 space-x-4">
+                                        <button
+                                            @click="fetchPrices"
+                                            :disabled="!canSearch"
+                                            class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            <option value="">Select Season</option>
-                                            <option v-for="season in seasonsData.data" :key="season.id" :value="season.id">
-                                                {{ season.type.name }}
-                                            </option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label for="dateType" class="block text-sm font-medium text-gray-700">Date Type</label>
-                                        <select
-                                            id="dateType"
-                                            v-model="selectedDateType"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            Search Prices
+                                        </button>
+                                        <button
+                                            @click="resetSearch"
+                                            class="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
                                         >
-                                            <option value="">Select Date Type</option>
-                                            <option v-for="type in dateTypes" :key="type.id" :value="type.id">
-                                                {{ type.name }}
-                                            </option>
-                                        </select>
+                                            Reset
+                                        </button>
                                     </div>
 
-                                    <div>
-                                        <label for="roomType" class="block text-sm font-medium text-gray-700">Room Type</label>
-                                        <select
-                                            id="roomType"
-                                            v-model="selectedRoomType"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    <!-- Price Matrix Tables -->
+                                    <div v-if="showPriceMatrix" class="space-y-8">
+                                        <!-- Base Charge Table -->
+                                        <div class="overflow-x-auto">
+                                            <h3 class="text-lg font-medium text-gray-900 mb-4">Base Charges</h3>
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                                        <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            {{ children-1 }} Children
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="bg-white divide-y divide-gray-200">
+                                                    <tr v-for="adults in 4" :key="adults">
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                            {{ adults }} Adults
+                                                        </td>
+                                                        <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                            {{ getPrice(adults, children-1, 'base_charge') }}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- Surcharge Table -->
+                                        <div v-if="hasSurcharges" class="overflow-x-auto">
+                                            <h3 class="text-lg font-medium text-gray-900 mb-4">Surcharges</h3>
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                                        <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            {{ children-1 }} Children
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="bg-white divide-y divide-gray-200">
+                                                    <tr v-for="adults in 4" :key="adults">
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                            {{ adults }} Adults
+                                                        </td>
+                                                        <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                            {{ getPrice(adults, children-1, 'sur_charge') }}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- Extra Charges Table -->
+                                        <div v-if="hasExtraCharges" class="overflow-x-auto">
+                                            <h3 class="text-lg font-medium text-gray-900 mb-4">Extra Charges</h3>
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                                        <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            {{ children-1 }} Children
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="bg-white divide-y divide-gray-200">
+                                                    <tr v-for="adults in 4" :key="adults">
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                            {{ adults }} Adults
+                                                        </td>
+                                                        <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                            {{ getPrice(adults, children-1, 'ext_charge') }}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- Edit Button -->
+                                        <div class="mt-4 flex justify-end">
+                                            <button
+                                                @click="openPriceForm('edit')"
+                                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
+                                            >
+                                                Edit Prices
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div v-else-if="searched" class="text-center py-8 text-gray-600 border b-a border-solid border-gray-600 rounded-md">
+                                        <p class="mb-4">No prices found for the selected criteria.</p>
+                                        <button
+                                            @click="openPriceForm('create')"
+                                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
                                         >
-                                            <option value="">Select Room Type</option>
-                                            <option v-for="type in roomTypesData.data" :key="type.id" :value="type.id">
-                                                {{ type.name }}
-                                            </option>
-                                        </select>
+                                            Create Now
+                                        </button>
+                                    </div>
+                                    <div v-else class="text-center py-8 text-gray-500 bg-gray-50 rounded-md">
+                                        Please select all options and click search to view the price matrix.
                                     </div>
                                 </div>
 
-                                <!-- Search Button -->
-                                <div class="flex mb-8 space-x-4">
-                                    <button
-                                        @click="fetchPrices"
-                                        :disabled="!canSearch"
-                                        class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Search Prices
-                                    </button>
-                                    <button
-                                        @click="resetSearch"
-                                        class="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-                                    >
-                                        Reset
-                                    </button>
-                                </div>
-
-                                <!-- Price Matrix Tables -->
-                                <div v-if="showPriceMatrix" class="space-y-8">
-                                    <!-- Base Charge Table -->
-                                    <div class="overflow-x-auto">
-                                        <h3 class="text-lg font-medium text-gray-900 mb-4">Base Charges</h3>
-                                        <table class="min-w-full divide-y divide-gray-200">
-                                            <thead class="bg-gray-50">
-                                                <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                                    <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        {{ children-1 }} Children
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="bg-white divide-y divide-gray-200">
-                                                <tr v-for="adults in 4" :key="adults">
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {{ adults }} Adults
-                                                    </td>
-                                                    <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                        {{ getPrice(adults, children-1, 'base_charge') }}
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                <!-- Price Configuration Form -->
+                                <div v-if="showPriceForm" class="space-y-6">
+                                    <div class="flex justify-between items-center">
+                                        <h3 class="text-lg font-medium text-gray-900">{{ isEditMode ? 'Edit Prices' : 'Create Prices' }}</h3>
+                                        <button
+                                            @click="closePriceForm"
+                                            class="text-gray-500 hover:text-gray-700"
+                                        >
+                                            <span class="sr-only">Close</span>
+                                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
                                     </div>
 
-                                    <!-- Surcharge Table -->
-                                    <div v-if="hasSurcharges" class="overflow-x-auto">
-                                        <h3 class="text-lg font-medium text-gray-900 mb-4">Surcharges</h3>
-                                        <table class="min-w-full divide-y divide-gray-200">
-                                            <thead class="bg-gray-50">
-                                                <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                                    <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        {{ children-1 }} Children
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="bg-white divide-y divide-gray-200">
-                                                <tr v-for="adults in 4" :key="adults">
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {{ adults }} Adults
-                                                    </td>
-                                                    <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                        {{ getPrice(adults, children-1, 'sur_charge') }}
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                    <form @submit.prevent="submitPrices">
+                                        <div class="space-y-4">
+                                            <!-- Price Type Selection -->
+                                            <div>
+                                                <label for="priceType" class="block text-sm font-medium text-gray-700">Price Type</label>
+                                                <select
+                                                    id="priceType"
+                                                    v-model="priceForm.type"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    required
+                                                >
+                                                    <option value="">Select Price Type</option>
+                                                    <option value="base_charge">Base Charge</option>
+                                                    <option value="sur_charge">Surcharge</option>
+                                                    <option value="ext_charge">Extra Charge</option>
+                                                </select>
+                                            </div>
 
-                                    <!-- Extra Charges Table -->
-                                    <div v-if="hasExtraCharges" class="overflow-x-auto">
-                                        <h3 class="text-lg font-medium text-gray-900 mb-4">Extra Charges</h3>
-                                        <table class="min-w-full divide-y divide-gray-200">
-                                            <thead class="bg-gray-50">
-                                                <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                                    <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        {{ children-1 }} Children
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="bg-white divide-y divide-gray-200">
-                                                <tr v-for="adults in 4" :key="adults">
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {{ adults }} Adults
-                                                    </td>
-                                                    <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                        {{ getPrice(adults, children-1, 'ext_charge') }}
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div v-else-if="searched" class="text-center py-8 text-gray-600 border b-a border-solid border-gray-600 rounded-md">
-                                    <p class="mb-4">No prices found for the selected criteria.</p>
-                                    <Link
-                                        :href="route('configuration-prices.create', {
-                                            package_id: pkg.id,
-                                            season_id: selectedSeason,
-                                            date_type_id: selectedDateType,
-                                            room_type: selectedRoomType
-                                        })"
-                                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
-                                    >
-                                        Create Now
-                                    </Link>
-                                </div>
-                                <div v-else class="text-center py-8 text-gray-500 bg-gray-50 rounded-md">
-                                    Please select all options and click search to view the price matrix.
-                                </div>
+                                            <!-- Price Matrix -->
+                                            <div class="space-y-8">
+                                                <div class="overflow-x-auto">
+                                                    <table class="min-w-full divide-y divide-gray-200">
+                                                        <thead class="bg-gray-50">
+                                                            <tr>
+                                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                                                <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                    {{ children-1 }} Children
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="bg-white divide-y divide-gray-200">
+                                                            <tr v-for="adults in 4" :key="adults">
+                                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                                    {{ adults }} Adults
+                                                                </td>
+                                                                <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                    <input
+                                                                        type="number"
+                                                                        v-model="priceForm.prices[getPriceIndex(adults, children-1)].adult_price"
+                                                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                        placeholder="Adult Price"
+                                                                    />
+                                                                    <input
+                                                                        type="number"
+                                                                        v-model="priceForm.prices[getPriceIndex(adults, children-1)].child_price"
+                                                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                        placeholder="Child Price"
+                                                                    />
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                <!-- Add Edit Button when results are found -->
-                                <div v-if="showPriceMatrix" class="mt-4 flex justify-end">
-                                    <Link
-                                        :href="route('configuration-prices.edit', {
-                                            configuration_price: configurationPrices[0]?.id,
-                                            package_id: pkg.id,
-                                            season_id: selectedSeason,
-                                            date_type_id: selectedDateType,
-                                            room_type: selectedRoomType
-                                        })"
-                                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
-                                    >
-                                        Edit Prices
-                                    </Link>
+                                        <div class="mt-6 flex justify-end space-x-3">
+                                            <button
+                                                type="button"
+                                                @click="closePriceForm"
+                                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                                :disabled="priceForm.processing"
+                                            >
+                                                {{ isEditMode ? 'Update Prices' : 'Create Prices' }}
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -1377,5 +1459,72 @@ const resetSearch = () => {
     searched.value = false;
     showPriceMatrix.value = false;
     configurationPrices.value = [];
+};
+
+const showPriceForm = ref(false);
+const isEditMode = ref(false);
+const priceForm = useForm({
+    package_id: props.pkg.id,
+    season_id: selectedSeason.value,
+    date_type_id: selectedDateType.value,
+    room_type: selectedRoomType.value,
+    type: '',
+    prices: Array(16).fill().map((_, index) => ({
+        number_of_adults: Math.floor(index / 4) + 1,
+        number_of_children: index % 4,
+        adult_price: '',
+        child_price: ''
+    }))
+});
+
+const getPriceIndex = (adults, children) => {
+    return (adults - 1) * 4 + children;
+};
+
+const openPriceForm = (mode) => {
+    isEditMode.value = mode === 'edit';
+    if (isEditMode.value && configurationPrices.value.length > 0) {
+        const firstPrice = configurationPrices.value[0];
+        priceForm.type = firstPrice.type;
+        priceForm.prices = configurationPrices.value.map(price => ({
+            number_of_adults: price.adults,
+            number_of_children: price.children,
+            adult_price: price.price,
+            child_price: price.child_price || 0
+        }));
+    } else {
+        // Reset form for create mode
+        priceForm.type = '';
+        priceForm.prices = Array(16).fill().map((_, index) => ({
+            number_of_adults: Math.floor(index / 4) + 1,
+            number_of_children: index % 4,
+            adult_price: '',
+            child_price: ''
+        }));
+    }
+    showPriceForm.value = true;
+};
+
+const closePriceForm = () => {
+    showPriceForm.value = false;
+    priceForm.reset();
+};
+
+const submitPrices = () => {
+    if (isEditMode.value) {
+        priceForm.put(route('configuration-prices.update', configurationPrices.value[0]?.id), {
+            onSuccess: () => {
+                closePriceForm();
+                fetchPrices();
+            }
+        });
+    } else {
+        priceForm.post(route('configuration-prices.store'), {
+            onSuccess: () => {
+                closePriceForm();
+                fetchPrices();
+            }
+        });
+    }
 };
 </script>

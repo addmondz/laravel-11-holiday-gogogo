@@ -10,6 +10,7 @@ use App\Models\PackageConfiguration;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use App\Models\RoomType;
 
 class ConfigurationPriceController extends Controller
 {
@@ -19,7 +20,7 @@ class ConfigurationPriceController extends Controller
             'packages' => Package::all(),
             'seasons' => Season::with('type')->get(),
             'dateTypes' => DateType::all(),
-            'roomTypes' => \App\Models\PackageConfiguration::distinct()->pluck('room_type'),
+            'roomTypes' => RoomType::all(),
         ]);
     }
 
@@ -28,18 +29,18 @@ class ConfigurationPriceController extends Controller
         $packageId = $request->query('package_id');
         $seasonId = $request->query('season_id');
         $dateTypeId = $request->query('date_type_id');
-        $roomType = $request->query('room_type');
+        $roomTypeId = $request->query('room_type');
 
         return Inertia::render('ConfigurationPrices/Create', [
             'packages' => Package::all(),
             'seasons' => Season::with('type')->get(),
             'dateTypes' => DateType::all(),
-            'roomTypes' => PackageConfiguration::distinct()->pluck('room_type'),
+            'roomTypes' => RoomType::all(),
             'prefilled' => [
                 'package_id' => $packageId,
                 'season_id' => $seasonId,
                 'date_type_id' => $dateTypeId,
-                'room_type' => $roomType
+                'room_type' => $roomTypeId
             ]
         ]);
     }
@@ -50,7 +51,7 @@ class ConfigurationPriceController extends Controller
             'package_id' => 'required|exists:packages,id',
             'season_id' => 'required|exists:seasons,id',
             'date_type_id' => 'required|exists:date_types,id',
-            'room_type' => 'required|string',
+            'room_type' => 'required|exists:room_types,id',
             'type' => 'required|string|in:base_charge,sur_charge,ext_charge',
             'prices' => 'required|array'
         ]);
@@ -63,7 +64,7 @@ class ConfigurationPriceController extends Controller
                 'package_id' => $validated['package_id'],
                 'season_id' => $validated['season_id'],
                 'date_type_id' => $validated['date_type_id'],
-                'room_type' => $validated['room_type']
+                'room_type_id' => $validated['room_type']
             ]);
 
             // Create prices
@@ -108,13 +109,13 @@ class ConfigurationPriceController extends Controller
         $packageId = $request->query('package_id');
         $seasonId = $request->query('season_id');
         $dateTypeId = $request->query('date_type_id');
-        $roomType = $request->query('room_type');
+        $roomTypeId = $request->query('room_type');
 
         // Find the configuration
         $configuration = PackageConfiguration::where('package_id', $packageId)
             ->where('season_id', $seasonId)
             ->where('date_type_id', $dateTypeId)
-            ->where('room_type', $roomType)
+            ->where('room_type_id', $roomTypeId)
             ->first();
 
         if (!$configuration) {
@@ -130,14 +131,14 @@ class ConfigurationPriceController extends Controller
             'packages' => Package::all(),
             'seasons' => Season::with('type')->get(),
             'dateTypes' => DateType::all(),
-            'roomTypes' => PackageConfiguration::distinct()->pluck('room_type'),
+            'roomTypes' => RoomType::all(),
             'configuration' => $configuration,
             'prices' => $prices,
             'prefilled' => [
                 'package_id' => $packageId,
                 'season_id' => $seasonId,
                 'date_type_id' => $dateTypeId,
-                'room_type' => $roomType
+                'room_type' => $roomTypeId
             ]
         ]);
     }
@@ -148,7 +149,7 @@ class ConfigurationPriceController extends Controller
             'package_id' => 'required|exists:packages,id',
             'season_id' => 'required|exists:seasons,id',
             'date_type_id' => 'required|exists:date_types,id',
-            'room_type' => 'required|string',
+            'room_type' => 'required|exists:room_types,id',
             'type' => 'required|string|in:base_charge,sur_charge,ext_charge',
             'prices' => 'required|array'
         ]);
@@ -162,13 +163,13 @@ class ConfigurationPriceController extends Controller
                     'package_id' => $validated['package_id'],
                     'season_id' => $validated['season_id'],
                     'date_type_id' => $validated['date_type_id'],
-                    'room_type' => $validated['room_type']
+                    'room_type_id' => $validated['room_type']
                 ],
                 [
                     'package_id' => $validated['package_id'],
                     'season_id' => $validated['season_id'],
                     'date_type_id' => $validated['date_type_id'],
-                    'room_type' => $validated['room_type']
+                    'room_type_id' => $validated['room_type']
                 ]
             );
 

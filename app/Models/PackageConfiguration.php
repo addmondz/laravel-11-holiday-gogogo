@@ -16,8 +16,7 @@ class PackageConfiguration extends Model
         'package_id',
         'season_id',
         'date_type_id',
-        'room_type_id',
-        'room_type',
+        'room_type_id'
     ];
 
     public function package(): BelongsTo
