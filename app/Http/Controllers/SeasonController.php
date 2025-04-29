@@ -35,7 +35,8 @@ class SeasonController extends Controller
             'season_type_id' => 'required|exists:season_types,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-            'priority' => 'required|integer|min:1'
+            'priority' => 'required|integer|min:1',
+            'package_id' => 'required|exists:packages,id'
         ]);
 
         Season::create($validated);

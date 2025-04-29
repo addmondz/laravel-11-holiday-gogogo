@@ -930,6 +930,7 @@ const deleteSeason = (id) => {
                         'Season has been deleted.',
                         'success'
                     );
+                    handleSeasonPageChange(1);
                 }
             });
         }
@@ -974,6 +975,7 @@ const updateSeason = () => {
             editSeasonForm.reset();
             editSeasonForm.return_to_package = true;
             editSeasonForm.package_id = props.pkg.id;
+            handleSeasonPageChange(1);
         }
     });
 };
@@ -985,6 +987,7 @@ const submitSeason = () => {
             seasonForm.reset();
             seasonForm.return_to_package = true;
             seasonForm.package_id = props.pkg.id;
+            handleSeasonPageChange(1);
         }
     });
 };
@@ -1004,6 +1007,7 @@ const submitDateTypeRange = () => {
             dateTypeRangeForm.reset();
             dateTypeRangeForm.return_to_package = true;
             dateTypeRangeForm.package_id = props.pkg.id;
+            handleDateTypeRangePageChange(1);
         }
     });
 };
@@ -1015,6 +1019,7 @@ const updateDateTypeRange = () => {
             editDateTypeRangeForm.reset();
             editDateTypeRangeForm.return_to_package = true;
             editDateTypeRangeForm.package_id = props.pkg.id;
+            handleDateTypeRangePageChange(1);
         }
     });
 };
@@ -1043,6 +1048,7 @@ const deleteDateTypeRange = (id) => {
                         'Date range has been deleted.',
                         'success'
                     );
+                    handleDateTypeRangePageChange(1);
                 }
             });
         }
@@ -1086,6 +1092,7 @@ const submitRoomType = () => {
             showAddRoomTypeModal.value = false;
             roomTypeForm.reset();
             roomTypeForm.return_to_package = true;
+            handlePageChange(1);
         }
     });
 };
@@ -1096,6 +1103,7 @@ const updateRoomType = () => {
             showEditRoomTypeModal.value = false;
             editRoomTypeForm.reset();
             editRoomTypeForm.return_to_package = true;
+            handlePageChange(1);
         }
     });
 };
@@ -1121,6 +1129,7 @@ const deleteRoomType = (id) => {
                         'Room type has been deleted.',
                         'success'
                     );
+                    handlePageChange(1);
                 }
             });
         }

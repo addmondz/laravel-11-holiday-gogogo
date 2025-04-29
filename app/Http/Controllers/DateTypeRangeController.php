@@ -35,6 +35,7 @@ class DateTypeRangeController extends Controller
             'date_type_id' => 'required|exists:date_types,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
+            'package_id' => 'required|exists:packages,id'
         ]);
 
         DateTypeRange::create($validated);
