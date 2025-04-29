@@ -399,7 +399,9 @@
                                                             {{ adults }} Adults
                                                         </td>
                                                         <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                            {{ getPrice(adults, children-1, 'base_charge') }}
+                                                            Adult: {{ getPrice(adults, children-1, 'base_charge', 'adult') }}
+                                                            <br>
+                                                            Child: {{ getPrice(adults, children-1, 'base_charge', 'child') }}
                                                         </td>
                                                     </tr>
                                                 </tbody>
@@ -424,7 +426,9 @@
                                                             {{ adults }} Adults
                                                         </td>
                                                         <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                            {{ getPrice(adults, children-1, 'sur_charge') }}
+                                                            Adult: {{ getPrice(adults, children-1, 'sur_charge', 'adult') }}
+                                                            <br>
+                                                            Child: {{ getPrice(adults, children-1, 'sur_charge', 'child') }}
                                                         </td>
                                                     </tr>
                                                 </tbody>
@@ -449,7 +453,9 @@
                                                             {{ adults }} Adults
                                                         </td>
                                                         <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                            {{ getPrice(adults, children-1, 'ext_charge') }}
+                                                            Adult: {{ getPrice(adults, children-1, 'ext_charge', 'adult') }}
+                                                            <br>
+                                                            Child: {{ getPrice(adults, children-1, 'ext_charge', 'child') }}
                                                         </td>
                                                     </tr>
                                                 </tbody>
@@ -1523,13 +1529,13 @@ const fetchPrices = () => {
     });
 };
 
-const getPrice = (adults, children, type) => {
+const getPrice = (adults, children, type, AdultOrChild) => {
     const price = configurationPrices.value.find(p =>
         p.number_of_adults === adults &&
         p.number_of_children === children &&
         p.type === type
     );
-    return price ? `$${price.adult_price}` : '-';
+    return price ? `MYR ${price[AdultOrChild + '_price']}` : '-';
 };
 
 const resetSearch = () => {
