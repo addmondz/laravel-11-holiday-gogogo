@@ -37,7 +37,7 @@ class PackageController extends Controller
         $query->orderBy($sortField, $sortDirection);
 
         // Pagination
-        $packages = $query->with(['addOns', 'configurations', 'loadRoomTypes'])
+        $packages = $query
             ->paginate(10)
             ->withQueryString();
 
