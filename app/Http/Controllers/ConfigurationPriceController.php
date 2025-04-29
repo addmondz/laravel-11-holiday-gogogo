@@ -52,7 +52,6 @@ class ConfigurationPriceController extends Controller
             'season_id' => 'required|exists:seasons,id',
             'date_type_id' => 'required|exists:date_types,id',
             'room_type' => 'required|exists:room_types,id',
-            'type' => 'required|string|in:base_charge,sur_charge,ext_charge',
             'prices' => 'required|array'
         ]);
 
@@ -67,31 +66,52 @@ class ConfigurationPriceController extends Controller
                 'room_type_id' => $validated['room_type']
             ]);
 
-            // Create prices
-            foreach ($validated['prices'] as $price) {
-                if (!empty($price['adult_price']) || !empty($price['child_price'])) {
-                    ConfigurationPrice::create([
-                        'package_configuration_id' => $configuration->id,
-                        'type' => $validated['type'],
-                        'number_of_adults' => $price['number_of_adults'],
-                        'number_of_children' => $price['number_of_children'],
-                        'adult_price' => $price['adult_price'] ?? 0,
-                        'child_price' => $price['child_price'] ?? 0
-                    ]);
+            // Define all charge types
+            $chargeTypes = ['base_charge', 'sur_charge', 'ext_charge'];
+
+            // Create prices for each type
+            foreach ($chargeTypes as $type) {
+                // Get prices for this type from the request, or use empty array if not provided
+                $prices = $validated['prices'][$type] ?? [];
+
+                // If no prices provided for this type, create empty prices
+                if (empty($prices)) {
+                    // Create empty prices for all combinations (1-4 adults, 0-3 children)
+                    for ($adults = 1; $adults <= 4; $adults++) {
+                        for ($children = 0; $children <= 3; $children++) {
+                            ConfigurationPrice::create([
+                                'package_configuration_id' => $configuration->id,
+                                'type' => $type,
+                                'number_of_adults' => $adults,
+                                'number_of_children' => $children,
+                                'adult_price' => 0,
+                                'child_price' => 0
+                            ]);
+                        }
+                    }
+                } else {
+                    // Create prices from the provided data
+                    foreach ($prices as $price) {
+                        if (!empty($price['adult_price']) || !empty($price['child_price'])) {
+                            ConfigurationPrice::create([
+                                'package_configuration_id' => $configuration->id,
+                                'type' => $type,
+                                'number_of_adults' => $price['number_of_adults'],
+                                'number_of_children' => $price['number_of_children'],
+                                'adult_price' => $price['adult_price'],
+                                'child_price' => $price['child_price']
+                            ]);
+                        }
+                    }
                 }
             }
 
             DB::commit();
 
-            return response()->json([
-                'message' => 'Configuration prices created successfully.'
-            ]);
+            return back()->with('success', 'Configuration prices created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'Error creating configuration prices.',
-                'error' => $e->getMessage()
-            ], 500);
+            return back()->with('error', 'Error creating configuration prices: ' . $e->getMessage());
         }
     }
 
@@ -194,15 +214,10 @@ class ConfigurationPriceController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'message' => 'Configuration prices updated successfully.'
-            ]);
+            return back()->with('success', 'Configuration prices updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'Error updating configuration prices.',
-                'error' => $e->getMessage()
-            ], 500);
+            return back()->with('error', 'Error updating configuration prices: ' . $e->getMessage());
         }
     }
 
