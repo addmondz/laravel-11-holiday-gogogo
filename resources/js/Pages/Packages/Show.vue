@@ -311,7 +311,7 @@
 
                             <!-- Price Configuration Tab -->
                             <div v-if="activeTab === 'price-configuration'" class="space-y-6">
-                                <div class="flex justify-between items-center" v-if="!showPriceForm">
+                                <div class="flex justify-between items-center" v-if="!showPriceForm && !isEditMode">
                                     <h3 class="text-md font-medium text-gray-900">Price Configuration</h3>
                                 </div>
 
@@ -496,58 +496,113 @@
                                     </div>
 
                                     <form @submit.prevent="submitPrices">
-                                        <div class="space-y-4">
-                                            <!-- Price Type Selection -->
-                                            <div>
-                                                <label for="priceType" class="block text-sm font-medium text-gray-700">Price Type</label>
-                                                <select
-                                                    id="priceType"
-                                                    v-model="priceForm.type"
-                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                    required
-                                                >
-                                                    <option value="">Select Price Type</option>
-                                                    <option value="base_charge">Base Charge</option>
-                                                    <option value="sur_charge">Surcharge</option>
-                                                    <option value="ext_charge">Extra Charge</option>
-                                                </select>
+                                        <div class="space-y-8">
+                                            <!-- Base Charge Table -->
+                                            <div class="overflow-x-auto">
+                                                <h3 class="text-lg font-medium text-gray-900 mb-4">Base Charges</h3>
+                                                <table class="min-w-full divide-y divide-gray-200">
+                                                    <thead class="bg-gray-50">
+                                                        <tr>
+                                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                                            <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                {{ children-1 }} Children
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="bg-white divide-y divide-gray-200">
+                                                        <tr v-for="adults in 4" :key="adults">
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                                {{ adults }} Adults
+                                                            </td>
+                                                            <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                <input
+                                                                    type="number"
+                                                                    v-model="priceForm.prices.base_charge[getPriceIndex(adults, children-1, 'base_charge')].adult_price"
+                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                    placeholder="Adult Price"
+                                                                />
+                                                                <input
+                                                                    type="number"
+                                                                    v-model="priceForm.prices.base_charge[getPriceIndex(adults, children-1, 'base_charge')].child_price"
+                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                    placeholder="Child Price"
+                                                                />
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
 
-                                            <!-- Price Matrix -->
-                                            <div class="space-y-8">
-                                                <div class="overflow-x-auto">
-                                                    <table class="min-w-full divide-y divide-gray-200">
-                                                        <thead class="bg-gray-50">
-                                                            <tr>
-                                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                                                <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                    {{ children-1 }} Children
-                                                                </th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody class="bg-white divide-y divide-gray-200">
-                                                            <tr v-for="adults in 4" :key="adults">
-                                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                                    {{ adults }} Adults
-                                                                </td>
-                                                                <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                                    <input
-                                                                        type="number"
-                                                                        v-model="priceForm.prices[getPriceIndex(adults, children-1)].adult_price"
-                                                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                                        placeholder="Adult Price"
-                                                                    />
-                                                                    <input
-                                                                        type="number"
-                                                                        v-model="priceForm.prices[getPriceIndex(adults, children-1)].child_price"
-                                                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                                        placeholder="Child Price"
-                                                                    />
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                            <!-- Surcharge Table -->
+                                            <div class="overflow-x-auto">
+                                                <h3 class="text-lg font-medium text-gray-900 mb-4">Surcharges</h3>
+                                                <table class="min-w-full divide-y divide-gray-200">
+                                                    <thead class="bg-gray-50">
+                                                        <tr>
+                                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                                            <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                {{ children-1 }} Children
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="bg-white divide-y divide-gray-200">
+                                                        <tr v-for="adults in 4" :key="adults">
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                                {{ adults }} Adults
+                                                            </td>
+                                                            <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                <input
+                                                                    type="number"
+                                                                    v-model="priceForm.prices.sur_charge[getPriceIndex(adults, children-1, 'sur_charge')].adult_price"
+                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                    placeholder="Adult Price"
+                                                                />
+                                                                <input
+                                                                    type="number"
+                                                                    v-model="priceForm.prices.sur_charge[getPriceIndex(adults, children-1, 'sur_charge')].child_price"
+                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                    placeholder="Child Price"
+                                                                />
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <!-- Extra Charges Table -->
+                                            <div class="overflow-x-auto">
+                                                <h3 class="text-lg font-medium text-gray-900 mb-4">Extra Charges</h3>
+                                                <table class="min-w-full divide-y divide-gray-200">
+                                                    <thead class="bg-gray-50">
+                                                        <tr>
+                                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                                            <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                {{ children-1 }} Children
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="bg-white divide-y divide-gray-200">
+                                                        <tr v-for="adults in 4" :key="adults">
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                                {{ adults }} Adults
+                                                            </td>
+                                                            <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                <input
+                                                                    type="number"
+                                                                    v-model="priceForm.prices.ext_charge[getPriceIndex(adults, children-1, 'ext_charge')].adult_price"
+                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                    placeholder="Adult Price"
+                                                                />
+                                                                <input
+                                                                    type="number"
+                                                                    v-model="priceForm.prices.ext_charge[getPriceIndex(adults, children-1, 'ext_charge')].child_price"
+                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                    placeholder="Child Price"
+                                                                />
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
 
@@ -1025,7 +1080,7 @@ import { Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import moment from 'moment';
 import { useForm } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
@@ -1406,6 +1461,7 @@ const selectedRoomType = ref('');
 const searched = ref(false);
 const showPriceMatrix = ref(false);
 const configurationPrices = ref([]);
+const pricesFromApi = ref([]);
 
 const canSearch = computed(() => {
     return selectedSeason.value && selectedDateType.value && selectedRoomType.value;
@@ -1428,28 +1484,52 @@ const fetchPrices = () => {
     })
     .then(response => {
         if (response.data && response.data.length > 0) {
+            // Store the configuration ID for later use
+            const configurationId = response.data[0].id;
+
+            // Reset the price form arrays
+            Object.keys(priceForm.prices).forEach(type => {
+                priceForm.prices[type] = [];
+            });
+
+            // Map prices directly from API response
+            response.data[0].prices.forEach(price => {
+                priceForm.prices[price.type].push({
+                    id: price.id,
+                    package_configuration_id: price.package_configuration_id,
+                    type: price.type,
+                    number_of_adults: price.number_of_adults,
+                    number_of_children: price.number_of_children,
+                    adult_price: price.adult_price,
+                    child_price: price.child_price
+                });
+            });
+
             configurationPrices.value = response.data[0].prices;
             searched.value = true;
             showPriceMatrix.value = true;
+            showPriceForm.value = false;
         } else {
             searched.value = true;
             showPriceMatrix.value = false;
+            showPriceForm.value = false;
         }
     })
     .catch(error => {
         console.error('Error fetching prices:', error);
         searched.value = true;
         showPriceMatrix.value = false;
+        showPriceForm.value = false;
     });
 };
 
 const getPrice = (adults, children, type) => {
     const price = configurationPrices.value.find(p =>
-        p.adults === adults &&
-        p.children === children &&
+        p.number_of_adults === adults &&
+        p.number_of_children === children &&
         p.type === type
     );
-    return price ? price.price : '-';
+    return price ? `$${price.adult_price}` : '-';
 };
 
 const resetSearch = () => {
@@ -1458,7 +1538,10 @@ const resetSearch = () => {
     selectedRoomType.value = '';
     searched.value = false;
     showPriceMatrix.value = false;
+    showPriceForm.value = false;
+    isEditMode.value = false;
     configurationPrices.value = [];
+    priceForm.reset();
 };
 
 const showPriceForm = ref(false);
@@ -1468,63 +1551,123 @@ const priceForm = useForm({
     season_id: selectedSeason.value,
     date_type_id: selectedDateType.value,
     room_type: selectedRoomType.value,
-    type: '',
-    prices: Array(16).fill().map((_, index) => ({
-        number_of_adults: Math.floor(index / 4) + 1,
-        number_of_children: index % 4,
-        adult_price: '',
-        child_price: ''
-    }))
+    prices: {
+        base_charge: [],
+        sur_charge: [],
+        ext_charge: []
+    }
 });
 
-const getPriceIndex = (adults, children) => {
+const getPriceIndex = (adults, children, type) => {
     return (adults - 1) * 4 + children;
 };
 
 const openPriceForm = (mode) => {
     isEditMode.value = mode === 'edit';
     if (isEditMode.value && configurationPrices.value.length > 0) {
-        const firstPrice = configurationPrices.value[0];
-        priceForm.type = firstPrice.type;
-        priceForm.prices = configurationPrices.value.map(price => ({
-            number_of_adults: price.adults,
-            number_of_children: price.children,
-            adult_price: price.price,
-            child_price: price.child_price || 0
-        }));
+        // Reset the price form arrays
+        Object.keys(priceForm.prices).forEach(type => {
+            priceForm.prices[type] = Array(16).fill().map((_, index) => ({
+                number_of_adults: Math.floor(index / 4) + 1,
+                number_of_children: index % 4,
+                adult_price: '',
+                child_price: ''
+            }));
+        });
+
+        // Map prices directly from configuration prices
+        configurationPrices.value.forEach(price => {
+            const index = getPriceIndex(price.number_of_adults, price.number_of_children, price.type);
+            priceForm.prices[price.type][index] = {
+                id: price.id,
+                package_configuration_id: price.package_configuration_id,
+                type: price.type,
+                number_of_adults: price.number_of_adults,
+                number_of_children: price.number_of_children,
+                adult_price: price.adult_price,
+                child_price: price.child_price
+            };
+        });
     } else {
         // Reset form for create mode
-        priceForm.type = '';
-        priceForm.prices = Array(16).fill().map((_, index) => ({
-            number_of_adults: Math.floor(index / 4) + 1,
-            number_of_children: index % 4,
-            adult_price: '',
-            child_price: ''
-        }));
+        Object.keys(priceForm.prices).forEach(type => {
+            priceForm.prices[type] = Array(16).fill().map((_, index) => ({
+                number_of_adults: Math.floor(index / 4) + 1,
+                number_of_children: index % 4,
+                adult_price: '',
+                child_price: ''
+            }));
+        });
     }
     showPriceForm.value = true;
 };
 
 const closePriceForm = () => {
     showPriceForm.value = false;
+    isEditMode.value = false;
     priceForm.reset();
 };
 
 const submitPrices = () => {
     if (isEditMode.value) {
-        priceForm.put(route('configuration-prices.update', configurationPrices.value[0]?.id), {
-            onSuccess: () => {
-                closePriceForm();
-                fetchPrices();
+        // Update each type of price
+        Object.keys(priceForm.prices).forEach(type => {
+            const prices = priceForm.prices[type].filter(price =>
+                price.adult_price !== '' || price.child_price !== ''
+            );
+
+            if (prices.length > 0) {
+                priceForm.put(route('configuration-prices.update', configurationPrices.value[0]?.id), {
+                    data: {
+                        package_id: priceForm.package_id,
+                        season_id: priceForm.season_id,
+                        date_type_id: priceForm.date_type_id,
+                        room_type: priceForm.room_type,
+                        type,
+                        prices
+                    },
+                    onSuccess: () => {
+                        if (type === 'ext_charge') {
+                            closePriceForm();
+                            fetchPrices();
+                        }
+                    }
+                });
             }
         });
     } else {
-        priceForm.post(route('configuration-prices.store'), {
-            onSuccess: () => {
-                closePriceForm();
-                fetchPrices();
+        // Create each type of price
+        Object.keys(priceForm.prices).forEach(type => {
+            const prices = priceForm.prices[type].filter(price =>
+                price.adult_price !== '' || price.child_price !== ''
+            );
+
+            if (prices.length > 0) {
+                priceForm.post(route('configuration-prices.store'), {
+                    data: {
+                        package_id: priceForm.package_id,
+                        season_id: priceForm.season_id,
+                        date_type_id: priceForm.date_type_id,
+                        room_type: priceForm.room_type,
+                        type,
+                        prices
+                    },
+                    onSuccess: () => {
+                        if (type === 'ext_charge') {
+                            closePriceForm();
+                            fetchPrices();
+                        }
+                    }
+                });
             }
         });
     }
 };
+
+// Watch for changes in selected values to update form data
+watch([selectedSeason, selectedDateType, selectedRoomType], ([newSeason, newDateType, newRoomType]) => {
+    priceForm.season_id = newSeason;
+    priceForm.date_type_id = newDateType;
+    priceForm.room_type = newRoomType;
+});
 </script>
