@@ -1642,29 +1642,21 @@ const submitPrices = () => {
             }
         });
     } else {
-        // Create each type of price
-        Object.keys(priceForm.prices).forEach(type => {
-            const prices = priceForm.prices[type].filter(price =>
-                price.adult_price !== '' || price.child_price !== ''
-            );
-
-            if (prices.length > 0) {
-                priceForm.post(route('configuration-prices.store'), {
-                    data: {
-                        package_id: priceForm.package_id,
-                        season_id: priceForm.season_id,
-                        date_type_id: priceForm.date_type_id,
-                        room_type: priceForm.room_type,
-                        type,
-                        prices
-                    },
-                    onSuccess: () => {
-                        if (type === 'ext_charge') {
-                            closePriceForm();
-                            fetchPrices();
-                        }
-                    }
-                });
+        // Create prices
+        priceForm.post(route('configuration-prices.store'), {
+            data: {
+                package_id: priceForm.package_id,
+                season_id: priceForm.season_id,
+                date_type_id: priceForm.date_type_id,
+                room_type: priceForm.room_type,
+                prices: priceForm.prices
+            },
+            onSuccess: (response) => {
+                closePriceForm();
+                fetchPrices();
+            },
+            onError: (errors) => {
+                console.error('Error creating prices:', errors);
             }
         });
     }

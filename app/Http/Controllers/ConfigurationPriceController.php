@@ -74,11 +74,26 @@ class ConfigurationPriceController extends Controller
                 // Get prices for this type from the request, or use empty array if not provided
                 $prices = $validated['prices'][$type] ?? [];
 
-                // If no prices provided for this type, create empty prices
-                if (empty($prices)) {
-                    // Create empty prices for all combinations (1-4 adults, 0-3 children)
-                    for ($adults = 1; $adults <= 4; $adults++) {
-                        for ($children = 0; $children <= 3; $children++) {
+                // Create empty prices for all combinations (1-4 adults, 0-3 children)
+                for ($adults = 1; $adults <= 4; $adults++) {
+                    for ($children = 0; $children <= 3; $children++) {
+                        // Find if there's a matching price in the provided data
+                        $matchingPrice = collect($prices)->first(function ($price) use ($adults, $children) {
+                            return $price['number_of_adults'] == $adults && $price['number_of_children'] == $children;
+                        });
+
+                        if ($matchingPrice && (!empty($matchingPrice['adult_price']) || !empty($matchingPrice['child_price']))) {
+                            // Use the provided price
+                            ConfigurationPrice::create([
+                                'package_configuration_id' => $configuration->id,
+                                'type' => $type,
+                                'number_of_adults' => $adults,
+                                'number_of_children' => $children,
+                                'adult_price' => $matchingPrice['adult_price'] ?? 0,
+                                'child_price' => $matchingPrice['child_price'] ?? 0
+                            ]);
+                        } else {
+                            // Create empty price
                             ConfigurationPrice::create([
                                 'package_configuration_id' => $configuration->id,
                                 'type' => $type,
@@ -86,20 +101,6 @@ class ConfigurationPriceController extends Controller
                                 'number_of_children' => $children,
                                 'adult_price' => 0,
                                 'child_price' => 0
-                            ]);
-                        }
-                    }
-                } else {
-                    // Create prices from the provided data
-                    foreach ($prices as $price) {
-                        if (!empty($price['adult_price']) || !empty($price['child_price'])) {
-                            ConfigurationPrice::create([
-                                'package_configuration_id' => $configuration->id,
-                                'type' => $type,
-                                'number_of_adults' => $price['number_of_adults'],
-                                'number_of_children' => $price['number_of_children'],
-                                'adult_price' => $price['adult_price'],
-                                'child_price' => $price['child_price']
                             ]);
                         }
                     }
