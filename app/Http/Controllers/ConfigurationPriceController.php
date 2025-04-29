@@ -23,13 +23,24 @@ class ConfigurationPriceController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $packageId = $request->query('package_id');
+        $seasonId = $request->query('season_id');
+        $dateTypeId = $request->query('date_type_id');
+        $roomType = $request->query('room_type');
+
         return Inertia::render('ConfigurationPrices/Create', [
             'packages' => Package::all(),
             'seasons' => Season::with('type')->get(),
             'dateTypes' => DateType::all(),
-            'roomTypes' => PackageConfiguration::distinct()->pluck('room_type')
+            'roomTypes' => PackageConfiguration::distinct()->pluck('room_type'),
+            'prefilled' => [
+                'package_id' => $packageId,
+                'season_id' => $seasonId,
+                'date_type_id' => $dateTypeId,
+                'room_type' => $roomType
+            ]
         ]);
     }
 
@@ -92,16 +103,42 @@ class ConfigurationPriceController extends Controller
         ]);
     }
 
-    public function edit(ConfigurationPrice $configurationPrice)
+    public function edit(Request $request)
     {
-        $configurationPrice->load(['configuration', 'configuration.package', 'configuration.season', 'configuration.dateType']);
+        $packageId = $request->query('package_id');
+        $seasonId = $request->query('season_id');
+        $dateTypeId = $request->query('date_type_id');
+        $roomType = $request->query('room_type');
+
+        // Find the configuration
+        $configuration = PackageConfiguration::where('package_id', $packageId)
+            ->where('season_id', $seasonId)
+            ->where('date_type_id', $dateTypeId)
+            ->where('room_type', $roomType)
+            ->first();
+
+        if (!$configuration) {
+            return redirect()->back()->with('error', 'Configuration not found');
+        }
+
+        // Get all prices for this configuration
+        $prices = ConfigurationPrice::where('package_configuration_id', $configuration->id)
+            ->get()
+            ->groupBy('type');
 
         return Inertia::render('ConfigurationPrices/Edit', [
-            'price' => $configurationPrice,
             'packages' => Package::all(),
             'seasons' => Season::with('type')->get(),
             'dateTypes' => DateType::all(),
-            'roomTypes' => PackageConfiguration::distinct()->pluck('room_type')
+            'roomTypes' => PackageConfiguration::distinct()->pluck('room_type'),
+            'configuration' => $configuration,
+            'prices' => $prices,
+            'prefilled' => [
+                'package_id' => $packageId,
+                'season_id' => $seasonId,
+                'date_type_id' => $dateTypeId,
+                'room_type' => $roomType
+            ]
         ]);
     }
 
@@ -182,7 +219,7 @@ class ConfigurationPriceController extends Controller
         $prices = PackageConfiguration::where('package_id', $request->package_configuration_id)
             ->where('season_id', $request->season_id)
             ->where('date_type_id', $request->date_type_id)
-            ->where('room_type', $request->room_type)
+            ->where('room_type_id', $request->room_type_id)
             ->with('prices')
             ->get();
 

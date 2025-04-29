@@ -205,14 +205,15 @@ class DatabaseSeeder extends Seeder
         $dateTypes = DateType::all();
 
         foreach ($packages as $pkg) {
+            $packageRoomTypes = RoomType::where('package_id', $pkg->id)->get();
             foreach ($seasons as $season) {
                 foreach ($dateTypes as $dateType) {
-                    foreach ($roomTypes as $roomType) {
+                    foreach ($packageRoomTypes as $packageRoomType) {
                         $config = PackageConfiguration::create([
                             'package_id' => $pkg->id,
                             'season_id' => $season->id,
                             'date_type_id' => $dateType->id,
-                            'room_type_id' => $roomType->id,
+                            'room_type_id' => $packageRoomType->id,
                         ]);
 
                         foreach ($combinations as $combo) {
