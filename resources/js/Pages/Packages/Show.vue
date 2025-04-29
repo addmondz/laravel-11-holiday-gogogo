@@ -379,8 +379,13 @@
                                         </button>
                                     </div>
 
+                                    <transition name="fade" v-if="isPriceLoading">
+                                        <div class="flex justify-center items-center h-full min-h-[400px]">
+                                            <LoadingComponent />
+                                        </div>
+                                    </transition>
                                     <!-- Price Matrix Tables -->
-                                    <div v-if="showPriceMatrix" class="space-y-8">
+                                    <div v-else-if="showPriceMatrix" class="space-y-8">
                                         <!-- Base Charge Table -->
                                         <div class="overflow-x-auto">
                                             <h3 class="text-lg font-medium text-gray-900 mb-4">Base Charges</h3>
@@ -1093,6 +1098,7 @@ import Modal from '@/Components/Modal.vue';
 import Pagination from '@/Components/Pagination.vue';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import LoadingComponent from '@/Components/LoadingComponent.vue';
 
 const props = defineProps({
     pkg: Object,
@@ -1468,6 +1474,7 @@ const searched = ref(false);
 const showPriceMatrix = ref(false);
 const configurationPrices = ref([]);
 const pricesFromApi = ref([]);
+const isPriceLoading = ref(false);
 
 const canSearch = computed(() => {
     return selectedSeason.value && selectedDateType.value && selectedRoomType.value;
@@ -1482,6 +1489,7 @@ const hasExtraCharges = computed(() => {
 });
 
 const fetchPrices = () => {
+    isPriceLoading.value = true;
     axios.post(route('configuration-prices.fetchPricesSearchIndex'), {
         package_configuration_id: props.pkg.id,
         season_id: selectedSeason.value,
@@ -1515,10 +1523,12 @@ const fetchPrices = () => {
             searched.value = true;
             showPriceMatrix.value = true;
             showPriceForm.value = false;
+            isPriceLoading.value = false;
         } else {
             searched.value = true;
             showPriceMatrix.value = false;
             showPriceForm.value = false;
+            isPriceLoading.value = false;
         }
     })
     .catch(error => {
@@ -1526,6 +1536,7 @@ const fetchPrices = () => {
         searched.value = true;
         showPriceMatrix.value = false;
         showPriceForm.value = false;
+        isPriceLoading.value = false;
     });
 };
 
@@ -1669,3 +1680,14 @@ watch([selectedSeason, selectedDateType, selectedRoomType], ([newSeason, newDate
     priceForm.room_type = newRoomType;
 });
 </script>
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
