@@ -308,6 +308,13 @@
                                     />
                                 </div>
                             </div>
+
+                            <!-- Price Configuration Tab -->
+                            <div v-if="activeTab === 'price-configuration'" class="space-y-6" style="position: relative;">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-md font-medium text-gray-900">Price Configuration</h3>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -787,7 +794,8 @@ const tabs = [
     { id: 'details', name: 'Package Details' },
     { id: 'room-types', name: 'Room Types' },
     { id: 'season-types', name: 'Season Dates' },
-    { id: 'date-types-ranges', name: 'Date Types Ranges' }
+    { id: 'date-types-ranges', name: 'Date Types Ranges' },
+    { id: 'price-configuration', name: 'Price Configuration' }
 ];
 
 const breadcrumbs = computed(() => [
