@@ -20,7 +20,8 @@ class SeasonTypeController extends Controller
 
         // Sort functionality
         $sortField = $request->get('sort', 'created_at');
-        $sortDirection = $request->get('direction', 'desc');
+        // $sortDirection = $request->get('direction', 'desc');
+        $sortDirection = $request->get('direction', 'asc');
         $query->orderBy($sortField, $sortDirection);
 
         // Pagination

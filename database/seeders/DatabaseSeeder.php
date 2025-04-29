@@ -18,6 +18,7 @@ use App\Models\{
     RoomType
 };
 use Illuminate\Support\Facades\Hash;
+use Faker\Factory as Faker;
 
 class DatabaseSeeder extends Seeder
 {
@@ -56,68 +57,103 @@ class DatabaseSeeder extends Seeder
         $roomsur60 = DateType::create(['name' => 'Roomsur 60']);
         $roomsur30 = DateType::create(['name' => 'Roomsur 30']);
 
-        // 🧳 PACKAGE
-        $package = Package::create([
-            'name' => 'Beach Getaway Package',
-            'description' => '3D2N relaxing beach resort package.',
-            'icon_photo' => 'packages/beach.png',
-            'display_price_adult' => 399.00,
-            'display_price_child' => 299.00,
-            'package_min_days' => 2,
-            'package_max_days' => 3,
-            'terms_and_conditions' => 'Non-refundable. Subject to availability.',
-            'location' => 'Pulau Redang',
-            'package_start_date' => '2025-01-01',
-            'package_end_date' => '2025-12-31',
-        ]);
+        // // 🧳 PACKAGE
+        // $package = Package::create([
+        //     'name' => 'Beach Getaway Package',
+        //     'description' => '3D2N relaxing beach resort package.',
+        //     'icon_photo' => 'packages/beach.png',
+        //     'display_price_adult' => 399.00,
+        //     'display_price_child' => 299.00,
+        //     'package_min_days' => 2,
+        //     'package_max_days' => 3,
+        //     'terms_and_conditions' => 'Non-refundable. Subject to availability.',
+        //     'location' => 'Pulau Redang',
+        //     'package_start_date' => '2025-01-01',
+        //     'package_end_date' => '2025-12-31',
+        // ]);
 
-        // ➕ PACKAGE ADD-ONS
-        PackageAddOn::create([
-            'package_id' => $package->id,
-            'name' => 'Ferry Ticket',
-            'description' => 'Round trip ferry ticket',
-            'adult_price' => 40.00,
-            'child_price' => 20.00,
-        ]);
+        // $package = Package::create([
+        //     'name' => 'Langkawi Package',
+        //     'description' => '5D4N relaxing beach resort package.',
+        //     'icon_photo' => 'packages/beach.png',
+        //     'display_price_adult' => 1299.00,
+        //     'display_price_child' => 999.00,
+        //     'package_min_days' => 5,
+        //     'package_max_days' => 10,
+        //     'terms_and_conditions' => 'Non-refundable. Subject to availability.',
+        //     'location' => 'Langkawi',
+        //     'package_start_date' => '2025-01-01',
+        //     'package_end_date' => '2025-12-31',
+        // ]);
 
-        PackageAddOn::create([
-            'package_id' => $package->id,
-            'name' => 'Travel Insurance',
-            'description' => 'Covers up to RM10,000 in emergency cases',
-            'adult_price' => 15.00,
-            'child_price' => 10.00,
-        ]);
+        $faker = Faker::create();
+        $locations = [
+            'Pulau Redang',
+            'Langkawi',
+            'Pulau Tioman',
+            'Pulau Perhentian',
+            'Bali',
+            'Phuket',
+            'Boracay',
+            'Maldives',
+            'Krabi',
+            'Jeju Island'
+        ];
 
-        $package = Package::create([
-            'name' => 'Langkawi Package',
-            'description' => '5D4N relaxing beach resort package.',
-            'icon_photo' => 'packages/beach.png',
-            'display_price_adult' => 1299.00,
-            'display_price_child' => 999.00,
-            'package_min_days' => 5,
-            'package_max_days' => 10,
-            'terms_and_conditions' => 'Non-refundable. Subject to availability.',
-            'location' => 'Langkawi',
-            'package_start_date' => '2025-01-01',
-            'package_end_date' => '2025-12-31',
-        ]);
+        $packageTypes = [
+            [
+                'title' => 'Beach Getaway',
+                'icon' => 'packages/beach.png',
+                'min_days' => 3,
+                'max_days' => 5,
+                'price_range' => [300, 800],
+            ],
+            [
+                'title' => 'Mountain Adventure',
+                'icon' => 'packages/mountain.png',
+                'min_days' => 4,
+                'max_days' => 7,
+                'price_range' => [400, 1000],
+            ],
+            [
+                'title' => 'City Tour',
+                'icon' => 'packages/city.png',
+                'min_days' => 2,
+                'max_days' => 4,
+                'price_range' => [200, 600],
+            ],
+            [
+                'title' => 'Island Escape',
+                'icon' => 'packages/island.png',
+                'min_days' => 5,
+                'max_days' => 10,
+                'price_range' => [800, 2000],
+            ],
+        ];
 
-        // ➕ PACKAGE ADD-ONS
-        PackageAddOn::create([
-            'package_id' => $package->id,
-            'name' => 'Flight Ticket',
-            'description' => 'Round trip flight ticket',
-            'adult_price' => 1000.00,
-            'child_price' => 500.00,
-        ]);
+        for ($i = 0; $i < 25; $i++) {
+            $packageType = $faker->randomElement($packageTypes);
+            $location = $faker->randomElement($locations);
+            $minDays = $packageType['min_days'];
+            $maxDays = $packageType['max_days'];
 
-        PackageAddOn::create([
-            'package_id' => $package->id,
-            'name' => '5D4N Langkawi 5 Star Hotel',
-            'description' => '5D4N Langkawi 5 Star Hotel',
-            'adult_price' => 1500.00,
-            'child_price' => 1000.00,
-        ]);
+            // Random days within the range
+            $days = $faker->numberBetween($minDays, $maxDays);
+
+            Package::create([
+                'name' => $location . ' ' . $packageType['title'],
+                'description' => "{$days}D" . ($days - 1) . "N " . strtolower($packageType['title']) . " in {$location}. " . $faker->sentence(8),
+                'icon_photo' => $packageType['icon'],
+                'display_price_adult' => $faker->randomFloat(2, $packageType['price_range'][0], $packageType['price_range'][1]),
+                'display_price_child' => $faker->randomFloat(2, $packageType['price_range'][0] * 0.6, $packageType['price_range'][1] * 0.8),
+                'package_min_days' => $minDays,
+                'package_max_days' => $maxDays,
+                'terms_and_conditions' => 'Non-refundable. Subject to availability. ' . $faker->sentence(8),
+                'location' => $location,
+                'package_start_date' => '2025-01-01',
+                'package_end_date' => '2025-12-31',
+            ]);
+        }
 
         $packages = Package::all();
 
@@ -249,6 +285,17 @@ class DatabaseSeeder extends Seeder
                     }
                 }
             }
+        }
+
+        // create dummy season type and date types
+        for ($i = 0; $i < 20; $i++) {
+            SeasonType::create([
+                'name' => 'Dummy Season Type Test ' . $i + 1,
+            ]);
+
+            DateType::create([
+                'name' => 'Dummy Date Type Test ' . $i + 1,
+            ]);
         }
     }
 }
