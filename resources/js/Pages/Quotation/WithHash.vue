@@ -1,8 +1,5 @@
 <template>
     <div class="min-h-screen bg-gray-100">
-        <!-- WordPress Content -->
-        <!-- <InjectedContent /> -->
-
         <!-- Not Found State -->
         <div v-if="!packageData" class="min-h-screen flex items-center justify-center">
             <div class="text-center">
@@ -199,7 +196,6 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
-import InjectedContent from '@/Components/InjectedContent.vue';
 
 const props = defineProps({
     uuid: String
