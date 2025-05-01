@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\Package;
 use App\Models\PackageAddOn;
 use App\Models\PackageConfiguration;
+use App\Models\RoomType;
 use App\Models\Season;
 use Carbon\Carbon;
 
@@ -218,5 +219,31 @@ class TravelCalculatorController extends Controller
 
 
         return response()->json($roomTypes);
+    }
+
+    public function fetchPackageByUuid(Request $request)
+    {
+        $package = Package::where('uuid', $request->uuid)->firstOrFail();
+
+        $roomTypes = RoomType::whereIn(
+            'id',
+            PackageConfiguration::where('package_id', $package->id)
+                ->distinct()
+                ->pluck('room_type_id')
+        )->get();
+
+        return response()->json([
+            'success' => true,
+            'package' => $package,
+            'room_types' => $roomTypes,
+        ]);
+    }
+
+    public function packageCalculatePrice(Request $request)
+    {
+        $validated = $request->validate([
+            'package_id' => 'required|exists:packages,id',
+            'room_type' => 'required|string',
+        ]);
     }
 }

@@ -56,17 +56,14 @@
                                             <h4 class="text-sm font-medium text-gray-500">Name</h4>
                                             <p class="mt-1 text-sm text-gray-900">{{ pkg.name }}</p>
                                         </div>
-
                                         <div>
                                             <h4 class="mt-4 text-sm font-medium text-gray-500">Location</h4>
                                             <p class="mt-1 text-sm text-gray-900">{{ pkg.location }}</p>
                                         </div>
-
                                         <div>
                                             <h4 class="text-sm font-medium text-gray-500">Description</h4>
                                             <p class="mt-1 text-sm text-gray-900">{{ pkg.description }}</p>
                                         </div>
-
                                         <div>
                                             <h4 class="text-sm font-medium text-gray-500">Display Prices</h4>
                                             <div class="mt-1">
@@ -75,7 +72,6 @@
                                                 <!-- <p class="text-sm text-gray-900">Child: ${{ pkg.display_price_child }}</p> -->
                                             </div>
                                         </div>
-
                                         <div>
                                             <h4 class="text-sm font-medium text-gray-500">Duration</h4>
                                             <div class="mt-1">
@@ -84,33 +80,46 @@
                                             </div>
                                         </div>
                                     </div>
-
                                     <div>
                                         <h4 class="text-sm font-medium text-gray-500">Terms and Conditions</h4>
                                         <p class="mt-1 text-sm text-gray-900">{{ pkg.terms_and_conditions }}</p>
                                     </div>
-
                                     <div class="grid grid-cols-2 gap-6">
                                         <div>
                                             <h4 class="text-sm font-medium text-gray-500">Start Date</h4>
                                             <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.package_start_date).format('DD/MM/YYYY') }}</p>
                                         </div>
-
                                         <div>
                                             <h4 class="text-sm font-medium text-gray-500">End Date</h4>
                                             <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.package_end_date).format('DD/MM/YYYY') || 'No end date' }}
                                             </p>
                                         </div>
                                     </div>
-
                                     <div>
                                         <h4 class="text-sm font-medium text-gray-500">Created At</h4>
                                         <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.created_at).format('DD/MM/YYYY HH:mm:ss') }}</p>
                                     </div>
-
                                     <div>
                                         <h4 class="text-sm font-medium text-gray-500">Updated At</h4>
                                         <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.updated_at).format('DD/MM/YYYY HH:mm:ss') }}</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-medium text-gray-500">Link</h4>
+                                        <div class="mt-1 flex items-center space-x-2">
+                                            <a
+                                                :href="route('quotation.with-hash', pkg.uuid)"
+                                                target="_blank"
+                                                class="text-sm text-indigo-600 hover:text-indigo-900 break-all"
+                                            >
+                                                {{ route('quotation.with-hash', pkg.uuid) }}
+                                            </a>
+                                            <button
+                                                @click="copyLink"
+                                                class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                            >
+                                                Copy
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -953,7 +962,7 @@
                                 required
                             >
                                 <option value="">Select a date type</option>
-                                <option v-for="type in dateTypes" :key="type.id" :value="type.id">
+                                <option v-for="type in filteredDateTypes" :key="type.id" :value="type.id">
                                     {{ type.name }}
                                 </option>
                             </select>
@@ -1111,6 +1120,10 @@ const props = defineProps({
 
 const activeTab = ref('details');
 const loadingKey = ref(0);
+const excludedNames = ['Weekend', 'Weekday'] // <-- Name(s) to exclude
+const filteredDateTypes = computed(() =>
+props.dateTypes.filter(type => !excludedNames.includes(type.name))
+)
 
 const tabs = [
     { id: 'details', name: 'Details' },
@@ -1679,6 +1692,27 @@ watch([selectedSeason, selectedDateType, selectedRoomType], ([newSeason, newDate
     priceForm.date_type_id = newDateType;
     priceForm.room_type = newRoomType;
 });
+
+const copyLink = () => {
+    const link = route('quotation.with-hash', props.pkg.id);
+    navigator.clipboard.writeText(link).then(() => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Copied!',
+            text: 'Link has been copied to clipboard',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    }).catch(() => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to copy link',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    });
+};
 </script>
 <style scoped>
 .fade-enter-active,

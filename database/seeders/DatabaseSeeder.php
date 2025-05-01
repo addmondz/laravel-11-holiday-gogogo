@@ -19,6 +19,7 @@ use App\Models\{
 };
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -152,6 +153,7 @@ class DatabaseSeeder extends Seeder
                 'location' => $location,
                 'package_start_date' => '2025-01-01',
                 'package_end_date' => '2025-12-31',
+                'uuid' => Str::uuid(),
             ]);
         }
 

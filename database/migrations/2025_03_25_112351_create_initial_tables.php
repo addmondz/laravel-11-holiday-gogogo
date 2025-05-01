@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->date('package_start_date');
             $table->date('package_end_date')->nullable();
+            $table->string('uuid')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

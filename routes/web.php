@@ -29,15 +29,23 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::prefix('calculator')->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('Calculator');
-    })->name('calculator');
+    // Route::get('/', function () {
+    //     return Inertia::render('Calculator');
+    // })->name('calculator');
 
     Route::prefix('api')->group(function () {
-        Route::get('/get-resources', [TravelCalculatorController::class, 'getResources']);
-        Route::get('/get-room-types/{packageId}', [TravelCalculatorController::class, 'getRoomTypes']);
-        Route::post('/calculate-total', [TravelCalculatorController::class, 'calculate']);
+        // Route::get('/get-resources', [TravelCalculatorController::class, 'getResources']);
+        // Route::get('/get-room-types/{packageId}', [TravelCalculatorController::class, 'getRoomTypes']);
+        // Route::post('/calculate-total', [TravelCalculatorController::class, 'calculate']);
+        Route::post('/fetch-package-by-uuid', [TravelCalculatorController::class, 'fetchPackageByUuid'])->name('api.fetch-package-by-uuid');
+        Route::post('/package-calculate-price', [TravelCalculatorController::class, 'packageCalculatePrice'])->name('api.package-calculate-price');
     });
+
+    Route::get('/quotation/{uuid}', function ($uuid) {
+        return Inertia::render('Quotation/WithHash', [
+            'uuid' => $uuid
+        ]);
+    })->name('quotation.with-hash');
 });
 
 Route::get('/dashboard', function () {

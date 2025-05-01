@@ -22,7 +22,8 @@ class Package extends Model
         'terms_and_conditions',
         'location',
         'package_start_date',
-        'package_end_date'
+        'package_end_date',
+        'uuid'
     ];
 
     public function addOns(): HasMany
