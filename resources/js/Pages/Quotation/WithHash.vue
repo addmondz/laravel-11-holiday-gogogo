@@ -30,6 +30,25 @@
                                 ]"
                                 :alt="packageData?.name || 'Package Image'"
                             />
+                            <!-- Navigation Buttons -->
+                            <button
+                                @click="previousImage"
+                                class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 z-20"
+                                aria-label="Previous image"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <button
+                                @click="nextImage"
+                                class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 z-20"
+                                aria-label="Next image"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                     <!-- Image Indicators -->
@@ -226,6 +245,9 @@ onMounted(async () => {
         console.error('Error fetching package:', error);
         packageData.value = null;
     }
+
+    // Start the carousel auto-rotation
+    startAutoRotation();
 });
 
 // Update the mock images array with proper URLs
