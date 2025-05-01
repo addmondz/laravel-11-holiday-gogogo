@@ -1,7 +1,12 @@
 <template>
     <div class="min-h-screen bg-gray-100">
         <!-- Not Found State -->
-        <div v-if="!packageData" class="min-h-screen flex items-center justify-center">
+        <transition name="fade" v-if="isLoading">
+            <div class="flex justify-center items-center h-full min-h-screen">
+                <LoadingComponent />
+            </div>
+        </transition>
+        <div v-else-if="!packageData" class="min-h-screen flex items-center justify-center">
             <div class="text-center">
                 <div class="text-6xl mb-4">🔍</div>
                 <h1 class="text-3xl font-bold text-gray-900 mb-4">Package Not Found</h1>
@@ -215,6 +220,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
+import LoadingComponent from '@/Components/LoadingComponent.vue';
 
 const props = defineProps({
     uuid: String
@@ -225,6 +231,7 @@ const currentImageIndex = ref(0);
 const calculatedPrice = ref(null);
 const roomTypes = ref([]);
 const selectedRoomType = ref(null);
+const isLoading = ref(true);
 
 onMounted(async () => {
     try {
@@ -241,9 +248,12 @@ onMounted(async () => {
         } else {
             packageData.value = null;
         }
+
+        isLoading.value = false;
     } catch (error) {
         console.error('Error fetching package:', error);
         packageData.value = null;
+        isLoading.value = false;
     }
 
     // Start the carousel auto-rotation
@@ -299,5 +309,13 @@ const startAutoRotation = () => {
 </script>
 
 <style scoped>
-/* Your component styles here */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
 </style>
