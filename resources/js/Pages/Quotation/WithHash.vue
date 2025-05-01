@@ -100,12 +100,12 @@
                                         <h3 class="text-lg font-semibold text-gray-900">{{ roomType.name }}</h3>
                                         <p class="text-sm text-gray-600 mt-1">{{ roomType.description }}</p>
                                     </div>
-                                    <!-- <div class="text-right">
+                                    <div class="text-right">
                                         <p class="text-lg font-bold text-indigo-600">
                                             MYR {{ formatNumber(roomType.price_per_night) }}
                                         </p>
                                         <p class="text-sm text-gray-500">per night</p>
-                                    </div> -->
+                                    </div>
                                 </div>
                                 <!-- <div class="mt-4 text-sm text-gray-600"> -->
                                 <div class="mt-4 text-sm text-indigo-600">
