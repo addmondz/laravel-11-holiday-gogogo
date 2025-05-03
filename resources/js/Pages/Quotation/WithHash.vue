@@ -137,6 +137,7 @@
                                 </div>
                             </div>
                         </div>
+                        <p v-if="validationErrors.room_type" class="mt-1 text-sm text-red-600">{{ validationErrors.room_type }}</p>
                     </div>
 
                     <!-- Date Selection -->
@@ -147,9 +148,14 @@
                                 type="date"
                                 id="start_date"
                                 v-model="form.start_date"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :min="new Date().toISOString().split('T')[0]"
+                                :class="[
+                                    'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                    validationErrors.start_date ? 'border-red-500' : 'border-gray-300'
+                                ]"
                                 required
                             />
+                            <p v-if="validationErrors.start_date" class="mt-1 text-sm text-red-600">{{ validationErrors.start_date }}</p>
                         </div>
                         <div>
                             <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
@@ -157,9 +163,14 @@
                                 type="date"
                                 id="end_date"
                                 v-model="form.end_date"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :min="form.start_date ? new Date(new Date(form.start_date).getTime() + 86400000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]"
+                                :class="[
+                                    'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                    validationErrors.end_date ? 'border-red-500' : 'border-gray-300'
+                                ]"
                                 required
                             />
+                            <p v-if="validationErrors.end_date" class="mt-1 text-sm text-red-600">{{ validationErrors.end_date }}</p>
                         </div>
                     </div>
 
@@ -173,9 +184,13 @@
                                 v-model="form.adults"
                                 min="1"
                                 max="4"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="[
+                                    'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                    validationErrors.adults ? 'border-red-500' : 'border-gray-300'
+                                ]"
                                 required
                             />
+                            <p v-if="validationErrors.adults" class="mt-1 text-sm text-red-600">{{ validationErrors.adults }}</p>
                         </div>
                         <div>
                             <label for="children" class="block text-sm font-medium text-gray-700">Number of Children</label>
@@ -354,7 +369,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
@@ -371,6 +386,13 @@ const roomTypes = ref([]);
 const selectedRoomType = ref(null);
 const isLoading = ref(true);
 const bookingSummary = ref(null);
+const dateError = ref('');
+const validationErrors = ref({
+    room_type: '',
+    start_date: '',
+    end_date: '',
+    adults: ''
+});
 
 onMounted(async () => {
     try {
@@ -414,22 +436,54 @@ const form = useForm({
     room_type_id: null
 });
 
-const formatNumber = (number) => {
-    return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(number);
-};
+const validateForm = () => {
+    let isValid = true;
+    validationErrors.value = {
+        room_type: '',
+        start_date: '',
+        end_date: '',
+        adults: ''
+    };
 
-const nextImage = () => {
-    currentImageIndex.value = (currentImageIndex.value + 1) % mockImages.length;
-};
+    // Validate room type
+    if (!form.room_type_id) {
+        validationErrors.value.room_type = 'Please select a room type';
+        isValid = false;
+    }
 
-const previousImage = () => {
-    currentImageIndex.value = (currentImageIndex.value - 1 + mockImages.length) % mockImages.length;
+    // Validate dates
+    if (!form.start_date) {
+        validationErrors.value.start_date = 'Please select a start date';
+        isValid = false;
+    }
+    if (!form.end_date) {
+        validationErrors.value.end_date = 'Please select an end date';
+        isValid = false;
+    }
+    if (form.start_date && form.end_date) {
+        const start = new Date(form.start_date);
+        const end = new Date(form.end_date);
+        const diffTime = end - start;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 1) {
+            validationErrors.value.end_date = 'End date must be at least 1 day after start date';
+            isValid = false;
+        }
+    }
+
+    // Validate adults
+    if (!form.adults || form.adults < 1) {
+        validationErrors.value.adults = 'Please select at least 1 adult';
+        isValid = false;
+    }
+
+    return isValid;
 };
 
 const calculatePrice = async () => {
+    if (!validateForm()) return;
+
     try {
         const response = await axios.post(route('api.package-calculate-price'), {
             package_id: packageData.value.id,
@@ -464,6 +518,11 @@ const calculatePrice = async () => {
     }
 };
 
+// Add watchers for date changes
+watch([() => form.start_date, () => form.end_date], () => {
+    validateForm();
+});
+
 // Add auto-rotation functionality
 const startAutoRotation = () => {
     const interval = setInterval(() => {
@@ -474,6 +533,21 @@ const startAutoRotation = () => {
     onUnmounted(() => {
         clearInterval(interval);
     });
+};
+
+const nextImage = () => {
+    currentImageIndex.value = (currentImageIndex.value + 1) % mockImages.length;
+};
+
+const previousImage = () => {
+    currentImageIndex.value = (currentImageIndex.value - 1 + mockImages.length) % mockImages.length;
+};
+
+const formatNumber = (number) => {
+    return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(number);
 };
 </script>
 
