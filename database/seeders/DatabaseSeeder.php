@@ -51,6 +51,7 @@ class DatabaseSeeder extends Seeder
         $peakSeason = SeasonType::create(['name' => 'Peak Season']);
         $ph120 = SeasonType::create(['name' => 'Public Holiday 120']);
         $ph60 = SeasonType::create(['name' => 'Public Holiday 60']);
+        $defaultSeason = SeasonType::create(['name' => 'Default']);
 
         // 🟡 DATE TYPES
         $weekend = DateType::create(['name' => 'Weekend']);
@@ -182,6 +183,14 @@ class DatabaseSeeder extends Seeder
                 'package_id' => $pkg->id
             ]);
 
+            $defaultSeasonSeason = Season::create([
+                'season_type_id' => $defaultSeason->id,
+                'start_date' => '2025-01-01',
+                'end_date' => '2025-12-31',
+                'priority' => 3,
+                'package_id' => $pkg->id
+            ]);
+
             // 🗓️ SEASONS (date ranges for season types)
             $earlyBirdSeason = Season::create([
                 'season_type_id' => $earlyBird->id,
@@ -263,27 +272,27 @@ class DatabaseSeeder extends Seeder
                                 'adult_price' => 100.00,
                                 'child_price' => 50.00,
                             ]);
+
+                            // surcharge
+                            ConfigurationPrice::create([
+                                'package_configuration_id' => $config->id,
+                                'type' => 'sur_charge',
+                                'number_of_adults' => $combo['adults'],
+                                'number_of_children' => $combo['children'],
+                                'adult_price' => 60.00,
+                                'child_price' => 30.00,
+                            ]);
+
+                            // base charge
+                            ConfigurationPrice::create([
+                                'package_configuration_id' => $config->id,
+                                'type' => 'ext_charge',
+                                'number_of_adults' => $combo['adults'],
+                                'number_of_children' => $combo['children'],
+                                'adult_price' => 40.00,
+                                'child_price' => 0.00,
+                            ]);
                         }
-
-                        // Example surcharge
-                        ConfigurationPrice::create([
-                            'package_configuration_id' => $config->id,
-                            'type' => 'sur_charge',
-                            'number_of_adults' => 2,
-                            'number_of_children' => 2,
-                            'adult_price' => 60.00,
-                            'child_price' => 30.00,
-                        ]);
-
-                        // Example extra charge
-                        ConfigurationPrice::create([
-                            'package_configuration_id' => $config->id,
-                            'type' => 'ext_charge',
-                            'number_of_adults' => 1,
-                            'number_of_children' => 0,
-                            'adult_price' => 40.00,
-                            'child_price' => 0.00,
-                        ]);
                     }
                 }
             }
