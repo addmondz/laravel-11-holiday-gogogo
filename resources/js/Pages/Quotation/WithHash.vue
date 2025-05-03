@@ -1,5 +1,21 @@
 <template>
     <div class="min-h-screen bg-gray-100">
+        <!-- Header -->
+        <header class="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200" style="height: 80px;">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800" style="max-width: 100px;" />
+                    </div>
+                    <div class="flex items-center">
+                        <button class="bg-sky-600 text-white px-4 py-2 hover:bg-sky-700" style="border-radius: 50px 50px 50px 50px; height: 40px;width: 118px;">
+                            Enquiry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
         <!-- Not Found State -->
         <transition name="fade" v-if="isLoading">
             <div class="flex justify-center items-center h-full min-h-screen">
@@ -18,7 +34,7 @@
         </div>
 
         <!-- Package Found State -->
-        <div v-else class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8" style="padding-bottom: 50px;">
+        <div v-else class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8" style="padding-top: 80px; padding-bottom: 50px;">
             <!-- Image Carousel -->
             <div class="mb-8">
                 <div class="relative">
@@ -373,6 +389,7 @@ import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
+import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 
 const props = defineProps({
     uuid: String

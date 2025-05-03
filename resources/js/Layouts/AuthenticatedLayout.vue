@@ -72,9 +72,9 @@ const toggleSidebar = () => {
                             <button @click="toggleSidebar" class="p-2 rounded-md text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 lg:hidden">
                                 <MenuOutlined class="h-6 w-6" />
                             </button>
-                            <Link :href="route('dashboard')">
+                            <!-- <Link :href="route('dashboard')">
                                 <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" style="max-width: 100px;" />
-                            </Link>
+                            </Link> -->
                         </div>
 
                         <div class="flex items-center">
@@ -111,9 +111,9 @@ const toggleSidebar = () => {
                         <div class="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
                             <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Menus</h2>
                             <div class="mt-3 space-y-1 flex flex-col">
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                <!-- <NavLink :href="route('dashboard')" :active="route().current('dashboard')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
                                     Dashboard
-                                </NavLink>
+                                </NavLink> -->
                                 <NavLink :href="route('packages.index')" :active="route().current('packages.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
                                     Packages
                                 </NavLink>
