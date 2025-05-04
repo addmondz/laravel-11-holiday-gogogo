@@ -8,9 +8,10 @@
                         <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800" style="max-width: 100px;" />
                     </div>
                     <div class="flex items-center">
-                        <button class="bg-sky-600 text-white px-4 py-2 hover:bg-sky-700" style="border-radius: 50px 50px 50px 50px; height: 40px;width: 118px;">
+                        <a href="https://wa.me/60163336688" target="_blank" class="bg-sky-600 text-white px-6 py-2 hover:bg-sky-700 flex items-center gap-4 transition-all duration-300" style="border-radius: 50px 50px 50px 50px; height: 40px;">
+                            <WhatsAppOutlined />
                             Enquiry
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -390,7 +391,7 @@ import { Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-
+import { WhatsAppOutlined } from '@ant-design/icons-vue';
 const props = defineProps({
     uuid: String
 });
