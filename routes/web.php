@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\BookingController as ApiBookingController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PackageController;
@@ -39,6 +41,8 @@ Route::prefix('calculator')->group(function () {
         // Route::post('/calculate-total', [TravelCalculatorController::class, 'calculate']);
         Route::post('/fetch-package-by-uuid', [TravelCalculatorController::class, 'fetchPackageByUuid'])->name('api.fetch-package-by-uuid');
         Route::post('/package-calculate-price', [TravelCalculatorController::class, 'packageCalculatePrice'])->name('api.package-calculate-price');
+
+        Route::post('/bookings', [ApiBookingController::class, 'store'])->name('api.bookings.store');
     });
 
     Route::get('/quotation/{uuid}', function ($uuid) {
@@ -146,6 +150,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('configuration-prices/fetch-prices-search-index', [ConfigurationPriceController::class, 'fetchPricesSearchIndex'])
         ->name('configuration-prices.fetchPricesSearchIndex');
+
+    Route::resource('bookings', BookingController::class)->names([
+        'index' => 'bookings.index',
+        'show' => 'bookings.show',
+        'edit' => 'bookings.edit',
+        'update' => 'bookings.update'
+    ]);
 });
 
 Route::middleware('auth')->group(function () {

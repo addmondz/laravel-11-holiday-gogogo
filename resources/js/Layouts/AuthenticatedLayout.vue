@@ -72,6 +72,7 @@ const toggleSidebar = () => {
                             <button @click="toggleSidebar" class="p-2 rounded-md text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 lg:hidden">
                                 <MenuOutlined class="h-6 w-6" />
                             </button>
+                            <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" style="max-width: 100px;" />
                             <!-- <Link :href="route('dashboard')">
                                 <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" style="max-width: 100px;" />
                             </Link> -->
@@ -116,6 +117,9 @@ const toggleSidebar = () => {
                                 </NavLink> -->
                                 <NavLink :href="route('packages.index')" :active="route().current('packages.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
                                     Packages
+                                </NavLink>
+                                <NavLink :href="route('bookings.index')" :active="route().current('bookings.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                    Bookings
                                 </NavLink>
                             </div>
                         </div>

@@ -57,7 +57,12 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr v-for="pkg in packages.data" :key="pkg.id">
+                                    <tr v-if="packages.data.length === 0">
+                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                            No packages found
+                                        </td>
+                                    </tr>
+                                    <tr v-else v-for="pkg in packages.data" :key="pkg.id">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">{{ pkg.name }}</div>
                                         </td>

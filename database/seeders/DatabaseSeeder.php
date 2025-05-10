@@ -133,7 +133,8 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        for ($i = 0; $i < 25; $i++) {
+        // for ($i = 0; $i < 25 $i++) {
+        for ($i = 0; $i < 1; $i++) {
             $packageType = $faker->randomElement($packageTypes);
             $location = $faker->randomElement($locations);
             $minDays = $packageType['min_days'];

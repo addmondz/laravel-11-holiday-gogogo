@@ -85,7 +85,7 @@ const submit = () => {
 
             <div class="mt-4">
                 <PrimaryButton
-                    class="bg-indigo-500 hover:bg-indigo-600 w-full flex justify-center"
+                    class="bg-indigo-500 hover:bg-indigo-600 w-full flex justify-center active:bg-indigo-700 focus:bg-indigo-700"
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >

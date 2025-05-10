@@ -368,6 +368,69 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Booking Details Form -->
+                        <div class="mt-8 border-t pt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Booking Details</h3>
+                            <form @submit.prevent="submitBooking" class="space-y-6">
+                                <!-- Booking Name -->
+                                <div>
+                                    <label for="booking_name" class="block text-sm font-medium text-gray-700">Booking Name</label>
+                                    <input
+                                        type="text"
+                                        id="booking_name"
+                                        v-model="bookingForm.booking_name"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        required
+                                    />
+                                </div>
+
+                                <!-- Phone Number -->
+                                <div>
+                                    <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        id="phone_number"
+                                        v-model="bookingForm.phone_number"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        required
+                                    />
+                                </div>
+
+                                <!-- Booking IC -->
+                                <div>
+                                    <label for="booking_ic" class="block text-sm font-medium text-gray-700">IC/Passport Number</label>
+                                    <input
+                                        type="text"
+                                        id="booking_ic"
+                                        v-model="bookingForm.booking_ic"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        required
+                                    />
+                                </div>
+
+                                <!-- Special Remarks -->
+                                <div>
+                                    <label for="special_remarks" class="block text-sm font-medium text-gray-700">Special Remarks (if any)</label>
+                                    <textarea
+                                        id="special_remarks"
+                                        v-model="bookingForm.special_remarks"
+                                        rows="3"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    ></textarea>
+                                </div>
+
+                                <div class="flex justify-end">
+                                    <button
+                                        type="submit"
+                                        class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        :disabled="isSubmitting"
+                                    >
+                                        {{ isSubmitting ? 'Submitting...' : 'Submit Booking' }}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
                     <div class="flex justify-end">
@@ -411,6 +474,15 @@ const validationErrors = ref({
     end_date: '',
     adults: ''
 });
+
+const bookingForm = ref({
+    booking_name: '',
+    phone_number: '',
+    booking_ic: '',
+    special_remarks: ''
+});
+
+const isSubmitting = ref(false);
 
 onMounted(async () => {
     try {
@@ -566,6 +638,39 @@ const formatNumber = (number) => {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     }).format(number);
+};
+
+const submitBooking = async () => {
+    if (!calculatedPrice.value || !bookingSummary.value) return;
+
+    isSubmitting.value = true;
+
+    try {
+        const response = await axios.post(route('api.bookings.store'), {
+            package_id: packageData.value.id,
+            room_type_id: form.room_type_id,
+            booking_name: bookingForm.value.booking_name,
+            phone_number: bookingForm.value.phone_number,
+            booking_ic: bookingForm.value.booking_ic,
+            start_date: form.start_date,
+            end_date: form.end_date,
+            adults: form.adults,
+            children: form.children,
+            total_price: calculatedPrice.value,
+            special_remarks: bookingForm.value.special_remarks
+        });
+
+        if (response.data.success) {
+            // Show success message or redirect
+            alert('Booking submitted successfully!');
+            // You might want to redirect or show a success message
+        }
+    } catch (error) {
+        console.error('Error submitting booking:', error);
+        alert('Failed to submit booking. Please try again.');
+    } finally {
+        isSubmitting.value = false;
+    }
 };
 </script>
 
