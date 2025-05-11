@@ -117,114 +117,150 @@
             <!-- Booking Form -->
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Book Your Stay</h2>
-                <form @submit.prevent="calculatePrice" class="space-y-6">
-                    <!-- Room Type Selection -->
-                    <div class="space-y-4">
-                        <label class="block text-sm font-medium text-gray-700">Room Type</label>
-                        <div v-if="roomTypes.length === 0" class="text-center py-4">
-                            <p class="text-gray-600">No room types available for this package.</p>
+                
+                <!-- Step Indicators -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">1</div>
+                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 1 ? 'text-indigo-600' : 'text-gray-500'">Quotation Details</div>
                         </div>
-                        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div
-                                v-for="roomType in roomTypes"
-                                :key="roomType.id"
-                                :class="[
-                                    'border rounded-lg p-4 cursor-pointer transition-all duration-200',
-                                    selectedRoomType === roomType.id
-                                        ? 'border-indigo-600 bg-indigo-50'
-                                        : 'border-gray-200 hover:border-indigo-400'
-                                ]"
-                                @click="selectedRoomType = roomType.id; form.room_type_id = roomType.id"
-                            >
-                                <div class="flex items-start justify-between">
-                                    <div>
-                                        <h3 class="text-lg font-semibold text-gray-900">{{ roomType.name }}</h3>
-                                        <p class="text-sm text-gray-600 mt-1">{{ roomType.description }}</p>
+                        <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 2 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <div class="flex items-center">
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">2</div>
+                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 2 ? 'text-indigo-600' : 'text-gray-500'">Price Summary</div>
+                        </div>
+                        <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <div class="flex items-center">
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">3</div>
+                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 3 ? 'text-indigo-600' : 'text-gray-500'">Booking Details</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Quotation Details -->
+                <div v-if="currentStep === 1">
+                    <form @submit.prevent="handleStep1Submit" class="space-y-6">
+                        <!-- Room Type Selection -->
+                        <div class="space-y-4">
+                            <label class="block text-sm font-medium text-gray-700">Room Type</label>
+                            <div v-if="roomTypes.length === 0" class="text-center py-4">
+                                <p class="text-gray-600">No room types available for this package.</p>
+                            </div>
+                            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div
+                                    v-for="roomType in roomTypes"
+                                    :key="roomType.id"
+                                    :class="[
+                                        'border rounded-lg p-4 cursor-pointer transition-all duration-200',
+                                        selectedRoomType === roomType.id
+                                            ? 'border-indigo-600 bg-indigo-50'
+                                            : 'border-gray-200 hover:border-indigo-400'
+                                    ]"
+                                    @click="selectedRoomType = roomType.id; form.room_type_id = roomType.id"
+                                >
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-gray-900">{{ roomType.name }}</h3>
+                                            <p class="text-sm text-gray-600 mt-1">{{ roomType.description }}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-lg font-bold text-indigo-600">
+                                                MYR {{ formatNumber(roomType.price_per_night) }}
+                                            </p>
+                                            <p class="text-sm text-gray-500">per night</p>
+                                        </div>
                                     </div>
-                                    <div class="text-right">
-                                        <p class="text-lg font-bold text-indigo-600">
-                                            MYR {{ formatNumber(roomType.price_per_night) }}
-                                        </p>
-                                        <p class="text-sm text-gray-500">per night</p>
+                                    <!-- <div class="mt-4 text-sm text-gray-600"> -->
+                                    <div class="mt-4 text-sm text-indigo-600">
+                                        <p>Max Occupancy: {{ roomType.max_occupancy }} persons</p>
                                     </div>
-                                </div>
-                                <!-- <div class="mt-4 text-sm text-gray-600"> -->
-                                <div class="mt-4 text-sm text-indigo-600">
-                                    <p>Max Occupancy: {{ roomType.max_occupancy }} persons</p>
                                 </div>
                             </div>
+                            <p v-if="validationErrors.room_type" class="mt-1 text-sm text-red-600">{{ validationErrors.room_type }}</p>
                         </div>
-                        <p v-if="validationErrors.room_type" class="mt-1 text-sm text-red-600">{{ validationErrors.room_type }}</p>
-                    </div>
 
-                    <!-- Date Selection -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
-                            <input
-                                type="date"
-                                id="start_date"
-                                v-model="form.start_date"
-                                :min="new Date().toISOString().split('T')[0]"
-                                :class="[
-                                    'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
-                                    validationErrors.start_date ? 'border-red-500' : 'border-gray-300'
-                                ]"
-                                required
-                            />
-                            <p v-if="validationErrors.start_date" class="mt-1 text-sm text-red-600">{{ validationErrors.start_date }}</p>
+                        <!-- Date Selection -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+                                <input
+                                    type="date"
+                                    id="start_date"
+                                    v-model="form.start_date"
+                                    :min="new Date().toISOString().split('T')[0]"
+                                    :class="[
+                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                        validationErrors.start_date ? 'border-red-500' : 'border-gray-300'
+                                    ]"
+                                    required
+                                />
+                                <p v-if="validationErrors.start_date" class="mt-1 text-sm text-red-600">{{ validationErrors.start_date }}</p>
+                            </div>
+                            <div>
+                                <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                                <input
+                                    type="date"
+                                    id="end_date"
+                                    v-model="form.end_date"
+                                    :min="form.start_date ? new Date(new Date(form.start_date).getTime() + 86400000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]"
+                                    :class="[
+                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                        validationErrors.end_date ? 'border-red-500' : 'border-gray-300'
+                                    ]"
+                                    required
+                                />
+                                <p v-if="validationErrors.end_date" class="mt-1 text-sm text-red-600">{{ validationErrors.end_date }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
-                            <input
-                                type="date"
-                                id="end_date"
-                                v-model="form.end_date"
-                                :min="form.start_date ? new Date(new Date(form.start_date).getTime() + 86400000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]"
-                                :class="[
-                                    'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
-                                    validationErrors.end_date ? 'border-red-500' : 'border-gray-300'
-                                ]"
-                                required
-                            />
-                            <p v-if="validationErrors.end_date" class="mt-1 text-sm text-red-600">{{ validationErrors.end_date }}</p>
-                        </div>
-                    </div>
 
-                    <!-- Guest Selection -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="adults" class="block text-sm font-medium text-gray-700">Number of Adults</label>
-                            <input
-                                type="number"
-                                id="adults"
-                                v-model="form.adults"
-                                min="1"
-                                max="4"
-                                :class="[
-                                    'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
-                                    validationErrors.adults ? 'border-red-500' : 'border-gray-300'
-                                ]"
-                                required
-                            />
-                            <p v-if="validationErrors.adults" class="mt-1 text-sm text-red-600">{{ validationErrors.adults }}</p>
+                        <!-- Guest Selection -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="adults" class="block text-sm font-medium text-gray-700">Number of Adults</label>
+                                <input
+                                    type="number"
+                                    id="adults"
+                                    v-model="form.adults"
+                                    min="1"
+                                    max="4"
+                                    :class="[
+                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                        validationErrors.adults ? 'border-red-500' : 'border-gray-300'
+                                    ]"
+                                    required
+                                />
+                                <p v-if="validationErrors.adults" class="mt-1 text-sm text-red-600">{{ validationErrors.adults }}</p>
+                            </div>
+                            <div>
+                                <label for="children" class="block text-sm font-medium text-gray-700">Number of Children</label>
+                                <input
+                                    type="number"
+                                    id="children"
+                                    v-model="form.children"
+                                    min="0"
+                                    max="3"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <label for="children" class="block text-sm font-medium text-gray-700">Number of Children</label>
-                            <input
-                                type="number"
-                                id="children"
-                                v-model="form.children"
-                                min="0"
-                                max="3"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                required
-                            />
-                        </div>
-                    </div>
 
-                    <!-- Price Display -->
-                    <div v-if="calculatedPrice !== null" class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex justify-end">
+                            <button
+                                type="submit"
+                                class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                :disabled="form.processing"
+                            >
+                                Calculate Price
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Step 2: Price Summary -->
+                <div v-if="currentStep === 2">
+                    <div class="bg-gray-50 rounded-lg p-4">
                         <!-- Booking Summary -->
                         <div v-if="bookingSummary" class="mb-6 border-b pb-4">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
@@ -368,81 +404,91 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Booking Details Form -->
-                        <div class="mt-8 border-t pt-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Booking Details</h3>
-                            <form @submit.prevent="submitBooking" class="space-y-6">
-                                <!-- Booking Name -->
-                                <div>
-                                    <label for="booking_name" class="block text-sm font-medium text-gray-700">Booking Name</label>
-                                    <input
-                                        type="text"
-                                        id="booking_name"
-                                        v-model="bookingForm.booking_name"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        required
-                                    />
-                                </div>
-
-                                <!-- Phone Number -->
-                                <div>
-                                    <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                                    <input
-                                        type="tel"
-                                        id="phone_number"
-                                        v-model="bookingForm.phone_number"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        required
-                                    />
-                                </div>
-
-                                <!-- Booking IC -->
-                                <div>
-                                    <label for="booking_ic" class="block text-sm font-medium text-gray-700">IC/Passport Number</label>
-                                    <input
-                                        type="text"
-                                        id="booking_ic"
-                                        v-model="bookingForm.booking_ic"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        required
-                                    />
-                                </div>
-
-                                <!-- Special Remarks -->
-                                <div>
-                                    <label for="special_remarks" class="block text-sm font-medium text-gray-700">Special Remarks (if any)</label>
-                                    <textarea
-                                        id="special_remarks"
-                                        v-model="bookingForm.special_remarks"
-                                        rows="3"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    ></textarea>
-                                </div>
-
-                                <div class="flex justify-end">
-                                    <button
-                                        type="submit"
-                                        class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        :disabled="isSubmitting"
-                                    >
-                                        {{ isSubmitting ? 'Submitting...' : 'Submit Booking' }}
-                                    </button>
-                                </div>
-                            </form>
+                        <div class="flex justify-between mt-6">
+                            <button
+                                @click="currentStep = 1"
+                                class="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                            >
+                                Back
+                            </button>
+                            <button
+                                @click="currentStep = 3"
+                                class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                                Next
+                            </button>
                         </div>
                     </div>
+                </div>
 
-                    <div class="flex justify-end">
-                        <button
-                            type="submit"
-                            class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            :disabled="form.processing"
-                        >
-                            Calculate Price
-                        </button>
-                    </div>
-                </form>
+                <!-- Step 3: Booking Details -->
+                <div v-if="currentStep === 3">
+                    <form @submit.prevent="submitBooking" class="space-y-6">
+                        <!-- Booking Name -->
+                        <div>
+                            <label for="booking_name" class="block text-sm font-medium text-gray-700">Booking Name</label>
+                            <input
+                                type="text"
+                                id="booking_name"
+                                v-model="bookingForm.booking_name"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                            />
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div>
+                            <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                            <input
+                                type="tel"
+                                id="phone_number"
+                                v-model="bookingForm.phone_number"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                            />
+                        </div>
+
+                        <!-- Booking IC -->
+                        <div>
+                            <label for="booking_ic" class="block text-sm font-medium text-gray-700">IC/Passport Number</label>
+                            <input
+                                type="text"
+                                id="booking_ic"
+                                v-model="bookingForm.booking_ic"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                            />
+                        </div>
+
+                        <!-- Special Remarks -->
+                        <div>
+                            <label for="special_remarks" class="block text-sm font-medium text-gray-700">Special Remarks (if any)</label>
+                            <textarea
+                                id="special_remarks"
+                                v-model="bookingForm.special_remarks"
+                                rows="3"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            ></textarea>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <button
+                                type="button"
+                                @click="currentStep = 2"
+                                class="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                            >
+                                Back
+                            </button>
+                            <button
+                                type="submit"
+                                class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                :disabled="isSubmitting"
+                            >
+                                {{ isSubmitting ? 'Submitting...' : 'Submit Booking' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -455,6 +501,9 @@ import axios from 'axios';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import { WhatsAppOutlined } from '@ant-design/icons-vue';
+import Modal from '@/Components/Modal.vue';
+import Swal from 'sweetalert2';
+
 const props = defineProps({
     uuid: String
 });
@@ -483,6 +532,8 @@ const bookingForm = ref({
 });
 
 const isSubmitting = ref(false);
+const currentStep = ref(1);
+const showBookingModal = ref(false);
 
 onMounted(async () => {
     try {
@@ -640,6 +691,16 @@ const formatNumber = (number) => {
     }).format(number);
 };
 
+// Add new methods for step handling
+const handleStep1Submit = async () => {
+    if (!validateForm()) return;
+    await calculatePrice();
+    if (calculatedPrice.value !== null) {
+        currentStep.value = 2;
+    }
+};
+
+// Update submitBooking to use SweetAlert
 const submitBooking = async () => {
     if (!calculatedPrice.value || !bookingSummary.value) return;
 
@@ -661,13 +722,22 @@ const submitBooking = async () => {
         });
 
         if (response.data.success) {
-            // Show success message or redirect
-            alert('Booking submitted successfully!');
-            // You might want to redirect or show a success message
+            await Swal.fire({
+                icon: 'success',
+                title: 'Booking Successful!',
+                text: 'Your booking has been submitted successfully.',
+                confirmButtonText: 'OK'
+            });
+            window.location.reload();
         }
     } catch (error) {
         console.error('Error submitting booking:', error);
-        alert('Failed to submit booking. Please try again.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Booking Failed',
+            text: 'Failed to submit booking. Please try again.',
+            confirmButtonText: 'OK'
+        });
     } finally {
         isSubmitting.value = false;
     }
