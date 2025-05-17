@@ -100,12 +100,21 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-semibold text-gray-900 mb-2">Duration</h2>
-                        <p class="text-gray-600">{{ packageData.package_min_days }} - {{ packageData.package_max_days }} days</p>
+                        <p class="text-gray-600">{{ packageData.package_max_days }} days</p>
                     </div>
                     <div>
-                        <h2 class="text-lg font-semibold text-gray-900 mb-2">Display Prices</h2>
-                        <p class="text-gray-600">Adult: MYR {{ formatNumber(packageData.display_price_adult) }}</p>
-                        <p class="text-gray-600">Child: MYR {{ formatNumber(packageData.display_price_child) }}</p>
+                        <h2 class="text-lg font-semibold text-gray-900 mb-2">Package Prices</h2>
+                        <p class="text-gray-600">MYR {{ formatNumber(packageData.display_price_adult) }}</p>
+                        <!-- <p class="text-gray-600">Adult: MYR {{ formatNumber(packageData.display_price_adult) }}</p> -->
+                        <!-- <p class="text-gray-600">Child: MYR {{ formatNumber(packageData.display_price_child) }}</p> -->
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 mb-2">Package Start Date</h2>
+                        <p class="text-gray-600">{{ moment(packageData.package_start_date).format('DD MMM YYYY') }}</p>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 mb-2">Package End Date</h2>
+                        <p class="text-gray-600">{{ moment(packageData.package_end_date).format('DD MMM YYYY') }}</p>
                     </div>
                 </div>
                 <div class="mt-6">
@@ -179,8 +188,6 @@
                             </div>
                             <p v-if="validationErrors.room_type" class="mt-1 text-sm text-red-600">{{ validationErrors.room_type }}</p>
                         </div>
-
-                        <p>Package Duration: <span class="text-indigo-600">{{ packageData.package_max_days }} days</span></p>
 
                         <!-- Date Selection -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -507,6 +514,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import { WhatsAppOutlined } from '@ant-design/icons-vue';
 import Modal from '@/Components/Modal.vue';
 import Swal from 'sweetalert2';
+import moment from 'moment';
 
 const props = defineProps({
     uuid: String
