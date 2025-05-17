@@ -1437,8 +1437,8 @@ const hasSurcharges = computed(() => {
 const fetchPrices = () => {
     isPriceLoading.value = true;
     axios.post(route('configuration-prices.fetchPricesSearchIndex'), {
-        package_configuration_id: props.pkg.id,
-        season_id: selectedSeason.value,
+        package_id: props.pkg.id,
+        season_type_id: selectedSeason.value,
         date_type_id: selectedDateType.value,
         room_type_id: selectedRoomType.value
     })

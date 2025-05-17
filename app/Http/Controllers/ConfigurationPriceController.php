@@ -6,11 +6,13 @@ use App\Models\ConfigurationPrice;
 use App\Models\Package;
 use App\Models\Season;
 use App\Models\DateType;
+use App\Models\DateTypeRange;
 use App\Models\PackageConfiguration;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use App\Models\RoomType;
+use Illuminate\Support\Facades\Log;
 
 class ConfigurationPriceController extends Controller
 {
@@ -233,10 +235,12 @@ class ConfigurationPriceController extends Controller
 
     public function fetchPricesSearchIndex(Request $request)
     {
-        $prices = PackageConfiguration::where('package_id', $request->package_configuration_id)
-            ->where('season_id', $request->season_id)
+        $season_id = Season::where('season_type_id', $request->season_type_id)->where('package_id', $request->package_id)->first()->id;
+        $date_type_id = DateTypeRange::where('date_type_id', $request->date_type_id)->where('package_id', $request->package_id)->first()->id;
+        $prices = PackageConfiguration::where('package_id', $request->package_id)
+            ->where('season_id', $season_id)
             ->where('date_type_id', $request->date_type_id)
-            ->where('room_type_id', $request->room_type_id)
+            ->where('room_type_id', $date_type_id)
             ->with('prices')
             ->get();
 
