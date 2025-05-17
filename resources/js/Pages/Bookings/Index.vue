@@ -145,7 +145,7 @@ const debouncedSearch = debounce((value) => {
         { search: value.target.value },
         { preserveState: true, preserveScroll: true }
     );
-}, 300);
+}, 1000);
 
 const formatNumber = (number) => {
     return new Intl.NumberFormat('en-US', {

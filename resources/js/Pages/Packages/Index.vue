@@ -134,7 +134,7 @@ const sortDirection = ref(props.filters.direction || 'desc');
 
 const debouncedSearch = debounce(() => {
     updateFilters();
-}, 300);
+}, 1000);
 
 const updateFilters = () => {
     router.get(

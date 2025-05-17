@@ -10,7 +10,7 @@ class DateTypeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DateType::query();
+        $query = DateType::whereNot('name', 'Default');
 
         // Search functionality
         if ($request->has('search')) {
