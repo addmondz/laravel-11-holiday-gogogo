@@ -196,6 +196,7 @@
                                         validationErrors.start_date ? 'border-red-500' : 'border-gray-300'
                                     ]"
                                     required
+                                    @change="validateDates"
                                 />
                                 <p v-if="validationErrors.start_date" class="mt-1 text-sm text-red-600">{{ validationErrors.start_date }}</p>
                             </div>
@@ -207,10 +208,11 @@
                                     v-model="form.end_date"
                                     :min="form.start_date ? new Date(new Date(form.start_date).getTime() + 86400000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]"
                                     :class="[
-                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-gray-100',
                                         validationErrors.end_date ? 'border-red-500' : 'border-gray-300'
                                     ]"
                                     required
+                                    readonly
                                 />
                                 <p v-if="validationErrors.end_date" class="mt-1 text-sm text-red-600">{{ validationErrors.end_date }}</p>
                             </div>
@@ -623,6 +625,22 @@ const validateForm = () => {
 
     return isValid;
 };
+
+const calculateEndDate = () => {
+    if (form.start_date && packageData.value.package_max_days) {
+        const startDate = new Date(form.start_date);
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + parseInt(packageData.value.package_max_days));
+        form.end_date = endDate.toISOString().split('T')[0];
+    }
+};
+
+// Watch for changes in package_days to recalculate end date
+watch(() => form.start_date, () => {
+    if (form.start_date) {
+        calculateEndDate();
+    }
+});
 
 const calculatePrice = async () => {
     if (!validateForm()) return;
