@@ -851,7 +851,7 @@ const maxStartDate = computed(() => {
 /* Add styles for the promo badge */
 .bg-gradient-to-r {
     background-size: 200% 200%;
-    animation: gradient 3s ease infinite;
+    animation: gradient 0.5s ease infinite;
 }
 
 @keyframes gradient {
