@@ -321,7 +321,7 @@
                         <!-- Price Breakdown -->
                         <div v-if="priceBreakdown" class="mt-4 space-y-4">
                             <!-- Base Charge -->
-                            <div class="border-t pt-4">
+                            <div v-if="priceBreakdown.base_charge" class="border-t pt-4">
                                 <h4 class="font-medium text-gray-900 mb-2">Base Charge (per night)</h4>
                                 <div class="space-y-1 text-sm text-gray-600">
                                     <div class="flex justify-between">
@@ -340,7 +340,7 @@
                             </div>
 
                             <!-- Surcharge -->
-                            <div v-if="priceBreakdown.surcharge.total !== '0.00'" class="border-t pt-4">
+                            <div v-if="priceBreakdown.surcharge && priceBreakdown.surcharge.total !== '0.00'" class="border-t pt-4">
                                 <h4 class="font-medium text-gray-900 mb-2">Surcharge (per night)</h4>
                                 <div class="space-y-1 text-sm text-gray-600">
                                     <div class="flex justify-between">
@@ -359,7 +359,7 @@
                             </div>
 
                             <!-- Extra Charges -->
-                            <div v-if="priceBreakdown.extra_charges.total !== '0.00'" class="border-t pt-4">
+                            <div v-if="priceBreakdown.extra_charges && priceBreakdown.extra_charges.total && priceBreakdown.extra_charges.total !== '0.00'" class="border-t pt-4">
                                 <h4 class="font-medium text-gray-900 mb-2">Extra Charges (per night)</h4>
                                 <div class="space-y-1 text-sm text-gray-600">
                                     <div class="flex justify-between">
@@ -378,7 +378,7 @@
                             </div>
 
                             <!-- Add-ons -->
-                            <div v-if="priceBreakdown.add_ons.items.length > 0" class="border-t pt-4">
+                            <div v-if="priceBreakdown.add_ons && priceBreakdown.add_ons.items && priceBreakdown.add_ons.items.length > 0" class="border-t pt-4">
                                 <h4 class="font-medium text-gray-900 mb-2">Add-ons (per night)</h4>
                                 <div class="space-y-3">
                                     <div v-for="(item, index) in priceBreakdown.add_ons.items" :key="index" class="text-sm text-gray-600">
@@ -398,7 +398,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="flex justify-between font-medium text-gray-900 border-t pt-2">
+                                    <div v-if="priceBreakdown.add_ons.total" class="flex justify-between font-medium text-gray-900 border-t pt-2">
                                         <span>Add-ons Total</span>
                                         <span>MYR {{ formatNumber(priceBreakdown.add_ons.total) }}</span>
                                     </div>
@@ -409,7 +409,7 @@
                             <div class="border-t pt-4">
                                 <div class="flex justify-between text-lg font-bold text-gray-900">
                                     <span>Total</span>
-                                    <span>MYR {{ formatNumber(calculatedPrice) }}</span>
+                                    <span>MYR {{ formatNumber(calculatedPrice || 0) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -544,6 +544,31 @@ const bookingForm = ref({
 const isSubmitting = ref(false);
 const currentStep = ref(1);
 const showBookingModal = ref(false);
+let autoRotationInterval = null;
+
+// Move interval setup to setup function
+onMounted(() => {
+    // Start auto-rotation
+    autoRotationInterval = setInterval(() => {
+        nextImage();
+    }, 5000);
+});
+
+// Clean up interval on component unmount
+onUnmounted(() => {
+    if (autoRotationInterval) {
+        clearInterval(autoRotationInterval);
+    }
+});
+
+// Remove the startAutoRotation function and its call
+const nextImage = () => {
+    currentImageIndex.value = (currentImageIndex.value + 1) % mockImages.length;
+};
+
+const previousImage = () => {
+    currentImageIndex.value = (currentImageIndex.value - 1 + mockImages.length) % mockImages.length;
+};
 
 onMounted(async () => {
     try {
@@ -560,16 +585,12 @@ onMounted(async () => {
         } else {
             packageData.value = null;
         }
-
-        isLoading.value = false;
     } catch (error) {
         console.error('Error fetching package:', error);
         packageData.value = null;
+    } finally {
         isLoading.value = false;
     }
-
-    // Start the carousel auto-rotation
-    startAutoRotation();
 });
 
 // Update the mock images array with proper URLs
@@ -718,26 +739,6 @@ const calculatePrice = async () => {
 watch([() => form.start_date, () => form.end_date], () => {
     validateForm();
 });
-
-// Add auto-rotation functionality
-const startAutoRotation = () => {
-    const interval = setInterval(() => {
-        nextImage();
-    }, 5000); // Change image every 5 seconds
-
-    // Clear interval when component is unmounted
-    onUnmounted(() => {
-        clearInterval(interval);
-    });
-};
-
-const nextImage = () => {
-    currentImageIndex.value = (currentImageIndex.value + 1) % mockImages.length;
-};
-
-const previousImage = () => {
-    currentImageIndex.value = (currentImageIndex.value - 1 + mockImages.length) % mockImages.length;
-};
 
 const formatNumber = (number) => {
     return new Intl.NumberFormat('en-US', {
