@@ -17,7 +17,7 @@
                         <!-- Search and Filters -->
                         <div class="mb-6">
                             <div class="flex justify-between items-center">
-                                <div class="flex-1 max-w-sm">
+                                <div class="flex-1">
                                     <input
                                         type="text"
                                         v-model="search"

@@ -63,8 +63,7 @@ class PackageController extends Controller
                 'icon_photo' => 'nullable|image|max:2048',
                 'display_price_adult' => 'nullable|numeric|min:0',
                 'display_price_child' => 'nullable|numeric|min:0',
-                'package_min_days' => 'required|integer|min:1',
-                'package_max_days' => 'required|integer|min:1',
+                'package_days' => 'required|integer|min:1',
                 'terms_and_conditions' => 'nullable|string',
                 'location' => 'nullable|string|max:255',
                 'package_start_date' => 'required|date',
@@ -78,6 +77,9 @@ class PackageController extends Controller
             if ($request->hasFile('icon_photo')) {
                 $validated['icon_photo'] = $request->file('icon_photo')->store('packages', 'public');
             }
+
+            $validated['package_min_days'] = $validated['package_days'];
+            $validated['package_max_days'] = $validated['package_days'];
 
             // Create the package
             $package = Package::create($validated);

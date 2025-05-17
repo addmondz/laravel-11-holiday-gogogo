@@ -70,47 +70,17 @@
                                         </div>
                                     </div>
 
-                                    <!-- <div>
-                                        <label for="display_price_child" class="block text-sm font-medium text-gray-700">Display Price (Child)</label>
-                                        <input
-                                            type="number"
-                                            id="display_price_child"
-                                            v-model="form.display_price_child"
-                                            step="0.01"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        />
-                                        <div v-if="form.errors.display_price_child" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.display_price_child }}
-                                        </div>
-                                    </div> -->
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-6">
                                     <div>
-                                        <label for="package_min_days" class="block text-sm font-medium text-gray-700">Minimum Days</label>
+                                        <label for="package_days" class="block text-sm font-medium text-gray-700">Package Days</label>
                                         <input
                                             type="number"
-                                            id="package_min_days"
-                                            v-model="form.package_min_days"
+                                            id="package_days"
+                                            v-model="form.package_days"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                             required
                                         />
-                                        <div v-if="form.errors.package_min_days" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.package_min_days }}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label for="package_max_days" class="block text-sm font-medium text-gray-700">Maximum Days</label>
-                                        <input
-                                            type="number"
-                                            id="package_max_days"
-                                            v-model="form.package_max_days"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            required
-                                        />
-                                        <div v-if="form.errors.package_max_days" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.package_max_days }}
+                                        <div v-if="form.errors.package_days" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.package_days }}
                                         </div>
                                     </div>
                                 </div>
@@ -148,24 +118,33 @@
                                             type="date"
                                             id="package_start_date"
                                             v-model="form.package_start_date"
+                                            :max="form.package_end_date ? form.package_end_date : undefined"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.package_start_date || form.errors.package_end_date }"
                                             required
+                                            @change="validateDates"
                                         />
                                         <div v-if="form.errors.package_start_date" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.package_start_date }}
                                         </div>
                                     </div>
-
                                     <div>
                                         <label for="package_end_date" class="block text-sm font-medium text-gray-700">End Date</label>
                                         <input
                                             type="date"
                                             id="package_end_date"
                                             v-model="form.package_end_date"
+                                            :min="form.package_start_date ? new Date(new Date(form.package_start_date).getTime() + 86400000).toISOString().split('T')[0] : undefined"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.package_end_date }"
+                                            required
+                                            @change="validateDates"
                                         />
                                         <div v-if="form.errors.package_end_date" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.package_end_date }}
+                                        </div>
+                                        <div v-if="dateError" class="mt-1 text-sm text-red-600">
+                                            {{ dateError }}
                                         </div>
                                     </div>
                                 </div>
@@ -266,7 +245,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { Head } from '@inertiajs/vue3';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const form = useForm({
     name: '',
@@ -274,8 +253,7 @@ const form = useForm({
     icon_photo: null,
     display_price_adult: null,
     display_price_child: null,
-    package_min_days: 1,
-    package_max_days: 1,
+    package_days: 1,
     terms_and_conditions: '',
     location: '',
     package_start_date: '',
@@ -286,6 +264,8 @@ const form = useForm({
         description: '',
     }]
 });
+
+const dateError = ref('');
 
 const addRoomType = () => {
     form.room_types.push({
@@ -303,7 +283,35 @@ const handleFileUpload = (event) => {
     form.icon_photo = event.target.files[0];
 };
 
+const validateDates = () => {
+    dateError.value = '';
+    if (form.package_start_date && form.package_end_date) {
+        const startDate = new Date(form.package_start_date);
+        const endDate = new Date(form.package_end_date);
+        const diffTime = Math.abs(endDate - startDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (endDate <= startDate) {
+            dateError.value = 'End date must be after start date';
+        } else if (diffDays < 1) {
+            dateError.value = 'End date must be at least one day after start date';
+        }
+    }
+};
+
 const submit = () => {
+    // Validate dates before submission
+    validateDates();
+    if (dateError.value) {
+        Swal.fire({
+            title: 'Validation Error',
+            text: dateError.value,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
     form.post(route('packages.store'), {
         preserveScroll: true,
         onSuccess: () => {
@@ -314,7 +322,18 @@ const submit = () => {
                 confirmButtonText: 'OK'
             }).then(() => {
                 form.reset();
+                dateError.value = '';
             });
+        },
+        onError: (errors) => {
+            if (errors.package_end_date) {
+                Swal.fire({
+                    title: 'Validation Error',
+                    text: errors.package_end_date,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
         }
     });
 };
