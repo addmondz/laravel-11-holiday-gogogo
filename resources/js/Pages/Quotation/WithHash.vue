@@ -197,7 +197,8 @@
                                     type="date"
                                     id="start_date"
                                     v-model="form.start_date"
-                                    :min="new Date().toISOString().split('T')[0]"
+                                    :min="packageData?.package_start_date"
+                                    :max="maxStartDate"
                                     :class="[
                                         'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
                                         validationErrors.start_date ? 'border-red-500' : 'border-gray-300'
@@ -214,14 +215,11 @@
                                     id="end_date"
                                     v-model="form.end_date"
                                     :min="form.start_date ? new Date(new Date(form.start_date).getTime() + 86400000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]"
-                                    :class="[
-                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-gray-100',
-                                        validationErrors.end_date ? 'border-red-500' : 'border-gray-300'
-                                    ]"
+                                    class="mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-gray-100 border-gray-300"
                                     required
                                     readonly
                                 />
-                                <p v-if="validationErrors.end_date" class="mt-1 text-sm text-red-600">{{ validationErrors.end_date }}</p>
+                                <!-- <p v-if="validationErrors.end_date" class="mt-1 text-sm text-red-600">{{ validationErrors.end_date }}</p> -->
                             </div>
                         </div>
 
@@ -506,7 +504,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
@@ -608,11 +606,35 @@ const validateForm = () => {
     if (!form.start_date) {
         validationErrors.value.start_date = 'Please select a start date';
         isValid = false;
+    } else {
+        const startDate = new Date(form.start_date);
+        const packageStartDate = new Date(packageData.value.package_start_date);
+        const packageEndDate = new Date(packageData.value.package_end_date);
+        const maxStartDate = new Date(packageEndDate);
+        maxStartDate.setDate(packageEndDate.getDate() - packageData.value.package_max_days);
+
+        if (startDate < packageStartDate) {
+            validationErrors.value.start_date = `Start date cannot be before ${moment(packageStartDate).format('DD MMM YYYY')}`;
+            isValid = false;
+        } else if (startDate > maxStartDate) {
+            validationErrors.value.start_date = `Start date cannot be after ${moment(maxStartDate).format('DD MMM YYYY')} to ensure ${packageData.value.package_max_days} days stay within package end date`;
+            isValid = false;
+        }
     }
+
     if (!form.end_date) {
         validationErrors.value.end_date = 'Please select an end date';
         isValid = false;
+    } else {
+        const endDate = new Date(form.end_date);
+        const packageEndDate = new Date(packageData.value.package_end_date);
+
+        if (endDate > packageEndDate) {
+            validationErrors.value.end_date = `End date cannot be after ${moment(packageEndDate).format('DD MMM YYYY')}`;
+            isValid = false;
+        }
     }
+
     if (form.start_date && form.end_date) {
         const start = new Date(form.start_date);
         const end = new Date(form.end_date);
@@ -621,6 +643,11 @@ const validateForm = () => {
 
         if (diffDays < 1) {
             validationErrors.value.end_date = 'End date must be at least 1 day after start date';
+            isValid = false;
+        }
+
+        if (diffDays > packageData.value.package_max_days) {
+            validationErrors.value.end_date = `Duration cannot exceed ${packageData.value.package_max_days} days`;
             isValid = false;
         }
     }
@@ -770,6 +797,15 @@ const submitBooking = async () => {
         isSubmitting.value = false;
     }
 };
+
+// Add a computed property for max start date
+const maxStartDate = computed(() => {
+    if (!packageData.value) return '';
+    const packageEndDate = new Date(packageData.value.package_end_date);
+    const maxDate = new Date(packageEndDate);
+    maxDate.setDate(packageEndDate.getDate() - packageData.value.package_max_days);
+    return maxDate.toISOString().split('T')[0];
+});
 </script>
 
 <style scoped>
