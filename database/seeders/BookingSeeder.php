@@ -98,7 +98,7 @@ class BookingSeeder extends Seeder
             
             // Generate random dates within the next 6 months
             $startDate = Carbon::now()->addDays(rand(1, 30)); // Reduced to 30 days for testing
-            $endDate = $startDate->copy()->addDays(rand(1, 5)); // Reduced to max 5 days for testing
+            $endDate = $startDate->copy()->addDays($package->package_max_days);
             
             // Calculate total price (simplified calculation)
             $nights = $startDate->diffInDays($endDate);

@@ -74,10 +74,13 @@
                                         </div>
                                         <div>
                                             <h4 class="text-sm font-medium text-gray-500">Duration</h4>
-                                            <div class="mt-1">
+                                            <!-- <div class="mt-1">
                                                 <p class="text-sm text-gray-900">Minimum Days: {{ pkg.package_min_days }}</p>
                                                 <p class="text-sm text-gray-900">Maximum Days: {{ pkg.package_max_days }}</p>
-                                            </div>
+                                            </div> -->
+                                            <p class="mt-1 text-sm text-gray-900">
+                                                {{ pkg.package_min_days }} day(s)
+                                            </p>
                                         </div>
                                     </div>
                                     <div>
@@ -86,22 +89,19 @@
                                     </div>
                                     <div class="grid grid-cols-2 gap-6">
                                         <div>
-                                            <h4 class="text-sm font-medium text-gray-500">Start Date</h4>
-                                            <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.package_start_date).format('DD/MM/YYYY') }}</p>
-                                        </div>
-                                        <div>
-                                            <h4 class="text-sm font-medium text-gray-500">End Date</h4>
-                                            <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.package_end_date).format('DD/MM/YYYY') || 'No end date' }}
+                                            <h4 class="text-sm font-medium text-gray-500">Package Date</h4>
+                                            <p class="mt-1 text-sm text-gray-900">
+                                                {{ moment(pkg.package_start_date).format('DD/MM/YYYY') }} - {{ moment(pkg.package_end_date).format('DD/MM/YYYY') }}
                                             </p>
                                         </div>
                                     </div>
                                     <div>
                                         <h4 class="text-sm font-medium text-gray-500">Created At</h4>
-                                        <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.created_at).format('DD/MM/YYYY HH:mm:ss') }}</p>
+                                        <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.created_at).format('DD-MM-YYYY HH:mm:ss A')}}</p>
                                     </div>
                                     <div>
                                         <h4 class="text-sm font-medium text-gray-500">Updated At</h4>
-                                        <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.updated_at).format('DD/MM/YYYY HH:mm:ss') }}</p>
+                                        <p class="mt-1 text-sm text-gray-900">{{ moment(pkg.updated_at).format('DD-MM-YYYY HH:mm:ss A')}}</p>
                                     </div>
                                     <div>
                                         <h4 class="text-sm font-medium text-gray-500">Link</h4>

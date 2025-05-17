@@ -71,7 +71,7 @@
                                     </div>
 
                                     <div>
-                                        <label for="package_days" class="block text-sm font-medium text-gray-700">Package Days</label>
+                                        <label for="package_days" class="block text-sm font-medium text-gray-700">Package Duration (Days)</label>
                                         <input
                                             type="number"
                                             id="package_days"
@@ -138,7 +138,6 @@
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                             :class="{ 'border-red-500': form.errors.package_end_date }"
                                             required
-                                            @change="validateDates"
                                         />
                                         <div v-if="form.errors.package_end_date" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.package_end_date }}
@@ -253,7 +252,7 @@ const form = useForm({
     icon_photo: null,
     display_price_adult: null,
     display_price_child: null,
-    package_days: 1,
+    package_days: 2,
     terms_and_conditions: '',
     location: '',
     package_start_date: '',

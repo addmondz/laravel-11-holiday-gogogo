@@ -63,6 +63,7 @@ class DatabaseSeeder extends Seeder
         $weekday = DateType::create(['name' => 'Weekday']);
         $roomsur60 = DateType::create(['name' => 'Roomsur 60']);
         $roomsur30 = DateType::create(['name' => 'Roomsur 30']);
+        $defaultDateType = DateType::create(['name' => 'Default']);
 
         $faker = Faker::create();
         $locations = [
@@ -82,29 +83,29 @@ class DatabaseSeeder extends Seeder
             [
                 'title' => 'Beach Getaway',
                 'icon' => 'packages/beach.png',
-                'min_days' => 3,
+                'min_days' => 5,
                 'max_days' => 5,
                 'price_range' => [300, 800],
             ],
             [
                 'title' => 'Mountain Adventure',
                 'icon' => 'packages/mountain.png',
-                'min_days' => 4,
+                'min_days' => 7,
                 'max_days' => 7,
                 'price_range' => [400, 1000],
             ],
             [
                 'title' => 'City Tour',
                 'icon' => 'packages/city.png',
-                'min_days' => 2,
+                'min_days' => 4,
                 'max_days' => 4,
                 'price_range' => [200, 600],
             ],
             [
                 'title' => 'Island Escape',
                 'icon' => 'packages/island.png',
-                'min_days' => 5,
-                'max_days' => 10,
+                'min_days' => 6,
+                'max_days' => 6,
                 'price_range' => [800, 2000],
             ],
         ];
@@ -157,14 +158,6 @@ class DatabaseSeeder extends Seeder
                     'name' => 'Standard Room',
                     'description' => 'Comfortable room with basic amenities',
                     'max_occupancy' => 2,
-                    'package_id' => $pkg->id
-                ]);
-
-                $defaultSeasonSeason = Season::create([
-                    'season_type_id' => $defaultSeason->id,
-                    'start_date' => '2025-01-01',
-                    'end_date' => '2025-12-31',
-                    'priority' => 3,
                     'package_id' => $pkg->id
                 ]);
 

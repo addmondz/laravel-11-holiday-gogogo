@@ -73,6 +73,20 @@
                                         </div>
                                     </div>
 
+                                    <div>
+                                        <label for="package_max_days" class="block text-sm font-medium text-gray-700">Package Duration (Days)</label>
+                                        <input
+                                            type="number"
+                                            id="package_max_days"
+                                            v-model="form.package_max_days"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            required
+                                        />
+                                        <div v-if="form.errors.package_max_days" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.package_max_days }}
+                                        </div>
+                                    </div>
+
                                     <!-- <div>
                                         <label for="display_price_child" class="block text-sm font-medium text-gray-700">Display Price (Child)</label>
                                         <input
@@ -86,36 +100,6 @@
                                             {{ form.errors.display_price_child }}
                                         </div>
                                     </div> -->
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="package_min_days" class="block text-sm font-medium text-gray-700">Minimum Days</label>
-                                        <input
-                                            type="number"
-                                            id="package_min_days"
-                                            v-model="form.package_min_days"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            required
-                                        />
-                                        <div v-if="form.errors.package_min_days" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.package_min_days }}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label for="package_max_days" class="block text-sm font-medium text-gray-700">Maximum Days</label>
-                                        <input
-                                            type="number"
-                                            id="package_max_days"
-                                            v-model="form.package_max_days"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            required
-                                        />
-                                        <div v-if="form.errors.package_max_days" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.package_max_days }}
-                                        </div>
-                                    </div>
                                 </div>
 
                                 <div>
@@ -219,7 +203,7 @@ const form = useForm({
     icon_photo: null,
     display_price_adult: props.package.display_price_adult,
     display_price_child: props.package.display_price_child,
-    package_min_days: props.package.package_min_days,
+    package_min_days: props.package.package_max_days,
     package_max_days: props.package.package_max_days,
     terms_and_conditions: props.package.terms_and_conditions,
     location: props.package.location,

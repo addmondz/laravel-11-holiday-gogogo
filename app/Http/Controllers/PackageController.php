@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\SeasonType;
 use App\Models\DateTypeRange;
+use Illuminate\Support\Str;
 
 class PackageController extends Controller
 {
@@ -80,6 +81,7 @@ class PackageController extends Controller
 
             $validated['package_min_days'] = $validated['package_days'];
             $validated['package_max_days'] = $validated['package_days'];
+            $validated['uuid'] = Str::uuid();
 
             // Create the package
             $package = Package::create($validated);

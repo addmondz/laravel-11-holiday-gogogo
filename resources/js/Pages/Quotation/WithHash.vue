@@ -180,6 +180,8 @@
                             <p v-if="validationErrors.room_type" class="mt-1 text-sm text-red-600">{{ validationErrors.room_type }}</p>
                         </div>
 
+                        <p>Package Duration: <span class="text-indigo-600">{{ packageData.package_max_days }} days</span></p>
+
                         <!-- Date Selection -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
