@@ -336,8 +336,8 @@
                                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                             >
                                                 <option value="">Select Season</option>
-                                                <option v-for="season in seasonsData.data" :key="season.id" :value="season.id">
-                                                    {{ season.type.name }}
+                                                <option v-for="season in seasonTypes" :key="season.id" :value="season.id">
+                                                    {{ season.name }}
                                                 </option>
                                             </select>
                                         </div>
