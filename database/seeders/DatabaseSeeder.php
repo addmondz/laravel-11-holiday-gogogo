@@ -161,6 +161,14 @@ class DatabaseSeeder extends Seeder
             ]);
 
             // 🗓️ SEASONS (date ranges for season types)
+            $defaultSeason = Season::create([
+                'season_type_id' => $defaultSeason->id,
+                'start_date' => now(),
+                'end_date' => now(),
+                'priority' => 0,
+                'package_id' => $pkg->id
+            ]);
+
             $earlyBirdSeason = Season::create([
                 'season_type_id' => $earlyBird->id,
                 'start_date' => '2025-01-01',
@@ -178,6 +186,13 @@ class DatabaseSeeder extends Seeder
             ]);
 
             // 📆 DATE TYPE RANGES
+            $defaultTypeRange = DateTypeRange::create([
+                'date_type_id' => $defaultDateType->id,
+                'start_date' => now(),
+                'end_date' => now(),
+                'package_id' => $pkg->id
+            ]);
+
             DateTypeRange::create([
                 'date_type_id' => $roomsur30->id,
                 'start_date' => '2025-07-05',

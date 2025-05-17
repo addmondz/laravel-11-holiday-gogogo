@@ -135,13 +135,21 @@ class PackageController extends Controller
             ->latest()
             ->paginate(10);
 
+        $defaultSeasonTypeId = SeasonType::where('name', 'Default')->value('id');
         $seasons = Season::with('type')
             ->where('package_id', $package->id)
+            ->whereHas('type', function ($query) use ($defaultSeasonTypeId) {
+                $query->where('id', '!=', $defaultSeasonTypeId);
+            })
             ->latest()
             ->paginate(10);
 
+        $defaultTypeRange = DateType::where('name', 'Default')->value('id');
         $dateTypeRanges = DateTypeRange::with('dateType')
             ->where('package_id', $package->id)
+            ->whereHas('dateType', function ($query) use ($defaultTypeRange) {
+                $query->where('id', '!=', $defaultTypeRange);
+            })
             ->latest()
             ->paginate(10);
 
