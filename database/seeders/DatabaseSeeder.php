@@ -52,18 +52,18 @@ class DatabaseSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // 🟢 SEASON TYPES
+        $defaultSeason = SeasonType::create(['name' => 'Default']);
         $earlyBird = SeasonType::create(['name' => 'Early Bird']);
         $peakSeason = SeasonType::create(['name' => 'Peak Season']);
         $ph120 = SeasonType::create(['name' => 'Public Holiday 120']);
         $ph60 = SeasonType::create(['name' => 'Public Holiday 60']);
-        $defaultSeason = SeasonType::create(['name' => 'Default']);
 
         // 🟡 DATE TYPES
+        $defaultDateType = DateType::create(['name' => 'Default']);
         $weekend = DateType::create(['name' => 'Weekend']);
         $weekday = DateType::create(['name' => 'Weekday']);
         $roomsur60 = DateType::create(['name' => 'Roomsur 60']);
         $roomsur30 = DateType::create(['name' => 'Roomsur 30']);
-        $defaultDateType = DateType::create(['name' => 'Default']);
 
         $faker = Faker::create();
         $locations = [
