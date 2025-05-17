@@ -91,7 +91,12 @@
 
             <!-- Package Details -->
             <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ packageData.name }}</h1>
+                <h1 class="text-3xl font-bold text-gray-900 mb-4 flex items-center">
+                    <span class="inline-flex items-center px-4 py-2 rounded-md text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white mr-2 mb-1 sm:mb-0">
+                        {{ computedPromoPeriod }} Promo
+                    </span>
+                    {{ packageData.name }}
+                </h1>
                 <p class="text-gray-600 mb-6">{{ packageData.description }}</p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
@@ -534,6 +539,29 @@ const validationErrors = ref({
     adults: ''
 });
 
+const computedPromoPeriod = computed(() => {
+  if (!packageData.value) return '';
+
+  const startYear = new Date(packageData.value.package_start_date).getFullYear();
+  const endYear = new Date(packageData.value.package_end_date).getFullYear();
+
+  if (startYear === endYear && startYear === 2025) {
+    return '2025';
+  }
+
+  // Build year range like 2025/26/27
+  const years = [];
+  for (let y = startYear; y <= endYear; y++) {
+    if (y === startYear) {
+      years.push(y.toString());
+    } else {
+      years.push((y % 100).toString().padStart(2, '0'));
+    }
+  }
+
+  return years.join('/');
+});
+
 const bookingForm = ref({
     booking_name: '',
     phone_number: '',
@@ -818,5 +846,36 @@ const maxStartDate = computed(() => {
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
+}
+
+/* Add styles for the promo badge */
+.bg-gradient-to-r {
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Make the promo badge responsive */
+@media (max-width: 640px) {
+    h1 {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .inline-flex {
+        margin-bottom: 0.5rem;
+    }
 }
 </style>
