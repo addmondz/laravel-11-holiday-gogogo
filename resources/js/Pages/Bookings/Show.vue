@@ -33,7 +33,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">IC/Passport Number</label>
-                                        <p class="mt-1 text-sm text-gray-900">{{ booking.booking_ic_or_passport }}</p>
+                                        <p class="mt-1 text-sm text-gray-900">{{ booking.booking_ic }}</p>
                                     </div>
                                     <div v-if="booking.special_remarks">
                                         <label class="block text-sm font-medium text-gray-700">Special Remarks</label>

@@ -42,13 +42,14 @@ class BookingController extends Controller
                 'room_type_id' => $request->room_type_id,
                 'booking_name' => $request->booking_name,
                 'phone_number' => $request->phone_number,
-                'booking_ic_or_passport' => $request->booking_ic,
+                'booking_ic' => $request->booking_ic,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
                 'adults' => $request->adults,
                 'children' => $request->children,
                 'total_price' => $request->total_price,
-                'special_remarks' => $request->special_remarks
+                'special_remarks' => $request->special_remarks,
+                'status' => 'pending'
             ]);
 
             DB::commit();

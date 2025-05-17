@@ -15,7 +15,8 @@ use App\Models\{
     PackageConfiguration,
     ConfigurationPrice,
     User,
-    RoomType
+    RoomType,
+    Booking
 };
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
@@ -43,6 +44,7 @@ class DatabaseSeeder extends Seeder
         PackageConfiguration::truncate();
         ConfigurationPrice::truncate();
         RoomType::truncate();
+        Booking::truncate();
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
@@ -58,35 +60,6 @@ class DatabaseSeeder extends Seeder
         $weekday = DateType::create(['name' => 'Weekday']);
         $roomsur60 = DateType::create(['name' => 'Roomsur 60']);
         $roomsur30 = DateType::create(['name' => 'Roomsur 30']);
-
-        // // 🧳 PACKAGE
-        // $package = Package::create([
-        //     'name' => 'Beach Getaway Package',
-        //     'description' => '3D2N relaxing beach resort package.',
-        //     'icon_photo' => 'packages/beach.png',
-        //     'display_price_adult' => 399.00,
-        //     'display_price_child' => 299.00,
-        //     'package_min_days' => 2,
-        //     'package_max_days' => 3,
-        //     'terms_and_conditions' => 'Non-refundable. Subject to availability.',
-        //     'location' => 'Pulau Redang',
-        //     'package_start_date' => '2025-01-01',
-        //     'package_end_date' => '2025-12-31',
-        // ]);
-
-        // $package = Package::create([
-        //     'name' => 'Langkawi Package',
-        //     'description' => '5D4N relaxing beach resort package.',
-        //     'icon_photo' => 'packages/beach.png',
-        //     'display_price_adult' => 1299.00,
-        //     'display_price_child' => 999.00,
-        //     'package_min_days' => 5,
-        //     'package_max_days' => 10,
-        //     'terms_and_conditions' => 'Non-refundable. Subject to availability.',
-        //     'location' => 'Langkawi',
-        //     'package_start_date' => '2025-01-01',
-        //     'package_end_date' => '2025-12-31',
-        // ]);
 
         $faker = Faker::create();
         $locations = [
@@ -133,8 +106,8 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        // for ($i = 0; $i < 25 $i++) {
-        for ($i = 0; $i < 1; $i++) {
+        for ($i = 0; $i < 25; $i++) {
+        // for ($i = 0; $i < 1; $i++) {
             $packageType = $faker->randomElement($packageTypes);
             $location = $faker->randomElement($locations);
             $minDays = $packageType['min_days'];
@@ -161,6 +134,7 @@ class DatabaseSeeder extends Seeder
 
         $packages = Package::all();
 
+        foreach ($packages as $pkg) {
         foreach ($packages as $pkg) {
             // 🏠 ROOM TYPES
             $deluxeRoom = RoomType::create([
@@ -309,5 +283,10 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Dummy Date Type Test ' . $i + 1,
             ]);
         }
+
+        // After all other seeders
+        $this->call([
+            BookingSeeder::class,
+        ]);
     }
 }

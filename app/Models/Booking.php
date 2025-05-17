@@ -11,13 +11,14 @@ class Booking extends Model
         'room_type_id',
         'booking_name',
         'phone_number',
-        'booking_ic_or_passport',
+        'booking_ic',
         'start_date',
         'end_date',
         'adults',
         'children',
         'total_price',
-        'special_remarks'
+        'special_remarks',
+        'status'
     ];
 
     protected $casts = [

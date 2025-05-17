@@ -36,7 +36,7 @@
                                             <label class="block text-sm font-medium text-gray-700">IC/Passport Number</label>
                                             <input
                                                 type="text"
-                                                v-model="form.booking_ic_or_passport"
+                                                v-model="form.booking_ic"
                                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                 required
                                             />
@@ -122,7 +122,7 @@ const props = defineProps({
 const form = useForm({
     booking_name: props.booking.booking_name,
     phone_number: props.booking.phone_number,
-    booking_ic_or_passport: props.booking.booking_ic_or_passport,
+    booking_ic: props.booking.booking_ic,
     special_remarks: props.booking.special_remarks
 });
 

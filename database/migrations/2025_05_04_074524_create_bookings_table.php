@@ -17,7 +17,8 @@ return new class extends Migration
             $table->foreignId('room_type_id')->constrained()->onDelete('cascade');
             $table->string('booking_name');
             $table->string('phone_number');
-            $table->string('booking_ic_or_passport');
+            $table->string('booking_ic');
+            $table->string('status');
             $table->date('start_date');
             $table->date('end_date');
             $table->integer('adults');

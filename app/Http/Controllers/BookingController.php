@@ -18,7 +18,7 @@ class BookingController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('booking_name', 'like', "%{$search}%")
                     ->orWhere('phone_number', 'like', "%{$search}%")
-                    ->orWhere('booking_ic_or_passport', 'like', "%{$search}%");
+                    ->orWhere('booking_ic', 'like', "%{$search}%");
             });
         }
 
@@ -59,7 +59,7 @@ class BookingController extends Controller
         $validated = $request->validate([
             'booking_name' => 'required|string|max:255',
             'phone_number' => 'required|string|max:20',
-            'booking_ic_or_passport' => 'required|string|max:50',
+            'booking_ic' => 'required|string|max:50',
             'special_remarks' => 'nullable|string'
         ]);
 
@@ -67,7 +67,7 @@ class BookingController extends Controller
             $booking->update([
                 'booking_name' => $validated['booking_name'],
                 'phone_number' => $validated['phone_number'],
-                'booking_ic_or_passport' => $validated['booking_ic_or_passport'],
+                'booking_ic' => $validated['booking_ic'],
                 'special_remarks' => $validated['special_remarks']
             ]);
 
