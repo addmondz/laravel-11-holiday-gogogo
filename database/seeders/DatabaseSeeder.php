@@ -26,6 +26,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $dummyPackagesCount = 2;
+        // $dummyPackagesCount = 20;
+
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         User::create([
@@ -106,8 +109,7 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        for ($i = 0; $i < 25; $i++) {
-        // for ($i = 0; $i < 1; $i++) {
+        for ($i = 0; $i < $dummyPackagesCount; $i++) {
             $packageType = $faker->randomElement($packageTypes);
             $location = $faker->randomElement($locations);
             $minDays = $packageType['min_days'];
@@ -135,158 +137,159 @@ class DatabaseSeeder extends Seeder
         $packages = Package::all();
 
         foreach ($packages as $pkg) {
-        foreach ($packages as $pkg) {
-            // 🏠 ROOM TYPES
-            $deluxeRoom = RoomType::create([
-                'name' => 'Deluxe Room',
-                'description' => 'Spacious room with modern amenities',
-                'max_occupancy' => 2,
-                'package_id' => $pkg->id
-            ]);
+            foreach ($packages as $pkg) {
+                // 🏠 ROOM TYPES
+                $deluxeRoom = RoomType::create([
+                    'name' => 'Deluxe Room',
+                    'description' => 'Spacious room with modern amenities',
+                    'max_occupancy' => 2,
+                    'package_id' => $pkg->id
+                ]);
 
-            $superiorChalet = RoomType::create([
-                'name' => 'Superior Chalet',
-                'description' => 'Luxury chalet with private balcony',
-                'max_occupancy' => 4,
-                'package_id' => $pkg->id
-            ]);
+                $superiorChalet = RoomType::create([
+                    'name' => 'Superior Chalet',
+                    'description' => 'Luxury chalet with private balcony',
+                    'max_occupancy' => 4,
+                    'package_id' => $pkg->id
+                ]);
 
-            $standardRoom = RoomType::create([
-                'name' => 'Standard Room',
-                'description' => 'Comfortable room with basic amenities',
-                'max_occupancy' => 2,
-                'package_id' => $pkg->id
-            ]);
+                $standardRoom = RoomType::create([
+                    'name' => 'Standard Room',
+                    'description' => 'Comfortable room with basic amenities',
+                    'max_occupancy' => 2,
+                    'package_id' => $pkg->id
+                ]);
 
-            $defaultSeasonSeason = Season::create([
-                'season_type_id' => $defaultSeason->id,
-                'start_date' => '2025-01-01',
-                'end_date' => '2025-12-31',
-                'priority' => 3,
-                'package_id' => $pkg->id
-            ]);
+                $defaultSeasonSeason = Season::create([
+                    'season_type_id' => $defaultSeason->id,
+                    'start_date' => '2025-01-01',
+                    'end_date' => '2025-12-31',
+                    'priority' => 3,
+                    'package_id' => $pkg->id
+                ]);
 
-            // 🗓️ SEASONS (date ranges for season types)
-            $earlyBirdSeason = Season::create([
-                'season_type_id' => $earlyBird->id,
-                'start_date' => '2025-01-01',
-                'end_date' => '2025-02-28',
-                'priority' => 1,
-                'package_id' => $pkg->id
-            ]);
+                // 🗓️ SEASONS (date ranges for season types)
+                $earlyBirdSeason = Season::create([
+                    'season_type_id' => $earlyBird->id,
+                    'start_date' => '2025-01-01',
+                    'end_date' => '2025-02-28',
+                    'priority' => 1,
+                    'package_id' => $pkg->id
+                ]);
 
-            $peakSeasonSeason = Season::create([
-                'season_type_id' => $peakSeason->id,
-                'start_date' => '2025-06-01',
-                'end_date' => '2025-08-31',
-                'priority' => 2,
-                'package_id' => $pkg->id
-            ]);
+                $peakSeasonSeason = Season::create([
+                    'season_type_id' => $peakSeason->id,
+                    'start_date' => '2025-06-01',
+                    'end_date' => '2025-08-31',
+                    'priority' => 2,
+                    'package_id' => $pkg->id
+                ]);
 
-            // 📆 DATE TYPE RANGES
-            DateTypeRange::create([
-                'date_type_id' => $roomsur30->id,
-                'start_date' => '2025-07-05',
-                'end_date' => '2025-07-06',
-                'package_id' => $pkg->id
-            ]);
+                // 📆 DATE TYPE RANGES
+                DateTypeRange::create([
+                    'date_type_id' => $roomsur30->id,
+                    'start_date' => '2025-07-05',
+                    'end_date' => '2025-07-06',
+                    'package_id' => $pkg->id
+                ]);
 
-            DateTypeRange::create([
-                'date_type_id' => $roomsur60->id,
-                'start_date' => '2025-12-01',
-                'end_date' => '2025-12-15',
-                'package_id' => $pkg->id
-            ]);
-        }
+                DateTypeRange::create([
+                    'date_type_id' => $roomsur60->id,
+                    'start_date' => '2025-12-01',
+                    'end_date' => '2025-12-15',
+                    'package_id' => $pkg->id
+                ]);
+            }
 
-        // ⚙️ PACKAGE CONFIGURATIONS & 💰 PRICES FOR ALL COMBINATIONS
-        $roomTypes = [
-            $deluxeRoom,
-            $superiorChalet,
-            $standardRoom
-        ];
-        $combinations = [
-            ['adults' => 1, 'children' => 0],
-            ['adults' => 1, 'children' => 1],
-            ['adults' => 1, 'children' => 2],
-            ['adults' => 1, 'children' => 3],
-            ['adults' => 1, 'children' => 4],
-            ['adults' => 2, 'children' => 0],
-            ['adults' => 2, 'children' => 1],
-            ['adults' => 2, 'children' => 2],
-            ['adults' => 2, 'children' => 3],
-            ['adults' => 3, 'children' => 0],
-            ['adults' => 3, 'children' => 1],
-            ['adults' => 3, 'children' => 2],
-            ['adults' => 4, 'children' => 0],
-            ['adults' => 4, 'children' => 1],
-            ['adults' => 5, 'children' => 0],
-        ];
+            // ⚙️ PACKAGE CONFIGURATIONS & 💰 PRICES FOR ALL COMBINATIONS
+            $roomTypes = [
+                $deluxeRoom,
+                $superiorChalet,
+                $standardRoom
+            ];
+            $combinations = [
+                ['adults' => 1, 'children' => 0],
+                ['adults' => 1, 'children' => 1],
+                ['adults' => 1, 'children' => 2],
+                ['adults' => 1, 'children' => 3],
+                ['adults' => 1, 'children' => 4],
+                ['adults' => 2, 'children' => 0],
+                ['adults' => 2, 'children' => 1],
+                ['adults' => 2, 'children' => 2],
+                ['adults' => 2, 'children' => 3],
+                ['adults' => 3, 'children' => 0],
+                ['adults' => 3, 'children' => 1],
+                ['adults' => 3, 'children' => 2],
+                ['adults' => 4, 'children' => 0],
+                ['adults' => 4, 'children' => 1],
+                ['adults' => 5, 'children' => 0],
+            ];
 
-        $seasons = Season::all();
-        $dateTypes = DateType::all();
+            $seasons = Season::all();
+            $dateTypes = DateType::all();
 
-        foreach ($packages as $pkg) {
-            $packageRoomTypes = RoomType::where('package_id', $pkg->id)->get();
-            foreach ($seasons as $season) {
-                foreach ($dateTypes as $dateType) {
-                    foreach ($packageRoomTypes as $packageRoomType) {
-                        $config = PackageConfiguration::create([
-                            'package_id' => $pkg->id,
-                            'season_id' => $season->id,
-                            'date_type_id' => $dateType->id,
-                            'room_type_id' => $packageRoomType->id,
-                        ]);
-
-                        foreach ($combinations as $combo) {
-                            ConfigurationPrice::create([
-                                'package_configuration_id' => $config->id,
-                                'type' => 'base_charge',
-                                'number_of_adults' => $combo['adults'],
-                                'number_of_children' => $combo['children'],
-                                'adult_price' => 100.00,
-                                'child_price' => 50.00,
+            foreach ($packages as $pkg) {
+                $packageRoomTypes = RoomType::where('package_id', $pkg->id)->get();
+                foreach ($seasons as $season) {
+                    foreach ($dateTypes as $dateType) {
+                        foreach ($packageRoomTypes as $packageRoomType) {
+                            $config = PackageConfiguration::create([
+                                'package_id' => $pkg->id,
+                                'season_id' => $season->id,
+                                'date_type_id' => $dateType->id,
+                                'room_type_id' => $packageRoomType->id,
                             ]);
 
-                            // surcharge
-                            ConfigurationPrice::create([
-                                'package_configuration_id' => $config->id,
-                                'type' => 'sur_charge',
-                                'number_of_adults' => $combo['adults'],
-                                'number_of_children' => $combo['children'],
-                                'adult_price' => 60.00,
-                                'child_price' => 30.00,
-                            ]);
+                            foreach ($combinations as $combo) {
+                                ConfigurationPrice::create([
+                                    'package_configuration_id' => $config->id,
+                                    'type' => 'base_charge',
+                                    'number_of_adults' => $combo['adults'],
+                                    'number_of_children' => $combo['children'],
+                                    'adult_price' => 100.00,
+                                    'child_price' => 50.00,
+                                ]);
 
-                            // base charge
-                            ConfigurationPrice::create([
-                                'package_configuration_id' => $config->id,
-                                'type' => 'ext_charge',
-                                'number_of_adults' => $combo['adults'],
-                                'number_of_children' => $combo['children'],
-                                'adult_price' => 40.00,
-                                'child_price' => 0.00,
-                            ]);
+                                // surcharge
+                                ConfigurationPrice::create([
+                                    'package_configuration_id' => $config->id,
+                                    'type' => 'sur_charge',
+                                    'number_of_adults' => $combo['adults'],
+                                    'number_of_children' => $combo['children'],
+                                    'adult_price' => 60.00,
+                                    'child_price' => 30.00,
+                                ]);
+
+                                // base charge
+                                ConfigurationPrice::create([
+                                    'package_configuration_id' => $config->id,
+                                    'type' => 'ext_charge',
+                                    'number_of_adults' => $combo['adults'],
+                                    'number_of_children' => $combo['children'],
+                                    'adult_price' => 40.00,
+                                    'child_price' => 0.00,
+                                ]);
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // create dummy season type and date types
-        for ($i = 0; $i < 20; $i++) {
-            SeasonType::create([
-                'name' => 'Dummy Season Type Test ' . $i + 1,
+            // create dummy season type and date types
+            for ($i = 0; $i < 20; $i++) {
+                SeasonType::create([
+                    'name' => 'Dummy Season Type Test ' . $i + 1,
+                ]);
+
+                DateType::create([
+                    'name' => 'Dummy Date Type Test ' . $i + 1,
+                ]);
+            }
+
+            // After all other seeders
+            $this->call([
+                BookingSeeder::class,
             ]);
-
-            DateType::create([
-                'name' => 'Dummy Date Type Test ' . $i + 1,
-            ]);
         }
-
-        // After all other seeders
-        $this->call([
-            BookingSeeder::class,
-        ]);
     }
 }

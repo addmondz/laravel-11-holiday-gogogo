@@ -111,7 +111,12 @@
 
                         <!-- Pagination -->
                         <div class="mt-6">
-                            <Pagination :links="bookings.links" />
+                            <Pagination 
+                                :links="bookings.links"
+                                :from="bookings.from"
+                                :to="bookings.to"
+                                :total="bookings.total" 
+                            />
                         </div>
                     </div>
                 </div>

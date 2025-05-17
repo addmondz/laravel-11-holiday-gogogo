@@ -83,38 +83,51 @@ class BookingSeeder extends Seeder
             'Need baby cot'
         ];
 
-        // Create 20 sample bookings
-        for ($i = 0; $i < 20; $i++) {
+        // Create sample bookings
+        for ($i = 0; $i < 25; $i++) {
             $package = $packages->random();
-            $roomType = $roomTypes->random();
+            // Get room types that belong to this package
+            $packageRoomTypes = RoomType::where('package_id', $package->id)->get();
+            
+            if ($packageRoomTypes->isEmpty()) {
+                $this->command->warn("No room types found for package {$package->name}. Skipping...");
+                continue;
+            }
+            
+            $roomType = $packageRoomTypes->random();
             
             // Generate random dates within the next 6 months
-            $startDate = Carbon::now()->addDays(rand(1, 180));
-            $endDate = $startDate->copy()->addDays(rand(1, 7));
+            $startDate = Carbon::now()->addDays(rand(1, 30)); // Reduced to 30 days for testing
+            $endDate = $startDate->copy()->addDays(rand(1, 5)); // Reduced to max 5 days for testing
             
             // Calculate total price (simplified calculation)
             $nights = $startDate->diffInDays($endDate);
             $adults = rand(1, 4);
             $children = rand(0, 3);
-            $basePrice = ($roomType->price_per_night * $nights);
-            $totalPrice = $basePrice * ($adults + ($children * 0.7)); // Children at 70% of adult price
+            
+            // Use package display prices if room type price is not available
+            $basePrice = $package->display_price_adult ?? 100.00;
+            $totalPrice = ($basePrice * $nights * $adults) + ($basePrice * 0.7 * $nights * $children);
 
-            Booking::create([
-                'package_id' => $package->id,
-                'room_type_id' => $roomType->id,
-                'booking_name' => $names[$i % count($names)],
-                'phone_number' => $phoneNumbers[$i % count($phoneNumbers)],
-                'booking_ic' => $icNumbers[$i % count($icNumbers)],
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'adults' => $adults,
-                'children' => $children,
-                'total_price' => round($totalPrice, 2),
-                'special_remarks' => $remarks[$i % count($remarks)],
-                'status' => ['pending', 'confirmed', 'completed', 'cancelled'][rand(0, 3)],
-                'created_at' => Carbon::now()->subDays(rand(1, 30)),
-                'updated_at' => Carbon::now()->subDays(rand(0, 29))
-            ]);
+            try {
+                Booking::create([
+                    'package_id' => $package->id,
+                    'room_type_id' => $roomType->id,
+                    'booking_name' => $names[$i % count($names)],
+                    'phone_number' => $phoneNumbers[$i % count($phoneNumbers)],
+                    'booking_ic' => $icNumbers[$i % count($icNumbers)],
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                    'adults' => $adults,
+                    'children' => $children,
+                    'total_price' => round($totalPrice, 2),
+                    'special_remarks' => $remarks[$i % count($remarks)],
+                    'status' => ['pending', 'confirmed', 'completed', 'cancelled'][rand(0, 3)]
+                ]);
+            } catch (\Exception $e) {
+                $this->command->error("Failed to create booking: " . $e->getMessage());
+                continue;
+            }
         }
 
         $this->command->info('Bookings seeded successfully!');
