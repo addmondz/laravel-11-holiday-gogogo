@@ -67,7 +67,7 @@ class ConfigurationPriceController extends Controller
             ]);
 
             // Define all charge types
-            $chargeTypes = ['base_charge', 'sur_charge', 'ext_charge'];
+            $chargeTypes = ['base_charge', 'sur_charge'];
 
             // Create prices for each type
             foreach ($chargeTypes as $type) {
@@ -171,7 +171,7 @@ class ConfigurationPriceController extends Controller
             'season_id' => 'required|exists:seasons,id',
             'date_type_id' => 'required|exists:date_types,id',
             'room_type' => 'required|exists:room_types,id',
-            'type' => 'required|string|in:base_charge,sur_charge,ext_charge',
+            'type' => 'required|string|in:base_charge,sur_charge',
             'prices' => 'required|array'
         ]);
 

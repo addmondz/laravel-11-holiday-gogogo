@@ -110,31 +110,6 @@ class TravelCalculatorController extends Controller
         $surchargeChildTotal = $surchargePerChild * $children;
         $surchargeTotal = $surchargeAdultTotal + $surchargeChildTotal;
 
-        // === Extra Charges ===
-        $extPackageConfig = PackageConfiguration::where([
-            'package_id' => $package->id,
-            'season_id' => $season->id ?? 0,
-            'date_type_id' => $dateTypeId,
-            'room_type' => $validated['room_type']
-        ])->first();
-
-        // fallback to weekday if weekend package not found
-        if ($isWeekend && (!$extPackageConfig || $extPackageConfig->prices()->where('type', 'ext_charge')->count() === 0)) {
-            $extPackageConfig = PackageConfiguration::where([
-                'package_id' => $package->id,
-                'season_id' => $season->id ?? 0,
-                'date_type_id' => $oppositeDateTypeId,
-                'room_type' => $validated['room_type']
-            ])->first();
-        }
-
-        $extPackageConfigPrice = $extPackageConfig->prices()->where('type', 'ext_charge')->where('number_of_adults', $adults)->where('number_of_children', $children)->first();
-        $extraPerAdult = (float) ($extPackageConfigPrice->adult_price ?? 0);
-        $extraPerChild = (float) ($extPackageConfigPrice->child_price ?? 0);
-        $extraAdultTotal = $extraPerAdult * $adults;
-        $extraChildTotal = $extraPerChild * $children;
-        $extraTotal = $extraAdultTotal + $extraChildTotal;
-
         // === Add-ons ===
         $userAddOns = [];
         $userAddOnsTotal = 0;
@@ -160,7 +135,7 @@ class TravelCalculatorController extends Controller
             $userAddOnsTotal += $total;
         }
 
-        $total = $baseTotal + $surchargeTotal + $extraTotal + $userAddOnsTotal;
+        $total = $baseTotal + $surchargeTotal + $userAddOnsTotal;
 
         return response()->json([
             'success' => true,
@@ -187,15 +162,6 @@ class TravelCalculatorController extends Controller
                     'child_qty' => $children,
                     'child_total' => number_format($surchargeChildTotal, 2, '.', ''),
                     'total' => number_format($surchargeTotal, 2, '.', ''),
-                ],
-                'extra_charges' => [
-                    'per_adult' => number_format($extraPerAdult, 2, '.', ''),
-                    'adult_qty' => $adults,
-                    'adult_total' => number_format($extraAdultTotal, 2, '.', ''),
-                    'per_child' => number_format($extraPerChild, 2, '.', ''),
-                    'child_qty' => $children,
-                    'child_total' => number_format($extraChildTotal, 2, '.', ''),
-                    'total' => number_format($extraTotal, 2, '.', ''),
                 ],
                 'add_ons' => [
                     'items' => $userAddOns,
@@ -363,36 +329,6 @@ class TravelCalculatorController extends Controller
         $surchargeChildTotal = $surchargePerChild * $children * $numberOfNights;
         $surchargeTotal = $surchargeAdultTotal + $surchargeChildTotal;
 
-        // === Extra Charges ===
-        $extPackageConfig = PackageConfiguration::where([
-            'package_id' => $package->id,
-            'season_id' => $season->id ?? 0,
-            'date_type_id' => $dateTypeId,
-            'room_type_id' => $validated['room_type']
-        ])->first();
-
-        // Fallback to weekday if weekend package not found
-        if ($isWeekend && (!$extPackageConfig || $extPackageConfig->prices()->where('type', 'ext_charge')->count() === 0)) {
-            $extPackageConfig = PackageConfiguration::where([
-                'package_id' => $package->id,
-                'season_id' => $season->id ?? 0,
-                'date_type_id' => $oppositeDateTypeId,
-                'room_type_id' => $validated['room_type']
-            ])->first();
-        }
-
-        $extPackageConfigPrice = $extPackageConfig->prices()
-            ->where('type', 'ext_charge')
-            ->where('number_of_adults', $adults)
-            ->where('number_of_children', $children)
-            ->first();
-
-        $extraPerAdult = (float) ($extPackageConfigPrice->adult_price ?? 0);
-        $extraPerChild = (float) ($extPackageConfigPrice->child_price ?? 0);
-        $extraAdultTotal = $extraPerAdult * $adults * $numberOfNights;
-        $extraChildTotal = $extraPerChild * $children * $numberOfNights;
-        $extraTotal = $extraAdultTotal + $extraChildTotal;
-
         // === Add-ons ===
         $userAddOns = [];
         $userAddOnsTotal = 0;
@@ -421,7 +357,7 @@ class TravelCalculatorController extends Controller
             $userAddOnsTotal += $total;
         }
 
-        $total = $baseTotal + $surchargeTotal + $extraTotal + $userAddOnsTotal;
+        $total = $baseTotal + $surchargeTotal + $userAddOnsTotal;
 
         return response()->json([
             'success' => true,
@@ -448,15 +384,6 @@ class TravelCalculatorController extends Controller
                     'child_qty' => $children,
                     'child_total' => number_format($surchargeChildTotal, 2, '.', ''),
                     'total' => number_format($surchargeTotal, 2, '.', ''),
-                ],
-                'extra_charges' => [
-                    'per_adult' => number_format($extraPerAdult, 2, '.', ''),
-                    'adult_qty' => $adults,
-                    'adult_total' => number_format($extraAdultTotal, 2, '.', ''),
-                    'per_child' => number_format($extraPerChild, 2, '.', ''),
-                    'child_qty' => $children,
-                    'child_total' => number_format($extraChildTotal, 2, '.', ''),
-                    'total' => number_format($extraTotal, 2, '.', ''),
                 ],
                 'add_ons' => [
                     'items' => $userAddOns,

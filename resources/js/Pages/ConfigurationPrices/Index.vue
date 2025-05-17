@@ -149,31 +149,6 @@
                                     </tbody>
                                 </table>
                             </div>
-
-                            <!-- Extra Charges Table -->
-                            <div v-if="hasExtraCharges" class="overflow-x-auto">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Extra Charges</h3>
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                            <th v-for="children in 6" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                {{ children-1 }} Children
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        <tr v-for="adults in 6" :key="adults">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {{ adults }} Adults
-                                            </td>
-                                            <td v-for="children in 6" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ getPrice(adults, children-1, 'ext_charge') }}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
                         </div>
                         <div v-else-if="searched" class="text-center py-8 text-gray-600 border b-a border-solid border-gray-600 rounded-md">
                             No prices found for the selected criteria.
@@ -216,10 +191,6 @@ const canSearch = computed(() => {
 
 const hasSurcharges = computed(() => {
     return configurationPrices.value.some(price => price.type === 'sur_charge');
-});
-
-const hasExtraCharges = computed(() => {
-    return configurationPrices.value.some(price => price.type === 'ext_charge');
 });
 
 const fetchPrices = () => {

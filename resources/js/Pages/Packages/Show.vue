@@ -449,33 +449,6 @@
                                             </table>
                                         </div>
 
-                                        <!-- Extra Charges Table -->
-                                        <div v-if="hasExtraCharges" class="overflow-x-auto">
-                                            <h3 class="text-lg font-medium text-gray-900 mb-4">Extra Charges</h3>
-                                            <table class="min-w-full divide-y divide-gray-200">
-                                                <thead class="bg-gray-50">
-                                                    <tr>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                                        <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            {{ children-1 }} Children
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="bg-white divide-y divide-gray-200">
-                                                    <tr v-for="adults in 4" :key="adults">
-                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                            {{ adults }} Adults
-                                                        </td>
-                                                        <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                            Adult: {{ getPrice(adults, children-1, 'ext_charge', 'adult') }}
-                                                            <br>
-                                                            Child: {{ getPrice(adults, children-1, 'ext_charge', 'child') }}
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-
                                         <!-- Edit Button -->
                                         <div class="mt-4 flex justify-end">
                                             <button
@@ -580,42 +553,6 @@
                                                                 <input
                                                                     type="number"
                                                                     v-model="priceForm.prices.sur_charge[getPriceIndex(adults, children-1, 'sur_charge')].child_price"
-                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                                    placeholder="Child Price"
-                                                                />
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-
-                                            <!-- Extra Charges Table -->
-                                            <div class="overflow-x-auto">
-                                                <h3 class="text-lg font-medium text-gray-900 mb-4">Extra Charges</h3>
-                                                <table class="min-w-full divide-y divide-gray-200">
-                                                    <thead class="bg-gray-50">
-                                                        <tr>
-                                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                                            <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                {{ children-1 }} Children
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody class="bg-white divide-y divide-gray-200">
-                                                        <tr v-for="adults in 4" :key="adults">
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                                {{ adults }} Adults
-                                                            </td>
-                                                            <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                                <input
-                                                                    type="number"
-                                                                    v-model="priceForm.prices.ext_charge[getPriceIndex(adults, children-1, 'ext_charge')].adult_price"
-                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                                    placeholder="Adult Price"
-                                                                />
-                                                                <input
-                                                                    type="number"
-                                                                    v-model="priceForm.prices.ext_charge[getPriceIndex(adults, children-1, 'ext_charge')].child_price"
                                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                                     placeholder="Child Price"
                                                                 />
@@ -1497,10 +1434,6 @@ const hasSurcharges = computed(() => {
     return configurationPrices.value.some(price => price.type === 'sur_charge');
 });
 
-const hasExtraCharges = computed(() => {
-    return configurationPrices.value.some(price => price.type === 'ext_charge');
-});
-
 const fetchPrices = () => {
     isPriceLoading.value = true;
     axios.post(route('configuration-prices.fetchPricesSearchIndex'), {
@@ -1584,7 +1517,6 @@ const priceForm = useForm({
     prices: {
         base_charge: [],
         sur_charge: [],
-        ext_charge: []
     }
 });
 
@@ -1657,10 +1589,8 @@ const submitPrices = () => {
                         prices
                     },
                     onSuccess: () => {
-                        if (type === 'ext_charge') {
-                            closePriceForm();
-                            fetchPrices();
-                        }
+                        closePriceForm();
+                        fetchPrices();
                     }
                 });
             }

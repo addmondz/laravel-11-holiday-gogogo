@@ -103,7 +103,7 @@ return new class extends Migration
         Schema::create('configuration_prices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('package_configuration_id')->constrained('package_configurations')->onDelete('cascade');
-            $table->enum('type', ['base_charge', 'sur_charge', 'ext_charge']);
+            $table->enum('type', ['base_charge', 'sur_charge']);
             $table->integer('number_of_adults')->default(1);
             $table->integer('number_of_children')->default(0);
             $table->decimal('adult_price', 10, 2)->nullable();

@@ -87,7 +87,6 @@
                                     <option value="">Select Price Type</option>
                                     <option value="base_charge">Base Charge</option>
                                     <option value="sur_charge">Surcharge</option>
-                                    <option value="ext_charge">Extra Charge</option>
                                 </select>
                             </div>
 

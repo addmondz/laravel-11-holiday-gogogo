@@ -252,16 +252,6 @@ class DatabaseSeeder extends Seeder
                                     'adult_price' => 60.00,
                                     'child_price' => 30.00,
                                 ]);
-
-                                // base charge
-                                ConfigurationPrice::create([
-                                    'package_configuration_id' => $config->id,
-                                    'type' => 'ext_charge',
-                                    'number_of_adults' => $combo['adults'],
-                                    'number_of_children' => $combo['children'],
-                                    'adult_price' => 40.00,
-                                    'child_price' => 0.00,
-                                ]);
                             }
                         }
                     }
