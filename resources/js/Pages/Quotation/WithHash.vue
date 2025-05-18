@@ -276,148 +276,174 @@
                 <div v-if="currentStep === 2">
                     <div class="bg-gray-50 rounded-lg p-4">
                         <!-- Booking Summary -->
-                        <div v-if="bookingSummary" class="mb-6 border-b pb-4">
+                        <div v-if="bookingSummary && priceBreakdown?.summary" class="mb-6 border-b pb-4">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-4 mb-6">
                                 <div>
-                                    <p class="text-sm text-gray-600">Season</p>
-                                    <p class="font-medium text-gray-900">
-                                        {{ bookingSummary.seasonType }}
-                                    </p>
+                                    <p class="text-sm text-gray-600">Season Type</p>
+                                    <p class="font-medium">{{ bookingSummary.seasonType }}</p>
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-600">Date Type</p>
-                                    <p class="font-medium text-gray-900">
-                                        {{ bookingSummary.dateType.charAt(0).toUpperCase() + bookingSummary.dateType.slice(1) }}
-                                        <span v-if="bookingSummary.isWeekend" class="ml-2 text-sm text-indigo-600">(Weekend Rate)</span>
-                                    </p>
+                                    <p class="font-medium">{{ bookingSummary.dateType ? bookingSummary.dateType.charAt(0).toUpperCase() + bookingSummary.dateType.slice(1) : '' }}</p>
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-600">Room Type</p>
-                                    <p class="font-medium text-gray-900">{{ bookingSummary.roomType.name }}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-600">Check-in</p>
-                                    <p class="font-medium text-gray-900">{{ new Date(bookingSummary.startDate).toLocaleDateString() }}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-600">Check-out</p>
-                                    <p class="font-medium text-gray-900">{{ new Date(bookingSummary.endDate).toLocaleDateString() }}</p>
+                                    <p class="font-medium">{{ bookingSummary.roomType }}</p>
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-600">Duration</p>
-                                    <p class="font-medium text-gray-900">{{ bookingSummary.nights }} nights</p>
+                                    <p class="font-medium">{{ bookingSummary.duration }} nights</p>
                                 </div>
                                 <div>
-                                    <p class="text-sm text-gray-600">Guests</p>
-                                    <p class="font-medium text-gray-900">
-                                        {{ bookingSummary.adults }} Adult{{ bookingSummary.adults > 1 ? 's' : '' }}
-                                        <span v-if="bookingSummary.children > 0">
-                                            , {{ bookingSummary.children }} Child{{ bookingSummary.children > 1 ? 'ren' : '' }}
-                                        </span>
-                                    </p>
+                                    <p class="text-sm text-gray-600">Check-in</p>
+                                    <p class="font-medium">{{ moment(bookingSummary.startDate).format('DD MMM YYYY') }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Check-out</p>
+                                    <p class="font-medium">{{ moment(bookingSummary.endDate).format('DD MMM YYYY') }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Adults</p>
+                                    <p class="font-medium">{{ bookingSummary.adults }} × {{ formatNumber(priceBreakdown?.summary?.base_charges?.adult?.price_per_night || 0) }} MYR/night</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Children</p>
+                                    <p class="font-medium">{{ bookingSummary.children }} × {{ formatNumber(priceBreakdown?.summary?.base_charges?.child?.price_per_night || 0) }} MYR/night</p>
                                 </div>
                             </div>
                         </div>
 
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2 text-right">Estimated Price</h3>
-                        <p class="text-2xl font-bold text-indigo-600 text-right">MYR {{ formatNumber(calculatedPrice) }}</p>
-
-                        <!-- Price Breakdown -->
-                        <div v-if="priceBreakdown" class="mt-4 space-y-4">
-                            <!-- Base Charge -->
-                            <div v-if="priceBreakdown.base_charge" class="border-t pt-4">
-                                <h4 class="font-medium text-gray-900 mb-2">Base Charge (per night)</h4>
-                                <div class="space-y-1 text-sm text-gray-600">
-                                    <div class="flex justify-between">
-                                        <span>Adults ({{ priceBreakdown.base_charge.adult_qty }})</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.base_charge.per_adult) }} × {{ bookingSummary.nights }} nights</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span>Children ({{ priceBreakdown.base_charge.child_qty }})</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.base_charge.per_child) }} × {{ bookingSummary.nights }} nights</span>
-                                    </div>
-                                    <div class="flex justify-between font-medium text-gray-900">
-                                        <span>Subtotal</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.base_charge.total) }}</span>
-                                    </div>
-                                </div>
+                        <!-- Nightly Breakdown -->
+                        <div v-if="priceBreakdown?.nights?.length" class="mb-6">
+                            <h4 class="text-md font-semibold text-gray-900 mb-3">Nightly Breakdown</h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Night</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Season</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base Charge</th>
+                                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surcharge</th>
+                                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Add-ons</th>
+                                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <template v-for="(night, index) in priceBreakdown.nights" :key="index">
+                                            <!-- Main row -->
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    Night {{ index + 1 }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ moment(night.date).format('DD MMM YYYY') }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ night.season }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ night.season_type }} - {{ night.date_type }}
+                                                    <span v-if="night.is_weekend" class="ml-1 text-xs text-indigo-600">(Weekend)</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                    <div class="text-gray-900">{{ formatNumber(night.base_charge.total) }} MYR</div>
+                                                    <div class="text-xs text-gray-500">
+                                                        Adult: {{ formatNumber(night.base_charge.adult.total) }} MYR<br>
+                                                        Child: {{ formatNumber(night.base_charge.child.total) }} MYR
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                    <div class="text-gray-900">{{ formatNumber(night.surcharge.total) }} MYR</div>
+                                                    <div class="text-xs text-gray-500">
+                                                        Adult: {{ formatNumber(night.surcharge.adult.total) }} MYR<br>
+                                                        Child: {{ formatNumber(night.surcharge.child.total) }} MYR
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                    <div v-if="night.add_ons && night.add_ons.length > 0">
+                                                        <div v-for="(addon, addonIndex) in night.add_ons" :key="addonIndex" class="text-xs text-gray-500">
+                                                            {{ addon.name }}: {{ formatNumber(addon.total) }} MYR
+                                                        </div>
+                                                    </div>
+                                                    <div v-else class="text-gray-500">-</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-gray-900">
+                                                    {{ formatNumber(night.total) }} MYR
+                                                </td>
+                                            </tr>
+                                            <!-- Add-ons details row (if any) -->
+                                            <tr v-if="night.add_ons && night.add_ons.length > 0" class="bg-gray-50">
+                                                <td colspan="8" class="px-6 py-3">
+                                                    <div class="text-xs text-gray-500">
+                                                        <div v-for="(addon, addonIndex) in night.add_ons" :key="addonIndex" class="mb-1">
+                                                            <span class="font-medium">{{ addon.name }}:</span>
+                                                            <span class="ml-2">
+                                                                Adults ({{ addon.adult_qty }} × {{ formatNumber(addon.adult_price) }} MYR) = {{ formatNumber(addon.adult_total) }} MYR
+                                                                <span v-if="addon.child_qty > 0" class="ml-2">
+                                                                    | Children ({{ addon.child_qty }} × {{ formatNumber(addon.child_price) }} MYR) = {{ formatNumber(addon.child_total) }} MYR
+                                                                </span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
                             </div>
+                        </div>
 
-                            <!-- Surcharge -->
-                            <div v-if="priceBreakdown.surcharge && priceBreakdown.surcharge.total !== '0.00'" class="border-t pt-4">
-                                <h4 class="font-medium text-gray-900 mb-2">Surcharge (per night)</h4>
-                                <div class="space-y-1 text-sm text-gray-600">
-                                    <div class="flex justify-between">
-                                        <span>Adults ({{ priceBreakdown.surcharge.adult_qty }})</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.surcharge.per_adult) }} × {{ bookingSummary.nights }} nights</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span>Children ({{ priceBreakdown.surcharge.child_qty }})</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.surcharge.per_child) }} × {{ bookingSummary.nights }} nights</span>
-                                    </div>
-                                    <div class="flex justify-between font-medium text-gray-900">
-                                        <span>Subtotal</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.surcharge.total) }}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Extra Charges -->
-                            <div v-if="priceBreakdown.extra_charges && priceBreakdown.extra_charges.total && priceBreakdown.extra_charges.total !== '0.00'" class="border-t pt-4">
-                                <h4 class="font-medium text-gray-900 mb-2">Extra Charges (per night)</h4>
-                                <div class="space-y-1 text-sm text-gray-600">
-                                    <div class="flex justify-between">
-                                        <span>Adults ({{ priceBreakdown.extra_charges.adult_qty }})</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.extra_charges.per_adult) }} × {{ bookingSummary.nights }} nights</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span>Children ({{ priceBreakdown.extra_charges.child_qty }})</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.extra_charges.per_child) }} × {{ bookingSummary.nights }} nights</span>
-                                    </div>
-                                    <div class="flex justify-between font-medium text-gray-900">
-                                        <span>Subtotal</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.extra_charges.total) }}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Add-ons -->
-                            <div v-if="priceBreakdown.add_ons && priceBreakdown.add_ons.items && priceBreakdown.add_ons.items.length > 0" class="border-t pt-4">
-                                <h4 class="font-medium text-gray-900 mb-2">Add-ons (per night)</h4>
-                                <div class="space-y-3">
-                                    <div v-for="(item, index) in priceBreakdown.add_ons.items" :key="index" class="text-sm text-gray-600">
-                                        <div class="font-medium text-gray-900">{{ item.name }}</div>
-                                        <div class="space-y-1 mt-1">
-                                            <div class="flex justify-between">
-                                                <span>Adults ({{ item.adult_qty }})</span>
-                                                <span>MYR {{ formatNumber(item.adult_price) }} × {{ bookingSummary.nights }} nights</span>
-                                            </div>
-                                            <div class="flex justify-between">
-                                                <span>Children ({{ item.child_qty }})</span>
-                                                <span>MYR {{ formatNumber(item.child_price) }} × {{ bookingSummary.nights }} nights</span>
-                                            </div>
-                                            <div class="flex justify-between font-medium text-gray-900">
-                                                <span>Subtotal</span>
-                                                <span>MYR {{ formatNumber(item.total) }}</span>
-                                            </div>
+                        <!-- Overall Summary -->
+                        <div v-if="priceBreakdown?.summary" class="border-t border-gray-200 pt-4">
+                            <h4 class="text-md font-semibold text-gray-900 mb-3">Overall Summary</h4>
+                            <div class="space-y-2">
+                                <!-- Base Charges Summary -->
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-medium">Base Charges</p>
+                                        <div class="text-sm text-gray-600 ml-4">
+                                            <p>Adults: {{ formatNumber(priceBreakdown?.summary?.base_charges?.adult?.total || 0) }} MYR</p>
+                                            <p>Children: {{ formatNumber(priceBreakdown?.summary?.base_charges?.child?.total || 0) }} MYR</p>
                                         </div>
                                     </div>
-                                    <div v-if="priceBreakdown.add_ons.total" class="flex justify-between font-medium text-gray-900 border-t pt-2">
-                                        <span>Add-ons Total</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.add_ons.total) }}</span>
-                                    </div>
+                                    <p class="font-medium">{{ formatNumber(priceBreakdown?.summary?.base_charges?.total || 0) }} MYR</p>
                                 </div>
-                            </div>
 
-                            <!-- Total -->
-                            <div class="border-t pt-4">
-                                <div class="flex justify-between text-lg font-bold text-gray-900">
-                                    <span>Total</span>
-                                    <span>MYR {{ formatNumber(calculatedPrice || 0) }}</span>
+                                <!-- Surcharges Summary -->
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-medium">Surcharges</p>
+                                        <div class="text-sm text-gray-600 ml-4">
+                                            <p>Adults: {{ formatNumber(priceBreakdown?.summary?.surcharges?.adult?.total || 0) }} MYR</p>
+                                            <p>Children: {{ formatNumber(priceBreakdown?.summary?.surcharges?.child?.total || 0) }} MYR</p>
+                                        </div>
+                                    </div>
+                                    <p class="font-medium">{{ formatNumber(priceBreakdown?.summary?.surcharges?.total || 0) }} MYR</p>
+                                </div>
+
+                                <!-- Add-ons Summary -->
+                                <div v-if="priceBreakdown?.summary?.add_ons?.total > 0" class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-medium">Add-ons</p>
+                                        <div class="text-sm text-gray-600 ml-4">
+                                            <p>Adults: {{ formatNumber(priceBreakdown?.summary?.add_ons?.adult?.total || 0) }} MYR</p>
+                                            <p>Children: {{ formatNumber(priceBreakdown?.summary?.add_ons?.child?.total || 0) }} MYR</p>
+                                        </div>
+                                    </div>
+                                    <p class="font-medium">{{ formatNumber(priceBreakdown?.summary?.add_ons?.total || 0) }} MYR</p>
+                                </div>
+
+                                <!-- Grand Total -->
+                                <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                                    <p class="text-lg font-semibold">Grand Total</p>
+                                    <p class="text-lg font-semibold">{{ formatNumber(priceBreakdown?.summary?.grand_total || 0) }} MYR</p>
                                 </div>
                             </div>
                         </div>
+
                         <div class="flex justify-between mt-6">
                             <button
                                 @click="currentStep = 1"
@@ -527,6 +553,7 @@ const packageData = ref(null);
 const currentImageIndex = ref(0);
 const calculatedPrice = ref(null);
 const priceBreakdown = ref(null);
+const nightlyBreakdown = ref([]);
 const roomTypes = ref([]);
 const selectedRoomType = ref(null);
 const isLoading = ref(true);
@@ -740,26 +767,41 @@ const calculatePrice = async () => {
         });
 
         if (response.data.success) {
-            calculatedPrice.value = parseFloat(response.data.total);
-            priceBreakdown.value = response.data.breakdown;
+            // Update the state with the complete response data
+            calculatedPrice.value = parseFloat(response.data.total) || 0;
+            priceBreakdown.value = response.data;
+            
+            // Update booking summary
+            const selectedRoomType = roomTypes.value.find(rt => rt.id === form.room_type_id);
             bookingSummary.value = {
-                roomType: roomTypes.value.find(rt => rt.id === form.room_type_id),
+                roomType: selectedRoomType?.name || '',
                 startDate: form.start_date,
                 endDate: form.end_date,
                 adults: form.adults,
                 children: form.children,
-                nights: Math.ceil((new Date(form.end_date) - new Date(form.start_date)) / (1000 * 60 * 60 * 24)),
-                season: response.data.season,
-                seasonType: response.data.season_type,
-                dateType: response.data.date_type,
-                isWeekend: response.data.is_weekend
+                duration: Math.ceil((new Date(form.end_date) - new Date(form.start_date)) / (1000 * 60 * 60 * 24)),
+                seasonType: response.data.season_type || '',
+                dateType: response.data.date_type || '',
+                isWeekend: response.data.is_weekend || false
             };
+
+            currentStep.value = 2;
+        } else {
+            throw new Error(response.data.message || 'Failed to calculate price');
         }
     } catch (error) {
         console.error('Error calculating price:', error);
-        calculatedPrice.value = null;
+        calculatedPrice.value = 0;
         priceBreakdown.value = null;
         bookingSummary.value = null;
+        
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.response?.data?.message || error.message || 'Failed to calculate price',
+            timer: 1500,
+            showConfirmButton: false
+        });
     }
 };
 
@@ -769,10 +811,12 @@ watch([() => form.start_date, () => form.end_date], () => {
 });
 
 const formatNumber = (number) => {
-    return new Intl.NumberFormat('en-US', {
+    const num = parseFloat(number);
+    if (isNaN(num)) return '0.00';
+    return num.toLocaleString('en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-    }).format(number);
+    });
 };
 
 // Add new methods for step handling
