@@ -1198,7 +1198,9 @@ const deleteSeason = (id) => {
         showCancelButton: true,
         confirmButtonColor: '#e3342f',
         cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonText: 'Yes, delete it!',
+        showConfirmButton: true,
+        showCloseButton: true
     }).then((result) => {
         if (result.isConfirmed) {
             router.delete(route('seasons.destroy', id), {
@@ -1209,11 +1211,14 @@ const deleteSeason = (id) => {
                 preserveState: true,
                 preserveScroll: true,
                 onSuccess: () => {
-                    Swal.fire(
-                        'Deleted!',
-                        'Season has been deleted.',
-                        'success'
-                    );
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Season has been deleted.',
+                        icon: 'success',
+                        showConfirmButton: true,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#4F46E5'
+                    });
                     handleSeasonPageChange(1);
                 }
             });
@@ -1316,7 +1321,9 @@ const deleteDateTypeRange = (id) => {
         showCancelButton: true,
         confirmButtonColor: '#e3342f',
         cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonText: 'Yes, delete it!',
+        showConfirmButton: true,
+        showCloseButton: true
     }).then((result) => {
         if (result.isConfirmed) {
             router.delete(route('date-type-ranges.destroy', id), {
@@ -1327,11 +1334,14 @@ const deleteDateTypeRange = (id) => {
                 preserveState: true,
                 preserveScroll: true,
                 onSuccess: () => {
-                    Swal.fire(
-                        'Deleted!',
-                        'Date range has been deleted.',
-                        'success'
-                    );
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Date range has been deleted.',
+                        icon: 'success',
+                        showConfirmButton: true,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#4F46E5'
+                    });
                     handleDateTypeRangePageChange(1);
                 }
             });
@@ -1400,7 +1410,9 @@ const deleteRoomType = (id) => {
         showCancelButton: true,
         confirmButtonColor: '#e3342f',
         cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonText: 'Yes, delete it!',
+        showConfirmButton: true,
+        showCloseButton: true
     }).then((result) => {
         if (result.isConfirmed) {
             router.delete(route('room-types.destroy', id), {
@@ -1408,11 +1420,14 @@ const deleteRoomType = (id) => {
                 preserveState: true,
                 preserveScroll: true,
                 onSuccess: () => {
-                    Swal.fire(
-                        'Deleted!',
-                        'Room type has been deleted.',
-                        'success'
-                    );
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Room type has been deleted.',
+                        icon: 'success',
+                        showConfirmButton: true,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#4F46E5'
+                    });
                     handlePageChange(1);
                 }
             });
@@ -1593,8 +1608,9 @@ const submitPrices = () => {
                     icon: 'success',
                     title: 'Success!',
                     text: 'Prices updated successfully',
-                    timer: 1500,
-                    showConfirmButton: false
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#4F46E5'
                 });
             })
             .catch(error => {
@@ -1603,8 +1619,9 @@ const submitPrices = () => {
                     icon: 'error',
                     title: 'Error',
                     text: error.response?.data?.message || 'Failed to update prices',
-                    timer: 1500,
-                    showConfirmButton: false
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#4F46E5'
                 });
             });
     } else {
@@ -1625,8 +1642,9 @@ const submitPrices = () => {
                     icon: 'success',
                     title: 'Success!',
                     text: 'Prices created successfully',
-                    timer: 1500,
-                    showConfirmButton: false
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#4F46E5'
                 });
             })
             .catch(error => {
@@ -1635,8 +1653,9 @@ const submitPrices = () => {
                     icon: 'error',
                     title: 'Error',
                     text: error.response?.data?.message || 'Failed to create prices',
-                    timer: 1500,
-                    showConfirmButton: false
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#4F46E5'
                 });
             });
     }
@@ -1655,16 +1674,18 @@ const copyLink = (link) => {
             icon: 'success',
             title: 'Copied!',
             text: 'Link has been copied to clipboard',
-            timer: 1500,
-            showConfirmButton: false
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#4F46E5'
         });
     }).catch(() => {
         Swal.fire({
             icon: 'error',
             title: 'Error',
             text: 'Failed to copy link',
-            timer: 1500,
-            showConfirmButton: false
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#4F46E5'
         });
     });
 };

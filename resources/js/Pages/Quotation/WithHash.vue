@@ -782,8 +782,9 @@ const calculatePrice = async () => {
             icon: 'error',
             title: 'Error',
             text: error.response?.data?.message || error.message || 'Failed to calculate price',
-            timer: 1500,
-            showConfirmButton: false
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#4F46E5'
         });
     }
 };
@@ -811,7 +812,7 @@ const handleStep1Submit = async () => {
     }
 };
 
-// Update submitBooking to use SweetAlert
+// Update submitBooking to use SweetAlert with button click
 const submitBooking = async () => {
     if (!calculatedPrice.value || !bookingSummary.value) return;
 
@@ -837,7 +838,9 @@ const submitBooking = async () => {
                 icon: 'success',
                 title: 'Booking Successful!',
                 text: 'Your booking has been submitted successfully.',
-                confirmButtonText: 'OK'
+                showConfirmButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#4F46E5'
             });
             window.location.reload();
         }
@@ -847,7 +850,9 @@ const submitBooking = async () => {
             icon: 'error',
             title: 'Booking Failed',
             text: 'Failed to submit booking. Please try again.',
-            confirmButtonText: 'OK'
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#4F46E5'
         });
     } finally {
         isSubmitting.value = false;
