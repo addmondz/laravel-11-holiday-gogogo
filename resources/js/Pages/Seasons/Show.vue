@@ -45,8 +45,8 @@
                             </div>
 
                             <div>
-                                <h4 class="text-sm font-medium text-gray-500">Priority</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ season.priority }}</p>
+                                <h4 class="text-sm font-medium text-gray-500">Package</h4>
+                                <p class="mt-1 text-sm text-gray-900">{{ season.package.name }}</p>
                             </div>
 
                             <div>

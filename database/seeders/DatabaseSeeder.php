@@ -28,6 +28,8 @@ class DatabaseSeeder extends Seeder
     {
         $dummyPackagesCount = 2;
         // $dummyPackagesCount = 20;
+        $earliestDate = Carbon::parse('1970-01-01');
+        $earliestNextDate = Carbon::parse('1970-01-02');
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
@@ -161,45 +163,66 @@ class DatabaseSeeder extends Seeder
             ]);
 
             // 🗓️ SEASONS (date ranges for season types)
-            $defaultSeason = Season::create([
+            // Create non-overlapping seasons for each package
+            // Default season (Jan 1 - Feb 28)
+            Season::create([
                 'season_type_id' => $defaultSeason->id,
-                'start_date' => now(),
-                'end_date' => now(),
-                'priority' => 0,
+                'start_date' => $earliestDate,
+                'end_date' => $earliestNextDate,
                 'package_id' => $pkg->id
             ]);
 
-            $earlyBirdSeason = Season::create([
+            // Early Bird season (Mar 1 - May 31)
+            Season::create([
                 'season_type_id' => $earlyBird->id,
-                'start_date' => '2025-01-01',
-                'end_date' => '2025-02-28',
-                'priority' => 1,
+                'start_date' => '2025-03-01',
+                'end_date' => '2025-05-31',
                 'package_id' => $pkg->id
             ]);
 
-            $peakSeasonSeason = Season::create([
+            // Peak Season (Jun 1 - Aug 31)
+            Season::create([
                 'season_type_id' => $peakSeason->id,
                 'start_date' => '2025-06-01',
                 'end_date' => '2025-08-31',
-                'priority' => 2,
+                'package_id' => $pkg->id
+            ]);
+
+            // Public Holiday 120 (Sep 1 - Oct 31)
+            Season::create([
+                'season_type_id' => $ph120->id,
+                'start_date' => '2025-09-01',
+                'end_date' => '2025-10-31',
+                'package_id' => $pkg->id
+            ]);
+
+            // Public Holiday 60 (Nov 1 - Dec 31)
+            Season::create([
+                'season_type_id' => $ph60->id,
+                'start_date' => '2025-11-01',
+                'end_date' => '2025-12-31',
                 'package_id' => $pkg->id
             ]);
 
             // 📆 DATE TYPE RANGES
+            // Create non-overlapping date type ranges for each package
+            // Weekday (Jan 1 - Dec 31, Monday to Thursday)
             DateTypeRange::create([
                 'date_type_id' => $weekday->id,
-                'start_date' => now(),
-                'end_date' => now(),
+                'start_date' => $earliestDate,
+                'end_date' => $earliestNextDate,
                 'package_id' => $pkg->id
             ]);
 
+            // Weekend (Jan 1 - Dec 31, Friday to Sunday)
             DateTypeRange::create([
                 'date_type_id' => $weekend->id,
-                'start_date' => now(),
-                'end_date' => now(),
+                'start_date' => $earliestDate,
+                'end_date' => $earliestNextDate,
                 'package_id' => $pkg->id
             ]);
 
+            // Roomsur 30 (Jul 5 - Jul 6)
             DateTypeRange::create([
                 'date_type_id' => $roomsur30->id,
                 'start_date' => '2025-07-05',
@@ -207,6 +230,7 @@ class DatabaseSeeder extends Seeder
                 'package_id' => $pkg->id
             ]);
 
+            // Roomsur 60 (Dec 1 - Dec 15)
             DateTypeRange::create([
                 'date_type_id' => $roomsur60->id,
                 'start_date' => '2025-12-01',
@@ -276,17 +300,7 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // create dummy season type and date types
-        for ($i = 0; $i < 20; $i++) {
-            SeasonType::create([
-                'name' => 'Dummy Season Type Test ' . $i + 1,
-            ]);
-
-            DateType::create([
-                'name' => 'Dummy Date Type Test ' . $i + 1,
-            ]);
-        }
-
+        // Remove dummy season types and date types creation since we want to maintain a clean set of types
         // After all other seeders
         $this->call([
             BookingSeeder::class,

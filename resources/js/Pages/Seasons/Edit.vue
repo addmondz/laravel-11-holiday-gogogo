@@ -60,17 +60,21 @@
                                 </div>
 
                                 <div>
-                                    <label for="priority" class="block text-sm font-medium text-gray-700">Priority</label>
-                                    <input
-                                        type="number"
-                                        id="priority"
-                                        v-model="form.priority"
+                                    <label for="package_id" class="block text-sm font-medium text-gray-700">Package</label>
+                                    <select
+                                        id="package_id"
+                                        v-model="form.package_id"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         required
-                                        min="1"
-                                    />
-                                    <div v-if="form.errors.priority" class="mt-1 text-sm text-red-600">
-                                        {{ form.errors.priority }}
+                                        disabled
+                                    >
+                                        <option value="">Select a package</option>
+                                        <option v-for="pkg in packages" :key="pkg.id" :value="pkg.id">
+                                            {{ pkg.name }}
+                                        </option>
+                                    </select>
+                                    <div v-if="form.errors.package_id" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.package_id }}
                                     </div>
                                 </div>
                             </div>
@@ -109,7 +113,8 @@ import { computed } from 'vue';
 
 const props = defineProps({
     season: Object,
-    seasonTypes: Array
+    seasonTypes: Array,
+    packages: Array
 });
 
 const breadcrumbs = computed(() => [
@@ -121,7 +126,7 @@ const form = useForm({
     season_type_id: props.season.season_type_id,
     start_date: props.season.start_date,
     end_date: props.season.end_date,
-    priority: props.season.priority
+    package_id: props.season.package_id
 });
 
 const router = useRouter();

@@ -206,7 +206,6 @@
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Season Type</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                             </tr>
                                         </thead>
@@ -215,7 +214,6 @@
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ season.type.name }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ moment(season.start_date).format('DD/MM/YYYY') }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ moment(season.end_date).format('DD/MM/YYYY') }}</td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ season.priority }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                     <button
                                                         @click="editSeason(season)"
@@ -232,7 +230,7 @@
                                                 </td>
                                             </tr>
                                             <tr v-if="seasonsData.data.length === 0">
-                                                <td colspan="5" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No seasons found</td>
+                                                <td colspan="4" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No seasons found</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -724,6 +722,7 @@
                                 id="edit_season_type_id"
                                 v-model="editSeasonForm.season_type_id"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': editSeasonForm.errors.season_type_id }"
                                 required
                             >
                                 <option value="">Select a season type</option>
@@ -743,6 +742,7 @@
                                 id="edit_start_date"
                                 v-model="editSeasonForm.start_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': editSeasonForm.errors.start_date }"
                                 required
                             />
                             <div v-if="editSeasonForm.errors.start_date" class="mt-1 text-sm text-red-600">
@@ -757,25 +757,11 @@
                                 id="edit_end_date"
                                 v-model="editSeasonForm.end_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': editSeasonForm.errors.end_date }"
                                 required
                             />
                             <div v-if="editSeasonForm.errors.end_date" class="mt-1 text-sm text-red-600">
                                 {{ editSeasonForm.errors.end_date }}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label for="edit_priority" class="block text-sm font-medium text-gray-700">Priority</label>
-                            <input
-                                type="number"
-                                id="edit_priority"
-                                v-model="editSeasonForm.priority"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                min="1"
-                                required
-                            />
-                            <div v-if="editSeasonForm.errors.priority" class="mt-1 text-sm text-red-600">
-                                {{ editSeasonForm.errors.priority }}
                             </div>
                         </div>
                     </div>
@@ -801,9 +787,17 @@
         </Modal>
 
         <!-- Add Season Modal -->
-        <Modal :show="showAddSeasonModal" @close="showAddSeasonModal = false">
+        <Modal :show="showAddSeasonModal" @close="() => {
+            showAddSeasonModal = false;
+            seasonForm.reset();
+            seasonForm.clearErrors();
+            addSeasonErrors.value = '';
+        }">
             <div class="p-6">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Add Season</h2>
+                <div v-if="addSeasonErrors" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {{ addSeasonErrors }}
+                </div>
                 <form @submit.prevent="submitSeason">
                     <div class="space-y-4">
                         <div>
@@ -812,6 +806,7 @@
                                 id="season_type_id"
                                 v-model="seasonForm.season_type_id"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': seasonForm.errors.season_type_id }"
                                 required
                             >
                                 <option value="">Select a season type</option>
@@ -831,6 +826,7 @@
                                 id="start_date"
                                 v-model="seasonForm.start_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': seasonForm.errors.start_date }"
                                 required
                             />
                             <div v-if="seasonForm.errors.start_date" class="mt-1 text-sm text-red-600">
@@ -845,25 +841,11 @@
                                 id="end_date"
                                 v-model="seasonForm.end_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': seasonForm.errors.end_date }"
                                 required
                             />
                             <div v-if="seasonForm.errors.end_date" class="mt-1 text-sm text-red-600">
                                 {{ seasonForm.errors.end_date }}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label for="priority" class="block text-sm font-medium text-gray-700">Priority</label>
-                            <input
-                                type="number"
-                                id="priority"
-                                v-model="seasonForm.priority"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                min="1"
-                                required
-                            />
-                            <div v-if="seasonForm.errors.priority" class="mt-1 text-sm text-red-600">
-                                {{ seasonForm.errors.priority }}
                             </div>
                         </div>
                     </div>
@@ -871,7 +853,11 @@
                     <div class="mt-6 flex justify-end space-x-3">
                         <button
                             type="button"
-                            @click="showAddSeasonModal = false"
+                            @click="() => {
+                                showAddSeasonModal = false;
+                                seasonForm.reset();
+                                seasonForm.clearErrors();
+                            }"
                             class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
                         >
                             Cancel
@@ -889,9 +875,17 @@
         </Modal>
 
         <!-- Add Date Type Range Modal -->
-        <Modal :show="showAddDateTypeRangeModal" @close="showAddDateTypeRangeModal = false">
+        <Modal :show="showAddDateTypeRangeModal" @close="() => {
+            showAddDateTypeRangeModal = false;
+            dateTypeRangeForm.reset();
+            dateTypeRangeForm.clearErrors();
+            addDateTypeRangeErrors.value = '';
+        }">
             <div class="p-6">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Add Date Range</h2>
+                <div v-if="addDateTypeRangeErrors" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {{ addDateTypeRangeErrors }}
+                </div>
                 <form @submit.prevent="submitDateTypeRange">
                     <div class="space-y-4">
                         <div>
@@ -900,6 +894,7 @@
                                 id="date_type_id"
                                 v-model="dateTypeRangeForm.date_type_id"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': dateTypeRangeForm.errors.date_type_id }"
                                 required
                             >
                                 <option value="">Select a date type</option>
@@ -919,6 +914,7 @@
                                 id="start_date"
                                 v-model="dateTypeRangeForm.start_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': dateTypeRangeForm.errors.start_date }"
                                 required
                             />
                             <div v-if="dateTypeRangeForm.errors.start_date" class="mt-1 text-sm text-red-600">
@@ -933,6 +929,7 @@
                                 id="end_date"
                                 v-model="dateTypeRangeForm.end_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': dateTypeRangeForm.errors.end_date }"
                                 required
                             />
                             <div v-if="dateTypeRangeForm.errors.end_date" class="mt-1 text-sm text-red-600">
@@ -973,6 +970,7 @@
                                 id="edit_date_type_id"
                                 v-model="editDateTypeRangeForm.date_type_id"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': editDateTypeRangeForm.errors.date_type_id }"
                                 required
                             >
                                 <option value="">Select a date type</option>
@@ -992,6 +990,7 @@
                                 id="edit_start_date"
                                 v-model="editDateTypeRangeForm.start_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': editDateTypeRangeForm.errors.start_date }"
                                 required
                             />
                             <div v-if="editDateTypeRangeForm.errors.start_date" class="mt-1 text-sm text-red-600">
@@ -1006,6 +1005,7 @@
                                 id="edit_end_date"
                                 v-model="editDateTypeRangeForm.end_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': editDateTypeRangeForm.errors.end_date }"
                                 required
                             />
                             <div v-if="editDateTypeRangeForm.errors.end_date" class="mt-1 text-sm text-red-600">
@@ -1107,8 +1107,6 @@ const editSeasonForm = useForm({
     season_type_id: '',
     start_date: '',
     end_date: '',
-    priority: 1,
-    return_to_package: true,
     package_id: props.pkg.id
 });
 
@@ -1117,8 +1115,6 @@ const seasonForm = useForm({
     season_type_id: '',
     start_date: '',
     end_date: '',
-    priority: 1,
-    return_to_package: true,
     package_id: props.pkg.id
 });
 
@@ -1144,7 +1140,8 @@ const editDateTypeRangeForm = useForm({
 const roomTypesData = ref(props.pkg.load_room_types);
 const seasonsData = ref(props.seasons);
 const dateTypeRangesData = ref(props.dateTypeRanges);
-
+const addSeasonErrors = ref('');
+const addDateTypeRangeErrors = ref('');
 const roomTypesPagination = computed(() => ({
     links: roomTypesData.value.links,
     from: roomTypesData.value.from,
@@ -1251,7 +1248,6 @@ const editSeason = (season) => {
     editSeasonForm.season_type_id = season.season_type_id;
     editSeasonForm.start_date = season.start_date;
     editSeasonForm.end_date = season.end_date;
-    editSeasonForm.priority = season.priority;
     showEditSeasonModal.value = true;
 };
 
@@ -1269,12 +1265,18 @@ const updateSeason = () => {
 
 const submitSeason = () => {
     seasonForm.post(route('seasons.store'), {
+        preserveScroll: true,
         onSuccess: () => {
             showAddSeasonModal.value = false;
             seasonForm.reset();
             seasonForm.return_to_package = true;
             seasonForm.package_id = props.pkg.id;
             handleSeasonPageChange(1);
+        },
+        onError: () => {
+            // Keep the modal open and show errors
+            showAddSeasonModal.value = true;
+            addSeasonErrors.value = seasonForm.errors.date_range;
         }
     });
 };
@@ -1295,6 +1297,11 @@ const submitDateTypeRange = () => {
             dateTypeRangeForm.return_to_package = true;
             dateTypeRangeForm.package_id = props.pkg.id;
             handleDateTypeRangePageChange(1);
+        },
+        onError: () => {
+            showAddDateTypeRangeModal.value = true;
+            console.log(dateTypeRangeForm.errors);
+            addDateTypeRangeErrors.value = dateTypeRangeForm.errors.date_range;
         }
     });
 };

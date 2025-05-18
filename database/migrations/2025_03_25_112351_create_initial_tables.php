@@ -54,7 +54,6 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->foreignId('package_id')->constrained()->onDelete('cascade');
-            $table->integer('priority')->default(0);
             $table->timestamps();
             $table->softDeletes();
         });

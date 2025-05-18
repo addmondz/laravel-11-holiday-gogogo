@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DateType;
 use App\Models\DateTypeRange;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -37,6 +38,18 @@ class DateTypeRangeController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'package_id' => 'required|exists:packages,id'
         ]);
+
+        // Check for overlapping dates
+        if (DateTypeRange::hasOverlappingDates($validated['start_date'], $validated['end_date'], $validated['package_id'])) {
+            $dateTypeRange = DateTypeRange::where('package_id', $validated['package_id'])
+                ->where('start_date', '<=', $validated['end_date'])
+                ->where('end_date', '>=', $validated['start_date'])
+                ->first();
+
+            return back()->withErrors([
+                'date_range' => 'This date range overlaps with an existing date type range for this package in the date range of ' . Carbon::parse($dateTypeRange->start_date)->format('d-m-Y') . ' to ' . Carbon::parse($dateTypeRange->end_date)->format('d-m-Y')
+            ]);
+        }
 
         DateTypeRange::create($validated);
 
