@@ -513,12 +513,14 @@
                                                                     v-model="priceForm.prices.base_charge[getPriceIndex(adults, children-1, 'base_charge')].adult_price"
                                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                                     placeholder="Adult Price"
+                                                                    step="0.01"
                                                                 />
                                                                 <input
                                                                     type="number"
                                                                     v-model="priceForm.prices.base_charge[getPriceIndex(adults, children-1, 'base_charge')].child_price"
                                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                                     placeholder="Child Price"
+                                                                    step="0.01"
                                                                 />
                                                             </td>
                                                         </tr>
@@ -548,12 +550,14 @@
                                                                     type="number"
                                                                     v-model="priceForm.prices.sur_charge[getPriceIndex(adults, children-1, 'sur_charge')].adult_price"
                                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                    step="0.01"
                                                                     placeholder="Adult Price"
                                                                 />
                                                                 <input
                                                                     type="number"
                                                                     v-model="priceForm.prices.sur_charge[getPriceIndex(adults, children-1, 'sur_charge')].child_price"
                                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                    step="0.01"
                                                                     placeholder="Child Price"
                                                                 />
                                                             </td>
@@ -1572,47 +1576,69 @@ const closePriceForm = () => {
 
 const submitPrices = () => {
     if (isEditMode.value) {
-        // Update each type of price
-        Object.keys(priceForm.prices).forEach(type => {
-            const prices = priceForm.prices[type].filter(price =>
-                price.adult_price !== '' || price.child_price !== ''
-            );
+        // Update prices using the package configuration ID
+        const data = {
+            package_id: props.pkg.id,
+            season_type_id: selectedSeason.value,
+            date_type_id: selectedDateType.value,
+            room_type: selectedRoomType.value,
+            prices: priceForm.prices
+        };
 
-            if (prices.length > 0) {
-                priceForm.put(route('configuration-prices.update', configurationPrices.value[0]?.id), {
-                    data: {
-                        package_id: priceForm.package_id,
-                        season_id: priceForm.season_id,
-                        date_type_id: priceForm.date_type_id,
-                        room_type: priceForm.room_type,
-                        type,
-                        prices
-                    },
-                    onSuccess: () => {
-                        closePriceForm();
-                        fetchPrices();
-                    }
-                });
-            }
-        });
-    } else {
-        // Create prices
-        priceForm.post(route('configuration-prices.store'), {
-            data: {
-                package_id: priceForm.package_id,
-                season_id: priceForm.season_id,
-                date_type_id: priceForm.date_type_id,
-                room_type: priceForm.room_type,
-                prices: priceForm.prices
-            },
-            onSuccess: (response) => {
+        axios.put(route('configuration-prices.update', configurationPrices.value[0]?.package_configuration_id), data)
+            .then(() => {
                 closePriceForm();
                 fetchPrices();
-            },
-            onError: (errors) => {
-                console.error('Error creating prices:', errors);
-            }
-        });
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Prices updated successfully',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            })
+            .catch(error => {
+                console.error('Error updating prices:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'Failed to update prices',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            });
+    } else {
+        // Create prices
+        const data = {
+            package_id: props.pkg.id,
+            season_type_id: selectedSeason.value,
+            date_type_id: selectedDateType.value,
+            room_type: selectedRoomType.value,
+            prices: priceForm.prices
+        };
+
+        axios.post(route('configuration-prices.store'), data)
+            .then(() => {
+                closePriceForm();
+                fetchPrices();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Prices created successfully',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            })
+            .catch(error => {
+                console.error('Error creating prices:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'Failed to create prices',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            });
     }
 };
 

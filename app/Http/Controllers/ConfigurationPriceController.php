@@ -166,61 +166,66 @@ class ConfigurationPriceController extends Controller
         ]);
     }
 
-    public function update(Request $request, ConfigurationPrice $configurationPrice)
+    public function update(Request $request, PackageConfiguration $configurationPrice)
     {
         $validated = $request->validate([
             'package_id' => 'required|exists:packages,id',
-            'season_id' => 'required|exists:seasons,id',
+            'season_type_id' => 'required|exists:season_types,id',
             'date_type_id' => 'required|exists:date_types,id',
             'room_type' => 'required|exists:room_types,id',
-            'type' => 'required|string|in:base_charge,sur_charge',
             'prices' => 'required|array'
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Update or create package configuration
-            $configuration = PackageConfiguration::updateOrCreate(
-                [
-                    'package_id' => $validated['package_id'],
-                    'season_id' => $validated['season_id'],
-                    'date_type_id' => $validated['date_type_id'],
-                    'room_type_id' => $validated['room_type']
-                ],
-                [
-                    'package_id' => $validated['package_id'],
-                    'season_id' => $validated['season_id'],
-                    'date_type_id' => $validated['date_type_id'],
-                    'room_type_id' => $validated['room_type']
-                ]
-            );
+            // Get the actual season_id from season_type_id
+            $season = Season::where('season_type_id', $validated['season_type_id'])
+                ->where('package_id', $validated['package_id'])
+                ->firstOrFail();
 
-            // Delete existing prices for this configuration and type
-            ConfigurationPrice::where('package_configuration_id', $configuration->id)
-                ->where('type', $validated['type'])
-                ->delete();
+            // Get the actual date_type_id from date_type_id
+            $dateTypeRange = DateTypeRange::where('date_type_id', $validated['date_type_id'])
+                ->where('package_id', $validated['package_id'])
+                ->firstOrFail();
 
-            // Create new prices
-            foreach ($validated['prices'] as $price) {
-                if (!empty($price['adult_price']) || !empty($price['child_price'])) {
-                    ConfigurationPrice::create([
-                        'package_configuration_id' => $configuration->id,
-                        'type' => $validated['type'],
-                        'number_of_adults' => $price['number_of_adults'],
-                        'number_of_children' => $price['number_of_children'],
-                        'adult_price' => $price['adult_price'] ?? 0,
-                        'child_price' => $price['child_price'] ?? 0
-                    ]);
+            // Update the configuration
+            $configurationPrice->update([
+                'package_id' => $validated['package_id'],
+                'season_id' => $season->id,
+                'date_type_id' => $dateTypeRange->id,
+                'room_type_id' => $validated['room_type']
+            ]);
+
+            // Delete old prices
+            ConfigurationPrice::where('package_configuration_id', $configurationPrice->id)->delete();
+
+            // Insert new prices
+            foreach ($validated['prices'] as $type => $prices) {
+                foreach ($prices as $price) {
+                    if (!empty($price['adult_price']) || !empty($price['child_price'])) {
+                        ConfigurationPrice::create([
+                            'package_configuration_id' => $configurationPrice->id,
+                            'type' => $type,
+                            'number_of_adults' => $price['number_of_adults'] ?? 0,
+                            'number_of_children' => $price['number_of_children'] ?? 0,
+                            'adult_price' => $price['adult_price'] ?? 0,
+                            'child_price' => $price['child_price'] ?? 0,
+                        ]);
+                    }
                 }
             }
 
             DB::commit();
-
-            return back()->with('success', 'Configuration prices updated successfully.');
-        } catch (\Exception $e) {
+            return response()->json(['message' => 'Configuration prices updated successfully.']);
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', 'Error updating configuration prices: ' . $e->getMessage());
+            Log::error('ConfigurationPrice update error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+            return response()->json(['message' => 'Error updating configuration prices: ' . $e->getMessage()], 500);
         }
     }
 
@@ -235,8 +240,8 @@ class ConfigurationPriceController extends Controller
 
     public function fetchPricesSearchIndex(Request $request)
     {
-        $season_id = Season::where('season_type_id', $request->season_type_id)->where('package_id', $request->package_id)->first()->id;
-        $date_type_id = DateTypeRange::where('date_type_id', $request->date_type_id)->where('package_id', $request->package_id)->first()->id;
+        $season_id = $this->fetchSeasonIdBySeasonTypeAndPackageId($request->season_type_id, $request->package_id);
+        $date_type_id = $this->fetchDateTypeIdByDateTypeAndPackageId($request->date_type_id, $request->package_id);
         $prices = PackageConfiguration::where('package_id', $request->package_id)
             ->where('season_id', $season_id)
             ->where('date_type_id', $request->date_type_id)
@@ -245,5 +250,19 @@ class ConfigurationPriceController extends Controller
             ->get();
 
         return response()->json($prices);
+    }
+
+    public function fetchSeasonIdBySeasonTypeAndPackageId($season_type_id, $package_id)
+    {
+        return Season::where('season_type_id', $season_type_id)
+            ->where('package_id', $package_id)
+            ->first()?->id;
+    }
+
+    public function fetchDateTypeIdByDateTypeAndPackageId($date_type_id, $package_id)
+    {
+        return DateTypeRange::where('date_type_id', $date_type_id)
+            ->where('package_id', $package_id)
+            ->first()?->id;
     }
 }
