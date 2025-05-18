@@ -422,7 +422,7 @@
                                 <!-- Grand Total -->
                                 <div class="flex justify-between items-center pt-2 border-t border-gray-200">
                                     <p class="text-lg font-semibold">Grand Total</p>
-                                    <p class="text-lg font-semibold">{{ formatNumber(priceBreakdown?.summary?.grand_total || 0) }} MYR</p>
+                                    <p class="text-lg font-semibold">{{ priceBreakdown?.total || 0 }} MYR</p>
                                 </div>
                             </div>
                         </div>

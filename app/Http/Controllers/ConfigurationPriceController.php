@@ -162,7 +162,7 @@ class ConfigurationPriceController extends Controller
         ]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request, $tempParam)
     {
         $validated = $request->validate([
             'package_id' => 'required|exists:packages,id',
