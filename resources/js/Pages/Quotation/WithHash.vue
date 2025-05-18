@@ -263,7 +263,7 @@
                         <div class="flex justify-end">
                             <button
                                 type="submit"
-                                class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                 :disabled="form.processing"
                             >
                                 Calculate Price
@@ -280,14 +280,6 @@
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
                             <div class="grid grid-cols-2 gap-4 mb-6">
                                 <div>
-                                    <p class="text-sm text-gray-600">Season Type</p>
-                                    <p class="font-medium">{{ bookingSummary.seasonType }}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-600">Date Type</p>
-                                    <p class="font-medium">{{ bookingSummary.dateType ? bookingSummary.dateType.charAt(0).toUpperCase() + bookingSummary.dateType.slice(1) : '' }}</p>
-                                </div>
-                                <div>
                                     <p class="text-sm text-gray-600">Room Type</p>
                                     <p class="font-medium">{{ bookingSummary.roomType }}</p>
                                 </div>
@@ -303,14 +295,6 @@
                                     <p class="text-sm text-gray-600">Check-out</p>
                                     <p class="font-medium">{{ moment(bookingSummary.endDate).format('DD MMM YYYY') }}</p>
                                 </div>
-                                <div>
-                                    <p class="text-sm text-gray-600">Adults</p>
-                                    <p class="font-medium">{{ bookingSummary.adults }} × {{ formatNumber(priceBreakdown?.summary?.base_charges?.adult?.price_per_night || 0) }} MYR/night</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-600">Children</p>
-                                    <p class="font-medium">{{ bookingSummary.children }} × {{ formatNumber(priceBreakdown?.summary?.base_charges?.child?.price_per_night || 0) }} MYR/night</p>
-                                </div>
                             </div>
                         </div>
 
@@ -318,7 +302,7 @@
                         <div v-if="priceBreakdown?.nights?.length" class="mb-6">
                             <h4 class="text-md font-semibold text-gray-900 mb-3">Nightly Breakdown</h4>
                             <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
+                                <table class="min-w-full divide-y divide-gray-200 border-solid rounded-md border">
                                     <thead class="bg-gray-50">
                                         <tr>
                                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Night</th>
@@ -327,7 +311,7 @@
                                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                             <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base Charge</th>
                                             <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surcharge</th>
-                                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Add-ons</th>
+                                            <!-- <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Add-ons</th> -->
                                             <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                                         </tr>
                                     </thead>
@@ -342,11 +326,10 @@
                                                     {{ moment(night.date).format('DD MMM YYYY') }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ night.season }}
+                                                    {{ night.season_type }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ night.season_type }} - {{ night.date_type }}
-                                                    <span v-if="night.is_weekend" class="ml-1 text-xs text-indigo-600">(Weekend)</span>
+                                                    {{ night.date_type }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                                                     <div class="text-gray-900">{{ formatNumber(night.base_charge.total) }} MYR</div>
@@ -362,14 +345,14 @@
                                                         Child: {{ formatNumber(night.surcharge.child.total) }} MYR
                                                     </div>
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                                                     <div v-if="night.add_ons && night.add_ons.length > 0">
                                                         <div v-for="(addon, addonIndex) in night.add_ons" :key="addonIndex" class="text-xs text-gray-500">
                                                             {{ addon.name }}: {{ formatNumber(addon.total) }} MYR
                                                         </div>
                                                     </div>
                                                     <div v-else class="text-gray-500">-</div>
-                                                </td>
+                                                </td> -->
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-gray-900">
                                                     {{ formatNumber(night.total) }} MYR
                                                 </td>
@@ -447,13 +430,13 @@
                         <div class="flex justify-between mt-6">
                             <button
                                 @click="currentStep = 1"
-                                class="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                class="px-8 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                             >
                                 Back
                             </button>
                             <button
                                 @click="currentStep = 3"
-                                class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                class="px-8 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                                 Next
                             </button>
@@ -515,13 +498,13 @@
                             <button
                                 type="button"
                                 @click="currentStep = 2"
-                                class="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                             >
                                 Back
                             </button>
                             <button
                                 type="submit"
-                                class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                 :disabled="isSubmitting"
                             >
                                 {{ isSubmitting ? 'Submitting...' : 'Submit Booking' }}
