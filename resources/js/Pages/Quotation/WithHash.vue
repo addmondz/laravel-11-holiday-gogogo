@@ -8,10 +8,10 @@
                         <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800" style="max-width: 100px;" />
                     </div>
                     <div class="flex items-center">
-                        <a href="https://wa.me/60163336688" target="_blank" class="bg-sky-600 text-white px-6 py-2 hover:bg-sky-700 flex items-center gap-4 transition-all duration-300" style="border-radius: 50px 50px 50px 50px; height: 40px;">
+                        <div @click="openWhatsApp" class="bg-sky-600 text-white px-6 py-2 hover:bg-sky-700 flex items-center gap-4 transition-all duration-300" style="border-radius: 50px 50px 50px 50px; height: 40px;">
                             <WhatsAppOutlined />
                             Enquiry
-                        </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -178,12 +178,12 @@
                                             <h3 class="text-lg font-semibold text-gray-900">{{ roomType.name }}</h3>
                                             <p class="text-sm text-gray-600 mt-1">{{ roomType.description }}</p>
                                         </div>
-                                        <div class="text-right">
+                                        <!-- <div class="text-right">
                                             <p class="text-lg font-bold text-indigo-600">
                                                 MYR {{ formatNumber(roomType.price_per_night) }}
                                             </p>
                                             <p class="text-sm text-gray-500">per night</p>
-                                        </div>
+                                        </div> -->
                                     </div>
                                     <!-- <div class="mt-4 text-sm text-gray-600"> -->
                                     <div class="mt-4 text-sm text-indigo-600">
@@ -548,6 +548,13 @@ const validationErrors = ref({
     end_date: '',
     adults: ''
 });
+const phone = '60102956786';
+function openWhatsApp() {
+  const currentUrl = window.location.href;
+  const message = `Hi, I have an enquiry regarding this package: ${currentUrl}`;
+  const whatsappLink = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  window.open(whatsappLink, '_blank');
+}
 
 const computedPromoPeriod = computed(() => {
   if (!packageData.value) return '';
