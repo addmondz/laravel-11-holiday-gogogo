@@ -183,8 +183,10 @@ class PackageController extends Controller
 
     public function getSeasons(Request $request, Package $package)
     {
+        $defaultSeasonTypeId = SeasonType::where('name', 'Default')->value('id');
         $seasons = Season::with('type')
             ->where('package_id', $package->id)
+            ->where('season_type_id', '!=', $defaultSeasonTypeId)
             ->latest()
             ->paginate(10, ['*'], 'page');
 
@@ -193,8 +195,10 @@ class PackageController extends Controller
 
     public function getDateTypeRanges(Request $request, Package $package)
     {
+        $defaultDateTypeId = DateType::where('name', 'Default')->value('id');
         $dateTypeRanges = DateTypeRange::with('dateType')
             ->where('package_id', $package->id)
+            ->where('date_type_id', '!=', $defaultDateTypeId)
             ->latest()
             ->paginate(10, ['*'], 'page');
 
