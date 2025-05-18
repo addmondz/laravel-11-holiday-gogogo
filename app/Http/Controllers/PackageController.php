@@ -153,8 +153,16 @@ class PackageController extends Controller
             ->latest()
             ->paginate(10);
 
-        $seasonTypes = SeasonType::all();
-        $dateTypes = DateType::all();
+        $seasonTypes = SeasonType::whereNot('name', 'Default')->get()->toArray();
+        $dateTypes = DateType::whereNotIn('name', ['Default', 'Weekday', 'Weekend'])->get()->toArray();
+
+        $priceConfigSeasonChoice = SeasonType::whereHas('seasons', function ($query) use ($package) {
+            $query->where('package_id', $package->id);
+        })->get();
+
+        $priceConfigDateTypeChoice = DateType::whereHas('ranges', function ($query) use ($package) {
+            $query->where('package_id', $package->id);
+        })->get();
 
         return Inertia::render('Packages/Show', [
             'pkg' => $package->load([
@@ -168,7 +176,9 @@ class PackageController extends Controller
             'seasons' => $seasons,
             'seasonTypes' => $seasonTypes,
             'dateTypeRanges' => $dateTypeRanges,
-            'dateTypes' => $dateTypes
+            'dateTypes' => $dateTypes,
+            'priceConfigSeasonChoice' => $priceConfigSeasonChoice,
+            'priceConfigDateTypeChoice' => $priceConfigDateTypeChoice
         ]);
     }
 

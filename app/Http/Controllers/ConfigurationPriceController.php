@@ -51,69 +51,65 @@ class ConfigurationPriceController extends Controller
     {
         $validated = $request->validate([
             'package_id' => 'required|exists:packages,id',
-            'season_id' => 'required|exists:seasons,id',
+            'season_type_id' => 'required|exists:season_types,id',
             'date_type_id' => 'required|exists:date_types,id',
             'room_type' => 'required|exists:room_types,id',
-            'prices' => 'required|array'
+            'prices' => 'required|array',
         ]);
 
         try {
             DB::beginTransaction();
 
+            // Get the actual season_id from season_type_id
+            $season = Season::where('season_type_id', $validated['season_type_id'])
+                ->where('package_id', $validated['package_id'])
+                ->firstOrFail();
+
+            $dateTypeRange = DateTypeRange::where('date_type_id', $validated['date_type_id'])
+                ->where('package_id', $validated['package_id'])
+                ->firstOrFail();
+
             // Create or get package configuration
             $configuration = PackageConfiguration::firstOrCreate([
                 'package_id' => $validated['package_id'],
-                'season_id' => $validated['season_id'],
-                'date_type_id' => $validated['date_type_id'],
+                'season_id' => $season->id,
+                'date_type_id' => $dateTypeRange->id,
                 'room_type_id' => $validated['room_type']
             ]);
 
-            // Define all charge types
-            $chargeTypes = ['base_charge', 'sur_charge'];
+            // Log::info('Configuration created successfully.', [
+            //     'configuration' => $configuration->id
+            // ]);
+            // dd($configuration->id);
 
-            // Create prices for each type
-            foreach ($chargeTypes as $type) {
-                // Get prices for this type from the request, or use empty array if not provided
-                $prices = $validated['prices'][$type] ?? [];
+            // Delete any existing prices for this configuration
+            ConfigurationPrice::where('package_configuration_id', $configuration->id)->delete();
 
-                // Create empty prices for all combinations (1-4 adults, 0-3 children)
-                for ($adults = 1; $adults <= 4; $adults++) {
-                    for ($children = 0; $children <= 3; $children++) {
-                        // Find if there's a matching price in the provided data
-                        $matchingPrice = collect($prices)->first(function ($price) use ($adults, $children) {
-                            return $price['number_of_adults'] == $adults && $price['number_of_children'] == $children;
-                        });
-
-                        if ($matchingPrice && (!empty($matchingPrice['adult_price']) || !empty($matchingPrice['child_price']))) {
-                            // Use the provided price
-                            ConfigurationPrice::create([
-                                'package_configuration_id' => $configuration->id,
-                                'type' => $type,
-                                'number_of_adults' => $adults,
-                                'number_of_children' => $children,
-                                'adult_price' => $matchingPrice['adult_price'] ?? 0,
-                                'child_price' => $matchingPrice['child_price'] ?? 0
-                            ]);
-                        } else {
-                            // Create empty price
-                            ConfigurationPrice::create([
-                                'package_configuration_id' => $configuration->id,
-                                'type' => $type,
-                                'number_of_adults' => $adults,
-                                'number_of_children' => $children,
-                                'adult_price' => 0,
-                                'child_price' => 0
-                            ]);
-                        }
+            // Create prices for both base charge and surcharge
+            foreach (['base_charge', 'sur_charge'] as $type) {
+                foreach ($validated['prices'][$type] as $price) {
+                    if (!empty($price['adult_price']) || !empty($price['child_price'])) {
+                        ConfigurationPrice::create([
+                            'package_configuration_id' => $configuration->id,
+                            'type' => $type,
+                            'number_of_adults' => $price['number_of_adults'],
+                            'number_of_children' => $price['number_of_children'],
+                            'adult_price' => $price['adult_price'],
+                            'child_price' => $price['child_price'],
+                        ]);
                     }
                 }
             }
 
             DB::commit();
-
             return back()->with('success', 'Configuration prices created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('ConfigurationPrice store error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
             return back()->with('error', 'Error creating configuration prices: ' . $e->getMessage());
         }
     }
@@ -166,14 +162,14 @@ class ConfigurationPriceController extends Controller
         ]);
     }
 
-    public function update(Request $request, PackageConfiguration $configurationPrice)
+    public function update(Request $request)
     {
         $validated = $request->validate([
             'package_id' => 'required|exists:packages,id',
             'season_type_id' => 'required|exists:season_types,id',
             'date_type_id' => 'required|exists:date_types,id',
             'room_type' => 'required|exists:room_types,id',
-            'prices' => 'required|array'
+            'prices' => 'required|array',
         ]);
 
         try {
@@ -184,39 +180,46 @@ class ConfigurationPriceController extends Controller
                 ->where('package_id', $validated['package_id'])
                 ->firstOrFail();
 
-            // Get the actual date_type_id from date_type_id
             $dateTypeRange = DateTypeRange::where('date_type_id', $validated['date_type_id'])
                 ->where('package_id', $validated['package_id'])
                 ->firstOrFail();
 
             // Update the configuration
-            $configurationPrice->update([
+            $packageConfiguration = PackageConfiguration::firstOrCreate([
                 'package_id' => $validated['package_id'],
                 'season_id' => $season->id,
                 'date_type_id' => $dateTypeRange->id,
                 'room_type_id' => $validated['room_type']
             ]);
 
-            // Delete old prices
-            ConfigurationPrice::where('package_configuration_id', $configurationPrice->id)->delete();
+            // Log::info('Package configuration created successfully.', [
+            //     'package_configuration' => $packageConfiguration->id
+            // ]);
+            // dd($packageConfiguration->id);
 
-            // Insert new prices
-            foreach ($validated['prices'] as $type => $prices) {
-                foreach ($prices as $price) {
+            // Delete old prices
+            ConfigurationPrice::where('package_configuration_id', $packageConfiguration->id)->delete();
+
+            // Create new prices for both base charge and surcharge
+            foreach (['base_charge', 'sur_charge'] as $type) {
+                foreach ($validated['prices'][$type] as $price) {
                     if (!empty($price['adult_price']) || !empty($price['child_price'])) {
                         ConfigurationPrice::create([
-                            'package_configuration_id' => $configurationPrice->id,
+                            'package_configuration_id' => $packageConfiguration->id,
                             'type' => $type,
-                            'number_of_adults' => $price['number_of_adults'] ?? 0,
-                            'number_of_children' => $price['number_of_children'] ?? 0,
-                            'adult_price' => $price['adult_price'] ?? 0,
-                            'child_price' => $price['child_price'] ?? 0,
+                            'number_of_adults' => $price['number_of_adults'],
+                            'number_of_children' => $price['number_of_children'],
+                            'adult_price' => $price['adult_price'],
+                            'child_price' => $price['child_price'],
                         ]);
                     }
                 }
             }
 
             DB::commit();
+            Log::info('Configuration prices updated successfully.', [
+                'request_data' => $request->all()
+            ]);
             return response()->json(['message' => 'Configuration prices updated successfully.']);
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -244,8 +247,8 @@ class ConfigurationPriceController extends Controller
         $date_type_id = $this->fetchDateTypeIdByDateTypeAndPackageId($request->date_type_id, $request->package_id);
         $prices = PackageConfiguration::where('package_id', $request->package_id)
             ->where('season_id', $season_id)
-            ->where('date_type_id', $request->date_type_id)
-            ->where('room_type_id', $date_type_id)
+            ->where('date_type_id', $date_type_id)
+            ->where('room_type_id', $request->room_type_id)
             ->with('prices')
             ->get();
 

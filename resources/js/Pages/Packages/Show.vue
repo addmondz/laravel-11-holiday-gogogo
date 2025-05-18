@@ -336,7 +336,7 @@
                                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                             >
                                                 <option value="">Select Season</option>
-                                                <option v-for="season in seasonTypes" :key="season.id" :value="season.id">
+                                                <option v-for="season in priceConfigSeasonChoice" :key="season.id" :value="season.id">
                                                     {{ season.name }}
                                                 </option>
                                             </select>
@@ -350,7 +350,7 @@
                                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                             >
                                                 <option value="">Select Date Type</option>
-                                                <option v-for="type in dateTypes" :key="type.id" :value="type.id">
+                                                <option v-for="type in priceConfigDateTypeChoice" :key="type.id" :value="type.id">
                                                     {{ type.name }}
                                                 </option>
                                             </select>
@@ -423,7 +423,7 @@
                                         </div>
 
                                         <!-- Surcharge Table -->
-                                        <div v-if="hasSurcharges" class="overflow-x-auto">
+                                        <div class="overflow-x-auto">
                                             <h3 class="text-lg font-medium text-gray-900 mb-4">Surcharges</h3>
                                             <table class="min-w-full divide-y divide-gray-200">
                                                 <thead class="bg-gray-50">
@@ -903,7 +903,7 @@
                                 required
                             >
                                 <option value="">Select a date type</option>
-                                <option v-for="type in filteredDateTypes" :key="type.id" :value="type.id">
+                                <option v-for="type in dateTypes" :key="type.id" :value="type.id">
                                     {{ type.name }}
                                 </option>
                             </select>
@@ -1056,15 +1056,13 @@ const props = defineProps({
     seasons: Object,
     seasonTypes: Array,
     dateTypeRanges: Object,
-    dateTypes: Array
+    dateTypes: Array,
+    priceConfigSeasonChoice: Array,
+    priceConfigDateTypeChoice: Array
 });
 
 const activeTab = ref('details');
 const loadingKey = ref(0);
-const excludedNames = ['Weekend', 'Weekday'] // <-- Name(s) to exclude
-const filteredDateTypes = computed(() =>
-props.dateTypes.filter(type => !excludedNames.includes(type.name))
-)
 
 const tabs = [
     { id: 'details', name: 'Details' },
@@ -1591,7 +1589,7 @@ const closePriceForm = () => {
 
 const submitPrices = () => {
     if (isEditMode.value) {
-        // Update prices using the package configuration ID
+        // Update prices using the configuration price ID
         const data = {
             package_id: props.pkg.id,
             season_type_id: selectedSeason.value,
@@ -1600,7 +1598,7 @@ const submitPrices = () => {
             prices: priceForm.prices
         };
 
-        axios.put(route('configuration-prices.update', configurationPrices.value[0]?.package_configuration_id), data)
+        axios.put(route('configuration-prices.update'), data)
             .then(() => {
                 closePriceForm();
                 fetchPrices();
