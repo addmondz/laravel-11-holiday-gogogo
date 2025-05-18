@@ -59,7 +59,7 @@ class DatabaseSeeder extends Seeder
         $ph60 = SeasonType::create(['name' => 'Public Holiday 60']);
 
         // 🟡 DATE TYPES
-        $defaultDateType = DateType::create(['name' => 'Default']);
+        // defualt date type is weekday / weekend
         $weekend = DateType::create(['name' => 'Weekend']);
         $weekday = DateType::create(['name' => 'Weekday']);
         $roomsur60 = DateType::create(['name' => 'Roomsur 60']);
@@ -186,8 +186,15 @@ class DatabaseSeeder extends Seeder
             ]);
 
             // 📆 DATE TYPE RANGES
-            $defaultTypeRange = DateTypeRange::create([
-                'date_type_id' => $defaultDateType->id,
+            DateTypeRange::create([
+                'date_type_id' => $weekday->id,
+                'start_date' => now(),
+                'end_date' => now(),
+                'package_id' => $pkg->id
+            ]);
+
+            DateTypeRange::create([
+                'date_type_id' => $weekend->id,
                 'start_date' => now(),
                 'end_date' => now(),
                 'package_id' => $pkg->id

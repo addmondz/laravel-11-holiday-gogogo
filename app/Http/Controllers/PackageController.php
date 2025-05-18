@@ -144,11 +144,11 @@ class PackageController extends Controller
             ->latest()
             ->paginate(10);
 
-        $defaultTypeRange = DateType::where('name', 'Default')->value('id');
+        $defaultTypeRange = DateType::whereIn('name', ['Default', 'Weekday', 'Weekend'])->pluck('id');
         $dateTypeRanges = DateTypeRange::with('dateType')
             ->where('package_id', $package->id)
             ->whereHas('dateType', function ($query) use ($defaultTypeRange) {
-                $query->where('id', '!=', $defaultTypeRange);
+                $query->whereNotIn('id', $defaultTypeRange);
             })
             ->latest()
             ->paginate(10);

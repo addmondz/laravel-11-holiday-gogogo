@@ -774,7 +774,7 @@ const calculatePrice = async () => {
         }
     } catch (error) {
         console.error('Error calculating price:', error);
-        calculatedPrice.value = 0;
+        calculatedPrice.value = null;
         priceBreakdown.value = null;
         bookingSummary.value = null;
         

@@ -14,6 +14,7 @@ use App\Models\Season;
 use App\Models\SeasonType;
 use Carbon\Carbon;
 use Carbon\WeekDay;
+use Illuminate\Support\Facades\Log;
 
 class TravelCalculatorController extends Controller
 {
@@ -221,253 +222,125 @@ class TravelCalculatorController extends Controller
             'adults' => 'required|integer|min:1|max:4',
             'children' => 'required|integer|min:0|max:3'
         ]);
-
+    
         try {
-            $package = Package::findOrFail($validated['package_id']);
             $startDate = Carbon::parse($validated['start_date']);
             $endDate = Carbon::parse($validated['end_date']);
             $adults = $validated['adults'];
             $children = $validated['children'];
+            $packageId = $validated['package_id'];
+            $roomTypeId = $validated['room_type'];
+    
             $nights = [];
-
-            // Calculate prices for each night
-            $currentDate = $startDate->copy();
-            while ($currentDate->lt($endDate)) {
-                // Get the season for this night
-                $season = Season::where('start_date', '<=', $currentDate)
-                    ->where('end_date', '>=', $currentDate)
-                    ->orderBy('priority')
+    
+            for ($date = $startDate->copy(); $date->lt($endDate); $date->addDay()) {
+                // Date Type
+                $dateTypeRange = DateTypeRange::where('start_date', '<=', $date)
+                    ->where('end_date', '>=', $date)
+                    ->where('package_id', $packageId)
                     ->first();
-
-                // If no season found, get the default season
+    
+                if (!$dateTypeRange) {
+                    $fallbackType = $date->isWeekend() ? 'weekend' : 'weekday';
+                    $typeId = DateType::where('name', 'LIKE', "%$fallbackType%")
+                        ->first()->id ?? null;
+                    $dateTypeRange = DateTypeRange::where('date_type_id', $typeId)
+                        ->where('package_id', $packageId)
+                        ->first();
+                }
+    
+                if (!$dateTypeRange) {
+                    throw new \Exception('Date type range not found for ' . $date->format('Y-m-d'));
+                }
+    
+                // Season
+                $season = Season::where('start_date', '<=', $date)
+                    ->where('end_date', '>=', $date)
+                    ->where('package_id', $packageId)
+                    ->orderBy('priority')->first();
+    
                 if (!$season) {
-                    $season = Season::whereHas('type', function ($query) {
-                        $query->where('name', 'Default');
-                    })->first();
+                    $defaultSeasonType = SeasonType::where('name', 'Default')->first();
+                    $season = Season::where('season_type_id', $defaultSeasonType->id)
+                        ->where('package_id', $packageId)->first();
                 }
-
-                // Determine if it's a weekend
-                $isWeekend = $currentDate->isWeekend();
-                $dateType = $isWeekend ? 'weekend' : 'weekday';
-                $opposite = [
-                    'weekend' => 'weekday',
-                    'weekday' => 'weekend'
-                ];
-                $oppositeDateType = $opposite[$dateType];
-                
-                // Get date type IDs with fallback to default
-                $dateTypeId = DateType::where('name', 'LIKE', "%{$dateType}%")->first()->id ?? null;
-                $oppositeDateTypeId = DateType::where('name', 'LIKE', "%{$oppositeDateType}%")->first()->id ?? null;
-                $defaultDateTypeId = DateType::where('name', 'LIKE', '%default%')->first()->id ?? null;
-
-                // Get package configuration with multiple fallback attempts
+    
+                if (!$season) {
+                    throw new \Exception('Season not found for ' . $date->format('Y-m-d'));
+                }
+    
+                // Package Config
                 $packageConfig = PackageConfiguration::where([
-                    'package_id' => $package->id,
-                    'season_id' => $season->id ?? 0,
-                    'date_type_id' => $dateTypeId,
-                    'room_type_id' => $validated['room_type']
+                    'package_id' => $packageId,
+                    'season_id' => $season->id,
+                    'date_type_id' => $dateTypeRange->id,
+                    'room_type_id' => $roomTypeId
                 ])->first();
-
-                // Fallback sequence
-                if (!$packageConfig || $packageConfig->prices()->where('type', 'base_charge')->count() === 0) {
-                    $packageConfig = PackageConfiguration::where([
-                        'package_id' => $package->id,
-                        'season_id' => $season->id ?? 0,
-                        'date_type_id' => $oppositeDateTypeId,
-                        'room_type_id' => $validated['room_type']
-                    ])->first();
-                }
-
-                if (!$packageConfig || $packageConfig->prices()->where('type', 'base_charge')->count() === 0) {
-                    $packageConfig = PackageConfiguration::where([
-                        'package_id' => $package->id,
-                        'season_id' => $season->id ?? 0,
-                        'date_type_id' => $defaultDateTypeId,
-                        'room_type_id' => $validated['room_type']
-                    ])->first();
-                }
-
-                if (!$packageConfig || $packageConfig->prices()->where('type', 'base_charge')->count() === 0) {
-                    $packageConfig = PackageConfiguration::where([
-                        'package_id' => $package->id,
-                        'date_type_id' => $dateTypeId,
-                        'room_type_id' => $validated['room_type']
-                    ])->first();
-                }
-
-                if (!$packageConfig || $packageConfig->prices()->where('type', 'base_charge')->count() === 0) {
-                    $packageConfig = PackageConfiguration::where([
-                        'package_id' => $package->id,
-                        'date_type_id' => $defaultDateTypeId,
-                        'room_type_id' => $validated['room_type']
-                    ])->first();
-                }
-
+    
                 if (!$packageConfig) {
                     return response()->json([
                         'success' => false,
-                        'message' => "Package configuration not found for {$currentDate->format('Y-m-d')}. Please contact support.",
+                        'message' => "Package configuration not found for {$date->format('Y-m-d')}",
                         'breakdown' => null,
                         'total' => 0
                     ]);
                 }
-
-                // Get base charge price
-                $basePackageConfigPrice = $packageConfig->prices()
+    
+                // Base price
+                $basePrice = $packageConfig->prices()
                     ->where('type', 'base_charge')
                     ->where('number_of_adults', $adults)
                     ->where('number_of_children', $children)
                     ->first();
-
-                if (!$basePackageConfigPrice) {
+    
+                if (!$basePrice) {
                     return response()->json([
                         'success' => false,
-                        'message' => "Price configuration not found for {$currentDate->format('Y-m-d')} with the selected number of guests.",
+                        'message' => "Price not found for {$date->format('Y-m-d')}",
                         'breakdown' => null,
                         'total' => 0
                     ]);
                 }
-
-                // Calculate base charge
-                $pricePerAdult = (float) $basePackageConfigPrice->adult_price;
-                $pricePerChild = (float) $basePackageConfigPrice->child_price;
-                $baseAdultTotal = $pricePerAdult * $adults;
-                $baseChildTotal = $pricePerChild * $children;
-                $baseTotal = $baseAdultTotal + $baseChildTotal;
-
-                // Get surcharge if applicable
-                $surDateTypeIds = DateType::where('name', 'LIKE', '%sur%')->pluck('id')->toArray();
-                $surDateTypeIds = DateTypeRange::where('start_date', '<=', $currentDate)
-                    ->where('end_date', '>=', $currentDate)
-                    ->whereIn('date_type_id', $surDateTypeIds)
-                    ->orderBy('start_date')
-                    ->pluck('date_type_id')
-                    ->toArray();
-
-                $surPackageConfig = null;
-                if ($surDateTypeIds) {
-                    $surPackageConfig = PackageConfiguration::where([
-                        'package_id' => $package->id,
-                        'season_id' => $season->id ?? 0,
-                        'room_type_id' => $validated['room_type']
-                    ])->whereIn('date_type_id', $surDateTypeIds)
-                        ->orderByRaw('FIELD(date_type_id, ' . implode(',', $surDateTypeIds) . ')')
-                        ->first();
-                }
-
-                $surPackageConfigPrice = $surPackageConfig ? $surPackageConfig->prices()
+    
+                $baseAdult = $basePrice->adult_price * $adults;
+                $baseChild = $basePrice->child_price * $children;
+                $baseTotal = $baseAdult + $baseChild;
+    
+                // Surcharge
+                $surPrice = $packageConfig->prices()
                     ->where('type', 'sur_charge')
                     ->where('number_of_adults', $adults)
                     ->where('number_of_children', $children)
-                    ->first() : null;
-
-                $surchargePerAdult = (float) ($surPackageConfigPrice->adult_price ?? 0);
-                $surchargePerChild = (float) ($surPackageConfigPrice->child_price ?? 0);
-                $surchargeAdultTotal = $surchargePerAdult * $adults;
-                $surchargeChildTotal = $surchargePerChild * $children;
-                $surchargeTotal = $surchargeAdultTotal + $surchargeChildTotal;
-
-                // Calculate add-ons for this night
-                $nightAddOns = [];
-                $nightAddOnsTotal = 0;
-                $addOns = PackageAddOn::where('package_id', $package->id)->get();
-
-                foreach ($addOns as $addon) {
-                    $adultPrice = (float) $addon->adult_price;
-                    $childPrice = (float) $addon->child_price;
-                    $adultTotal = $adultPrice * $adults;
-                    $childTotal = $childPrice * $children;
-                    $total = $adultTotal + $childTotal;
-
-                    $nightAddOns[] = [
-                        'name' => $addon->name,
-                        'adult_price' => number_format($adultPrice, 2, '.', ''),
-                        'adult_qty' => $adults,
-                        'adult_total' => number_format($adultTotal, 2, '.', ''),
-                        'child_price' => number_format($childPrice, 2, '.', ''),
-                        'child_qty' => $children,
-                        'child_total' => number_format($childTotal, 2, '.', ''),
-                        'total' => number_format($total, 2, '.', ''),
-                    ];
-
-                    $nightAddOnsTotal += $total;
-                }
-
-                $nightTotal = $baseTotal + $surchargeTotal + $nightAddOnsTotal;
-
-                // Store night details
+                    ->first();
+    
+                $surAdult = ($surPrice->adult_price ?? 0) * $adults;
+                $surChild = ($surPrice->child_price ?? 0) * $children;
+                $surTotal = $surAdult + $surChild;
+    
+                $nightTotal = $baseTotal + $surTotal;
+    
                 $nights[] = [
-                    'date' => $currentDate->format('Y-m-d'),
-                    'season' => $season ? $season->name : 'Default Season',
-                    'season_type' => $season ? $season->type->name : 'Default',
-                    'date_type' => $dateType,
-                    'is_weekend' => $isWeekend,
+                    'date' => $date->format('Y-m-d'),
+                    'season' => $season->name,
+                    'season_type' => $season->type->name,
+                    'date_type' => $dateTypeRange->dateType->name,
+                    'is_weekend' => $date->isWeekend(),
                     'base_charge' => [
-                        'adult' => [
-                            'price' => number_format($pricePerAdult, 2, '.', ''),
-                            'quantity' => $adults,
-                            'total' => number_format($baseAdultTotal, 2, '.', ''),
-                        ],
-                        'child' => [
-                            'price' => number_format($pricePerChild, 2, '.', ''),
-                            'quantity' => $children,
-                            'total' => number_format($baseChildTotal, 2, '.', ''),
-                        ],
-                        'total' => number_format($baseTotal, 2, '.', ''),
+                        'adult' => ['price' => number_format($basePrice->adult_price, 2), 'quantity' => $adults, 'total' => number_format($baseAdult, 2)],
+                        'child' => ['price' => number_format($basePrice->child_price, 2), 'quantity' => $children, 'total' => number_format($baseChild, 2)],
+                        'total' => number_format($baseTotal, 2),
                     ],
                     'surcharge' => [
-                        'adult' => [
-                            'price' => number_format($surchargePerAdult, 2, '.', ''),
-                            'quantity' => $adults,
-                            'total' => number_format($surchargeAdultTotal, 2, '.', ''),
-                        ],
-                        'child' => [
-                            'price' => number_format($surchargePerChild, 2, '.', ''),
-                            'quantity' => $children,
-                            'total' => number_format($surchargeChildTotal, 2, '.', ''),
-                        ],
-                        'total' => number_format($surchargeTotal, 2, '.', ''),
+                        'adult' => ['price' => number_format($surPrice->adult_price ?? 0, 2), 'quantity' => $adults, 'total' => number_format($surAdult, 2)],
+                        'child' => ['price' => number_format($surPrice->child_price ?? 0, 2), 'quantity' => $children, 'total' => number_format($surChild, 2)],
+                        'total' => number_format($surTotal, 2),
                     ],
-                    'add_ons' => $nightAddOns,
-                    'total' => number_format($nightTotal, 2, '.', ''),
+                    'total' => number_format($nightTotal, 2)
                 ];
-
-                $currentDate->addDay();
             }
-
-            // Calculate totals across all nights
-            $totalBaseChargeAdult = array_sum(array_map(function($night) {
-                return floatval($night['base_charge']['adult']['total']);
-            }, $nights));
-            $totalBaseChargeChild = array_sum(array_map(function($night) {
-                return floatval($night['base_charge']['child']['total']);
-            }, $nights));
-            $totalBaseCharge = $totalBaseChargeAdult + $totalBaseChargeChild;
-
-            $totalSurchargeAdult = array_sum(array_map(function($night) {
-                return floatval($night['surcharge']['adult']['total']);
-            }, $nights));
-            $totalSurchargeChild = array_sum(array_map(function($night) {
-                return floatval($night['surcharge']['child']['total']);
-            }, $nights));
-            $totalSurcharge = $totalSurchargeAdult + $totalSurchargeChild;
-
-            $totalAddOnsAdult = array_sum(array_map(function($night) {
-                return array_sum(array_map(function($addon) {
-                    return floatval($addon['adult_total']);
-                }, $night['add_ons']));
-            }, $nights));
-            $totalAddOnsChild = array_sum(array_map(function($night) {
-                return array_sum(array_map(function($addon) {
-                    return floatval($addon['child_total']);
-                }, $night['add_ons']));
-            }, $nights));
-            $totalAddOns = $totalAddOnsAdult + $totalAddOnsChild;
-
-            $grandTotal = array_sum(array_map(function($night) {
-                return floatval($night['total']);
-            }, $nights));
-
+    
+            // Summary
+            $sum = fn($key) => array_sum(array_map(fn($night) => floatval(data_get($night, $key)), $nights));
             return response()->json([
                 'success' => true,
                 'currency' => 'MYR',
@@ -475,49 +348,24 @@ class TravelCalculatorController extends Controller
                 'summary' => [
                     'total_nights' => count($nights),
                     'base_charges' => [
-                        'adult' => [
-                            'price_per_night' => number_format($nights[0]['base_charge']['adult']['price'], 2, '.', ''),
-                            'quantity' => $adults,
-                            'total' => number_format($totalBaseChargeAdult, 2, '.', ''),
-                        ],
-                        'child' => [
-                            'price_per_night' => number_format($nights[0]['base_charge']['child']['price'], 2, '.', ''),
-                            'quantity' => $children,
-                            'total' => number_format($totalBaseChargeChild, 2, '.', ''),
-                        ],
-                        'total' => number_format($totalBaseCharge, 2, '.', ''),
+                        'adult' => ['price_per_night' => $nights[0]['base_charge']['adult']['price'], 'quantity' => $adults, 'total' => number_format($sum('base_charge.adult.total'), 2)],
+                        'child' => ['price_per_night' => $nights[0]['base_charge']['child']['price'], 'quantity' => $children, 'total' => number_format($sum('base_charge.child.total'), 2)],
+                        'total' => number_format($sum('base_charge.total'), 2),
                     ],
                     'surcharges' => [
-                        'adult' => [
-                            'price_per_night' => number_format($nights[0]['surcharge']['adult']['price'], 2, '.', ''),
-                            'quantity' => $adults,
-                            'total' => number_format($totalSurchargeAdult, 2, '.', ''),
-                        ],
-                        'child' => [
-                            'price_per_night' => number_format($nights[0]['surcharge']['child']['price'], 2, '.', ''),
-                            'quantity' => $children,
-                            'total' => number_format($totalSurchargeChild, 2, '.', ''),
-                        ],
-                        'total' => number_format($totalSurcharge, 2, '.', ''),
+                        'adult' => ['price_per_night' => $nights[0]['surcharge']['adult']['price'], 'quantity' => $adults, 'total' => number_format($sum('surcharge.adult.total'), 2)],
+                        'child' => ['price_per_night' => $nights[0]['surcharge']['child']['price'], 'quantity' => $children, 'total' => number_format($sum('surcharge.child.total'), 2)],
+                        'total' => number_format($sum('surcharge.total'), 2),
                     ],
-                    'add_ons' => [
-                        'adult' => [
-                            'total' => number_format($totalAddOnsAdult, 2, '.', ''),
-                        ],
-                        'child' => [
-                            'total' => number_format($totalAddOnsChild, 2, '.', ''),
-                        ],
-                        'total' => number_format($totalAddOns, 2, '.', ''),
-                    ],
-                    'grand_total' => number_format($grandTotal, 2, '.', ''),
+                    'grand_total' => number_format($sum('total'), 2),
                 ],
-                'total' => number_format($grandTotal, 2, '.', ''),
+                'total' => number_format($sum('total'), 2),
             ]);
-
+    
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while calculating the price: ' . $e->getMessage(),
+                'message' => 'An error occurred: ' . $e->getMessage(),
                 'breakdown' => null,
                 'total' => 0
             ], 500);
