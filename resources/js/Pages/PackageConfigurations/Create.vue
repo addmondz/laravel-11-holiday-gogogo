@@ -137,7 +137,7 @@ const breadcrumbs = computed(() => [
 ]);
 
 const form = useForm({
-    package_id: '',
+    package_id: props.packages[0].id,
     season_id: '',
     date_type_id: '',
     room_type: ''
