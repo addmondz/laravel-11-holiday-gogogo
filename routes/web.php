@@ -16,7 +16,6 @@ use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\DateTypeRangeController;
 use App\Http\Controllers\PackageConfigurationController;
 use App\Http\Controllers\RoomTypeController;
-use App\Models\ConfigurationPrice;
 use App\Models\DateType;
 use App\Models\DateTypeRange;
 use App\Models\PackageConfiguration;
@@ -145,18 +144,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'package-configurations.destroy'
     ]);
 
-    Route::resource('configuration-prices', ConfigurationPriceController::class)->names([
-        'index' => 'configuration-prices.index',
-        'create' => 'configuration-prices.create',
-        'store' => 'configuration-prices.store',
-        'show' => 'configuration-prices.show',
-        'edit' => 'configuration-prices.edit',
-        'update' => 'configuration-prices.update',
-        'destroy' => 'configuration-prices.destroy',
-    ]);
-
-    Route::post('configuration-prices/fetch-prices-search-index', [ConfigurationPriceController::class, 'fetchPricesSearchIndex'])
-        ->name('configuration-prices.fetchPricesSearchIndex');
+    Route::prefix('configuration-prices')->controller(ConfigurationPriceController::class)->group(function () {
+        Route::post('fetch-prices-search-index', 'fetchPricesSearchIndex')->name('configuration-prices.fetchPricesSearchIndex');
+        Route::put('update', 'updatePrices')->name('configuration-prices.updatePrices');
+        Route::post('store', 'store')->name('configuration-prices.store');
+    });
 
     Route::resource('bookings', BookingController::class)->names([
         'index' => 'bookings.index',

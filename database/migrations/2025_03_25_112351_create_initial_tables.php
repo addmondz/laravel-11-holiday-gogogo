@@ -94,19 +94,7 @@ return new class extends Migration
             $table->foreignId('season_id')->constrained()->onDelete('cascade');
             $table->foreignId('date_type_id')->constrained()->onDelete('cascade');
             $table->foreignId('room_type_id')->constrained()->onDelete('cascade');
-            $table->timestamps();
-            $table->softDeletes();
-        });
-
-        // Configuration Prices
-        Schema::create('configuration_prices', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('package_configuration_id')->constrained('package_configurations')->onDelete('cascade');
-            $table->enum('type', ['base_charge', 'sur_charge']);
-            $table->integer('number_of_adults')->default(1);
-            $table->integer('number_of_children')->default(0);
-            $table->decimal('adult_price', 10, 2)->nullable();
-            $table->decimal('child_price', 10, 2)->nullable();
+            $table->json('configuration_prices')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -114,7 +102,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('configuration_prices');
         Schema::dropIfExists('package_configurations');
         Schema::dropIfExists('room_types');
         Schema::dropIfExists('date_type_ranges');

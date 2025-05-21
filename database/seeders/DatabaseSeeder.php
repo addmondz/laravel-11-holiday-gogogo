@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Constants\AppConstants;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -13,7 +14,6 @@ use App\Models\{
     Package,
     PackageAddOn,
     PackageConfiguration,
-    ConfigurationPrice,
     User,
     RoomType,
     Booking
@@ -47,7 +47,6 @@ class DatabaseSeeder extends Seeder
         Package::truncate();
         PackageAddOn::truncate();
         PackageConfiguration::truncate();
-        ConfigurationPrice::truncate();
         RoomType::truncate();
         Booking::truncate();
 
@@ -262,46 +261,37 @@ class DatabaseSeeder extends Seeder
                 ['adults' => 5, 'children' => 0],
             ];
 
-            $seasons = Season::where('package_id', $pkg->id)->get();
-            $dateTypes = DateType::all();
+            $season = Season::all();
+            foreach ($season as $season) {
+                $dateType = DateType::all();
+                foreach ($dateType as $dateType) {
+                    $roomType = RoomType::all();
+                    foreach ($roomType as $roomType) {
+                        foreach ($combinations as $combo) {
+                            $keyPrefix = "{$combo['adults']}_a_{$combo['children']}_c";
 
-            foreach ($seasons as $season) {
-                foreach ($dateTypes as $dateType) {
-                    foreach ($roomTypes as $roomType) {
-                        $config = PackageConfiguration::create([
+                            // Base charge prices
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 100, 1000);
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 50, 500);
+
+                            // Surcharge prices
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 50, 1000);
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 25, 500);
+                        }
+
+                        PackageConfiguration::create([
                             'package_id' => $pkg->id,
                             'season_id' => $season->id,
                             'date_type_id' => $dateType->id,
                             'room_type_id' => $roomType->id,
+                            'configuration_prices' => json_encode($configurationPrices)
                         ]);
-
-                        foreach ($combinations as $combo) {
-                            ConfigurationPrice::create([
-                                'package_configuration_id' => $config->id,
-                                'type' => 'base_charge',
-                                'number_of_adults' => $combo['adults'],
-                                'number_of_children' => $combo['children'],
-                                'adult_price' => 100.00,
-                                'child_price' => 50.00,
-                            ]);
-
-                            // surcharge
-                            ConfigurationPrice::create([
-                                'package_configuration_id' => $config->id,
-                                'type' => 'sur_charge',
-                                'number_of_adults' => $combo['adults'],
-                                'number_of_children' => $combo['children'],
-                                'adult_price' => 60.00,
-                                'child_price' => 30.00,
-                            ]);
-                        }
                     }
                 }
             }
+            dump('completed ' . $pkg->id);
         }
 
-        // Remove dummy season types and date types creation since we want to maintain a clean set of types
-        // After all other seeders
         $this->call([
             BookingSeeder::class,
         ]);

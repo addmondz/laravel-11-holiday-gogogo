@@ -1618,7 +1618,7 @@ const submitPrices = () => {
             prices: priceForm.prices
         };
 
-        axios.put(route('configuration-prices.update', 1), data)
+        axios.put(route('configuration-prices.updatePrices', 1), data)
             .then(() => {
                 closePriceForm();
                 fetchPrices();
