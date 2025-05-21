@@ -215,7 +215,7 @@ class TravelCalculatorController extends Controller
             'adults' => 'required|integer|min:1|max:4',
             'children' => 'required|integer|min:0|max:3'
         ]);
-    
+
         try {
             $startDate = Carbon::parse($validated['start_date']);
             $endDate = Carbon::parse($validated['end_date']);
@@ -223,53 +223,50 @@ class TravelCalculatorController extends Controller
             $children = $validated['children'];
             $packageId = $validated['package_id'];
             $roomTypeId = $validated['room_type'];
-    
+
             $nights = [];
-    
+
             for ($date = $startDate->copy(); $date->lt($endDate); $date->addDay()) {
-                // Date Type
                 $dateTypeRange = DateTypeRange::where('start_date', '<=', $date)
                     ->where('end_date', '>=', $date)
                     ->where('package_id', $packageId)
                     ->first();
-    
+
                 if (!$dateTypeRange) {
                     $fallbackType = $date->isWeekend() ? 'weekend' : 'weekday';
-                    $typeId = DateType::where('name', 'LIKE', "%$fallbackType%")
-                        ->first()->id ?? null;
+                    $typeId = DateType::where('name', 'LIKE', "%$fallbackType%")->first()?->id;
                     $dateTypeRange = DateTypeRange::where('date_type_id', $typeId)
                         ->where('package_id', $packageId)
                         ->first();
                 }
-    
+
                 if (!$dateTypeRange) {
                     throw new \Exception('Date type range not found for ' . $date->format('Y-m-d'));
                 }
-    
-                // Season
+
                 $season = Season::where('start_date', '<=', $date)
                     ->where('end_date', '>=', $date)
                     ->where('package_id', $packageId)
-                    ->orderBy('priority')->first();
-    
+                    ->first();
+
                 if (!$season) {
-                    $defaultSeasonType = SeasonType::where('name', 'Default')->first();
+                    $defaultSeasonType = \App\Models\SeasonType::where('name', 'Default')->first();
                     $season = Season::where('season_type_id', $defaultSeasonType->id)
-                        ->where('package_id', $packageId)->first();
+                        ->where('package_id', $packageId)
+                        ->first();
                 }
-    
+
                 if (!$season) {
                     throw new \Exception('Season not found for ' . $date->format('Y-m-d'));
                 }
-    
-                // Package Config
-                $packageConfig = PackageConfiguration::where([
+
+                $packageConfig = \App\Models\PackageConfiguration::where([
                     'package_id' => $packageId,
                     'season_id' => $season->id,
                     'date_type_id' => $dateTypeRange->id,
                     'room_type_id' => $roomTypeId
                 ])->first();
-    
+
                 if (!$packageConfig) {
                     return response()->json([
                         'success' => false,
@@ -278,40 +275,21 @@ class TravelCalculatorController extends Controller
                         'total' => 0
                     ]);
                 }
-    
-                // Base price
-                $basePrice = $packageConfig->prices()
-                    ->where('type', 'base_charge')
-                    ->where('number_of_adults', $adults)
-                    ->where('number_of_children', $children)
-                    ->first();
-    
-                if (!$basePrice) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Price not found for {$date->format('Y-m-d')}",
-                        'breakdown' => null,
-                        'total' => 0
-                    ]);
-                }
-    
-                $baseAdult = $basePrice->adult_price * $adults;
-                $baseChild = $basePrice->child_price * $children;
-                $baseTotal = $baseAdult + $baseChild;
-    
-                // Surcharge
-                $surPrice = $packageConfig->prices()
-                    ->where('type', 'sur_charge')
-                    ->where('number_of_adults', $adults)
-                    ->where('number_of_children', $children)
-                    ->first();
-    
-                $surAdult = ($surPrice->adult_price ?? 0) * $adults;
-                $surChild = ($surPrice->child_price ?? 0) * $children;
-                $surTotal = $surAdult + $surChild;
-    
+
+                $prices = json_decode($packageConfig->configuration_prices, true) ?? [];
+
+                $keyAdult = "{$adults}_a_{$children}_c_a";
+                $keyChild = "{$adults}_a_{$children}_c_c";
+
+                $baseAdult = $prices['b'][$keyAdult] ?? 0;
+                $baseChild = $prices['b'][$keyChild] ?? 0;
+                $surAdult = $prices['s'][$keyAdult] ?? 0;
+                $surChild = $prices['s'][$keyChild] ?? 0;
+
+                $baseTotal = $baseAdult * $adults + $baseChild * $children;
+                $surTotal = $surAdult * $adults + $surChild * $children;
                 $nightTotal = $baseTotal + $surTotal;
-    
+
                 $nights[] = [
                     'date' => $date->format('Y-m-d'),
                     'season' => $season->name,
@@ -319,21 +297,21 @@ class TravelCalculatorController extends Controller
                     'date_type' => $dateTypeRange->dateType->name,
                     'is_weekend' => $date->isWeekend(),
                     'base_charge' => [
-                        'adult' => ['price' => number_format($basePrice->adult_price, 2), 'quantity' => $adults, 'total' => number_format($baseAdult, 2)],
-                        'child' => ['price' => number_format($basePrice->child_price, 2), 'quantity' => $children, 'total' => number_format($baseChild, 2)],
-                        'total' => number_format($baseTotal, 2),
+                        'adult' => ['price' => $baseAdult, 'quantity' => $adults, 'total' => $baseAdult * $adults],
+                        'child' => ['price' => $baseChild, 'quantity' => $children, 'total' => $baseChild * $children],
+                        'total' => $baseTotal,
                     ],
                     'surcharge' => [
-                        'adult' => ['price' => number_format($surPrice->adult_price ?? 0, 2), 'quantity' => $adults, 'total' => number_format($surAdult, 2)],
-                        'child' => ['price' => number_format($surPrice->child_price ?? 0, 2), 'quantity' => $children, 'total' => number_format($surChild, 2)],
-                        'total' => number_format($surTotal, 2),
+                        'adult' => ['price' => $surAdult, 'quantity' => $adults, 'total' => $surAdult * $adults],
+                        'child' => ['price' => $surChild, 'quantity' => $children, 'total' => $surChild * $children],
+                        'total' => $surTotal,
                     ],
-                    'total' => number_format($nightTotal, 2)
+                    'total' => $nightTotal,
                 ];
             }
-    
-            // Summary
+
             $sum = fn($key) => array_sum(array_map(fn($night) => floatval(data_get($night, $key)), $nights));
+
             return response()->json([
                 'success' => true,
                 'currency' => 'MYR',
@@ -341,20 +319,35 @@ class TravelCalculatorController extends Controller
                 'summary' => [
                     'total_nights' => count($nights),
                     'base_charges' => [
-                        'adult' => ['price_per_night' => $nights[0]['base_charge']['adult']['price'], 'quantity' => $adults, 'total' => number_format($sum('base_charge.adult.total'), 2)],
-                        'child' => ['price_per_night' => $nights[0]['base_charge']['child']['price'], 'quantity' => $children, 'total' => number_format($sum('base_charge.child.total'), 2)],
-                        'total' => number_format($sum('base_charge.total'), 2),
+                        'adult' => [
+                            'price_per_night' => $nights[0]['base_charge']['adult']['price'],
+                            'quantity' => $adults,
+                            'total' => $sum('base_charge.adult.total')
+                        ],
+                        'child' => [
+                            'price_per_night' => $nights[0]['base_charge']['child']['price'],
+                            'quantity' => $children,
+                            'total' => $sum('base_charge.child.total')
+                        ],
+                        'total' => $sum('base_charge.total'),
                     ],
                     'surcharges' => [
-                        'adult' => ['price_per_night' => $nights[0]['surcharge']['adult']['price'], 'quantity' => $adults, 'total' => number_format($sum('surcharge.adult.total'), 2)],
-                        'child' => ['price_per_night' => $nights[0]['surcharge']['child']['price'], 'quantity' => $children, 'total' => number_format($sum('surcharge.child.total'), 2)],
-                        'total' => number_format($sum('surcharge.total'), 2),
+                        'adult' => [
+                            'price_per_night' => $nights[0]['surcharge']['adult']['price'],
+                            'quantity' => $adults,
+                            'total' => $sum('surcharge.adult.total')
+                        ],
+                        'child' => [
+                            'price_per_night' => $nights[0]['surcharge']['child']['price'],
+                            'quantity' => $children,
+                            'total' => $sum('surcharge.child.total')
+                        ],
+                        'total' => $sum('surcharge.total'),
                     ],
-                    'grand_total' => number_format($sum('total'), 2),
+                    'grand_total' => $sum('total'),
                 ],
-                'total' => number_format($sum('total'), 2),
+                'total' => $sum('total'),
             ]);
-    
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

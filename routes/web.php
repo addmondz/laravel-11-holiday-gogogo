@@ -171,15 +171,15 @@ Route::get('/test', function () {
     $package_id = 1;
 
     $season_name = 'Default';
-    $season_type_id = SeasonType::where('name', $season_name)->first()->id;
-    $season_id = Season::where('season_type_id', $season_type_id)->where('package_id', $package_id)->first()->id;
+    $season_type_id = SeasonType::where('name', $season_name)->first()?->id;
+    $season_id = Season::where('season_type_id', $season_type_id)->where('package_id', $package_id)->first()?->id;
 
     $date_type_name = 'Weekday';
-    $date_type_id = DateType::where('name', $date_type_name)->first()->id;
-    $date_type_range_id = DateTypeRange::where('date_type_id', $date_type_id)->where('package_id', $package_id)->first()->id;
+    $date_type_id = DateType::where('name', $date_type_name)->first()?->id;
+    $date_type_range_id = DateTypeRange::where('date_type_id', $date_type_id)->where('package_id', $package_id)->first()?->id;
 
     $room_type_name = 'Deluxe Room';
-    $room_type_id = RoomType::where('name', $room_type_name)->first()->id;
+    $room_type_id = RoomType::where('name', $room_type_name)->first()?->id;
 
     dump([
         'season_name' => $season_name,
@@ -191,11 +191,15 @@ Route::get('/test', function () {
         'room_type_id' => $room_type_id,
     ]);
 
-    $package_config = PackageConfiguration::where('package_id', $package_id)->where('season_id', $season_id)->where('date_type_id', $date_type_range_id)->where('room_type_id', $room_type_id)->first();
+    $package_config = PackageConfiguration::where('package_id', $package_id)
+        ->where('season_id', $season_id)
+        ->where('date_type_id', $date_type_range_id)
+        ->where('room_type_id', $room_type_id)
+        ->first();
 
     dump('package_config id: ' . $package_config?->id);
 
-    $prices = $package_config?->id ? ConfigurationPrice::where('package_configuration_id', $package_config->id)->get() : [];
+    $configurationPrices = $package_config ? json_decode($package_config->configuration_prices, true) : [];
 
-    dd($prices ? $prices?->first()?->toArray() : null);
+    dd($configurationPrices ?: 'No prices found.');
 });
