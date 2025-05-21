@@ -70,7 +70,7 @@
                                             <div class="text-sm text-gray-900">{{ pkg.location }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">RM {{ pkg.display_price_adult }}</div>
+                                            <div class="text-sm text-gray-900">RM {{ formatNumber(pkg.display_price_adult) }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <Link
@@ -192,6 +192,15 @@ const handlePageChange = (url) => {
         preserveState: true,
         preserveScroll: true,
         only: ['packages']
+    });
+};
+
+const formatNumber = (number) => {
+    const num = parseFloat(number);
+    if (isNaN(num)) return '0.00';
+    return num.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
     });
 };
 </script>
