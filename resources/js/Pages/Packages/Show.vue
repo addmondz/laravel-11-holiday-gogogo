@@ -490,7 +490,16 @@
                                         <div class="space-y-8">
                                             <!-- Base Charge Table -->
                                             <div class="overflow-x-auto">
-                                                <h3 class="text-lg font-medium text-gray-900 mb-4">Base Charges</h3>
+                                                <div class="flex justify-between items-center mb-4">
+                                                    <h3 class="text-lg font-medium text-gray-900">Base Charges</h3>
+                                                    <button 
+                                                        type="button"
+                                                        @click="applyBasePricesToAll"
+                                                        class="px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors duration-200 border border-yellow-300 hover:border-yellow-400"
+                                                    >
+                                                        Apply 1st Price To All
+                                                    </button>
+                                                </div>
                                                 <table class="min-w-full divide-y divide-gray-200">
                                                     <thead class="bg-gray-50">
                                                         <tr>
@@ -528,7 +537,16 @@
 
                                             <!-- Surcharge Table -->
                                             <div class="overflow-x-auto">
-                                                <h3 class="text-lg font-medium text-gray-900 mb-4">Surcharges</h3>
+                                                <div class="flex justify-between items-center mb-4">
+                                                    <h3 class="text-lg font-medium text-gray-900">Surcharges</h3>
+                                                    <button 
+                                                        type="button"
+                                                        @click="applySurchargePricesToAll"
+                                                        class="px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors duration-200 border border-yellow-300 hover:border-yellow-400"
+                                                    >
+                                                        Apply 1st Price To All
+                                                    </button>
+                                                </div>
                                                 <table class="min-w-full divide-y divide-gray-200">
                                                     <thead class="bg-gray-50">
                                                         <tr>
@@ -1706,6 +1724,38 @@ const copyLink = (link) => {
             confirmButtonColor: '#4F46E5'
         });
     });
+};
+
+const applyBasePricesToAll = () => {
+    if (!priceForm.prices.base_charge || priceForm.prices.base_charge.length === 0) return;
+    
+    // Get the first price combination (1 adult, 0 children)
+    const firstPrice = priceForm.prices.base_charge[0];
+    if (!firstPrice) return;
+
+    // Apply the first price to all combinations
+    priceForm.prices.base_charge = priceForm.prices.base_charge.map((_, index) => ({
+        number_of_adults: Math.floor(index / 4) + 1,
+        number_of_children: index % 4,
+        adult_price: firstPrice.adult_price,
+        child_price: firstPrice.child_price
+    }));
+};
+
+const applySurchargePricesToAll = () => {
+    if (!priceForm.prices.sur_charge || priceForm.prices.sur_charge.length === 0) return;
+    
+    // Get the first price combination (1 adult, 0 children)
+    const firstPrice = priceForm.prices.sur_charge[0];
+    if (!firstPrice) return;
+
+    // Apply the first price to all combinations
+    priceForm.prices.sur_charge = priceForm.prices.sur_charge.map((_, index) => ({
+        number_of_adults: Math.floor(index / 4) + 1,
+        number_of_children: index % 4,
+        adult_price: firstPrice.adult_price,
+        child_price: firstPrice.child_price
+    }));
 };
 </script>
 <style scoped>
