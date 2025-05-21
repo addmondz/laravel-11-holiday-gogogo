@@ -24,7 +24,7 @@
                                         activeTab === tab.id
                                             ? 'border-indigo-500 text-indigo-600'
                                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                                        'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
+                                        'whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm'
                                     ]"
                                 >
                                     {{ tab.name }}
@@ -716,7 +716,7 @@
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Edit Season</h2>
                 <form @submit.prevent="updateSeason">
                     <div class="space-y-4">
-                        <div>
+                        <!-- <div>
                             <label for="edit_season_type_id" class="block text-sm font-medium text-gray-700">Season Type</label>
                             <select
                                 id="edit_season_type_id"
@@ -733,6 +733,12 @@
                             <div v-if="editSeasonForm.errors.season_type_id" class="mt-1 text-sm text-red-600">
                                 {{ editSeasonForm.errors.season_type_id }}
                             </div>
+                        </div> -->
+                        <div>
+                            <label for="edit_season_type_id" class="block text-sm font-medium text-gray-700">Season Type</label>
+                            <span class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 p-2 not-allowed">
+                                {{ seasonTypes.find(type => type.id === editSeasonForm.season_type_id)?.name || 'N/A' }}
+                            </span>
                         </div>
 
                         <div>
@@ -964,7 +970,7 @@
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Edit Date Range</h2>
                 <form @submit.prevent="updateDateTypeRange">
                     <div class="space-y-4">
-                        <div>
+                        <!-- <div>
                             <label for="edit_date_type_id" class="block text-sm font-medium text-gray-700">Date Type</label>
                             <select
                                 id="edit_date_type_id"
@@ -981,6 +987,12 @@
                             <div v-if="editDateTypeRangeForm.errors.date_type_id" class="mt-1 text-sm text-red-600">
                                 {{ editDateTypeRangeForm.errors.date_type_id }}
                             </div>
+                        </div> -->
+                        <div>
+                            <label for="edit_date_type_id" class="block text-sm font-medium text-gray-700">Date Type</label>
+                            <span class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 p-2 not-allowed">
+                                {{ dateTypes.find(type => type.id === editDateTypeRangeForm.date_type_id)?.name || 'N/A' }}
+                            </span>
                         </div>
 
                         <div>
