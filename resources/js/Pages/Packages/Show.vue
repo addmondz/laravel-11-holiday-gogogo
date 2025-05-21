@@ -1258,11 +1258,12 @@ const handleSeasonPageChange = async (page) => {
 const editSeason = (season) => {
     editSeasonForm.id = season.id;
     editSeasonForm.season_type_id = season.season_type_id;
-    editSeasonForm.start_date = season.start_date;
-    editSeasonForm.end_date = season.end_date;
+    editSeasonForm.start_date = formatDate(season.start_date);
+    editSeasonForm.end_date = formatDate(season.end_date);
     showEditSeasonModal.value = true;
 };
 
+const formatDate = (isoString) => isoString ? isoString.split('T')[0] : '';
 const updateSeason = () => {
     editSeasonForm.put(route('seasons.update', editSeasonForm.id), {
         onSuccess: () => {
@@ -1296,8 +1297,8 @@ const submitSeason = () => {
 const editDateTypeRange = (range) => {
     editDateTypeRangeForm.id = range.id;
     editDateTypeRangeForm.date_type_id = range.date_type_id;
-    editDateTypeRangeForm.start_date = range.start_date;
-    editDateTypeRangeForm.end_date = range.end_date;
+    editDateTypeRangeForm.start_date = formatDate(range.start_date);
+    editDateTypeRangeForm.end_date = formatDate(range.end_date);
     showEditDateTypeRangeModal.value = true;
 };
 
