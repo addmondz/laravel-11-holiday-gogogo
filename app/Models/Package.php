@@ -47,4 +47,14 @@ class Package extends Model
             ->withPivot(['season_id', 'date_type_id'])
             ->withTimestamps();
     }
+
+    public function seasons(): HasMany
+    {
+        return $this->hasMany(Season::class);
+    }
+
+    public function dateTypeRanges(): HasMany
+    {
+        return $this->hasMany(DateTypeRange::class);
+    }
 }

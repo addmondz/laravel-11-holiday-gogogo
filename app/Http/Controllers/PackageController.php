@@ -266,4 +266,114 @@ class PackageController extends Controller
         return redirect()->route('packages.index')
             ->with('success', 'Package deleted successfully.');
     }
+
+    public function duplicateForm(Package $package)
+    {
+        // Load all necessary relationships for the form
+        $package->load([
+            'roomTypes' => function ($query) {
+                $query->select('room_types.*')
+                    ->distinct('room_types.name')
+                    ->orderBy('room_types.name');
+            },
+            'seasons',
+            'dateTypeRanges',
+            'configurations',
+            'configurations.roomType',
+            'configurations.season',
+            'configurations.season.type',
+            'configurations.dateType',
+            'addOns'
+        ]);
+
+        // Create a copy of the package data for the form
+        $packageData = $package->toArray();
+        $packageData['name'] = $package->name . ' (Copy)';
+        $packageData['uuid'] = null; // Will be generated on save
+
+        // Ensure room_types only contains unique entries based on name
+        $uniqueRoomTypes = collect($packageData['room_types'])
+            ->unique('name')
+            ->values()
+            ->all();
+        $packageData['room_types'] = $uniqueRoomTypes;
+
+        return Inertia::render('Packages/Duplicate', [
+            'package' => $packageData,
+            'originalPackage' => $package
+        ]);
+    }
+
+    public function duplicate(Request $request, Package $package)
+    {
+        try {
+            DB::beginTransaction();
+
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'display_price_adult' => 'nullable|numeric|min:0',
+                'display_price_child' => 'nullable|numeric|min:0',
+                'package_min_days' => 'required|integer|min:1',
+                'package_max_days' => 'required|integer|min:1|gte:package_min_days',
+                'terms_and_conditions' => 'nullable|string',
+                'location' => 'nullable|string|max:255',
+                'package_start_date' => 'required|date',
+                'package_end_date' => 'nullable|date|after:package_start_date',
+            ]);
+
+            // Create new package with validated data
+            $newPackage = new Package($validated);
+            $newPackage->uuid = Str::uuid();
+            $newPackage->save();
+
+            // Step 1: Create new records and build mappings
+            $roomTypeMap = [];
+            foreach ($package->roomTypes->unique('name') as $roomType) {
+                $newRoomType = $roomType->replicate();
+                $newRoomType->package_id = $newPackage->id;
+                $newRoomType->save();
+                $roomTypeMap[$roomType->id] = $newRoomType->id;
+            }
+
+            $seasonMap = [];
+            foreach ($package->seasons as $season) {
+                $newSeason = $season->replicate();
+                $newSeason->package_id = $newPackage->id;
+                $newSeason->save();
+                $seasonMap[$season->id] = $newSeason->id;
+            }
+
+            $dateTypeRangeMap = [];
+            foreach ($package->dateTypeRanges as $dateTypeRange) {
+                $newDateTypeRange = $dateTypeRange->replicate();
+                $newDateTypeRange->package_id = $newPackage->id;
+                $newDateTypeRange->save();
+                $dateTypeRangeMap[$dateTypeRange->id] = $newDateTypeRange->id;
+            }
+            
+            // package configuration
+            foreach ($package->configurations as $config) {
+                $newConfig = $config->replicate();
+                $newConfig->package_id = $newPackage->id;
+                $newConfig->room_type_id = $roomTypeMap[$config->room_type_id];
+                $newConfig->season_id = $seasonMap[$config->season_id];
+                $newConfig->date_type_id = $dateTypeRangeMap[$config->date_type_id];
+                $newConfig->save();
+            }
+
+            DB::commit();
+
+            return redirect()->route('packages.index')
+                ->with('success', 'Package duplicated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Package duplication failed: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to duplicate package: ' . $e->getMessage());
+        }
+    }
 }

@@ -87,9 +87,15 @@
                                             </Link>
                                             <button
                                                 @click="deletePackage(pkg.id)"
-                                                class="text-red-600 hover:text-red-900"
+                                                class="text-red-600 hover:text-red-900 mr-3"
                                             >
                                                 Delete
+                                            </button>
+                                            <button
+                                                @click="duplicatePackage(pkg.id)"
+                                                class="text-yellow-700 hover:text-yellow-800 mr-3"
+                                            >
+                                                Duplicate
                                             </button>
                                         </td>
                                     </tr>
@@ -185,6 +191,10 @@ const deletePackage = (id) => {
             });
         }
     });
+};
+
+const duplicatePackage = (packageId) => {
+    router.visit(route('packages.duplicate-form', packageId));
 };
 
 const handlePageChange = (url) => {

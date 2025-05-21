@@ -73,6 +73,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'packages.destroy'
     ]);
 
+    Route::get('/packages/{package}/duplicate', [PackageController::class, 'duplicateForm'])->name('packages.duplicate-form');
+    Route::post('/packages/{package}/duplicate', [PackageController::class, 'duplicate'])->name('packages.duplicate');
+
     Route::get('/packages/{package}/room-types', [PackageController::class, 'getRoomTypes'])->name('packages.room-types');
     Route::get('/packages/{package}/seasons', [PackageController::class, 'getSeasons'])->name('packages.seasons');
     Route::get('/packages/{package}/date-type-ranges', [PackageController::class, 'getDateTypeRanges'])->name('packages.date-type-ranges');
