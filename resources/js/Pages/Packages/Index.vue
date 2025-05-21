@@ -93,7 +93,7 @@
                                             </button>
                                             <button
                                                 @click="duplicatePackage(pkg.id)"
-                                                class="text-yellow-700 hover:text-yellow-800 mr-3"
+                                                class="text-indigo-600 hover:text-indigo-900 mr-3"
                                             >
                                                 Duplicate
                                             </button>
