@@ -205,5 +205,5 @@ Route::get('/test', function () {
 
     $prices = $package_config?->id ? ConfigurationPrice::where('package_configuration_id', $package_config->id)->get() : [];
 
-    dd($prices? $prices?->first()?->toArray() : null);
+    dd($prices ? $prices?->first()?->toArray() : null);
 });

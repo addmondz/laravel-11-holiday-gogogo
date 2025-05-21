@@ -90,12 +90,7 @@ class DateTypeController extends Controller
         $dateType->update($validated);
 
         // If the request has a return_to_package parameter, redirect back to the package page
-        if ($request->has('return_to_package')) {
-            return redirect()->route('packages.show', $request->package_id)
-                ->with('success', 'Date type updated successfully.');
-        }
-
-        return redirect()->route('date-types.index')
+        return redirect()->route('packages.show', $request->package_id)
             ->with('success', 'Date type updated successfully.');
     }
 

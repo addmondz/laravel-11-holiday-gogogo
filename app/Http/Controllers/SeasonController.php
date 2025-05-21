@@ -34,7 +34,7 @@ class SeasonController extends Controller
     public function store(Request $request)
     {
         $packageId = request()->package_id;
-        
+
         $validated = $request->validate([
             'season_type_id' => 'required|exists:season_types,id',
             'start_date' => 'required|date',
@@ -100,12 +100,7 @@ class SeasonController extends Controller
         $season->update($validated);
 
         // If the request has a return_to_package parameter, redirect back to the package page
-        if ($request->has('return_to_package')) {
-            return redirect()->route('packages.show', $request->package_id)
-                ->with('success', 'Season updated successfully.');
-        }
-
-        return redirect()->route('seasons.index')
+        return redirect()->route('packages.show', $request->package_id)
             ->with('success', 'Season updated successfully.');
     }
 

@@ -205,10 +205,10 @@ class PackageController extends Controller
 
     public function getDateTypeRanges(Request $request, Package $package)
     {
-        $defaultDateTypeId = DateType::whereIn('name', ['Default', 'Weekday', 'Weekend'])->value('id');
+        $defaultDateTypeId = DateType::whereIn('name', ['Default', 'Weekday', 'Weekend'])->pluck('id');
         $dateTypeRanges = DateTypeRange::with('dateType')
-            ->where('package_id', $package->id)
-            ->where('date_type_id', '!=', $defaultDateTypeId)
+            ->where('package_id', 1)
+            ->whereNotIn('date_type_id', $defaultDateTypeId)
             ->latest()
             ->paginate(10, ['*'], 'page');
 
