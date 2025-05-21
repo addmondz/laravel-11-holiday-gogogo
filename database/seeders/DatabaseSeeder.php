@@ -262,33 +262,33 @@ class DatabaseSeeder extends Seeder
             ];
 
             $season = Season::all();
-            // foreach ($season as $season) {
-            //     $dateType = DateType::all();
-            //     foreach ($dateType as $dateType) {
-            //         $roomType = RoomType::all();
-            //         foreach ($roomType as $roomType) {
-            //             foreach ($combinations as $combo) {
-            //                 $keyPrefix = "{$combo['adults']}_a_{$combo['children']}_c";
+            foreach ($season as $season) {
+                $dateType = DateType::all();
+                foreach ($dateType as $dateType) {
+                    $roomType = RoomType::all();
+                    foreach ($roomType as $roomType) {
+                        foreach ($combinations as $combo) {
+                            $keyPrefix = "{$combo['adults']}_a_{$combo['children']}_c";
 
-            //                 // Base charge prices
-            //                 $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 100, 1000);
-            //                 $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 50, 500);
+                            // Base charge prices
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 100, 1000);
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 50, 500);
 
-            //                 // Surcharge prices
-            //                 $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 50, 1000);
-            //                 $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 25, 500);
-            //             }
+                            // Surcharge prices
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 50, 1000);
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 25, 500);
+                        }
 
-            //             PackageConfiguration::create([
-            //                 'package_id' => $pkg->id,
-            //                 'season_id' => $season->id,
-            //                 'date_type_id' => $dateType->id,
-            //                 'room_type_id' => $roomType->id,
-            //                 'configuration_prices' => json_encode($configurationPrices)
-            //             ]);
-            //         }
-            //     }
-            // }
+                        PackageConfiguration::create([
+                            'package_id' => $pkg->id,
+                            'season_id' => $season->id,
+                            'date_type_id' => $dateType->id,
+                            'room_type_id' => $roomType->id,
+                            'configuration_prices' => json_encode($configurationPrices)
+                        ]);
+                    }
+                }
+            }
             dump('completed ' . $pkg->id);
         }
 
