@@ -198,17 +198,10 @@ class TravelCalculatorController extends Controller
     {
         $package = Package::where('uuid', $request->uuid)->firstOrFail();
 
-        $roomTypes = RoomType::whereIn(
-            'id',
-            PackageConfiguration::where('package_id', $package->id)
-                ->distinct()
-                ->pluck('room_type_id')
-        )->get();
-
         return response()->json([
             'success' => true,
             'package' => $package,
-            'room_types' => $roomTypes,
+            'room_types' => $package->loadRoomTypes,
         ]);
     }
 
