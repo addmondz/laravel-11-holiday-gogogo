@@ -275,12 +275,12 @@ class PackageController extends Controller
                     ->distinct('room_types.name')
                     ->orderBy('room_types.name');
             },
-            'seasons',
-            'dateTypeRanges',
-            'configurations',
-            'configurations.roomType',
-            'configurations.seasonType',
-            'configurations.dateType',
+            // 'seasons',
+            // 'dateTypeRanges',
+            // 'configurations',
+            // 'configurations.roomType',
+            // 'configurations.seasonType',
+            // 'configurations.dateType',
         ]);
 
         // Create a copy of the package data for the form
