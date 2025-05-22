@@ -91,8 +91,8 @@ return new class extends Migration
         Schema::create('package_configurations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('package_id')->constrained()->onDelete('cascade');
-            $table->foreignId('season_id')->constrained()->onDelete('cascade');
-            $table->foreignId('date_type_id')->constrained('date_type_ranges')->onDelete('cascade');
+            $table->foreignId('season_type_id')->constrained()->onDelete('cascade');
+            $table->foreignId('date_type_id')->constrained()->onDelete('cascade');
             $table->foreignId('room_type_id')->constrained()->onDelete('cascade');
             $table->json('configuration_prices')->nullable();
             $table->timestamps();

@@ -25,19 +25,11 @@ class ConfigurationPriceController extends Controller
         try {
             DB::beginTransaction();
 
-            $season = Season::where('season_type_id', $validated['season_type_id'])
-                ->where('package_id', $validated['package_id'])
-                ->firstOrFail();
-
-            $dateTypeRange = DateTypeRange::where('date_type_id', $validated['date_type_id'])
-                ->where('package_id', $validated['package_id'])
-                ->firstOrFail();
-
             $configuration = PackageConfiguration::firstOrCreate(
                 [
                     'package_id' => $validated['package_id'],
-                    'season_id' => $season->id,
-                    'date_type_id' => $dateTypeRange->id,
+                    'season_type_id' => $validated['season_type_id'],
+                    'date_type_id' => $validated['date_type_id'],
                     'room_type_id' => $validated['room_type']
                 ]
             );
@@ -95,19 +87,11 @@ class ConfigurationPriceController extends Controller
         try {
             DB::beginTransaction();
 
-            $season = Season::where('season_type_id', $validated['season_type_id'])
-                ->where('package_id', $validated['package_id'])
-                ->firstOrFail();
-
-            $dateTypeRange = DateTypeRange::where('date_type_id', $validated['date_type_id'])
-                ->where('package_id', $validated['package_id'])
-                ->firstOrFail();
-
             $configuration = PackageConfiguration::firstOrCreate(
                 [
                     'package_id' => $validated['package_id'],
-                    'season_id' => $season->id,
-                    'date_type_id' => $dateTypeRange->id,
+                    'season_type_id' => $validated['season_type_id'],
+                    'date_type_id' => $validated['date_type_id'],
                     'room_type_id' => $validated['room_type']
                 ]
             );
@@ -154,12 +138,9 @@ class ConfigurationPriceController extends Controller
 
     public function fetchPricesSearchIndex(Request $request)
     {
-        $season_id = $this->fetchSeasonIdBySeasonTypeAndPackageId($request->season_type_id, $request->package_id);
-        $date_type_id = $this->fetchDateTypeIdByDateTypeAndPackageId($request->date_type_id, $request->package_id);
-
         $configs = PackageConfiguration::where('package_id', $request->package_id)
-            ->where('season_id', $season_id)
-            ->where('date_type_id', $date_type_id)
+            ->where('season_type_id', $request->season_type_id)
+            ->where('date_type_id', $request->date_type_id)
             ->where('room_type_id', $request->room_type_id)
             ->get();
 

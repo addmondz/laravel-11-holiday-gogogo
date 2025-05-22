@@ -14,7 +14,7 @@ class PackageConfiguration extends Model
 
     protected $fillable = [
         'package_id',
-        'season_id',
+        'season_type_id',
         'date_type_id',
         'room_type_id',
         'configuration_prices',

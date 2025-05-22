@@ -27,7 +27,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $dummyPackagesCount = 2;
-        // $dummyPackagesCount = 20;
         $earliestDate = Carbon::parse('1970-01-01');
         $earliestNextDate = Carbon::parse('1970-01-02');
 
@@ -261,13 +260,14 @@ class DatabaseSeeder extends Seeder
                 ['adults' => 5, 'children' => 0],
             ];
 
-            $season = Season::all();
-            foreach ($season as $season) {
+            $seasonType = SeasonType::all();
+            foreach ($seasonType as $seasonType) {
+                return;
                 $dateType = DateType::all();
                 foreach ($dateType as $dateType) {
-                    $roomType = RoomType::all();
+                    $roomType = RoomType::where('package_id', $pkg->id)->get();
                     foreach ($roomType as $roomType) {
-                        foreach ($combinations as $combo) {
+                        foreach ($combinations as $combo) { 
                             $keyPrefix = "{$combo['adults']}_a_{$combo['children']}_c";
 
                             // Base charge prices
@@ -281,7 +281,7 @@ class DatabaseSeeder extends Seeder
 
                         PackageConfiguration::create([
                             'package_id' => $pkg->id,
-                            'season_id' => $season->id,
+                            'season_type_id' => $seasonType->id,
                             'date_type_id' => $dateType->id,
                             'room_type_id' => $roomType->id,
                             'configuration_prices' => json_encode($configurationPrices)
