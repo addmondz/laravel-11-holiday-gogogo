@@ -264,31 +264,8 @@ class DatabaseSeeder extends Seeder
                 ]);
                 $startDate->addDays(1);
             }
-
-            // ⚙️ PACKAGE CONFIGURATIONS & 💰 PRICES FOR ALL COMBINATIONS
-            $roomTypes = [
-                $deluxeRoom,
-                $superiorChalet,
-                $standardRoom
-            ];
-            $combinations = [
-                ['adults' => 1, 'children' => 0],
-                ['adults' => 1, 'children' => 1],
-                ['adults' => 1, 'children' => 2],
-                ['adults' => 1, 'children' => 3],
-                ['adults' => 1, 'children' => 4],
-                ['adults' => 2, 'children' => 0],
-                ['adults' => 2, 'children' => 1],
-                ['adults' => 2, 'children' => 2],
-                ['adults' => 2, 'children' => 3],
-                ['adults' => 3, 'children' => 0],
-                ['adults' => 3, 'children' => 1],
-                ['adults' => 3, 'children' => 2],
-                ['adults' => 4, 'children' => 0],
-                ['adults' => 4, 'children' => 1],
-                ['adults' => 5, 'children' => 0],
-            ];
-
+            
+            $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
             $seasonType = SeasonType::all();
             foreach ($seasonType as $seasonType) {
                 $dateType = DateType::all();

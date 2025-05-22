@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\AppConstants;
 use App\Models\Package;
 use App\Models\RoomType;
 use App\Models\Season;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\SeasonType;
 use App\Models\DateTypeRange;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 class PackageController extends Controller
@@ -87,11 +89,32 @@ class PackageController extends Controller
             $package = Package::create($validated);
 
             // Get default season and date type
-            $defaultSeason = Season::first();
-            $defaultDateType = DateType::first();
+            $defaultSeasonType = SeasonType::where('name', 'Default')->get();
+            $defaultDateType = DateType::whereIn('name', ['Default', 'Weekday', 'Weekend'])->get();
 
-            if (!$defaultSeason || !$defaultDateType) {
-                throw new \Exception('Default season or date type not found. Please create them first.');
+            if (!$defaultSeasonType || !$defaultDateType) {
+                throw new \Exception('Default season type or date type not found. Please create them first.');
+            }
+
+            $earliestDate = Carbon::parse('1970-01-01');
+            $earliestNextDate = Carbon::parse('1970-01-02');
+
+            foreach ($defaultSeasonType as $seasonType) {
+                Season::create([
+                    'season_type_id' => $seasonType->id,
+                    'start_date' => $earliestDate,
+                    'end_date' => $earliestNextDate,
+                    'package_id' => $package->id
+                ]);
+            }
+
+            foreach ($defaultDateType as $dateType) {
+                DateTypeRange::create([
+                    'date_type_id' => $dateType->id,
+                    'start_date' => $earliestDate,
+                    'end_date' => $earliestNextDate,
+                    'package_id' => $package->id
+                ]);
             }
 
             // Create room types and configurations
@@ -104,13 +127,45 @@ class PackageController extends Controller
                     'package_id' => $package->id
                 ]);
 
-                // Create package configuration
-                PackageConfiguration::create([
-                    'package_id' => $package->id,
-                    'room_type_id' => $roomType->id,
-                    'season_id' => $defaultSeason->id,
-                    'date_type_id' => $defaultDateType->id
-                ]);
+                foreach ($defaultDateType as $dateType) {
+                    foreach ($defaultSeasonType as $seasonType) {
+                        // Create package configuration
+                        PackageConfiguration::create([
+                            'package_id' => $package->id,
+                            'room_type_id' => $roomType->id,
+                            'season_type_id' => $seasonType->id,
+                            'date_type_id' => $dateType->id
+                        ]);
+                    }
+                }
+            }
+
+            $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
+            foreach ($defaultSeasonType as $seasonType) {
+                foreach ($defaultDateType as $dateType) {
+                    $roomType = RoomType::where('package_id', $package->id)->get();
+                    foreach ($roomType as $roomType) {
+                        foreach ($combinations as $combo) {
+                            $keyPrefix = "{$combo['adults']}_a_{$combo['children']}_c";
+
+                            // Base charge prices
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_a"] = $validated['display_price_adult'];
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_c"] = $validated['display_price_adult'];
+
+                            // Surcharge prices
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_a"] = $validated['display_price_adult'];
+                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_c"] = $validated['display_price_adult'];
+                        }
+
+                        PackageConfiguration::create([
+                            'package_id' => $package->id,
+                            'season_type_id' => $seasonType->id,
+                            'date_type_id' => $dateType->id,
+                            'room_type_id' => $roomType->id,
+                            'configuration_prices' => json_encode($configurationPrices)
+                        ]);
+                    }
+                }
             }
 
             DB::commit();

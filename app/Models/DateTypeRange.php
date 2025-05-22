@@ -16,7 +16,6 @@ class DateTypeRange extends Model
         'date_type_id',
         'start_date',
         'end_date',
-        'status',
         'package_id'
     ];
 
