@@ -234,36 +234,36 @@ class TravelCalculatorController extends Controller
 
                 if (!$dateTypeRange) {
                     $fallbackType = $date->isWeekend() ? 'weekend' : 'weekday';
-                    $typeId = DateType::where('name', 'LIKE', "%$fallbackType%")->first()?->id;
-                    $dateTypeRange = DateTypeRange::where('date_type_id', $typeId)
-                        ->where('package_id', $packageId)
-                        ->first();
+                    $dateType = DateType::where('name', 'LIKE', "%$fallbackType%")->first();
+                }
+                else{
+                    $dateType = $dateTypeRange->dateType;
                 }
 
-                if (!$dateTypeRange) {
-                    throw new \Exception('Date type range not found for ' . $date->format('Y-m-d'));
+                if (!$dateType) {
+                    throw new \Exception('Date type not found for ' . $date->format('Y-m-d'));
                 }
 
-                $season = Season::where('start_date', '<=', $date)
+                $seasonType = Season::where('start_date', '<=', $date)
                     ->where('end_date', '>=', $date)
                     ->where('package_id', $packageId)
                     ->first();
 
-                if (!$season) {
-                    $defaultSeasonType = \App\Models\SeasonType::where('name', 'Default')->first();
-                    $season = Season::where('season_type_id', $defaultSeasonType->id)
-                        ->where('package_id', $packageId)
-                        ->first();
+                if (!$seasonType) {
+                    $seasonType = \App\Models\SeasonType::where('name', 'Default')->first();
+                }
+                else{
+                    $seasonType = $seasonType->seasonType;
                 }
 
-                if (!$season) {
-                    throw new \Exception('Season not found for ' . $date->format('Y-m-d'));
+                if (!$seasonType) {
+                    throw new \Exception('Season type not found for ' . $date->format('Y-m-d'));
                 }
 
                 $packageConfig = \App\Models\PackageConfiguration::where([
                     'package_id' => $packageId,
-                    'season_id' => $season->id,
-                    'date_type_id' => $dateTypeRange->id,
+                    'season_type_id' => $seasonType->id,
+                    'date_type_id' => $dateType->id,
                     'room_type_id' => $roomTypeId
                 ])->first();
 
@@ -292,9 +292,9 @@ class TravelCalculatorController extends Controller
 
                 $nights[] = [
                     'date' => $date->format('Y-m-d'),
-                    'season' => $season->name,
-                    'season_type' => $season->type->name,
-                    'date_type' => $dateTypeRange->dateType->name,
+                    'season' => $seasonType->name,
+                    'season_type' => $seasonType->name,
+                    'date_type' => $dateType->name,
                     'is_weekend' => $date->isWeekend(),
                     'base_charge' => [
                         'adult' => ['price' => $baseAdult, 'quantity' => $adults, 'total' => $baseAdult * $adults],

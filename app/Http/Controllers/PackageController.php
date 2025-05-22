@@ -57,10 +57,10 @@ class PackageController extends Controller
 
     public function store(Request $request)
     {
-        try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            $validated = $request->validate([
+        try {
+            $v = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'icon_photo' => 'nullable|image|max:2048',
@@ -78,110 +78,83 @@ class PackageController extends Controller
             ]);
 
             if ($request->hasFile('icon_photo')) {
-                $validated['icon_photo'] = $request->file('icon_photo')->store('packages', 'public');
+                $v['icon_photo'] = $request->file('icon_photo')->store('packages', 'public');
             }
 
-            $validated['package_min_days'] = $validated['package_days'];
-            $validated['package_max_days'] = $validated['package_days'];
-            $validated['uuid'] = Str::uuid();
+            $v['uuid'] = Str::uuid()->toString();
+            $v['package_min_days'] = $v['package_days'];
+            $v['package_max_days'] = $v['package_days'];
 
-            // Create the package
-            $package = Package::create($validated);
+            $package = Package::create($v);
 
-            // Get default season and date type
-            $defaultSeasonType = SeasonType::where('name', 'Default')->get();
-            $defaultDateType = DateType::whereIn('name', ['Default', 'Weekday', 'Weekend'])->get();
+            $seasonTypes = SeasonType::where('name', 'Default')->get();
+            $dateTypes = DateType::whereIn('name', ['Default', 'Weekday', 'Weekend'])->get();
 
-            if (!$defaultSeasonType || !$defaultDateType) {
-                throw new \Exception('Default season type or date type not found. Please create them first.');
+            if ($seasonTypes->isEmpty() || $dateTypes->isEmpty()) {
+                throw new \Exception('Default season/date type not found');
             }
 
-            $earliestDate = Carbon::parse('1970-01-01');
-            $earliestNextDate = Carbon::parse('1970-01-02');
+            $start = '1970-01-01';
+            $end = '1970-01-02';
 
-            foreach ($defaultSeasonType as $seasonType) {
-                Season::create([
-                    'season_type_id' => $seasonType->id,
-                    'start_date' => $earliestDate,
-                    'end_date' => $earliestNextDate,
-                    'package_id' => $package->id
-                ]);
-            }
+            $seasonTypes->each(fn($s) => Season::create([
+                'season_type_id' => $s->id,
+                'start_date' => $start,
+                'end_date' => $end,
+                'package_id' => $package->id,
+            ]));
 
-            foreach ($defaultDateType as $dateType) {
-                DateTypeRange::create([
-                    'date_type_id' => $dateType->id,
-                    'start_date' => $earliestDate,
-                    'end_date' => $earliestNextDate,
-                    'package_id' => $package->id
-                ]);
-            }
+            $dateTypes->each(fn($d) => DateTypeRange::create([
+                'date_type_id' => $d->id,
+                'start_date' => $start,
+                'end_date' => $end,
+                'package_id' => $package->id,
+            ]));
 
-            // Create room types and configurations
-            foreach ($request->room_types as $roomTypeData) {
-                // Create room type
-                $roomType = RoomType::create([
-                    'name' => $roomTypeData['name'],
-                    'description' => $roomTypeData['description'],
-                    'max_occupancy' => $roomTypeData['max_occupancy'],
-                    'package_id' => $package->id
-                ]);
-
-                foreach ($defaultDateType as $dateType) {
-                    foreach ($defaultSeasonType as $seasonType) {
-                        // Create package configuration
-                        PackageConfiguration::create([
-                            'package_id' => $package->id,
-                            'room_type_id' => $roomType->id,
-                            'season_type_id' => $seasonType->id,
-                            'date_type_id' => $dateType->id
-                        ]);
-                    }
-                }
-            }
+            $roomTypes = collect($v['room_types'])->map(fn($r) => RoomType::create([
+                'name' => $r['name'],
+                'description' => $r['description'] ?? null,
+                'max_occupancy' => $r['max_occupancy'],
+                'package_id' => $package->id,
+            ]));
 
             $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
-            foreach ($defaultSeasonType as $seasonType) {
-                foreach ($defaultDateType as $dateType) {
-                    $roomType = RoomType::where('package_id', $package->id)->get();
-                    foreach ($roomType as $roomType) {
-                        foreach ($combinations as $combo) {
-                            $keyPrefix = "{$combo['adults']}_a_{$combo['children']}_c";
+            $baseKey = AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE;
+            $surKey = AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE;
 
-                            // Base charge prices
-                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_a"] = $validated['display_price_adult'];
-                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_c"] = $validated['display_price_adult'];
+            foreach ($roomTypes as $room) {
+                foreach ($seasonTypes as $season) {
+                    foreach ($dateTypes as $date) {
+                        $prices = [];
 
-                            // Surcharge prices
-                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_a"] = $validated['display_price_adult'];
-                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_c"] = $validated['display_price_adult'];
+                        foreach ($combinations as $c) {
+                            $k = "{$c['adults']}_a_{$c['children']}_c";
+                            $prices[$baseKey]["{$k}_a"] = $v['display_price_adult'];
+                            $prices[$baseKey]["{$k}_c"] = $v['display_price_adult'];
+                            $prices[$surKey]["{$k}_a"] = $v['display_price_adult'];
+                            $prices[$surKey]["{$k}_c"] = $v['display_price_adult'];
                         }
 
                         PackageConfiguration::create([
                             'package_id' => $package->id,
-                            'season_type_id' => $seasonType->id,
-                            'date_type_id' => $dateType->id,
-                            'room_type_id' => $roomType->id,
-                            'configuration_prices' => json_encode($configurationPrices)
+                            'room_type_id' => $room->id,
+                            'season_type_id' => $season->id,
+                            'date_type_id' => $date->id,
+                            'configuration_prices' => json_encode($prices),
                         ]);
                     }
                 }
             }
 
             DB::commit();
-
-            return redirect()->route('packages.index')
-                ->with('success', 'Package created successfully.');
+            return redirect()->route('packages.index')->with('success', 'Package created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Package creation failed: ' . $e->getMessage());
-            Log::error($e->getTraceAsString());
-
-            return back()
-                ->withInput()
-                ->with('error', 'Failed to create package: ' . $e->getMessage());
+            Log::error('Create package failed: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Failed to create package: ' . $e->getMessage());
         }
     }
+
 
     public function show(Package $package, Request $request)
     {
