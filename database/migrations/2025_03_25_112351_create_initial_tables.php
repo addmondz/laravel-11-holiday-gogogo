@@ -79,7 +79,7 @@ return new class extends Migration
 
         Schema::create('room_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->index(); // Add index here
             $table->foreignId('package_id')->constrained()->onDelete('cascade');
             $table->text('description')->nullable();
             $table->integer('max_occupancy')->default(2);

@@ -165,13 +165,7 @@ class PackageController extends Controller
         })->get();
 
         return Inertia::render('Packages/Show', [
-            'pkg' => $package->load([
-                'configurations',
-                'configurations.roomType',
-                'configurations.seasonType',
-                'configurations.dateType',
-                'configurations.dateType.ranges'
-            ])->setRelation('load_room_types', $roomTypes),
+            'pkg' => $package->setRelation('load_room_types', $roomTypes),
             'seasons' => $seasons,
             'seasonTypes' => $seasonTypes,
             'dateTypeRanges' => $dateTypeRanges,
@@ -268,38 +262,16 @@ class PackageController extends Controller
 
     public function duplicateForm(Package $package)
     {
-        // Load related data
-        $package->load([
-            'roomTypes' => function ($query) {
-                $query->select('room_types.*')
-                    ->distinct('room_types.name')
-                    ->orderBy('room_types.name');
-            },
-            // 'seasons',
-            // 'dateTypeRanges',
-            // 'configurations',
-            // 'configurations.roomType',
-            // 'configurations.seasonType',
-            // 'configurations.dateType',
-        ]);
+        $package->load(['loadRoomTypes']);
 
-        // Generate a new unique name
-        $newName = $this->generateUniqueCopyName($package->name);
-
-        // Clone package data
-        $packageData = $package->toArray();
-        $packageData['name'] = $newName;
-        $packageData['uuid'] = null; // UUID will be re-generated
-
-        // Keep unique room types
-        $packageData['room_types'] = collect($packageData['room_types'])
-            ->unique('name')
-            ->values()
-            ->all();
+        $data = $package->toArray();
+        $data['name'] = $this->generateUniqueCopyName($package->name);
+        $data['uuid'] = null;
+        $data['room_types'] = collect($data['load_room_types'])->unique('name')->values();
 
         return Inertia::render('Packages/Duplicate', [
-            'package' => $packageData,
-            'originalPackage' => $package
+            'package' => $data,
+            'originalPackage' => $package,
         ]);
     }
 
