@@ -26,7 +26,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $dummyPackagesCount = 2;
+        $dummyPackagesCount = 11;
+        $dummyOtherPackagesCount = 30;
         $earliestDate = Carbon::parse('1970-01-01');
         $earliestNextDate = Carbon::parse('1970-01-02');
 
@@ -57,6 +58,9 @@ class DatabaseSeeder extends Seeder
         $peakSeason = SeasonType::create(['name' => 'Peak Season']);
         $ph120 = SeasonType::create(['name' => 'Public Holiday 120']);
         $ph60 = SeasonType::create(['name' => 'Public Holiday 60']);
+        for ($i = 0; $i < $dummyOtherPackagesCount; $i++) {
+            SeasonType::create(['name' => 'Test Season ' . $i]);
+        }
 
         // 🟡 DATE TYPES
         // defualt date type is weekday / weekend
@@ -64,6 +68,9 @@ class DatabaseSeeder extends Seeder
         $weekday = DateType::create(['name' => 'Weekday']);
         $roomsur60 = DateType::create(['name' => 'Roomsur 60']);
         $roomsur30 = DateType::create(['name' => 'Roomsur 30']);
+        for ($i = 0; $i < $dummyOtherPackagesCount; $i++) {
+            DateType::create(['name' => 'Test Date Type ' . $i]);
+        }
 
         $faker = Faker::create();
         $locations = [
@@ -202,6 +209,17 @@ class DatabaseSeeder extends Seeder
                 'package_id' => $pkg->id
             ]);
 
+            $startDate = Carbon::parse('2025-01-01');
+            for ($i = 0; $i < $dummyOtherPackagesCount; $i++) {
+                Season::create([
+                    'season_type_id' => SeasonType::where('name', 'Test Season ' . $i)->first()->id,
+                    'start_date' => $startDate,
+                    'end_date' => $startDate->addDays(1),
+                    'package_id' => $pkg->id
+                ]);
+                $startDate->addDays(1);
+            }
+
             // 📆 DATE TYPE RANGES
             // Create non-overlapping date type ranges for each package
             // Weekday (Jan 1 - Dec 31, Monday to Thursday)
@@ -236,6 +254,17 @@ class DatabaseSeeder extends Seeder
                 'package_id' => $pkg->id
             ]);
 
+            $startDate = Carbon::parse('2025-01-01');
+            for ($i = 0; $i < $dummyOtherPackagesCount; $i++) {
+                DateTypeRange::create([
+                    'date_type_id' => DateType::where('name', 'Test Date Type ' . $i)->first()->id,
+                    'start_date' => $startDate,
+                    'end_date' => $startDate->addDays(1),
+                    'package_id' => $pkg->id
+                ]);
+                $startDate->addDays(1);
+            }
+
             // ⚙️ PACKAGE CONFIGURATIONS & 💰 PRICES FOR ALL COMBINATIONS
             $roomTypes = [
                 $deluxeRoom,
@@ -262,7 +291,6 @@ class DatabaseSeeder extends Seeder
 
             $seasonType = SeasonType::all();
             foreach ($seasonType as $seasonType) {
-                return;
                 $dateType = DateType::all();
                 foreach ($dateType as $dateType) {
                     $roomType = RoomType::where('package_id', $pkg->id)->get();
