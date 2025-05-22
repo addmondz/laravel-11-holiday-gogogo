@@ -9,11 +9,9 @@ use Illuminate\Http\Request;
 use App\Models\Package;
 use App\Models\PackageAddOn;
 use App\Models\PackageConfiguration;
-use App\Models\RoomType;
 use App\Models\Season;
 use App\Models\SeasonType;
 use Carbon\Carbon;
-use Carbon\WeekDay;
 use Illuminate\Support\Facades\Log;
 
 class TravelCalculatorController extends Controller
@@ -244,23 +242,23 @@ class TravelCalculatorController extends Controller
                     throw new \Exception('Date type not found for ' . $date->format('Y-m-d'));
                 }
 
-                $seasonType = Season::where('start_date', '<=', $date)
+                $season = Season::where('start_date', '<=', $date)
                     ->where('end_date', '>=', $date)
                     ->where('package_id', $packageId)
                     ->first();
 
-                if (!$seasonType) {
-                    $seasonType = \App\Models\SeasonType::where('name', 'Default')->first();
+                if (!$season) {
+                    $seasonType = SeasonType::where('name', 'Default')->first();
                 }
                 else{
-                    $seasonType = $seasonType->seasonType;
+                    $seasonType = $season->type;
                 }
 
                 if (!$seasonType) {
                     throw new \Exception('Season type not found for ' . $date->format('Y-m-d'));
                 }
 
-                $packageConfig = \App\Models\PackageConfiguration::where([
+                $packageConfig = PackageConfiguration::where([
                     'package_id' => $packageId,
                     'season_type_id' => $seasonType->id,
                     'date_type_id' => $dateType->id,
