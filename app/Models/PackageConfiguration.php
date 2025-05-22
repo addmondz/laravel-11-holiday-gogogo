@@ -25,9 +25,9 @@ class PackageConfiguration extends Model
         return $this->belongsTo(Package::class);
     }
 
-    public function season(): BelongsTo
+    public function seasonType(): BelongsTo
     {
-        return $this->belongsTo(Season::class);
+        return $this->belongsTo(SeasonType::class);
     }
 
     public function dateType(): BelongsTo

@@ -168,8 +168,7 @@ class PackageController extends Controller
             'pkg' => $package->load([
                 'configurations',
                 'configurations.roomType',
-                'configurations.season',
-                'configurations.season.type',
+                'configurations.seasonType',
                 'configurations.dateType',
                 'configurations.dateType.ranges'
             ])->setRelation('load_room_types', $roomTypes),
@@ -280,10 +279,8 @@ class PackageController extends Controller
             'dateTypeRanges',
             'configurations',
             'configurations.roomType',
-            'configurations.season',
-            'configurations.season.type',
+            'configurations.seasonType',
             'configurations.dateType',
-            'addOns'
         ]);
 
         // Create a copy of the package data for the form
@@ -357,8 +354,6 @@ class PackageController extends Controller
                 $newConfig = $config->replicate();
                 $newConfig->package_id = $newPackage->id;
                 $newConfig->room_type_id = $roomTypeMap[$config->room_type_id];
-                $newConfig->season_id = $seasonMap[$config->season_id];
-                $newConfig->date_type_id = $dateTypeRangeMap[$config->date_type_id];
                 $newConfig->save();
             }
 

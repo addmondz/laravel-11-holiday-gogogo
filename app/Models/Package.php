@@ -44,7 +44,7 @@ class Package extends Model
     public function roomTypes(): BelongsToMany
     {
         return $this->belongsToMany(RoomType::class, 'package_configurations', 'package_id', 'room_type_id')
-            ->withPivot(['season_id', 'date_type_id'])
+            ->withPivot(['season_type_id', 'date_type_id'])
             ->withTimestamps();
     }
 
