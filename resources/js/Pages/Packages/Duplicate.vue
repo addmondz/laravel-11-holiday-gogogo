@@ -251,7 +251,7 @@ const props = defineProps({
 });
 
 const form = useForm({
-    name: props.package.name.replace(' (Copy)', '') + ' (Copy)',
+    name: props.package.name,
     description: props.package.description,
     icon_photo: null,
     display_price_adult: props.package.display_price_adult,

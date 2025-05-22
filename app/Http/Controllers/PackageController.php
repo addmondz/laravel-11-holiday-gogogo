@@ -268,7 +268,7 @@ class PackageController extends Controller
 
     public function duplicateForm(Package $package)
     {
-        // Load all necessary relationships for the form
+        // Load related data
         $package->load([
             'roomTypes' => function ($query) {
                 $query->select('room_types.*')
@@ -283,22 +283,51 @@ class PackageController extends Controller
             // 'configurations.dateType',
         ]);
 
-        // Create a copy of the package data for the form
-        $packageData = $package->toArray();
-        $packageData['name'] = $package->name . ' (Copy)';
-        $packageData['uuid'] = null; // Will be generated on save
+        // Generate a new unique name
+        $newName = $this->generateUniqueCopyName($package->name);
 
-        // Ensure room_types only contains unique entries based on name
-        $uniqueRoomTypes = collect($packageData['room_types'])
+        // Clone package data
+        $packageData = $package->toArray();
+        $packageData['name'] = $newName;
+        $packageData['uuid'] = null; // UUID will be re-generated
+
+        // Keep unique room types
+        $packageData['room_types'] = collect($packageData['room_types'])
             ->unique('name')
             ->values()
             ->all();
-        $packageData['room_types'] = $uniqueRoomTypes;
 
         return Inertia::render('Packages/Duplicate', [
             'package' => $packageData,
             'originalPackage' => $package
         ]);
+    }
+
+    private function generateUniqueCopyName($originalName)
+    {
+        // Normalize: Remove " (Copy)" or " (Copy X)" at the end
+        $baseName = preg_replace('/\s\(Copy(?:\s\d+)?\)$/', '', $originalName);
+
+        // Escape for LIKE
+        $escapedBase = str_replace(['%', '_'], ['\%', '\_'], $baseName);
+        $searchTerm = $escapedBase . '%';
+
+        // Fetch all similar names once
+        $similarNames = Package::where('name', 'like', $searchTerm)->pluck('name')->toArray();
+
+        // If "(Copy)" not used yet
+        $firstCopy = "{$baseName} (Copy)";
+        if (!in_array($firstCopy, $similarNames)) {
+            return $firstCopy;
+        }
+
+        // Find next available number
+        $i = 2;
+        while (in_array("{$baseName} (Copy {$i})", $similarNames)) {
+            $i++;
+        }
+
+        return "{$baseName} (Copy {$i})";
     }
 
     public function duplicate(Request $request, Package $package)
@@ -348,7 +377,7 @@ class PackageController extends Controller
                 $newDateTypeRange->save();
                 $dateTypeRangeMap[$dateTypeRange->id] = $newDateTypeRange->id;
             }
-            
+
             // package configuration
             foreach ($package->configurations as $config) {
                 $newConfig = $config->replicate();
