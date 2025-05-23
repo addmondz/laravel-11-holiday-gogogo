@@ -71,7 +71,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">
-                                                {{ new Date(booking.start_date).toLocaleDateString() }} - {{ new Date(booking.end_date).toLocaleDateString() }}
+                                                {{ moment(booking.start_date).format('DD MMM YYYY') }} - {{ moment(booking.end_date).format('DD MMM YYYY') }}
                                             </div>
                                             <div class="text-sm text-gray-500">
                                                 {{ Math.ceil((new Date(booking.end_date) - new Date(booking.start_date)) / (1000 * 60 * 60 * 24)) }} nights
@@ -131,6 +131,7 @@ import { Link, router, Head } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 import debounce from 'lodash/debounce';
+import moment from 'moment';
 
 const props = defineProps({
     bookings: Object,
