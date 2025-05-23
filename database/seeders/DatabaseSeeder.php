@@ -128,7 +128,7 @@ class DatabaseSeeder extends Seeder
 
             Package::create([
                 'name' => $location . ' ' . $packageType['title'],
-                'description' => "{$days}D" . ($days - 1) . "N " . strtolower($packageType['title']) . " in {$location}. " . $faker->sentence(8),
+                'description' => ($days + 1) . "D {$days}N " . strtolower($packageType['title']) . " in {$location}. " . $faker->sentence(8),
                 'icon_photo' => $packageType['icon'],
                 'display_price_adult' => $faker->randomFloat(2, $packageType['price_range'][0], $packageType['price_range'][1]),
                 'display_price_child' => $faker->randomFloat(2, $packageType['price_range'][0] * 0.6, $packageType['price_range'][1] * 0.8),
@@ -264,7 +264,7 @@ class DatabaseSeeder extends Seeder
                 ]);
                 $startDate->addDays(1);
             }
-            
+
             $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
             $seasonType = SeasonType::all();
             foreach ($seasonType as $seasonType) {
@@ -272,7 +272,7 @@ class DatabaseSeeder extends Seeder
                 foreach ($dateType as $dateType) {
                     $roomType = RoomType::where('package_id', $pkg->id)->get();
                     foreach ($roomType as $roomType) {
-                        foreach ($combinations as $combo) { 
+                        foreach ($combinations as $combo) {
                             $keyPrefix = "{$combo['adults']}_a_{$combo['children']}_c";
 
                             // Base charge prices
