@@ -66,6 +66,8 @@ class PackageController extends Controller
                 'icon_photo' => 'nullable|image|max:2048',
                 'display_price_adult' => 'nullable|numeric|min:0',
                 'display_price_child' => 'nullable|numeric|min:0',
+                'adult_surcharge' => 'nullable|numeric|min:0',
+                'child_surcharge' => 'nullable|numeric|min:0',
                 'package_days' => 'required|integer|min:1',
                 'terms_and_conditions' => 'nullable|string',
                 'location' => 'nullable|string|max:255',
@@ -130,9 +132,9 @@ class PackageController extends Controller
                         foreach ($combinations as $c) {
                             $k = "{$c['adults']}_a_{$c['children']}_c";
                             $prices[$baseKey]["{$k}_a"] = $v['display_price_adult'];
-                            $prices[$baseKey]["{$k}_c"] = $v['display_price_adult'];
-                            $prices[$surKey]["{$k}_a"] = $v['display_price_adult'];
-                            $prices[$surKey]["{$k}_c"] = $v['display_price_adult'];
+                            $prices[$baseKey]["{$k}_c"] = $v['display_price_child'];
+                            $prices[$surKey]["{$k}_a"] = $v['adult_surcharge'];
+                            $prices[$surKey]["{$k}_c"] = $v['child_surcharge'];
                         }
 
                         PackageConfiguration::create([

@@ -56,8 +56,7 @@
 
                                 <div class="grid grid-cols-2 gap-6">
                                     <div>
-                                        <label for="display_price_adult" class="block text-sm font-medium text-gray-700">Display Price</label>
-                                        <!-- <label for="display_price_adult" class="block text-sm font-medium text-gray-700">Display Price (Adult)</label> -->
+                                        <label for="display_price_adult" class="block text-sm font-medium text-gray-700"><b class="text-[15px]">Display Price</b> / Adult Base Price</label>
                                         <input
                                             type="number"
                                             id="display_price_adult"
@@ -67,6 +66,45 @@
                                         />
                                         <div v-if="form.errors.display_price_adult" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.display_price_adult }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="display_price_adult" class="block text-sm font-medium text-gray-700">Child Base Price</label>
+                                        <input
+                                            type="number"
+                                            id="display_price_child"
+                                            v-model="form.display_price_child"
+                                            step="0.01"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        <div v-if="form.errors.display_price_child" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.display_price_child }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="adult_surcharge" class="block text-sm font-medium text-gray-700">Adult Surcharge</label>
+                                        <input
+                                            type="number"
+                                            id="adult_surcharge"
+                                            v-model="form.adult_surcharge"
+                                            step="0.01"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        <div v-if="form.errors.adult_surcharge" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.adult_surcharge }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="child_surcharge" class="block text-sm font-medium text-gray-700">Child Surcharge</label>
+                                        <input
+                                            type="number"
+                                            id="child_surcharge"
+                                            v-model="form.child_surcharge"
+                                            step="0.01"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        <div v-if="form.errors.child_surcharge" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.child_surcharge }}
                                         </div>
                                     </div>
 
@@ -252,6 +290,8 @@ const form = useForm({
     icon_photo: null,
     display_price_adult: null,
     display_price_child: null,
+    adult_surcharge: null,
+    child_surcharge: null,
     package_days: 2,
     terms_and_conditions: '',
     location: '',
