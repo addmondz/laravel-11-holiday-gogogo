@@ -74,7 +74,7 @@
                                     </div>
 
                                     <div>
-                                        <label for="package_max_days" class="block text-sm font-medium text-gray-700">Package Duration (Days)</label>
+                                        <label for="package_max_days" class="block text-sm font-medium text-gray-700">Package Duration (Nights)</label>
                                         <input
                                             type="number"
                                             id="package_max_days"

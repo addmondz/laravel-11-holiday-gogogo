@@ -105,7 +105,7 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-semibold text-gray-900 mb-2">Duration</h2>
-                        <p class="text-gray-600">{{ packageData.package_max_days }} days</p>
+                        <p class="text-gray-600">{{ packageData.package_max_days +1 }} Days {{ packageData.package_max_days }} {{packageData.package_max_days > 1 ? 'Nights' : 'Night'}}</p>
                     </div>
                     <div>
                         <h2 class="text-lg font-semibold text-gray-900 mb-2">Package Prices</h2>

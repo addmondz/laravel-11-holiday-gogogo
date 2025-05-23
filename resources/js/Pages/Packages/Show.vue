@@ -79,7 +79,7 @@
                                                 <p class="text-sm text-gray-900">Maximum Days: {{ pkg.package_max_days }}</p>
                                             </div> -->
                                             <p class="mt-1 text-sm text-gray-900">
-                                                {{ pkg.package_min_days }} day(s)
+                                                {{ pkg.package_max_days +1 }} Days {{ pkg.package_max_days }} {{pkg.package_max_days > 1 ? 'Nights' : 'Night'}}
                                             </p>
                                         </div>
                                     </div>
