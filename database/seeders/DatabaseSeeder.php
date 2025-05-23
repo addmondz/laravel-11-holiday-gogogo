@@ -40,6 +40,15 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('12345678'), // You can set the password as per your choice
         ]);
 
+        for ($i = 0; $i <= 10; $i++) {
+            User::create([
+                'name' => 'Test User ' . $i,
+                'email' => 'testuser' . $i . '@test.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('12345678'), // You can set the password as per your choice
+            ]);
+        }
+
         SeasonType::truncate();
         Season::truncate();
         DateType::truncate();

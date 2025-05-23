@@ -22,6 +22,7 @@ use App\Models\PackageConfiguration;
 use App\Models\RoomType;
 use App\Models\Season;
 use App\Models\SeasonType;
+use App\Http\Controllers\UserController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -159,6 +160,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'edit' => 'bookings.edit',
         'update' => 'bookings.update'
     ]);
+
+    Route::resource('users', UserController::class)->names([
+        'index' => 'users.index',
+        'edit' => 'users.edit',
+        'update' => 'users.update',
+        'destroy' => 'users.destroy',
+        'create' => 'users.create',
+        'store' => 'users.store'
+    ])->only(['index', 'edit', 'update', 'destroy', 'create', 'store']);
 });
 
 Route::middleware('auth')->group(function () {

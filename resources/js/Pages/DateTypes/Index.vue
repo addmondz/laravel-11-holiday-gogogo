@@ -15,7 +15,7 @@
                             <h3 class="text-lg font-medium">All Date Types</h3>
                             <Link
                                 :href="route('date-types.create')"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 fs-14"
+                                class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                             >
                                 Create Date Type
                             </Link>
