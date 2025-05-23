@@ -128,7 +128,7 @@ class DatabaseSeeder extends Seeder
 
             Package::create([
                 'name' => $location . ' ' . $packageType['title'],
-                'description' => ($days + 1) . "D {$days}N " . strtolower($packageType['title']) . " in {$location}. " . $faker->sentence(8),
+                'description' => ($days + 1) . "D{$days}N " . strtolower($packageType['title']) . " in {$location}. " . $faker->sentence(8),
                 'icon_photo' => $packageType['icon'],
                 'display_price_adult' => $faker->randomFloat(2, $packageType['price_range'][0], $packageType['price_range'][1]),
                 'display_price_child' => $faker->randomFloat(2, $packageType['price_range'][0] * 0.6, $packageType['price_range'][1] * 0.8),
