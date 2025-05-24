@@ -601,7 +601,7 @@ const props = defineProps({
 });
 
 onMounted(() => {
-    if (props.booking.uuid) {
+    if (props.booking) {
         bookingSuccess.value = props.booking;
         currentStep.value = 3;
     }

@@ -121,10 +121,8 @@
                                                 </Link>
                                                 <a
                                                     v-if="booking.payment_status !== 'paid'"
-                                                    target="_blank"
-                                                    :href="route('api.payment.show', booking.uuid)"
+                                                    :href="route('quotation.with-hash', booking.package.uuid) + '?booking=' + booking.uuid"
                                                     class="text-green-600 hover:text-green-900 ml-4"
-                                                    rel="noopener noreferrer"
                                                 >
                                                     Pay Now
                                                 </a>
