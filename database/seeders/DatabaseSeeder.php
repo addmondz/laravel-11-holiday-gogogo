@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $dummyPackagesCount = 11;
+        $dummyPackagesCount = 1;
         $dummyOtherPackagesCount = 30;
         $earliestDate = Carbon::parse('1970-01-01');
         $earliestNextDate = Carbon::parse('1970-01-02');

@@ -560,7 +560,7 @@
                                                             </td>
                                                             <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                                 <span class="text-xs text-gray-500">Adults:</span>
-                                                                <span v-if="!isValidOccupancy(adults, children-1, 'adult')" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
+                                                                <span v-if="!isValidOccupancy(adults, children-1, 'adult', true)" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
                                                                 <input
                                                                     v-else
                                                                     type="number"
@@ -570,7 +570,7 @@
                                                                     step="0.01"
                                                                 />
                                                                 <div class="text-xs text-gray-500 mt-2 block">Child:</div>
-                                                                <span v-if="!isValidOccupancy(adults, children-1, 'child')" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
+                                                                <span v-if="!isValidOccupancy(adults, children-1, 'child', true)" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
                                                                 <input
                                                                     v-else
                                                                     type="number"
@@ -613,7 +613,7 @@
                                                             </td>
                                                             <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                                 <div class="text-xs text-gray-500 mt-4 block">Adults:</div>
-                                                                <span v-if="!isValidOccupancy(adults, children-1, 'adult')" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
+                                                                <span v-if="!isValidOccupancy(adults, children-1, 'adult', true)" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
                                                                 <input
                                                                     v-else
                                                                     type="number"
@@ -623,7 +623,7 @@
                                                                     placeholder="Adult Price"
                                                                 />
                                                                 <div class="text-xs text-gray-500 mt-2 block">Child:</div>
-                                                                <span v-if="!isValidOccupancy(adults, children-1, 'child')" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
+                                                                <span v-if="!isValidOccupancy(adults, children-1, 'child', true)" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
                                                                 <input
                                                                     v-else
                                                                     type="number"
@@ -1814,7 +1814,7 @@ const applySurchargePricesToAll = () => {
     }));
 };
 
-const isValidOccupancy = (adults, children, type) => {
+const isValidOccupancy = (adults, children, type, isEditMode = false) => {
     const validCombinations = [
         { adults: 1, children: 0 },
         { adults: 1, children: 1 },
@@ -1832,6 +1832,7 @@ const isValidOccupancy = (adults, children, type) => {
         combo => combo.adults === adults && combo.children === children
     );
 
+    if (adults == 1 && children == 0 && isEditMode) return true;
     if (!isValidCombo) return false;
     if (type == 'child' && children == 0) return false;
 
