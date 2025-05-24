@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 
@@ -16,6 +17,14 @@ class TransactionController extends Controller
                 'amount' => 'required|numeric|min:0',
                 'status' => 'required|string'
             ]);
+
+            $booking = Booking::find($validated['booking_id']);
+            if ($booking->payment_status === 'paid') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Booking already paid'
+                ], 400);
+            }
 
             $transaction = Transaction::create([
                 'booking_id' => $validated['booking_id'],

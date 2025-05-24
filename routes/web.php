@@ -5,7 +5,6 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PackageController;
-use App\Http\Controllers\PackageAddOnController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Api\TravelCalculatorController;
@@ -23,12 +22,11 @@ use App\Models\RoomType;
 use App\Models\Season;
 use App\Models\SeasonType;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentSimulationController;
-use App\Http\Controllers\TransactionController;
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Api\TransactionController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -55,7 +53,7 @@ Route::prefix('calculator')->group(function () {
         Route::post('/fetch-package-by-uuid', [TravelCalculatorController::class, 'fetchPackageByUuid'])->name('api.fetch-package-by-uuid');
         Route::post('/package-calculate-price', [TravelCalculatorController::class, 'packageCalculatePrice'])->name('api.package-calculate-price');
         Route::post('/bookings', [ApiBookingController::class, 'store'])->name('api.bookings.store');
-        Route::post('/transactions', [\App\Http\Controllers\Api\TransactionController::class, 'store'])->name('api.transactions.store');
+        Route::post('/transactions', [TransactionController::class, 'store'])->name('api.transactions.store');
         
         // Payment routes
         Route::prefix('bookings/{uuid}/payment')->name('api.payment.')->group(function ($uuid) {
@@ -69,7 +67,7 @@ Route::prefix('calculator')->group(function () {
     Route::get('/quotation/{uuid}', function ($uuid, Request $request) {
         $booking = null;
         if ($request->has('booking')) {
-            $booking = Booking::where('uuid', $request->booking)->first();
+            $booking = Booking::where('uuid', $request->booking)->with('roomType')->first();
         }
         return Inertia::render('Quotation/WithHash', [
             'uuid' => $uuid,

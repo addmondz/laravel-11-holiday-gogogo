@@ -120,11 +120,10 @@
                                                     Edit
                                                 </Link>
                                                 <a
-                                                    v-if="booking.payment_status !== 'paid'"
                                                     :href="route('quotation.with-hash', booking.package.uuid) + '?booking=' + booking.uuid"
                                                     class="text-green-600 hover:text-green-900 ml-4"
                                                 >
-                                                    Pay Now
+                                                    {{ booking.payment_status === 'paid' ? 'View Payment' : 'Pay Now' }}
                                                 </a>
                                             </div>
                                         </td>

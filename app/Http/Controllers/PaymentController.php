@@ -15,19 +15,9 @@ class PaymentController extends Controller
         $booking = Booking::where('uuid', $uuid)->first();
         // Retrieve or create the latest pending transaction for this booking
         $transaction = Transaction::where('booking_id', $booking->id)
-            ->where('status', 'in progress')
+            ->whereIn('status', ['in progress', 'pending'])
             ->latest()
             ->first();
-
-        if (!$transaction) {
-            $transaction = Transaction::create([
-                'booking_id' => $booking->id,
-                'status' => 'in progress',
-                'amount' => $booking->total_price,
-            ]);
-
-            $booking->update(['payment_status' => 'in progress']);
-        }
 
         return Inertia::render('Payments/Show', [
             'booking' => $booking,

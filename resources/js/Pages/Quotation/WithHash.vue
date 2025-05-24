@@ -517,7 +517,8 @@
                     <!-- Booking Success State -->
                     <div v-else class="bg-white rounded-xl border overflow-hidden">
                         <!-- Success Header -->
-                        <div v-if="bookingSuccess.payment_status === 'paid'" class="relative bg-gradient-to-r slower from-indigo-500 to-purple-600 px-6 py-8 transform transition-transform hover:scale-105 duration-300">
+                        <div v-if="bookingSuccess.payment_status === 'paid'" 
+                         class="relative bg-gradient-to-r slower from-green-400 via-green-500 to-green-600 bg-[length:200%] bg-[position:0%_50%] animate-gradient-x px-6 py-8 rounded-2xl shadow-xl hover:shadow-[0_0_25px_#34d399] transform transition-transform duration-100 hover:scale-105 text-white mx-8 mt-5">
                             <div class="absolute inset-0 bg-black opacity-10"></div>
                             <div class="relative text-center">
                                 <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4">
@@ -540,6 +541,7 @@
                                 </div>
                                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Booking Successful!</h3>
                                 <p class="text-gray-600">Your booking has been submitted successfully.</p>
+                                <p class="text-gray-600">Please proceed to make payment.</p>
                             </div>
                         </div>
 
@@ -550,15 +552,16 @@
                                 <div class="space-y-6">
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                                         <h4 class="text-sm font-medium text-gray-500 mb-3">BOOKING REFERENCE</h4>
-                                        <p class="text-lg font-semibold text-gray-900">{{ bookingSuccess.uuid }}</p>
+                                        <p class="text-lg text-gray-900">{{ bookingSuccess.uuid }}</p>
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                                        <h4 class="text-sm font-medium text-gray-500 mb-3">BOOKING NAME</h4>
-                                        <p class="text-lg font-semibold text-gray-900">{{ bookingSuccess.booking_name }}</p>
+                                        <h4 class="text-sm text-gray-500 mb-3">BOOKING NAME</h4>
+                                        <p class="text-lg text-gray-900">{{ bookingSuccess.booking_name }}</p>
+                                            <p class="text-sm text-gray-600">Phone: {{bookingSuccess.phone_number}}</p>
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                                         <h4 class="text-sm font-medium text-gray-500 mb-3">ROOM TYPE</h4>
-                                        <p class="text-lg font-semibold text-gray-900">{{ bookingSuccess.room_type?.name }}</p>
+                                        <p class="text-lg text-gray-900">{{ bookingSuccess.room_type?.name }}</p>
                                     </div>
                                 </div>
 
@@ -566,18 +569,18 @@
                                 <div class="space-y-6">
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                                         <h4 class="text-sm font-medium text-gray-500 mb-3">DURATION</h4>
-                                        <p class="text-lg font-semibold text-gray-900">{{ bookingSuccess.duration }} nights</p>
+                                        <p class="text-lg text-gray-900">{{ moment(bookingSuccess.end_date).diff(moment(bookingSuccess.start_date), 'days') +1 }} Days {{ moment(bookingSuccess.end_date).diff(moment(bookingSuccess.start_date), 'days') }} Nights</p>
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                                         <h4 class="text-sm font-medium text-gray-500 mb-3">CHECK-IN / CHECK-OUT</h4>
                                         <div class="space-y-1">
-                                            <p class="text-sm text-gray-600">Check-in: {{ moment(bookingSuccess.start_date).format('DD MMM YYYY') }}</p>
-                                            <p class="text-sm text-gray-600">Check-out: {{ moment(bookingSuccess.end_date).format('DD MMM YYYY') }}</p>
+                                            <p class="text-sm text-gray-600 font-medium">Check-in: {{ moment(bookingSuccess.start_date).format('DD MMM YYYY') }}</p>
+                                            <p class="text-sm text-gray-600 font-medium">Check-out: {{ moment(bookingSuccess.end_date).format('DD MMM YYYY') }}</p>
                                         </div>
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                                         <h4 class="text-sm font-medium text-gray-500 mb-3">GUESTS</h4>
-                                        <p class="text-lg font-semibold text-gray-900">{{ bookingSuccess.adults }} Adults, {{ bookingSuccess.children }} Children</p>
+                                        <p class="text-lg text-gray-900">{{ bookingSuccess.adults }} Adults, {{ bookingSuccess.children }} Children</p>
                                     </div>
                                 </div>
                             </div>
@@ -943,6 +946,7 @@ const submitBooking = async () => {
 
         if (response.data.success) {
             bookingSuccess.value = response.data.booking;
+            window.location.href = `${window.location.href}?booking=${response.data.booking.uuid}`;
         }
     } catch (error) {
         console.error('Booking error:', error);
@@ -1022,7 +1026,7 @@ const maxStartDate = computed(() => {
 
 /* Define the slow gradient animation */
 .bg-gradient-to-r.slower {
-    animation: gradient 4s ease infinite;
+    animation: gradient 2s ease infinite;
 }
 
 @keyframes gradient {
