@@ -76,6 +76,52 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Transaction History -->
+                        <div v-if="booking.transactions && booking.transactions.length > 0" class="mt-8">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Transaction History</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr v-for="transaction in booking.transactions" :key="transaction.id">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {{ new Date(transaction.created_at).toLocaleDateString() }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {{ transaction.transaction_id }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {{ transaction.payment_method }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                MYR {{ formatNumber(transaction.amount) }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span 
+                                                    :class="[
+                                                        'px-2 py-1 text-sm font-semibold rounded-full',
+                                                        transaction.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                                        transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-red-100 text-red-800'
+                                                    ]"
+                                                >
+                                                    {{ transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1) }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

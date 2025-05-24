@@ -50,13 +50,16 @@
                                             Total Price
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Payment Status
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     <tr v-if="bookings.data.length === 0">
-                                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                        <td colspan="8" class="px-6 py-4 text-center text-gray-500">
                                             No bookings found
                                         </td>
                                     </tr>
@@ -90,19 +93,42 @@
                                                 MYR {{ formatNumber(booking.total_price) }}
                                             </div>
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span 
+                                                :class="[
+                                                    'px-2 py-1 text-xs font-semibold rounded-full',
+                                                    booking.payment_status === 'paid' ? 'bg-green-100 text-green-800' :
+                                                    booking.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-red-100 text-red-800'
+                                                ]"
+                                            >
+                                                {{ booking.payment_status ? booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1) : 'Unpaid' }}
+                                            </span>
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <Link
-                                                :href="route('bookings.show', booking.id)"
-                                                class="text-indigo-600 hover:text-indigo-900 mr-4"
-                                            >
-                                                View
-                                            </Link>
-                                            <Link
-                                                :href="route('bookings.edit', booking.id)"
-                                                class="text-indigo-600 hover:text-indigo-900"
-                                            >
-                                                Edit
-                                            </Link>
+                                            <div class="flex items-center space-x-3">
+                                                <Link
+                                                    :href="route('bookings.show', booking.id)"
+                                                    class="text-indigo-600 hover:text-indigo-900"
+                                                >
+                                                    View
+                                                </Link>
+                                                <Link
+                                                    :href="route('bookings.edit', booking.id)"
+                                                    class="text-blue-600 hover:text-blue-900 ml-4"
+                                                >
+                                                    Edit
+                                                </Link>
+                                                <a
+                                                    v-if="booking.payment_status !== 'paid'"
+                                                    target="_blank"
+                                                    :href="route('api.payment.show', booking.uuid)"
+                                                    class="text-green-600 hover:text-green-900 ml-4"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    Pay Now
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>

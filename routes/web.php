@@ -23,6 +23,10 @@ use App\Models\RoomType;
 use App\Models\Season;
 use App\Models\SeasonType;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentSimulationController;
+use App\Http\Controllers\TransactionController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -48,8 +52,16 @@ Route::prefix('calculator')->group(function () {
         // Route::post('/calculate-total', [TravelCalculatorController::class, 'calculate']);
         Route::post('/fetch-package-by-uuid', [TravelCalculatorController::class, 'fetchPackageByUuid'])->name('api.fetch-package-by-uuid');
         Route::post('/package-calculate-price', [TravelCalculatorController::class, 'packageCalculatePrice'])->name('api.package-calculate-price');
-
         Route::post('/bookings', [ApiBookingController::class, 'store'])->name('api.bookings.store');
+        Route::post('/transactions', [\App\Http\Controllers\Api\TransactionController::class, 'store'])->name('api.transactions.store');
+        
+        // Payment routes
+        Route::prefix('bookings/{uuid}/payment')->name('api.payment.')->group(function ($uuid) {
+            Route::get('/', [PaymentController::class, 'show'])->name('show');
+            Route::post('/', [PaymentController::class, 'handlePayment'])->name('handle');
+            Route::get('/success', [PaymentController::class, 'success'])->name('success');
+            Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
+        });
     });
 
     Route::get('/quotation/{uuid}', function ($uuid) {
@@ -216,3 +228,6 @@ Route::get('/test', function () {
 
     dd($configurationPrices ?: 'No prices found.');
 });
+
+// Payment Simulation Routes
+Route::get('/payment/{transaction}/simulate', [PaymentSimulationController::class, 'show'])->name('payment.simulate');
