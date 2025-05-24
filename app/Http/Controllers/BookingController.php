@@ -18,7 +18,8 @@ class BookingController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('booking_name', 'like', "%{$search}%")
                     ->orWhere('phone_number', 'like', "%{$search}%")
-                    ->orWhere('booking_ic', 'like', "%{$search}%");
+                    ->orWhere('booking_ic', 'like', "%{$search}%")
+                    ->orWhere('uuid', 'like', "%{$search}%");
             });
         }
 

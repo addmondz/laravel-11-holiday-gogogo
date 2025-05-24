@@ -515,67 +515,91 @@
                     </div>
 
                     <!-- Booking Success State -->
-                    <div v-else class="bg-white rounded-lg p-6">
-                        <div class="text-center mb-6">
-                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-                                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-xl font-semibold text-gray-900 mb-2">Booking Successful!</h3>
-                            <p class="text-gray-600">Your booking has been submitted successfully.</p>
-                        </div>
-
-                        <!-- Booking Summary -->
-                        <div class="bg-gray-50 rounded-lg p-6 mb-6">
-                            <h4 class="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h4>
-                            <div class="space-y-4">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p class="text-sm text-gray-600">Booking Reference</p>
-                                        <p class="font-medium">{{ bookingSuccess.uuid }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Booking Name</p>
-                                        <p class="font-medium">{{ bookingSuccess.booking_name }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Room Type</p>
-                                        <p class="font-medium">{{ bookingSuccess.room_type?.name }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Duration</p>
-                                        <p class="font-medium">{{ bookingSuccess.duration }} nights</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Check-in</p>
-                                        <p class="font-medium">{{ moment(bookingSuccess.start_date).format('DD MMM YYYY') }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Check-out</p>
-                                        <p class="font-medium">{{ moment(bookingSuccess.end_date).format('DD MMM YYYY') }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Guests</p>
-                                        <p class="font-medium">{{ bookingSuccess.adults }} Adults, {{ bookingSuccess.children }} Children</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Total Amount</p>
-                                        <p class="font-medium">MYR {{ formatNumber(bookingSuccess.total_price) }}</p>
-                                    </div>
+                    <div v-else class="bg-white rounded-xl border overflow-hidden">
+                        <!-- Success Header -->
+                        <div v-if="bookingSuccess.payment_status === 'paid'" class="relative bg-gradient-to-r slower from-indigo-500 to-purple-600 px-6 py-8 transform transition-transform hover:scale-105 duration-300">
+                            <div class="absolute inset-0 bg-black opacity-10"></div>
+                            <div class="relative text-center">
+                                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4">
+                                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <div class="space-y-2">
+                                    <h2 class="text-3xl font-bold text-white mb-2">Payment Completed</h2>
+                                    <p class="text-white/90 text-lg">Your booking details will be sent to your email.</p>
                                 </div>
                             </div>
                         </div>
+                        <div v-else class="relative px-6 py-8">
+                           <div class="text-center mb-6 bg-indigo-50 rounded-lg p-4">
+                                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white mb-4">
+                                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Booking Successful!</h3>
+                                <p class="text-gray-600">Your booking has been submitted successfully.</p>
+                            </div>
+                        </div>
 
-                        <!-- Pay Now Button -->
-                        <div class="text-center">
-                            <button
-                                @click="proceedToPayment"
-                                class="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium"
-                                :disabled="isProcessingPayment"
-                            >
-                                {{ isProcessingPayment ? 'Processing...' : 'Pay Now' }}
-                            </button>
+                        <!-- Booking Summary -->
+                        <div class="p-6 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Left Column -->
+                                <div class="space-y-6">
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                        <h4 class="text-sm font-medium text-gray-500 mb-3">BOOKING REFERENCE</h4>
+                                        <p class="text-lg font-semibold text-gray-900">{{ bookingSuccess.uuid }}</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                        <h4 class="text-sm font-medium text-gray-500 mb-3">BOOKING NAME</h4>
+                                        <p class="text-lg font-semibold text-gray-900">{{ bookingSuccess.booking_name }}</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                        <h4 class="text-sm font-medium text-gray-500 mb-3">ROOM TYPE</h4>
+                                        <p class="text-lg font-semibold text-gray-900">{{ bookingSuccess.room_type?.name }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column -->
+                                <div class="space-y-6">
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                        <h4 class="text-sm font-medium text-gray-500 mb-3">DURATION</h4>
+                                        <p class="text-lg font-semibold text-gray-900">{{ bookingSuccess.duration }} nights</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                        <h4 class="text-sm font-medium text-gray-500 mb-3">CHECK-IN / CHECK-OUT</h4>
+                                        <div class="space-y-1">
+                                            <p class="text-sm text-gray-600">Check-in: {{ moment(bookingSuccess.start_date).format('DD MMM YYYY') }}</p>
+                                            <p class="text-sm text-gray-600">Check-out: {{ moment(bookingSuccess.end_date).format('DD MMM YYYY') }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                        <h4 class="text-sm font-medium text-gray-500 mb-3">GUESTS</h4>
+                                        <p class="text-lg font-semibold text-gray-900">{{ bookingSuccess.adults }} Adults, {{ bookingSuccess.children }} Children</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Total Amount -->
+                            <div class="bg-indigo-50 rounded-lg p-6 border border-indigo-100">
+                                <div class="flex justify-between items-center">
+                                    <h4 class="text-lg font-semibold text-indigo-900">Total Amount</h4>
+                                    <p class="text-2xl font-bold text-indigo-600">MYR {{ formatNumber(bookingSuccess.total_price) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Pay Now Button -->
+                            <div v-if="bookingSuccess.payment_status !== 'paid'" class="flex justify-center pt-4">
+                                <button
+                                    @click="proceedToPayment"
+                                    class="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium"
+                                    :disabled="isProcessingPayment"
+                                >
+                                    {{ isProcessingPayment ? 'Processing...' : 'Pay Now' }}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -994,6 +1018,11 @@ const maxStartDate = computed(() => {
 .bg-gradient-to-r {
     background-size: 200% 200%;
     animation: gradient 0.5s ease infinite;
+}
+
+/* Define the slow gradient animation */
+.bg-gradient-to-r.slower {
+    animation: gradient 4s ease infinite;
 }
 
 @keyframes gradient {
