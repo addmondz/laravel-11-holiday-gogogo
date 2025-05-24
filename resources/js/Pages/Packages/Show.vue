@@ -33,7 +33,7 @@
                         </div>
 
                         <!-- Tab Content -->
-                        <div class="mt-6">
+                        <div class="mt-6 border p-4 rounded">
                             <!-- Package Details Tab -->
                             <div v-if="activeTab === 'details'" class="space-y-6">
                                 <div class="grid grid-cols-1 gap-6">
@@ -318,14 +318,14 @@
 
                             <!-- Price Configuration Tab -->
                             <div v-if="activeTab === 'price-configuration'" class="space-y-6">
-                                <div class="flex justify-between items-center" v-if="!showPriceForm && !isEditMode">
+                                <!-- <div class="flex justify-between items-center" v-if="!showPriceForm && !isEditMode">
                                     <h3 class="text-md font-medium text-gray-900">Price Configuration</h3>
-                                </div>
+                                </div> -->
 
                                 <!-- Selection Form and Price Matrix -->
                                 <div v-if="!showPriceForm">
                                     <!-- Selection Form -->
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                                         <div>
                                             <label for="season" class="block text-sm font-medium text-gray-700">Season</label>
                                             <select
@@ -370,17 +370,17 @@
                                     </div>
 
                                     <!-- Search Button -->
-                                    <div class="flex mb-8 space-x-4">
+                                    <div class="flex mb-8 space-x-2">
                                         <button
                                             @click="fetchPrices"
                                             :disabled="!canSearch"
-                                            class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             Search Prices
                                         </button>
                                         <button
                                             @click="resetSearch"
-                                            class="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                                            class="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
                                         >
                                             Reset
                                         </button>
@@ -395,7 +395,7 @@
                                     <div v-else-if="showPriceMatrix" class="space-y-8">
                                         <!-- Base Charge Table -->
                                         <div class="overflow-x-auto">
-                                            <h3 class="text-lg font-medium text-gray-900 mb-4">Base Charges</h3>
+                                            <h3 class="text-md font-medium text-gray-900 mb-4">Base Charges</h3>
                                             <table class="min-w-full divide-y divide-gray-200">
                                                 <thead class="bg-gray-50">
                                                     <tr>
@@ -411,9 +411,11 @@
                                                             {{ adults }} Adults
                                                         </td>
                                                         <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                            Adult: {{ getPrice(adults, children-1, 'base_charge', 'adult') }}
+                                                            <span v-if="!isValidOccupancy(adults, children-1, 'adult')">Adult: -</span>
+                                                            <span v-else>Adult: {{ getPrice(adults, children-1, 'base_charge', 'adult') }}</span>
                                                             <br>
-                                                            Child: {{ getPrice(adults, children-1, 'base_charge', 'child') }}
+                                                            <span v-if="!isValidOccupancy(adults, children-1, 'child')">Child: -</span>
+                                                            <span v-else>Child: {{ getPrice(adults, children-1, 'base_charge', 'child') }}</span>
                                                         </td>
                                                     </tr>
                                                 </tbody>
@@ -422,7 +424,7 @@
 
                                         <!-- Surcharge Table -->
                                         <div class="overflow-x-auto">
-                                            <h3 class="text-lg font-medium text-gray-900 mb-4">Surcharges</h3>
+                                            <h3 class="text-md font-medium text-gray-900 mb-4">Surcharges</h3>
                                             <table class="min-w-full divide-y divide-gray-200">
                                                 <thead class="bg-gray-50">
                                                     <tr>
@@ -438,9 +440,11 @@
                                                             {{ adults }} Adults
                                                         </td>
                                                         <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                            Adult: {{ getPrice(adults, children-1, 'sur_charge', 'adult') }}
+                                                            <span v-if="!isValidOccupancy(adults, children-1, 'adult')">Adult: -</span>
+                                                            <span v-else>Adult: {{ getPrice(adults, children-1, 'sur_charge', 'adult') }}</span>
                                                             <br>
-                                                            Child: {{ getPrice(adults, children-1, 'sur_charge', 'child') }}
+                                                            <span v-if="!isValidOccupancy(adults, children-1, 'child')">Child: -</span>
+                                                            <span v-else>Child: {{ getPrice(adults, children-1, 'sur_charge', 'child') }}</span>
                                                         </td>
                                                     </tr>
                                                 </tbody>
@@ -451,7 +455,7 @@
                                         <div class="mt-4 flex justify-end">
                                             <button
                                                 @click="openPriceForm('edit')"
-                                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
+                                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                                             >
                                                 Edit Prices
                                             </button>
@@ -475,15 +479,55 @@
                                 <div v-if="showPriceForm" class="space-y-6">
                                     <div class="flex justify-between items-center">
                                         <h3 class="text-lg font-medium text-gray-900">{{ isEditMode ? 'Edit Prices' : 'Create Prices' }}</h3>
-                                        <button
-                                            @click="closePriceForm"
-                                            class="text-gray-500 hover:text-gray-700"
-                                        >
-                                            <span class="sr-only">Close</span>
-                                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
+                                    </div>
+                                    <!-- View only selected season, date type and room type -->
+                                    <div v-if="isEditMode">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                            <div>
+                                                <label for="season" class="block text-sm font-medium text-gray-700">Season</label>
+                                                <select
+                                                    id="season"
+                                                    v-model="selectedSeason"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50"
+                                                    disabled
+                                                >
+                                                    <option value="">Select Season</option>
+                                                    <option v-for="season in priceConfigSeasonChoice" :key="season.id" :value="season.id">
+                                                        {{ season.name }}
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label for="dateType" class="block text-sm font-medium text-gray-700">Date Type</label>
+                                                <select
+                                                    id="dateType"
+                                                    v-model="selectedDateType"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    disabled
+                                                >
+                                                    <option value="">Select Date Type</option>
+                                                    <option v-for="type in priceConfigDateTypeChoice" :key="type.id" :value="type.id">
+                                                        {{ type.name }}
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label for="roomType" class="block text-sm font-medium text-gray-700">Room Type</label>
+                                                <select
+                                                    id="roomType"
+                                                    v-model="selectedRoomType"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    disabled
+                                                >
+                                                    <option value="">Select Room Type</option>
+                                                    <option v-for="type in roomTypesData.data" :key="type.id" :value="type.id">
+                                                        {{ type.name }}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <form @submit.prevent="submitPrices">
@@ -491,7 +535,7 @@
                                             <!-- Base Charge Table -->
                                             <div class="overflow-x-auto">
                                                 <div class="flex justify-between items-center mb-4">
-                                                    <h3 class="text-lg font-medium text-gray-900">Base Charges</h3>
+                                                    <h3 class="text-md font-medium text-gray-900">Base Charges</h3>
                                                     <button 
                                                         type="button"
                                                         @click="applyBasePricesToAll"
@@ -515,14 +559,20 @@
                                                                 {{ adults }} Adults
                                                             </td>
                                                             <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                <span class="text-xs text-gray-500">Adults:</span>
+                                                                <span v-if="!isValidOccupancy(adults, children-1, 'adult')" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
                                                                 <input
+                                                                    v-else
                                                                     type="number"
                                                                     v-model="priceForm.prices.base_charge[getPriceIndex(adults, children-1, 'base_charge')].adult_price"
                                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                                     placeholder="Adult Price"
                                                                     step="0.01"
                                                                 />
+                                                                <div class="text-xs text-gray-500 mt-2 block">Child:</div>
+                                                                <span v-if="!isValidOccupancy(adults, children-1, 'child')" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
                                                                 <input
+                                                                    v-else
                                                                     type="number"
                                                                     v-model="priceForm.prices.base_charge[getPriceIndex(adults, children-1, 'base_charge')].child_price"
                                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
@@ -538,7 +588,7 @@
                                             <!-- Surcharge Table -->
                                             <div class="overflow-x-auto">
                                                 <div class="flex justify-between items-center mb-4">
-                                                    <h3 class="text-lg font-medium text-gray-900">Surcharges</h3>
+                                                    <h3 class="text-md font-medium text-gray-900">Surcharges</h3>
                                                     <button 
                                                         type="button"
                                                         @click="applySurchargePricesToAll"
@@ -562,14 +612,20 @@
                                                                 {{ adults }} Adults
                                                             </td>
                                                             <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                <div class="text-xs text-gray-500 mt-4 block">Adults:</div>
+                                                                <span v-if="!isValidOccupancy(adults, children-1, 'adult')" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
                                                                 <input
+                                                                    v-else
                                                                     type="number"
                                                                     v-model="priceForm.prices.sur_charge[getPriceIndex(adults, children-1, 'sur_charge')].adult_price"
                                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                                     step="0.01"
                                                                     placeholder="Adult Price"
                                                                 />
+                                                                <div class="text-xs text-gray-500 mt-2 block">Child:</div>
+                                                                <span v-if="!isValidOccupancy(adults, children-1, 'child')" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
                                                                 <input
+                                                                    v-else
                                                                     type="number"
                                                                     v-model="priceForm.prices.sur_charge[getPriceIndex(adults, children-1, 'sur_charge')].child_price"
                                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
@@ -587,13 +643,13 @@
                                             <button
                                                 type="button"
                                                 @click="closePriceForm"
-                                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
                                             >
                                                 Cancel
                                             </button>
                                             <button
                                                 type="submit"
-                                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                                                 :disabled="priceForm.processing"
                                             >
                                                 {{ isEditMode ? 'Update Prices' : 'Create Prices' }}
@@ -652,13 +708,13 @@
                         <button
                             type="button"
                             @click="showAddRoomTypeModal = false"
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                             :disabled="roomTypeForm.processing"
                         >
                             Create Room Type
@@ -882,13 +938,13 @@
                                 seasonForm.reset();
                                 seasonForm.clearErrors();
                             }"
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                             :disabled="seasonForm.processing"
                         >
                             Create Season
@@ -966,13 +1022,13 @@
                         <button
                             type="button"
                             @click="showAddDateTypeRangeModal = false"
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                             :disabled="dateTypeRangeForm.processing"
                         >
                             Create Date Range
@@ -1757,6 +1813,31 @@ const applySurchargePricesToAll = () => {
         child_price: firstPrice.child_price
     }));
 };
+
+const isValidOccupancy = (adults, children, type) => {
+    const validCombinations = [
+        { adults: 1, children: 0 },
+        { adults: 1, children: 1 },
+        { adults: 1, children: 2 },
+        { adults: 1, children: 3 },
+        { adults: 2, children: 0 },
+        { adults: 2, children: 1 },
+        { adults: 2, children: 2 },
+        { adults: 3, children: 0 },
+        { adults: 3, children: 1 },
+        { adults: 4, children: 0 },
+    ];
+
+    const isValidCombo = validCombinations.some(
+        combo => combo.adults === adults && combo.children === children
+    );
+
+    if (!isValidCombo) return false;
+    if (type == 'child' && children == 0) return false;
+
+    return true;
+};
+
 </script>
 <style scoped>
 .fade-enter-active,

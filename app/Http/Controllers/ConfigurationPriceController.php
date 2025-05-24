@@ -12,6 +12,56 @@ use Illuminate\Support\Facades\Log;
 
 class ConfigurationPriceController extends Controller
 {
+    private function handlePriceConfiguration(array $validated)
+    {
+        $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
+        $configuration = PackageConfiguration::firstOrCreate(
+            [
+                'package_id' => $validated['package_id'],
+                'season_type_id' => $validated['season_type_id'],
+                'date_type_id' => $validated['date_type_id'],
+                'room_type_id' => $validated['room_type']
+            ]
+        );
+
+        // Build configuration_prices JSON
+        $configurationPrices = [];
+
+        foreach (['base_charge' => 'b', 'sur_charge' => 's'] as $inputType => $jsonKey) {
+            if (!isset($validated['prices'][$inputType])) continue;
+
+            foreach ($validated['prices'][$inputType] as $price) {
+                $combination = [
+                    'adults' => $price['number_of_adults'],
+                    'children' => $price['number_of_children']
+                ];
+                if (!in_array($combination, $combinations)) {
+                    continue;
+                }
+
+                $adultKey = "{$combination['adults']}_a_{$combination['children']}_c_a";
+                $childKey = "{$combination['adults']}_a_{$combination['children']}_c_c";
+
+                if (!isset($configurationPrices[$jsonKey])) {
+                    $configurationPrices[$jsonKey] = [];
+                }
+
+                if (!empty($price['adult_price'])) {
+                    $configurationPrices[$jsonKey][$adultKey] = (float) $price['adult_price'];
+                }
+
+                if (!empty($price['child_price'])) {
+                    $configurationPrices[$jsonKey][$childKey] = (float) $price['child_price'];
+                }
+            }
+        }
+
+        $configuration->configuration_prices = json_encode($configurationPrices);
+        $configuration->save();
+
+        return $configuration;
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -24,43 +74,7 @@ class ConfigurationPriceController extends Controller
 
         try {
             DB::beginTransaction();
-
-            $configuration = PackageConfiguration::firstOrCreate(
-                [
-                    'package_id' => $validated['package_id'],
-                    'season_type_id' => $validated['season_type_id'],
-                    'date_type_id' => $validated['date_type_id'],
-                    'room_type_id' => $validated['room_type']
-                ]
-            );
-
-            // Build configuration_prices JSON
-            $configurationPrices = [];
-
-            foreach (['base_charge' => 'b', 'sur_charge' => 's'] as $inputType => $jsonKey) {
-                if (!isset($validated['prices'][$inputType])) continue;
-
-                foreach ($validated['prices'][$inputType] as $price) {
-                    $adultKey = "{$price['number_of_adults']}_a_{$price['number_of_children']}_c_a";
-                    $childKey = "{$price['number_of_adults']}_a_{$price['number_of_children']}_c_c";
-
-                    if (!isset($configurationPrices[$jsonKey])) {
-                        $configurationPrices[$jsonKey] = [];
-                    }
-
-                    if (!empty($price['adult_price'])) {
-                        $configurationPrices[$jsonKey][$adultKey] = (float) $price['adult_price'];
-                    }
-
-                    if (!empty($price['child_price'])) {
-                        $configurationPrices[$jsonKey][$childKey] = (float) $price['child_price'];
-                    }
-                }
-            }
-
-            $configuration->configuration_prices = json_encode($configurationPrices);
-            $configuration->save();
-
+            $this->handlePriceConfiguration($validated);
             DB::commit();
             return back()->with('success', 'Configuration prices created successfully.');
         } catch (\Exception $e) {
@@ -86,43 +100,7 @@ class ConfigurationPriceController extends Controller
 
         try {
             DB::beginTransaction();
-
-            $configuration = PackageConfiguration::firstOrCreate(
-                [
-                    'package_id' => $validated['package_id'],
-                    'season_type_id' => $validated['season_type_id'],
-                    'date_type_id' => $validated['date_type_id'],
-                    'room_type_id' => $validated['room_type']
-                ]
-            );
-
-            // Build new configuration_prices JSON
-            $configurationPrices = [];
-
-            foreach (['base_charge' => 'b', 'sur_charge' => 's'] as $inputType => $jsonKey) {
-                if (!isset($validated['prices'][$inputType])) continue;
-
-                foreach ($validated['prices'][$inputType] as $price) {
-                    $adultKey = "{$price['number_of_adults']}_a_{$price['number_of_children']}_c_a";
-                    $childKey = "{$price['number_of_adults']}_a_{$price['number_of_children']}_c_c";
-
-                    if (!isset($configurationPrices[$jsonKey])) {
-                        $configurationPrices[$jsonKey] = [];
-                    }
-
-                    if (!empty($price['adult_price'])) {
-                        $configurationPrices[$jsonKey][$adultKey] = (float) $price['adult_price'];
-                    }
-
-                    if (!empty($price['child_price'])) {
-                        $configurationPrices[$jsonKey][$childKey] = (float) $price['child_price'];
-                    }
-                }
-            }
-
-            $configuration->configuration_prices = json_encode($configurationPrices);
-            $configuration->save();
-
+            $this->handlePriceConfiguration($validated);
             DB::commit();
             return response()->json(['message' => 'Configuration prices updated successfully.']);
         } catch (\Throwable $e) {
