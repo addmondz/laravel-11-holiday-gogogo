@@ -27,6 +27,8 @@ use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentSimulationController;
 use App\Http\Controllers\TransactionController;
+use App\Models\Booking;
+use Illuminate\Http\Request;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -64,9 +66,14 @@ Route::prefix('calculator')->group(function () {
         });
     });
 
-    Route::get('/quotation/{uuid}', function ($uuid) {
+    Route::get('/quotation/{uuid}', function ($uuid, Request $request) {
+        $booking = null;
+        if ($request->has('booking')) {
+            $booking = Booking::where('uuid', $request->booking)->first();
+        }
         return Inertia::render('Quotation/WithHash', [
-            'uuid' => $uuid
+            'uuid' => $uuid,
+            'booking' => $booking
         ]);
     })->name('quotation.with-hash');
 });

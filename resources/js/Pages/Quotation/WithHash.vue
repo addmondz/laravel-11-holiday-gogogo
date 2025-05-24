@@ -596,7 +596,15 @@ import Swal from 'sweetalert2';
 import moment from 'moment';
 
 const props = defineProps({
-    uuid: String
+    uuid: String,
+    booking: Object
+});
+
+onMounted(() => {
+    if (props.booking.uuid) {
+        bookingSuccess.value = props.booking;
+        currentStep.value = 3;
+    }
 });
 
 const packageData = ref(null);

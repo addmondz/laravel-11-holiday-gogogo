@@ -39,6 +39,10 @@
                                         <label class="block text-sm font-medium text-gray-700">Special Remarks</label>
                                         <p class="mt-1 text-sm text-gray-900">{{ booking.special_remarks }}</p>
                                     </div>
+                                    <div v-if="booking.special_remarks">
+                                        <label class="block text-sm font-medium text-gray-700">Booking Reference</label>
+                                        <p class="mt-1 text-sm text-gray-900">{{ booking.uuid }}</p>
+                                    </div>
                                 </div>
                             </div>
 
