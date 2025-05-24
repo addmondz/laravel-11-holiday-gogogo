@@ -23,6 +23,10 @@ use App\Models\RoomType;
 use App\Models\Season;
 use App\Models\SeasonType;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentSimulationController;
+use App\Http\Controllers\TransactionController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -48,8 +52,8 @@ Route::prefix('calculator')->group(function () {
         // Route::post('/calculate-total', [TravelCalculatorController::class, 'calculate']);
         Route::post('/fetch-package-by-uuid', [TravelCalculatorController::class, 'fetchPackageByUuid'])->name('api.fetch-package-by-uuid');
         Route::post('/package-calculate-price', [TravelCalculatorController::class, 'packageCalculatePrice'])->name('api.package-calculate-price');
-
         Route::post('/bookings', [ApiBookingController::class, 'store'])->name('api.bookings.store');
+        Route::post('/transactions', [\App\Http\Controllers\Api\TransactionController::class, 'store'])->name('api.transactions.store');
     });
 
     Route::get('/quotation/{uuid}', function ($uuid) {
@@ -161,6 +165,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'update' => 'bookings.update'
     ]);
 
+    // Payment routes
+    Route::get('/bookings/{booking}/payment', [PaymentController::class, 'show'])->name('bookings.payment.show');
+    Route::post('/bookings/{booking}/payment/simulate', [PaymentController::class, 'simulate'])->name('bookings.payment.simulate');
+    Route::get('/bookings/{booking}/payment/success', [PaymentController::class, 'success'])->name('bookings.payment.success');
+    Route::get('/bookings/{booking}/payment/failed', [PaymentController::class, 'failed'])->name('bookings.payment.failed');
+
     Route::resource('users', UserController::class)->names([
         'index' => 'users.index',
         'edit' => 'users.edit',
@@ -216,3 +226,6 @@ Route::get('/test', function () {
 
     dd($configurationPrices ?: 'No prices found.');
 });
+
+// Payment Simulation Routes
+Route::get('/payment/{transaction}/simulate', [PaymentSimulationController::class, 'show'])->name('payment.simulate');

@@ -819,13 +819,11 @@ const handleStep1Submit = async () => {
     }
 };
 
-// Update submitBooking to use SweetAlert with button click
 const submitBooking = async () => {
-    if (!calculatedPrice.value || !bookingSummary.value) return;
-
-    isSubmitting.value = true;
+    if (!validateBookingForm()) return;
 
     try {
+        isSubmitting.value = true;
         const response = await axios.post(route('api.bookings.store'), {
             package_id: packageData.value.id,
             room_type_id: form.room_type_id,
@@ -836,34 +834,72 @@ const submitBooking = async () => {
             end_date: form.end_date,
             adults: form.adults,
             children: form.children,
-            total_price: calculatedPrice.value,
+            total_price: priceBreakdown.value.total,
             special_remarks: bookingForm.value.special_remarks
         });
 
         if (response.data.success) {
+            const booking = response.data.booking;
+            
             await Swal.fire({
                 icon: 'success',
                 title: 'Booking Successful!',
                 text: 'Your booking has been submitted successfully.',
                 showConfirmButton: true,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#4F46E5'
+                showCancelButton: true,
+                confirmButtonText: 'View Booking',
+                confirmButtonColor: '#6B7280',
+                cancelButtonText: 'Pay Now',
+                cancelButtonColor: '#4F46E5',
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    // Redirect to booking details
+                    window.location.href = route('bookings.show', booking.id);
+                } else {
+                    try {
+                        // Create a pending transaction
+                        const transactionResponse = await axios.post('/calculator/api/transactions', {
+                            booking_id: booking.id,
+                            amount: priceBreakdown.value.total,
+                            status: 'pending'
+                        });
+
+                        if (transactionResponse.data.success) {
+                            // Redirect to payment page
+                            window.location.href = route('bookings.payment.show', booking.id);
+                        } else {
+                            throw new Error(transactionResponse.data.message || 'Failed to create transaction');
+                        }
+                    } catch (error) {
+                        console.error('Transaction creation error:', error);
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Payment Initialization Failed',
+                            text: error.response?.data?.message || error.message || 'Failed to initialize payment. Please try again.',
+                            confirmButtonColor: '#EF4444'
+                        });
+                    }
+                }
             });
-            window.location.reload();
         }
     } catch (error) {
-        console.error('Error submitting booking:', error);
+        console.error('Booking error:', error);
         await Swal.fire({
             icon: 'error',
             title: 'Booking Failed',
-            text: 'Failed to submit booking. Please try again.',
+            text: error.response?.data?.message || 'Failed to create booking. Please try again.',
             showConfirmButton: true,
             confirmButtonText: 'OK',
-            confirmButtonColor: '#4F46E5'
+            confirmButtonColor: '#EF4444'
         });
     } finally {
         isSubmitting.value = false;
     }
+};
+
+const validateBookingForm = () => {
+    // Add your booking form validation logic here
+    return true;
 };
 
 // Add a computed property for max start date

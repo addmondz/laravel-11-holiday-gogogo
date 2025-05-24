@@ -18,7 +18,8 @@ class Booking extends Model
         'children',
         'total_price',
         'special_remarks',
-        'status'
+        'status',
+        'payment_status'
     ];
 
     protected $casts = [
@@ -35,5 +36,10 @@ class Booking extends Model
     public function roomType()
     {
         return $this->belongsTo(RoomType::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
     }
 }
