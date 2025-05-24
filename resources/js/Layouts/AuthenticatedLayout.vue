@@ -105,7 +105,7 @@ const toggleSidebar = () => {
 
                 <!-- Sidebar -->
                 <aside :class="[
-                    'fixed top-16 left-0 z-30 w-64 h-[calc(100vh-4rem)] transform bg-white dark:bg-gray-800 transition-transform duration-200 ease-in-out lg:translate-x-0 border-r border-gray-200 dark:border-gray-700',
+                    'fixed top-16 left-0 z-30 w-64 h-[calc(100vh-4rem)] transform bg-white dark:bg-gray-800 transition-transform duration-200 ease-in-out lg:translate-x-0 border-r border-gray-200 dark:border-gray-700 z-50',
                     isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                 ]">
                     <nav class="h-full flex flex-col">
