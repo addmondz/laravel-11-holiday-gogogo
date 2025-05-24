@@ -110,8 +110,12 @@ class PaymentController extends Controller
     public function success($uuid)
     {
         $booking = Booking::where('uuid', $uuid)->first();
+        $bookingUuid = $booking->uuid;
+        $package = $booking->package;
+        $packageUuid = $package->uuid;
         return Inertia::render('Payments/Success', [
-            'booking' => $booking
+            'bookingUuid' => $bookingUuid,
+            'packageUuid' => $packageUuid
         ]);
     }
 

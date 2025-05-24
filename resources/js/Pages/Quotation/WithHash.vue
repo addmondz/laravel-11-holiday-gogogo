@@ -975,7 +975,7 @@ const proceedToPayment = async () => {
         });
 
         if (transactionResponse.data.success) {
-            window.open(route('api.payment.show', bookingSuccess.value.uuid), '_blank');
+            window.location.href = route('api.payment.show', bookingSuccess.value.uuid);
         } else {
             throw new Error(transactionResponse.data.message || 'Failed to create transaction');
         }

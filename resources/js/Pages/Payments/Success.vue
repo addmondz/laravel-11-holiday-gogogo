@@ -10,6 +10,11 @@
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
                 <p class="text-gray-600">Your payment has been processed successfully.</p>
                 <p class="text-gray-600">The booking details will be sent to your email.</p>
+            </div>  
+            <div class="flex justify-center">
+                <a :href="`${route('quotation.with-hash', packageUuid)}?booking=${bookingUuid}`" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium">
+                    Back to Booking
+                </a>
             </div>
         </div>
     </div>
@@ -19,4 +24,9 @@
 const goBack = () => {
     window.history.back();
 };
+
+const props = defineProps({
+    bookingUuid: String,
+    packageUuid: String
+});
 </script> 
