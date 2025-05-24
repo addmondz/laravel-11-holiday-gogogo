@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('12345678'), // You can set the password as per your choice
         ]);
 
-        for ($i = 0; $i <= 10; $i++) {
+        for ($i = 0; $i <= 1; $i++) {
             User::create([
                 'name' => 'Test User ' . $i,
                 'email' => 'testuser' . $i . '@test.com',

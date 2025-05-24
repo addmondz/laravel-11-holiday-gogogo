@@ -6,6 +6,7 @@
         src="/images/Logo-Rectangular-for-website-transparent.png"
         alt="Logo"
         draggable="false"
+        class="overflow-hidden"
       />
       <div v-if="loading" class="absolute inset-0 flex items-center justify-center bg-gray-100">
         <!-- Loading spinner -->
