@@ -658,6 +658,11 @@
                                     </form>
                                 </div>
                             </div>
+
+                            <!-- Price Configuration Room Types Tab -->
+                            <div v-if="activeTab === 'price-configuration-room-types'" class="space-y-6">
+                                <PriceConfigurationRoomTypes />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1135,6 +1140,7 @@ import Pagination from '@/Components/Pagination.vue';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
+import PriceConfigurationRoomTypes from '@/Pages/Packages/packages-show-tabs/PriceConfigurationRoomTypes.vue';
 
 const props = defineProps({
     pkg: Object,
@@ -1155,7 +1161,8 @@ const tabs = [
     { id: 'room-types', name: 'Room Types' },
     { id: 'season-types', name: 'Season Types' },
     { id: 'date-types-ranges', name: 'Date Types' },
-    { id: 'price-configuration', name: 'Price Configuration' }
+    { id: 'price-configuration', name: 'Price Configuration' },
+    { id: 'price-configuration-room-types', name: 'Price Configuration Room Types' }
 ];
 
 const breadcrumbs = computed(() => [
