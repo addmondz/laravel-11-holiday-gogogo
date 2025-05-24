@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('package_id')->constrained()->onDelete('cascade');
             $table->foreignId('room_type_id')->constrained()->onDelete('cascade');
+            $table->string('uuid')->nullable();
             $table->string('booking_name');
             $table->string('phone_number');
             $table->string('booking_ic');
-            $table->string('status');
             $table->string('payment_status')->default('pending'); // pending, paid, failed
             $table->date('start_date');
             $table->date('end_date');

@@ -9,15 +9,7 @@
                 </div>
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
                 <p class="text-gray-600">Your payment has been processed successfully.</p>
-            </div>
-
-            <div class="space-y-4">
-                <button
-                    @click="goBack"
-                    class="block w-full bg-indigo-600 text-white px-4 py-3 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
-                >
-                    View Booking Details
-                </button>
+                <p class="text-gray-600">The booking details will be sent to your email.</p>
             </div>
         </div>
     </div>

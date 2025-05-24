@@ -446,71 +446,138 @@
 
                 <!-- Step 3: Booking Details -->
                 <div v-if="currentStep === 3">
-                    <form @submit.prevent="submitBooking" class="space-y-6">
-                        <!-- Booking Name -->
-                        <div>
-                            <label for="booking_name" class="block text-sm font-medium text-gray-700">Booking Name</label>
-                            <input
-                                type="text"
-                                id="booking_name"
-                                v-model="bookingForm.booking_name"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                required
-                            />
+                    <div v-if="!bookingSuccess" class="space-y-6">
+                        <form @submit.prevent="submitBooking" class="space-y-6">
+                            <!-- Booking Name -->
+                            <div>
+                                <label for="booking_name" class="block text-sm font-medium text-gray-700">Booking Name</label>
+                                <input
+                                    type="text"
+                                    id="booking_name"
+                                    v-model="bookingForm.booking_name"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required
+                                />
+                            </div>
+
+                            <!-- Phone Number -->
+                            <div>
+                                <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                                <input
+                                    type="tel"
+                                    id="phone_number"
+                                    v-model="bookingForm.phone_number"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required
+                                />
+                            </div>
+
+                            <!-- Booking IC -->
+                            <div>
+                                <label for="booking_ic" class="block text-sm font-medium text-gray-700">IC/Passport Number</label>
+                                <input
+                                    type="text"
+                                    id="booking_ic"
+                                    v-model="bookingForm.booking_ic"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required
+                                />
+                            </div>
+
+                            <!-- Special Remarks -->
+                            <div>
+                                <label for="special_remarks" class="block text-sm font-medium text-gray-700">Special Remarks (if any)</label>
+                                <textarea
+                                    id="special_remarks"
+                                    v-model="bookingForm.special_remarks"
+                                    rows="3"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                ></textarea>
+                            </div>
+
+                            <div class="flex justify-between">
+                                <button
+                                    type="button"
+                                    @click="currentStep = 2"
+                                    class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                >
+                                    Back
+                                </button>
+                                <button
+                                    type="submit"
+                                    class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    :disabled="isSubmitting"
+                                >
+                                    {{ isSubmitting ? 'Submitting...' : 'Submit Booking' }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Booking Success State -->
+                    <div v-else class="bg-white rounded-lg p-6">
+                        <div class="text-center mb-6">
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+                                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900 mb-2">Booking Successful!</h3>
+                            <p class="text-gray-600">Your booking has been submitted successfully.</p>
                         </div>
 
-                        <!-- Phone Number -->
-                        <div>
-                            <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                            <input
-                                type="tel"
-                                id="phone_number"
-                                v-model="bookingForm.phone_number"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                required
-                            />
+                        <!-- Booking Summary -->
+                        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h4>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Booking Reference</p>
+                                        <p class="font-medium">{{ bookingSuccess.uuid }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Booking Name</p>
+                                        <p class="font-medium">{{ bookingSuccess.booking_name }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Room Type</p>
+                                        <p class="font-medium">{{ bookingSuccess.room_type?.name }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Duration</p>
+                                        <p class="font-medium">{{ bookingSuccess.duration }} nights</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Check-in</p>
+                                        <p class="font-medium">{{ moment(bookingSuccess.start_date).format('DD MMM YYYY') }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Check-out</p>
+                                        <p class="font-medium">{{ moment(bookingSuccess.end_date).format('DD MMM YYYY') }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Guests</p>
+                                        <p class="font-medium">{{ bookingSuccess.adults }} Adults, {{ bookingSuccess.children }} Children</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Total Amount</p>
+                                        <p class="font-medium">MYR {{ formatNumber(bookingSuccess.total_price) }}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Booking IC -->
-                        <div>
-                            <label for="booking_ic" class="block text-sm font-medium text-gray-700">IC/Passport Number</label>
-                            <input
-                                type="text"
-                                id="booking_ic"
-                                v-model="bookingForm.booking_ic"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                required
-                            />
-                        </div>
-
-                        <!-- Special Remarks -->
-                        <div>
-                            <label for="special_remarks" class="block text-sm font-medium text-gray-700">Special Remarks (if any)</label>
-                            <textarea
-                                id="special_remarks"
-                                v-model="bookingForm.special_remarks"
-                                rows="3"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            ></textarea>
-                        </div>
-
-                        <div class="flex justify-between">
+                        <!-- Pay Now Button -->
+                        <div class="text-center">
                             <button
-                                type="button"
-                                @click="currentStep = 2"
-                                class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                @click="proceedToPayment"
+                                class="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium"
+                                :disabled="isProcessingPayment"
                             >
-                                Back
-                            </button>
-                            <button
-                                type="submit"
-                                class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                :disabled="isSubmitting"
-                            >
-                                {{ isSubmitting ? 'Submitting...' : 'Submit Booking' }}
+                                {{ isProcessingPayment ? 'Processing...' : 'Pay Now' }}
                             </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -819,6 +886,10 @@ const handleStep1Submit = async () => {
     }
 };
 
+// Add new refs for booking success state
+const bookingSuccess = ref(null);
+const isProcessingPayment = ref(false);
+
 const submitBooking = async () => {
     if (!validateBookingForm()) return;
 
@@ -839,48 +910,7 @@ const submitBooking = async () => {
         });
 
         if (response.data.success) {
-            const booking = response.data.booking;
-            
-            await Swal.fire({
-                icon: 'success',
-                title: 'Booking Successful!',
-                text: 'Your booking has been submitted successfully.',
-                showConfirmButton: true,
-                showCancelButton: true,
-                confirmButtonText: 'View Booking',
-                confirmButtonColor: '#6B7280',
-                cancelButtonText: 'Pay Now',
-                cancelButtonColor: '#4F46E5',
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    // Redirect to booking details
-                    window.location.href = route('bookings.show', booking.id);
-                } else {
-                    try {
-                        // Create a pending transaction
-                        const transactionResponse = await axios.post('/calculator/api/transactions', {
-                            booking_id: booking.id,
-                            amount: priceBreakdown.value.total,
-                            status: 'pending'
-                        });
-
-                        if (transactionResponse.data.success) {
-                            // Redirect to payment page
-                            window.location.href = route('bookings.payment.show', booking.id);
-                        } else {
-                            throw new Error(transactionResponse.data.message || 'Failed to create transaction');
-                        }
-                    } catch (error) {
-                        console.error('Transaction creation error:', error);
-                        await Swal.fire({
-                            icon: 'error',
-                            title: 'Payment Initialization Failed',
-                            text: error.response?.data?.message || error.message || 'Failed to initialize payment. Please try again.',
-                            confirmButtonColor: '#EF4444'
-                        });
-                    }
-                }
-            });
+            bookingSuccess.value = response.data.booking;
         }
     } catch (error) {
         console.error('Booking error:', error);
@@ -894,6 +924,35 @@ const submitBooking = async () => {
         });
     } finally {
         isSubmitting.value = false;
+    }
+};
+
+const proceedToPayment = async () => {
+    if (!bookingSuccess.value) return;
+
+    try {
+        isProcessingPayment.value = true;
+        const transactionResponse = await axios.post('/calculator/api/transactions', {
+            booking_id: bookingSuccess.value.id,
+            amount: bookingSuccess.value.total_price,
+            status: 'pending'
+        });
+
+        if (transactionResponse.data.success) {
+            window.open(route('api.payment.show', bookingSuccess.value.uuid), '_blank');
+        } else {
+            throw new Error(transactionResponse.data.message || 'Failed to create transaction');
+        }
+    } catch (error) {
+        console.error('Transaction creation error:', error);
+        await Swal.fire({
+            icon: 'error',
+            title: 'Payment Initialization Failed',
+            text: error.response?.data?.message || error.message || 'Failed to initialize payment. Please try again.',
+            confirmButtonColor: '#EF4444'
+        });
+    } finally {
+        isProcessingPayment.value = false;
     }
 };
 

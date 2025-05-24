@@ -10,13 +10,24 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
-    public function show(Booking $booking)
+    public function show($uuid)
     {
-        // Get the latest pending transaction for this booking
+        $booking = Booking::where('uuid', $uuid)->first();
+        // Retrieve or create the latest pending transaction for this booking
         $transaction = Transaction::where('booking_id', $booking->id)
-            ->where('status', 'pending')
+            ->where('status', 'in progress')
             ->latest()
-            ->firstOrFail();
+            ->first();
+
+        if (!$transaction) {
+            $transaction = Transaction::create([
+                'booking_id' => $booking->id,
+                'status' => 'in progress',
+                'amount' => $booking->total_price,
+            ]);
+
+            $booking->update(['payment_status' => 'in progress']);
+        }
 
         return Inertia::render('Payments/Show', [
             'booking' => $booking,
@@ -24,81 +35,99 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function process(Request $request, Booking $booking)
+    public function handlePayment(Request $request, $uuid)
     {
+        $booking = Booking::where('uuid', $uuid)->first();
+        
         // Validate request
-        $request->validate([
-            'payment_method' => 'required|string|in:credit_card,bank_transfer',
+        $validated = $request->validate([
+            'payment_method' => 'nullable|string|in:credit_card,bank_transfer',
+            'status' => 'nullable|in:success,failed',
+            'transaction_id' => 'required|exists:transactions,id',
+            'is_simulation' => 'nullable|boolean'
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Create transaction record
-            $transaction = Transaction::create([
-                'booking_id' => $booking->id,
-                'payment_method' => $request->payment_method,
-                'amount' => $booking->total_price,
-                'status' => 'pending'
-            ]);
+            $transaction = Transaction::findOrFail($validated['transaction_id']);
 
-            // Here you would integrate with your payment gateway
-            // For example, with Stripe, PayPal, etc.
-            $paymentSuccess = $this->processPaymentWithGateway($transaction);
+            // Handle payment based on whether it's a simulation or real payment
+            if ($validated['is_simulation'] ?? false) {
+                // This is a simulation
+                $transaction->update([
+                    'status' => $validated['status'],
+                    'payment_method' => 'simulation',
+                    'transaction_id' => 'SIM_' . time(),
+                    'payment_details' => json_encode([
+                        'payment_time' => now(),
+                        'payment_method' => 'simulation',
+                        'simulation_status' => $validated['status']
+                    ])
+                ]);
+            } else {
+                // This is a real payment
+                // Here you would integrate with your payment gateway
+                $paymentSuccess = $this->processPaymentWithGateway($transaction);
 
-            if ($paymentSuccess) {
+                if (!$paymentSuccess) {
+                    throw new \Exception('Payment processing failed');
+                }
+
                 $transaction->update([
                     'status' => 'paid',
+                    'payment_method' => $validated['payment_method'] ?? 'credit_card',
                     'transaction_id' => 'TRANS_' . time(), // Replace with actual transaction ID from payment gateway
                     'payment_details' => json_encode([
                         'payment_time' => now(),
-                        'payment_method' => $request->payment_method
+                        'payment_method' => $validated['payment_method'] ?? 'credit_card'
                     ])
                 ]);
-
-                // Update booking payment status
-                $booking->update(['payment_status' => 'paid']);
-
-                DB::commit();
-
-                return redirect()->route('bookings.payment.success', $booking);
-            } else {
-                throw new \Exception('Payment processing failed');
             }
+
+            // Update booking payment status if payment was successful
+            if ($transaction->status === 'paid' || $transaction->status === 'success') {
+                $booking->update(['payment_status' => 'paid']);
+            }
+
+            DB::commit();
+
+            // Return appropriate response based on payment type
+            if ($validated['is_simulation'] ?? false) {
+                return response()->json([
+                    'success' => true,
+                    'transaction' => $transaction
+                ]);
+            } else {
+                return redirect()->route('bookings.payment.success', $booking);
+            }
+
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('bookings.payment.failed', $booking)
-                ->with('error', 'Payment failed: ' . $e->getMessage());
+            
+            if ($validated['is_simulation'] ?? false) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment simulation failed: ' . $e->getMessage()
+                ], 500);
+            } else {
+                return redirect()->route('bookings.payment.failed', $booking)
+                    ->with('error', 'Payment failed: ' . $e->getMessage());
+            }
         }
     }
 
-    public function simulate(Request $request, Booking $booking)
+    public function success($uuid)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:success,failed',
-            'transaction_id' => 'required|exists:transactions,id'
-        ]);
-
-        $transaction = Transaction::findOrFail($validated['transaction_id']);
-        $transaction->update([
-            'status' => $validated['status']
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'transaction' => $transaction
-        ]);
-    }
-
-    public function success(Booking $booking)
-    {
+        $booking = Booking::where('uuid', $uuid)->first();
         return Inertia::render('Payments/Success', [
             'booking' => $booking
         ]);
     }
 
-    public function failed(Booking $booking)
+    public function failed($uuid)
     {
+        $booking = Booking::where('uuid', $uuid)->first();
         return Inertia::render('Payments/Failed', [
             'booking' => $booking
         ]);
@@ -110,4 +139,4 @@ class PaymentController extends Controller
         // In a real application, you would integrate with Stripe, PayPal, etc.
         return true;
     }
-} 
+}

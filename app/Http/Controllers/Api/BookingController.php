@@ -7,6 +7,7 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class BookingController extends Controller
 {
@@ -49,7 +50,8 @@ class BookingController extends Controller
                 'children' => $request->children,
                 'total_price' => $request->total_price,
                 'special_remarks' => $request->special_remarks,
-                'status' => 'pending'
+                'status' => 'pending',
+                'uuid' => Str::uuid()->toString()
             ]);
 
             DB::commit();

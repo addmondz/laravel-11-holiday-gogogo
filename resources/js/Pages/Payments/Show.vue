@@ -43,6 +43,7 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { router } from '@inertiajs/vue3';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
     booking: Object,
@@ -62,28 +63,35 @@ const simulatePayment = async (status) => {
     try {
         isProcessing.value = true;
         
-        // Update transaction status
-        const response = await axios.post(`/bookings/${props.booking.id}/payment/simulate`, {
+        // Update transaction status using the new handlePayment endpoint
+        const response = await axios.post(route('api.payment.handle', props.booking.uuid), {
             status: status,
-            transaction_id: props.transaction.id
+            transaction_id: props.transaction.id,
+            is_simulation: true
         });
 
         if (response.data.success) {
             // Redirect based on status
             if (status === 'success') {
-                window.location.href = route('bookings.payment.success', props.booking.id);
+                window.location.href = route('api.payment.success', props.booking.uuid);
             } else {
-                window.location.href = route('bookings.payment.failed', props.booking.id);
+                window.location.href = route('api.payment.failed', props.booking.uuid);
             }
         }
     } catch (error) {
         console.error('Payment simulation error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Failed',
+            text: error.response?.data?.message || 'An error occurred while processing the payment',
+            confirmButtonColor: '#EF4444'
+        });
     } finally {
         isProcessing.value = false;
     }
 };
 
 const retryPayment = () => {
-    router.visit(route('bookings.payment.show', props.booking.id));
+    router.visit(route('api.payment.show', props.booking.uuid));
 };
 </script> 

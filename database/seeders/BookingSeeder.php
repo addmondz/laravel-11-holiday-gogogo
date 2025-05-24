@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Package;
 use App\Models\RoomType;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class BookingSeeder extends Seeder
 {
@@ -122,7 +123,7 @@ class BookingSeeder extends Seeder
                     'children' => $children,
                     'total_price' => round($totalPrice, 2),
                     'special_remarks' => $remarks[$i % count($remarks)],
-                    'status' => ['pending', 'confirmed', 'completed', 'cancelled'][rand(0, 3)]
+                    'uuid' => Str::uuid()->toString()
                 ]);
             } catch (\Exception $e) {
                 $this->command->error("Failed to create booking: " . $e->getMessage());

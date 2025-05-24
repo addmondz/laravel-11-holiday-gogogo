@@ -18,8 +18,8 @@ class Booking extends Model
         'children',
         'total_price',
         'special_remarks',
-        'status',
-        'payment_status'
+        'payment_status',
+        'uuid'
     ];
 
     protected $casts = [

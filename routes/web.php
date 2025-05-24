@@ -54,6 +54,14 @@ Route::prefix('calculator')->group(function () {
         Route::post('/package-calculate-price', [TravelCalculatorController::class, 'packageCalculatePrice'])->name('api.package-calculate-price');
         Route::post('/bookings', [ApiBookingController::class, 'store'])->name('api.bookings.store');
         Route::post('/transactions', [\App\Http\Controllers\Api\TransactionController::class, 'store'])->name('api.transactions.store');
+        
+        // Payment routes
+        Route::prefix('bookings/{uuid}/payment')->name('api.payment.')->group(function ($uuid) {
+            Route::get('/', [PaymentController::class, 'show'])->name('show');
+            Route::post('/', [PaymentController::class, 'handlePayment'])->name('handle');
+            Route::get('/success', [PaymentController::class, 'success'])->name('success');
+            Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
+        });
     });
 
     Route::get('/quotation/{uuid}', function ($uuid) {
@@ -164,12 +172,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'edit' => 'bookings.edit',
         'update' => 'bookings.update'
     ]);
-
-    // Payment routes
-    Route::get('/bookings/{booking}/payment', [PaymentController::class, 'show'])->name('bookings.payment.show');
-    Route::post('/bookings/{booking}/payment/simulate', [PaymentController::class, 'simulate'])->name('bookings.payment.simulate');
-    Route::get('/bookings/{booking}/payment/success', [PaymentController::class, 'success'])->name('bookings.payment.success');
-    Route::get('/bookings/{booking}/payment/failed', [PaymentController::class, 'failed'])->name('bookings.payment.failed');
 
     Route::resource('users', UserController::class)->names([
         'index' => 'users.index',
