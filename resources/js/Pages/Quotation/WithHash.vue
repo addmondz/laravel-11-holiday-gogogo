@@ -946,7 +946,9 @@ const submitBooking = async () => {
 
         if (response.data.success) {
             bookingSuccess.value = response.data.booking;
-            window.location.href = `${window.location.href}?booking=${response.data.booking.uuid}`;
+            const url = new URL(window.location);
+            url.searchParams.set('booking', response.data.booking.uuid);
+            window.history.replaceState({}, '', url);
         }
     } catch (error) {
         console.error('Booking error:', error);
