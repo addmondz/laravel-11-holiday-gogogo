@@ -170,6 +170,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('update', 'updatePrices')->name('configuration-prices.updatePrices');
         Route::post('store', 'store')->name('configuration-prices.store');
         Route::post('/fetch-prices-room-types', 'fetchPricesRoomTypes')->name('configuration-prices.fetchPricesRoomTypes');
+        Route::post('/update-room-type-prices', 'updateRoomTypePrices')->name('configuration-prices.updateRoomTypePrices');
     });
 
     Route::resource('bookings', BookingController::class)->names([

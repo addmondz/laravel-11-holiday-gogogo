@@ -267,4 +267,73 @@ class ConfigurationPriceController extends Controller
 
         return response()->json($response);
     }
+
+    public function updateRoomTypePrices(Request $request)
+    {
+        $validated = $request->validate([
+            'package_id' => 'required|exists:packages,id',
+            'season_type_id' => 'required|exists:season_types,id',
+            'date_type_id' => 'required|exists:date_types,id',
+            'room_type_id' => 'required|exists:room_types,id',
+            'prices' => 'required|array',
+            'prices.*.type' => 'required|in:base_charge,sur_charge',
+            'prices.*.number_of_adults' => 'required|integer|min:1',
+            'prices.*.number_of_children' => 'required|integer|min:0',
+            'prices.*.adult_price' => 'required|numeric|min:0',
+            'prices.*.child_price' => 'required|numeric|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $configuration = PackageConfiguration::firstOrCreate(
+                [
+                    'package_id' => $validated['package_id'],
+                    'season_type_id' => $validated['season_type_id'],
+                    'date_type_id' => $validated['date_type_id'],
+                    'room_type_id' => $validated['room_type_id']
+                ]
+            );
+
+            // Build configuration_prices JSON
+            $configurationPrices = [];
+
+            foreach ($validated['prices'] as $price) {
+                $type = $price['type'] === 'base_charge' ? 'b' : 's';
+                $adults = $price['number_of_adults'];
+                $children = $price['number_of_children'];
+
+                $adultKey = "{$adults}_a_{$children}_c_a";
+                $childKey = "{$adults}_a_{$children}_c_c";
+
+                if (!isset($configurationPrices[$type])) {
+                    $configurationPrices[$type] = [];
+                }
+
+                $configurationPrices[$type][$adultKey] = (float) $price['adult_price'];
+                $configurationPrices[$type][$childKey] = (float) $price['child_price'];
+            }
+
+            $configuration->configuration_prices = json_encode($configurationPrices);
+            $configuration->save();
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Room type prices updated successfully.',
+                'configuration' => $configuration
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Room type price update error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating room type prices: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
