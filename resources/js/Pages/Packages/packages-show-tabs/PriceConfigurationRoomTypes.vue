@@ -95,7 +95,7 @@
                 <template v-if="!isEditMode">
                     <!-- Base Charge Table -->
                     <div class="overflow-x-auto">
-                        <h4 class="text-md font-medium text-gray-700 mb-2">Base Charge</h4>
+                        <h4 class="text-lg font-bold text-gray-700 mb-2">Base Charge</h4>
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
@@ -146,7 +146,7 @@
 
                     <!-- Surcharge Table -->
                     <div v-if="hasSurcharges" class="overflow-x-auto">
-                        <h4 class="text-md font-medium text-gray-700 mb-2">Surcharge</h4>
+                        <h4 class="text-lg font-bold text-gray-700 mb-2">Surcharge</h4>
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
@@ -203,7 +203,7 @@
                             <!-- Base Charge Table -->
                             <div class="overflow-x-auto">
                                 <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-md font-medium text-gray-900">Base Charges</h3>
+                                    <h3 class="text-lg font-bold text-gray-900">Base Charges</h3>
                                     <button 
                                         type="button"
                                         @click="applyBasePricesToAll"
@@ -283,7 +283,7 @@
                             <!-- Surcharge Table -->
                             <div class="overflow-x-auto">
                                 <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-md font-medium text-gray-900">Surcharges</h3>
+                                    <h3 class="text-lg font-bold text-gray-900">Surcharges</h3>
                                     <button 
                                         type="button"
                                         @click="applySurchargePricesToAll"
