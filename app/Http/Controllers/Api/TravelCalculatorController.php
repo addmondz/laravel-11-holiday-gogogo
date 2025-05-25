@@ -193,12 +193,15 @@ class TravelCalculatorController extends Controller
     }
 
     public function fetchPackageByUuid(Request $request)
-    {
+    {        
         $package = Package::where('uuid', $request->uuid)->firstOrFail();
-        $package->loadRoomTypes = $package->loadRoomTypes->filter(function ($roomType) {
-            return $roomType->configurations?->count() > 0;
-        });
 
+        if (!$request->booking_uuid) {
+            $package->loadRoomTypes = $package->loadRoomTypes->filter(function ($roomType) {
+                return $roomType->configurations?->count() > 0;
+            });
+        }
+        
         return response()->json([
             'success' => true,
             'package' => $package,

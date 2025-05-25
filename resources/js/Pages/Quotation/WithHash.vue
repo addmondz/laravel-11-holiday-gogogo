@@ -720,7 +720,8 @@ const previousImage = () => {
 onMounted(async () => {
     try {
         const response = await axios.post(route('api.fetch-package-by-uuid'), {
-            uuid: props.uuid
+            uuid: props.uuid,
+            booking_uuid: props.booking ? props.booking.uuid : null,
         });
 
         if (response.data.success && response.data.package) {
