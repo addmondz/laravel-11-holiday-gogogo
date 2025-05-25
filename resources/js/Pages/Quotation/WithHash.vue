@@ -129,7 +129,7 @@
             </div>
 
             <!-- Booking Form -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="bg-white rounded-lg shadow-lg p-6" id="booking-form">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Book Your Stay</h2>
                 
                 <!-- Step Indicators -->
@@ -631,6 +631,12 @@ onMounted(() => {
     if (props.booking) {
         bookingSuccess.value = props.booking;
         currentStep.value = 3;
+        setTimeout(() => {
+            const bookingForm = document.getElementById('booking-form');
+            if (bookingForm) {
+                bookingForm.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 100);
     }
 });
 
