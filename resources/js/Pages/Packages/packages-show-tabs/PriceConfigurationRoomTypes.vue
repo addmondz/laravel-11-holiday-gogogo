@@ -239,7 +239,7 @@
                                                                 <input
                                                                     type="number"
                                                                     v-model="priceForm.prices.base_charge[getPriceIndex(adults, children-1, 'base_charge')].adult_price"
-                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm mb-4"
                                                                     placeholder="Adult Price"
                                                                     step="0.01"
                                                                 />
@@ -247,7 +247,7 @@
                                                         </template>
                                                         <template v-else>
                                                             Adult: 
-                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
+                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100 mb-4">-</span>
                                                         </template>
                                                         <template v-if="isValidOccupancy(adults, children-1, 'child', true)">
                                                             <div class="font-medium">
@@ -255,7 +255,7 @@
                                                                 <input
                                                                     type="number"
                                                                     v-model="priceForm.prices.base_charge[getPriceIndex(adults, children-1, 'base_charge')].child_price"
-                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm mb-4"
                                                                     placeholder="Child Price"
                                                                     step="0.01"
                                                                 />
@@ -263,7 +263,7 @@
                                                         </template>
                                                         <template v-else>
                                                             Child: 
-                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
+                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100 mb-4">-</span>
                                                         </template>
                                                     </td>
                                                 </tr>
@@ -319,7 +319,7 @@
                                                                 <input
                                                                     type="number"
                                                                     v-model="priceForm.prices.sur_charge[getPriceIndex(adults, children-1, 'sur_charge')].adult_price"
-                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm mb-4"
                                                                     placeholder="Adult Price"
                                                                     step="0.01"
                                                                 />
@@ -327,7 +327,7 @@
                                                         </template>
                                                         <template v-else>
                                                             Adult: 
-                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
+                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100 mb-4">-</span>
                                                         </template>
                                                         <template v-if="isValidOccupancy(adults, children-1, 'child', true)">
                                                             <div class="font-medium">
@@ -335,7 +335,7 @@
                                                                 <input
                                                                     type="number"
                                                                     v-model="priceForm.prices.sur_charge[getPriceIndex(adults, children-1, 'sur_charge')].child_price"
-                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm mb-4"
                                                                     placeholder="Child Price"
                                                                     step="0.01"
                                                                 />
@@ -343,7 +343,7 @@
                                                         </template>
                                                         <template v-else>
                                                             Child: 
-                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
+                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100 mb-4">-</span>
                                                         </template>
                                                     </td>
                                                 </tr>
