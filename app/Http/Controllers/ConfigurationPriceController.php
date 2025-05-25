@@ -6,6 +6,7 @@ use App\Constants\AppConstants;
 use App\Models\Season;
 use App\Models\DateTypeRange;
 use App\Models\PackageConfiguration;
+use App\Models\ConfigurationPrice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -190,5 +191,80 @@ class ConfigurationPriceController extends Controller
         return DateTypeRange::where('date_type_id', $date_type_id)
             ->where('package_id', $package_id)
             ->first()?->id;
+    }
+
+    /**
+     * Fetch price configurations for room types based on filters
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function fetchPricesRoomTypes(Request $request)
+    {
+        $request->validate([
+            'package_id' => 'required|exists:packages,id',
+            'season_type_id' => 'required|exists:season_types,id',
+            'date_type_id' => 'required|exists:date_types,id',
+        ]);
+
+        $configurations = PackageConfiguration::with('roomType')
+            ->where('package_id', $request->package_id)
+            ->where('season_type_id', $request->season_type_id)
+            ->where('date_type_id', $request->date_type_id)
+            ->get();
+
+        // If no configurations exist, return empty array
+        if ($configurations->isEmpty()) {
+            return response()->json([]);
+        }
+
+        $response = $configurations->map(function ($config) {
+            $rawPrices = json_decode($config->configuration_prices, true);
+            $structuredPrices = [];
+
+            // Process base charge and surcharge prices
+            foreach (['b' => 'base_charge', 's' => 'sur_charge'] as $jsonKey => $type) {
+                if (!isset($rawPrices[$jsonKey])) continue;
+
+                foreach ($rawPrices[$jsonKey] as $code => $price) {
+                    // Example code: "1_a_2_c_a" (1 adult, 2 children, adult price)
+                    preg_match('/(\d+)_a_(\d+)_c_([ac])/', $code, $matches);
+                    if (!$matches) continue;
+
+                    [$full, $adults, $children, $personType] = $matches;
+                    $key = "{$adults}_{$children}_{$type}";
+
+                    if (!isset($structuredPrices[$key])) {
+                        $structuredPrices[$key] = [
+                            'type' => $type,
+                            'number_of_adults' => (int) $adults,
+                            'number_of_children' => (int) $children,
+                            'adult_price' => null,
+                            'child_price' => null,
+                        ];
+                    }
+
+                    if ($personType === 'a') {
+                        $structuredPrices[$key]['adult_price'] = number_format($price, 2, '.', '');
+                    } elseif ($personType === 'c') {
+                        $structuredPrices[$key]['child_price'] = number_format($price, 2, '.', '');
+                    }
+                }
+            }
+
+            return [
+                'id' => $config->id,
+                'package_id' => $config->package_id,
+                'season_type_id' => $config->season_type_id,
+                'date_type_id' => $config->date_type_id,
+                'room_type_id' => $config->room_type_id,
+                'room_type' => $config->roomType,
+                'prices' => array_values($structuredPrices),
+                'created_at' => $config->created_at,
+                'updated_at' => $config->updated_at,
+            ];
+        });
+
+        return response()->json($response);
     }
 }

@@ -661,7 +661,11 @@
 
                             <!-- Price Configuration Room Types Tab -->
                             <div v-if="activeTab === 'price-configuration-room-types'" class="space-y-6">
-                                <PriceConfigurationRoomTypes />
+                                <PriceConfigurationRoomTypes
+                                    :package-id="pkg.id"
+                                    :season-types="priceConfigSeasonChoice"
+                                    :date-types="priceConfigDateTypeChoice"
+                                />
                             </div>
                         </div>
                     </div>

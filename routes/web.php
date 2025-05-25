@@ -169,6 +169,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('fetch-prices-search-index', 'fetchPricesSearchIndex')->name('configuration-prices.fetchPricesSearchIndex');
         Route::put('update', 'updatePrices')->name('configuration-prices.updatePrices');
         Route::post('store', 'store')->name('configuration-prices.store');
+        Route::post('/fetch-prices-room-types', 'fetchPricesRoomTypes')->name('configuration-prices.fetchPricesRoomTypes');
     });
 
     Route::resource('bookings', BookingController::class)->names([
