@@ -12,7 +12,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // set the X-Robots-Tag header, to disable search engine indexing
+        \Illuminate\Support\Facades\Response::macro('noIndex', function ($response) {
+            return $response->header('X-Robots-Tag', 'noindex, nofollow');
+        });
     }
 
     /**
