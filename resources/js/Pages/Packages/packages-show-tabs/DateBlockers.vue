@@ -12,7 +12,10 @@
 
         <!-- Date Blockers Table -->
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <div v-if="isLoading" class="flex justify-center items-center h-full min-h-[400px]">
+                <LoadingComponent />
+            </div>
+            <table v-else class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -195,6 +198,7 @@ import Pagination from '@/Components/Pagination.vue';
 import moment from 'moment';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import LoadingComponent from '@/Components/LoadingComponent.vue';
 
 const props = defineProps({
     packageId: {
@@ -206,8 +210,8 @@ const props = defineProps({
 const dateBlockers = ref({
     data: [],
     links: [],
-    from: null,
-    to: null,
+    from: 0,
+    to: 0,
     total: 0,
     current_page: 1,
     last_page: 1,
@@ -216,6 +220,7 @@ const dateBlockers = ref({
 const loadingKey = ref(0);
 const showAddModal = ref(false);
 const showEditModal = ref(false);
+const isLoading = ref(false);
 
 const form = useForm({
     package_id: props.packageId,
@@ -231,6 +236,7 @@ const editForm = useForm({
 
 const fetchDateBlockers = async (page = 1) => {
     try {
+        isLoading.value = true;
         const response = await axios.get(route('date-blockers.index'), {
             params: { 
                 package_id: props.packageId,
@@ -238,8 +244,10 @@ const fetchDateBlockers = async (page = 1) => {
             }
         });
         dateBlockers.value = response.data;
+        isLoading.value = false;
     } catch (error) {
         console.error('Error fetching date blockers:', error);
+        isLoading.value = false;
     }
 };
 
