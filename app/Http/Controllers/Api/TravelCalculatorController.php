@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\DateBlocker;
 use App\Models\DateType;
 use App\Models\DateTypeRange;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ use App\Models\Season;
 use App\Models\SeasonType;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Carbon\CarbonPeriod;
 
 class TravelCalculatorController extends Controller
 {
@@ -193,7 +195,7 @@ class TravelCalculatorController extends Controller
     }
 
     public function fetchPackageByUuid(Request $request)
-    {        
+    {
         $package = Package::where('uuid', $request->uuid)->firstOrFail();
 
         if (!$request->booking_uuid) {
@@ -201,7 +203,7 @@ class TravelCalculatorController extends Controller
                 return $roomType->configurations?->count() > 0;
             });
         }
-        
+
         return response()->json([
             'success' => true,
             'package' => $package,
@@ -219,6 +221,26 @@ class TravelCalculatorController extends Controller
             'adults' => 'required|integer|min:1|max:4',
             'children' => 'required|integer|min:0|max:3'
         ]);
+
+        $dateBlockers = DateBlocker::where('package_id', $validated['package_id'])
+            ->where('start_date', '<=', $validated['end_date'])
+            ->where('end_date', '>=', $validated['start_date'])
+            ->get();
+
+        $blockedDates = [];
+
+        foreach ($dateBlockers as $blocker) {
+            $period = CarbonPeriod::create($blocker->start_date, $blocker->end_date);
+            foreach ($period as $date) {
+                $blockedDates[] = $date->toDateString();
+            }
+        }
+
+        $blockedDates = array_unique($blockedDates); // Ensure no duplicates
+
+        if (!empty($blockedDates)) {
+            throw new \Exception('Sorry, the selected dates are not available. Please contact us for more information. ' . implode(', ', $blockedDates));
+        }
 
         try {
             $startDate = Carbon::parse($validated['start_date']);
@@ -239,8 +261,7 @@ class TravelCalculatorController extends Controller
                 if (!$dateTypeRange) {
                     $fallbackType = $date->isWeekend() ? 'weekend' : 'weekday';
                     $dateType = DateType::where('name', 'LIKE', "%$fallbackType%")->first();
-                }
-                else{
+                } else {
                     $dateType = $dateTypeRange->dateType;
                 }
 
@@ -255,8 +276,7 @@ class TravelCalculatorController extends Controller
 
                 if (!$season) {
                     $seasonType = SeasonType::where('name', 'Default')->first();
-                }
-                else{
+                } else {
                     $seasonType = $season->type;
                 }
 

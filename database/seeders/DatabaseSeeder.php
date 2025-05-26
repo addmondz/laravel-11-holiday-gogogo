@@ -16,7 +16,8 @@ use App\Models\{
     PackageConfiguration,
     User,
     RoomType,
-    Booking
+    Booking,
+    DateBlocker
 };
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
@@ -26,8 +27,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $dummyPackagesCount = 1;
-        $dummyOtherPackagesCount = 30;
+        $dummyPackagesCount = 21;
+        $dummyOtherPackagesCount = 11;
         $earliestDate = Carbon::parse('1970-01-01');
         $earliestNextDate = Carbon::parse('1970-01-02');
 
@@ -40,7 +41,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('12345678'), // You can set the password as per your choice
         ]);
 
-        for ($i = 0; $i <= 1; $i++) {
+        for ($i = 0; $i <= $dummyOtherPackagesCount; $i++) {
             User::create([
                 'name' => 'Test User ' . $i,
                 'email' => 'testuser' . $i . '@test.com',
@@ -303,6 +304,20 @@ class DatabaseSeeder extends Seeder
                     }
                 }
             }
+
+            // 🔒 DATE BLOCKERS
+            $startDate = now();
+            for ($i = 0; $i < $dummyOtherPackagesCount; $i++) {
+                $currentStart = $startDate->copy()->addDays($i);
+                $currentEnd = $currentStart->copy()->addDay();
+    
+                DateBlocker::create([
+                    'package_id' => $pkg->id,
+                    'start_date' => $currentStart,
+                    'end_date' => $currentEnd
+                ]);
+            }
+
             dump('completed ' . $pkg->id);
         }
 

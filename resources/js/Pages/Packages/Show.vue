@@ -667,6 +667,13 @@
                                     :date-types="priceConfigDateTypeChoice"
                                 />
                             </div>
+
+                            <!-- Date Blockers Tab -->
+                            <div v-if="activeTab === 'date-blockers'" class="space-y-6">
+                                <DateBlockers
+                                    :package-id="pkg.id"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1145,6 +1152,7 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
 import PriceConfigurationRoomTypes from '@/Pages/Packages/packages-show-tabs/PriceConfigurationRoomTypes.vue';
+import DateBlockers from '@/Pages/Packages/packages-show-tabs/DateBlockers.vue';
 
 const props = defineProps({
     pkg: Object,
@@ -1166,7 +1174,8 @@ const tabs = [
     { id: 'season-types', name: 'Season Types' },
     { id: 'date-types-ranges', name: 'Date Types' },
     { id: 'price-configuration', name: 'Price Configuration' },
-    { id: 'price-configuration-room-types', name: 'Price Configuration Room Types' }
+    { id: 'price-configuration-room-types', name: 'Price Configuration Room Types' },
+    { id: 'date-blockers', name: 'Date Blockers' }
 ];
 
 const breadcrumbs = computed(() => [

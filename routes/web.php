@@ -27,6 +27,7 @@ use App\Http\Controllers\PaymentSimulationController;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\DateBlockerController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -188,6 +189,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'create' => 'users.create',
         'store' => 'users.store'
     ])->only(['index', 'edit', 'update', 'destroy', 'create', 'store']);
+
+    Route::prefix('date-blockers')->controller(DateBlockerController::class)->group(function () {
+        Route::get('/', 'index')->name('date-blockers.index');
+        Route::post('/', 'store')->name('date-blockers.store');
+        Route::put('/{dateBlocker}', 'update')->name('date-blockers.update');
+        Route::delete('/{dateBlocker}', 'destroy')->name('date-blockers.destroy');
+    });
 });
 
 Route::middleware('auth')->group(function () {

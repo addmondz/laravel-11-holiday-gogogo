@@ -98,10 +98,21 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
         });
+
+        // Date Blockers
+        Schema::create('date_blockers', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('package_id')->constrained()->onDelete('cascade');
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->timestamps();
+            $table->softDeletes();
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('date_blockers');
         Schema::dropIfExists('package_configurations');
         Schema::dropIfExists('room_types');
         Schema::dropIfExists('date_type_ranges');
