@@ -12,7 +12,7 @@
 
         <!-- Date Blockers Table -->
         <div class="overflow-x-auto">
-            <div v-if="isLoading" class="flex justify-center items-center h-full min-h-[400px]">
+            <div v-if="initialLoading" class="flex justify-center items-center h-full min-h-[400px]">
                 <LoadingComponent />
             </div>
             <table v-else class="min-w-full divide-y divide-gray-200">
@@ -220,7 +220,7 @@ const dateBlockers = ref({
 const loadingKey = ref(0);
 const showAddModal = ref(false);
 const showEditModal = ref(false);
-const isLoading = ref(false);
+const initialLoading = ref(true);
 
 const form = useForm({
     package_id: props.packageId,
@@ -236,7 +236,6 @@ const editForm = useForm({
 
 const fetchDateBlockers = async (page = 1) => {
     try {
-        isLoading.value = true;
         const response = await axios.get(route('date-blockers.index'), {
             params: { 
                 package_id: props.packageId,
@@ -244,10 +243,10 @@ const fetchDateBlockers = async (page = 1) => {
             }
         });
         dateBlockers.value = response.data;
-        isLoading.value = false;
+        initialLoading.value = false;
     } catch (error) {
         console.error('Error fetching date blockers:', error);
-        isLoading.value = false;
+        initialLoading.value = false;
     }
 };
 
