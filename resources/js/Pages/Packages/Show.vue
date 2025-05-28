@@ -887,7 +887,6 @@
             showAddSeasonModal = false;
             seasonForm.reset();
             seasonForm.clearErrors();
-            addSeasonErrors.value = '';
         }">
             <div class="p-6">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Add Season</h2>
@@ -975,7 +974,6 @@
             showAddDateTypeRangeModal = false;
             dateTypeRangeForm.reset();
             dateTypeRangeForm.clearErrors();
-            addDateTypeRangeErrors.value = '';
         }">
             <div class="p-6">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Add Date Range</h2>
@@ -1405,7 +1403,7 @@ const submitDateTypeRange = () => {
             dateTypeRangeForm.package_id = props.pkg.id;
             handleDateTypeRangePageChange(1);
         },
-        onError: () => {
+        onError: (errors) => {
             showAddDateTypeRangeModal.value = true;
             console.log(dateTypeRangeForm.errors);
             addDateTypeRangeErrors.value = dateTypeRangeForm.errors.date_range;
@@ -1421,6 +1419,11 @@ const updateDateTypeRange = () => {
             editDateTypeRangeForm.return_to_package = true;
             editDateTypeRangeForm.package_id = props.pkg.id;
             handleDateTypeRangePageChange(1);
+        },
+        onError: (errors) => {
+            showEditDateTypeRangeModal.value = true;
+            console.log(dateTypeRangeForm.errors);
+            addDateTypeRangeErrors.value = dateTypeRangeForm.errors.date_range;
         }
     });
 };
@@ -1779,6 +1782,27 @@ watch([selectedSeason, selectedDateType, selectedRoomType], ([newSeason, newDate
     priceForm.date_type_id = newDateType;
     priceForm.room_type = newRoomType;
 });
+
+watch(showAddSeasonModal, (newVal) => {
+  if (!newVal) {
+    setTimeout(() => {
+      seasonForm.reset();
+      seasonForm.clearErrors();
+      addSeasonErrors.value = '';
+    }, 500);
+  }
+});
+
+watch(showAddDateTypeRangeModal, (newVal) => {
+  if (!newVal) {
+    setTimeout(() => {
+      dateTypeRangeForm.reset();
+      dateTypeRangeForm.clearErrors();
+      addDateTypeRangeErrors.value = '';
+    }, 500);
+  }
+});
+
 
 const copyLink = (link) => {
     navigator.clipboard.writeText(link).then(() => {
