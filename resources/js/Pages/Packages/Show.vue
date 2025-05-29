@@ -139,6 +139,7 @@
                                     <table class="min-w-full divide-y divide-gray-200">
                                         <thead class="bg-gray-50">
                                             <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Occupancy</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
@@ -147,6 +148,19 @@
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200">
                                             <tr v-for="roomType in roomTypesData.data" :key="roomType.id">
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div v-if="roomType.images && roomType.images.length > 0" class="flex space-x-2">
+                                                        <div v-for="(image, index) in roomType.images" :key="index" class="relative">
+                                                            <img 
+                                                                :src="getImageUrl(image)" 
+                                                                class="h-16 w-16 object-cover rounded-lg cursor-pointer" 
+                                                                @click="showImageModal(image)"
+                                                                alt="Room type image"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <span v-else class="text-gray-400 text-sm">No images</span>
+                                                </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.name }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.max_occupancy }}</td>
                                                 <td class="px-6 py-4 text-sm text-gray-900">{{ roomType.description }}</td>
@@ -166,7 +180,7 @@
                                                 </td>
                                             </tr>
                                             <tr v-if="roomTypesData.data.length === 0">
-                                                <td colspan="4" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No room types found</td>
+                                                <td colspan="5" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No room types found</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -558,7 +572,7 @@
                                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                                 {{ adults }} Adults
                                                             </td>
-                                                            <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                            <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                                                 <span class="text-xs text-gray-500">Adults:</span>
                                                                 <span v-if="!isValidOccupancy(adults, children-1, 'adult', true)" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100">-</span>
                                                                 <input
@@ -718,6 +732,51 @@
                                 rows="3"
                             ></textarea>
                         </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Images</label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="images" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                            <span>Upload images</span>
+                                            <input
+                                                id="images"
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                class="sr-only"
+                                                @change="handleImageUpload($event, 'roomTypeForm')"
+                                            />
+                                        </label>
+                                        <p class="pl-1">or drag and drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PNG, JPG, GIF up to 2MB each</p>
+                                </div>
+                            </div>
+                            <!-- Preview uploaded images -->
+                            <div v-if="roomTypeForm.images.length > 0" class="mt-4 grid grid-cols-3 gap-4">
+                                <div v-for="(image, index) in roomTypeForm.images" :key="index" class="relative">
+                                    <img 
+                                        :src="getImagePreviewUrl(image)" 
+                                        class="h-24 w-full object-cover rounded-lg" 
+                                        alt="Room type image"
+                                    />
+                                    <button
+                                        type="button"
+                                        @click="removeImage(index, 'roomTypeForm')"
+                                        class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                    >
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-6 flex justify-end space-x-3">
@@ -778,19 +837,64 @@
                                 rows="3"
                             ></textarea>
                         </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Images</label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="edit_images" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                            <span>Upload images</span>
+                                            <input
+                                                id="edit_images"
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                class="sr-only"
+                                                @change="handleImageUpload($event, 'editRoomTypeForm')"
+                                            />
+                                        </label>
+                                        <p class="pl-1">or drag and drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PNG, JPG, GIF up to 2MB each</p>
+                                </div>
+                            </div>
+                            <!-- Preview uploaded images -->
+                            <div v-if="editRoomTypeForm.images.length > 0" class="mt-4 grid grid-cols-3 gap-4">
+                                <div v-for="(image, index) in editRoomTypeForm.images" :key="index" class="relative">
+                                    <img 
+                                        :src="getImagePreviewUrl(image)" 
+                                        class="h-24 w-full object-cover rounded-lg" 
+                                        alt="Room type image"
+                                    />
+                                    <button
+                                        type="button"
+                                        @click="removeImage(index, 'editRoomTypeForm')"
+                                        class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                    >
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-6 flex justify-end space-x-3">
                         <button
                             type="button"
                             @click="showEditRoomTypeModal = false"
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                             :disabled="editRoomTypeForm.processing"
                         >
                             Update Room Type
@@ -1192,7 +1296,9 @@ const roomTypeForm = useForm({
     description: '',
     max_occupancy: 2,
     package_id: props.pkg.id,
-    return_to_package: true
+    return_to_package: true,
+    images: [],
+    delete_images: []
 });
 
 const showEditRoomTypeModal = ref(false);
@@ -1202,7 +1308,9 @@ const editRoomTypeForm = useForm({
     description: '',
     max_occupancy: 2,
     package_id: props.pkg.id,
-    return_to_package: true
+    return_to_package: true,
+    images: [],
+    delete_images: []
 });
 
 const showEditSeasonModal = ref(false);
@@ -1487,32 +1595,124 @@ const handleDateTypeRangePageChange = async (page) => {
 };
 
 const editRoomType = (roomType) => {
+    // Reset the form first
+    editRoomTypeForm.reset();
+    
+    // Set all required fields with explicit values
     editRoomTypeForm.id = roomType.id;
-    editRoomTypeForm.name = roomType.name;
-    editRoomTypeForm.description = roomType.description;
-    editRoomTypeForm.max_occupancy = roomType.max_occupancy;
-    editRoomTypeForm.package_id = roomType.package_id;
+    editRoomTypeForm.name = roomType.name || '';
+    editRoomTypeForm.description = roomType.description || '';
+    editRoomTypeForm.max_occupancy = parseInt(roomType.max_occupancy) || 2;
+    editRoomTypeForm.package_id = parseInt(props.pkg.id); // Ensure package_id is a number
+    editRoomTypeForm.images = Array.isArray(roomType.images) ? [...roomType.images] : [];
+    editRoomTypeForm.delete_images = [];
+    editRoomTypeForm.return_to_package = true;
+    
+    // Log form data for debugging
+    console.log('Edit Room Type Form Data:', {
+        id: editRoomTypeForm.id,
+        name: editRoomTypeForm.name,
+        max_occupancy: editRoomTypeForm.max_occupancy,
+        package_id: editRoomTypeForm.package_id,
+        images: editRoomTypeForm.images
+    });
+    
     showEditRoomTypeModal.value = true;
 };
 
-const submitRoomType = () => {
-    roomTypeForm.post(route('room-types.store'), {
-        onSuccess: () => {
-            showAddRoomTypeModal.value = false;
-            roomTypeForm.reset();
-            roomTypeForm.return_to_package = true;
-            handlePageChange(1);
-        }
-    });
-};
-
 const updateRoomType = () => {
-    editRoomTypeForm.put(route('room-types.update', editRoomTypeForm.id), {
+    // Ensure all required fields are set and valid
+    if (!editRoomTypeForm.name?.trim()) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Room type name is required',
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#4F46E5'
+        });
+        return;
+    }
+
+    if (!editRoomTypeForm.max_occupancy || editRoomTypeForm.max_occupancy < 1) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Max occupancy must be at least 1',
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#4F46E5'
+        });
+        return;
+    }
+
+    if (!editRoomTypeForm.package_id) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Package ID is required',
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#4F46E5'
+        });
+        return;
+    }
+
+    // Create a copy of the form data to ensure all fields are properly set
+    const formData = {
+        id: editRoomTypeForm.id,
+        name: editRoomTypeForm.name.trim(),
+        description: editRoomTypeForm.description?.trim() || '',
+        max_occupancy: parseInt(editRoomTypeForm.max_occupancy),
+        package_id: parseInt(editRoomTypeForm.package_id),
+        images: editRoomTypeForm.images,
+        delete_images: editRoomTypeForm.delete_images,
+        return_to_package: true
+    };
+
+    // Log the data being sent
+    console.log('Updating Room Type with data:', formData);
+
+    editRoomTypeForm.put(route('room-types.update', editRoomTypeForm.id), formData, {
         onSuccess: () => {
             showEditRoomTypeModal.value = false;
             editRoomTypeForm.reset();
             editRoomTypeForm.return_to_package = true;
             handlePageChange(1);
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Room type updated successfully',
+                showConfirmButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#4F46E5'
+            });
+        },
+        onError: (errors) => {
+            console.error('Error updating room type:', errors);
+            let errorMessage = 'Failed to update room type.';
+            
+            // Check for specific error messages
+            if (errors.images) {
+                errorMessage = Array.isArray(errors.images) 
+                    ? errors.images.join('\n')
+                    : errors.images;
+            } else if (errors.name) {
+                errorMessage = errors.name;
+            } else if (errors.max_occupancy) {
+                errorMessage = errors.max_occupancy;
+            } else if (errors.package_id) {
+                errorMessage = errors.package_id;
+            }
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage,
+                showConfirmButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#4F46E5'
+            });
         }
     });
 };
@@ -1883,6 +2083,91 @@ const isValidOccupancy = (adults, children, type, isEditMode = false) => {
     return true;
 };
 
+const handleImageUpload = (event, formName) => {
+    const files = Array.from(event.target.files);
+    const form = formName === 'roomTypeForm' ? roomTypeForm : editRoomTypeForm;
+    
+    // Validate each file
+    const validFiles = files.filter(file => {
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File Type',
+                text: `${file.name} is not an image file.`,
+                showConfirmButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#4F46E5'
+            });
+            return false;
+        }
+        
+        // Check file size (2MB = 2 * 1024 * 1024 bytes)
+        if (file.size > 2 * 1024 * 1024) {
+            Swal.fire({
+                icon: 'error',
+                title: 'File Too Large',
+                text: `${file.name} is larger than 2MB.`,
+                showConfirmButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#4F46E5'
+            });
+            return false;
+        }
+        
+        return true;
+    });
+    
+    // Add valid files to the images array
+    form.images = [...form.images, ...validFiles];
+};
+
+const removeImage = (index, formName) => {
+    const form = formName === 'roomTypeForm' ? roomTypeForm : editRoomTypeForm;
+    const image = form.images[index];
+    
+    // If it's an existing image (string path), add to delete_images
+    if (typeof image === 'string') {
+        form.delete_images.push(image);
+    }
+    
+    // Remove from images array
+    form.images.splice(index, 1);
+};
+
+// Add this new function to handle image URLs
+const getImageUrl = (imagePath) => {
+    // If the path already includes 'storage/', return as is
+    if (imagePath.startsWith('storage/')) {
+        return `/${imagePath}`;
+    }
+    // If the path starts with 'room-types/', add 'storage/' prefix
+    if (imagePath.startsWith('room-types/')) {
+        return `/storage/${imagePath}`;
+    }
+    // For any other case, assume it's a relative path and add 'storage/' prefix
+    return `/storage/${imagePath}`;
+};
+
+const showImageModal = (image) => {
+    Swal.fire({
+        imageUrl: getImageUrl(image),
+        imageAlt: 'Room image',
+        showConfirmButton: false,
+        showCloseButton: true,
+        customClass: {
+            container: 'image-modal',
+            popup: 'max-w-4xl',
+            closeButton: 'text-gray-500 hover:text-gray-700',
+            image: 'max-h-[80vh] object-contain'
+        },
+        background: '#f8f9fa',
+        padding: '1rem',
+        width: 'auto',
+        backdrop: 'rgba(0,0,0,0.8)'
+    });
+};
+
 </script>
 <style scoped>
 .fade-enter-active,
@@ -1893,5 +2178,43 @@ const isValidOccupancy = (adults, children, type, isEditMode = false) => {
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
+}
+
+/* Modal styles */
+:deep(.image-modal) {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+:deep(.image-modal::-webkit-scrollbar) {
+    display: none !important;
+}
+
+:deep(.swal2-popup) {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+:deep(.swal2-html-container) {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+:deep(.swal2-image) {
+    margin: 0 !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+:deep(.swal2-close) {
+    color: white !important;
+    font-size: 2rem !important;
+    right: 1rem !important;
+    top: 1rem !important;
+}
+
+:deep(.swal2-close:hover) {
+    color: #e5e7eb !important;
 }
 </style>

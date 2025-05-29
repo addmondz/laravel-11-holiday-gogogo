@@ -16,7 +16,12 @@ class RoomType extends Model
         'name',
         'description',
         'package_id',
-        'max_occupancy'
+        'max_occupancy',
+        'images'
+    ];
+
+    protected $casts = [
+        'images' => 'array'
     ];
 
     public function configurations(): HasMany

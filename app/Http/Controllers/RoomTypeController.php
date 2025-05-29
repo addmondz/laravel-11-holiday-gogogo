@@ -6,6 +6,7 @@ use App\Models\RoomType;
 use App\Models\Package;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 
 class RoomTypeController extends Controller
 {
@@ -29,8 +30,18 @@ class RoomTypeController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'max_occupancy' => 'required|integer|min:1',
-            'package_id' => 'required|exists:packages,id'
+            'package_id' => 'required|exists:packages,id',
+            'images.*' => 'nullable|image|max:2048'
         ]);
+
+        // Handle image uploads
+        $images = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $images[] = $image->store('room-types', 'public');
+            }
+        }
+        $validated['images'] = $images;
 
         RoomType::create($validated);
 
@@ -65,8 +76,32 @@ class RoomTypeController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'max_occupancy' => 'required|integer|min:1',
-            'package_id' => 'required|exists:packages,id'
+            'package_id' => 'required|exists:packages,id',
+            'images.*' => 'nullable|image|max:2048',
+            'delete_images' => 'nullable|array',
+            'delete_images.*' => 'string'
         ]);
+
+        // Handle image deletions
+        if ($request->has('delete_images')) {
+            foreach ($request->delete_images as $imagePath) {
+                if (in_array($imagePath, $roomType->images ?? [])) {
+                    Storage::disk('public')->delete($imagePath);
+                }
+            }
+            $currentImages = array_diff($roomType->images ?? [], $request->delete_images);
+        } else {
+            $currentImages = $roomType->images ?? [];
+        }
+
+        // Handle new image uploads
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $currentImages[] = $image->store('room-types', 'public');
+            }
+        }
+
+        $validated['images'] = array_values($currentImages); // Reindex array
 
         $roomType->update($validated);
 
@@ -82,6 +117,13 @@ class RoomTypeController extends Controller
 
     public function destroy(RoomType $roomType)
     {
+        // Delete all associated images
+        if ($roomType->images) {
+            foreach ($roomType->images as $imagePath) {
+                Storage::disk('public')->delete($imagePath);
+            }
+        }
+
         $packageId = $roomType->package_id;
         $roomType->delete();
 

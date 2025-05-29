@@ -160,21 +160,36 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Deluxe Room',
                 'description' => 'Spacious room with modern amenities',
                 'max_occupancy' => 2,
-                'package_id' => $pkg->id
+                'package_id' => $pkg->id,
+                'images' => [
+                    'room-types/test1.jpg',
+                    'room-types/test2.png',
+                    'room-types/test3.jpg'
+                ]
             ]);
 
             $superiorChalet = RoomType::create([
                 'name' => 'Superior Chalet',
                 'description' => 'Luxury chalet with private balcony',
                 'max_occupancy' => 4,
-                'package_id' => $pkg->id
+                'package_id' => $pkg->id,
+                'images' => [
+                    'room-types/test1.jpg',
+                    'room-types/test2.png',
+                    'room-types/test3.jpg'
+                ]
             ]);
 
             $standardRoom = RoomType::create([
                 'name' => 'Standard Room',
                 'description' => 'Comfortable room with basic amenities',
                 'max_occupancy' => 2,
-                'package_id' => $pkg->id
+                'package_id' => $pkg->id,
+                'images' => [
+                    'room-types/test1.jpg',
+                    'room-types/test2.png',
+                    'room-types/test3.jpg'
+                ]
             ]);
 
             // 🗓️ SEASONS (date ranges for season types)

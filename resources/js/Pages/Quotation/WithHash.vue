@@ -173,19 +173,37 @@
                                     ]"
                                     @click="selectedRoomType = roomType.id; form.room_type_id = roomType.id"
                                 >
+                                    <!-- Room Type Images Carousel -->
+                                    <div v-if="roomType.images && roomType.images.length > 0" class="mb-4">
+                                        <Swiper
+                                            :modules="[Navigation, Pagination]"
+                                            :slides-per-view="1"
+                                            :space-between="0"
+                                            :navigation="true"
+                                            :pagination="{ clickable: true }"
+                                            class="rounded-lg overflow-hidden h-48"
+                                            @click.stop
+                                        >
+                                            <SwiperSlide v-for="(image, index) in roomType.images" :key="index">
+                                                <img
+                                                    :src="getImageUrl(image)"
+                                                    :alt="`${roomType.name} - Image ${index + 1}`"
+                                                    class="w-full h-full object-cover"
+                                                    @error="e => e.target.src = '/images/placeholder.jpg'"
+                                                />
+                                            </SwiperSlide>
+                                        </Swiper>
+                                    </div>
+                                    <div v-else class="mb-4 h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+                                        <span class="text-gray-400">No images available</span>
+                                    </div>
+
                                     <div class="flex items-start justify-between">
                                         <div>
                                             <h3 class="text-lg font-semibold text-gray-900">{{ roomType.name }}</h3>
                                             <p class="text-sm text-gray-600 mt-1">{{ roomType.description }}</p>
                                         </div>
-                                        <!-- <div class="text-right">
-                                            <p class="text-lg font-bold text-indigo-600">
-                                                MYR {{ formatNumber(roomType.price_per_night) }}
-                                            </p>
-                                            <p class="text-sm text-gray-500">per night</p>
-                                        </div> -->
                                     </div>
-                                    <!-- <div class="mt-4 text-sm text-gray-600"> -->
                                     <div class="mt-4 text-sm text-indigo-600">
                                         <p>Max Occupancy: {{ roomType.max_occupancy }} persons</p>
                                     </div>
@@ -621,6 +639,11 @@ import { WhatsAppOutlined } from '@ant-design/icons-vue';
 import Modal from '@/Components/Modal.vue';
 import Swal from 'sweetalert2';
 import moment from 'moment';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Navigation, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 const props = defineProps({
     uuid: String,
@@ -1014,6 +1037,12 @@ const maxStartDate = computed(() => {
     maxDate.setDate(packageEndDate.getDate() - packageData.value.package_max_days);
     return maxDate.toISOString().split('T')[0];
 });
+
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http')) return imagePath;
+    return `/storage/${imagePath}`;
+};
 </script>
 
 <style scoped>
@@ -1061,5 +1090,24 @@ const maxStartDate = computed(() => {
     .inline-flex {
         margin-bottom: 0.5rem;
     }
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+    color: #4F46E5 !important;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 1.5rem;
+    border-radius: 50%;
+    width: 2rem !important;
+    height: 2rem !important;
+}
+
+.swiper-button-next:after,
+.swiper-button-prev:after {
+    font-size: 1rem !important;
+}
+
+.swiper-pagination-bullet-active {
+    background: #4F46E5 !important;
 }
 </style>
