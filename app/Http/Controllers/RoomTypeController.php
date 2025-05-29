@@ -74,24 +74,6 @@ class RoomTypeController extends Controller
 
     public function update(Request $request, RoomType $roomType)
     {
-        // Log the incoming request data
-        Log::info('Room Type Update Request:', [
-            'all_data' => $request->all(),
-            'files' => $request->allFiles(),
-            'has_images' => $request->hasFile('images'),
-            'has_delete_images' => $request->has('delete_images'),
-            'delete_images' => $request->input('delete_images'),
-            'validation_rules' => [
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'max_occupancy' => 'required|integer|min:1',
-                'package_id' => 'required|exists:packages,id',
-                'images.*' => 'nullable|image|max:2048',
-                'delete_images' => 'nullable|array',
-                'delete_images.*' => 'string'
-            ]
-        ]);
-
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -102,8 +84,6 @@ class RoomTypeController extends Controller
                 'delete_images' => 'nullable|array',
                 'delete_images.*' => 'string'
             ]);
-
-            Log::info('Validation passed:', ['validated_data' => $validated]);
 
             // Handle image deletions
             if ($request->has('delete_images')) {
