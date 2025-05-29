@@ -1301,6 +1301,114 @@ const roomTypeForm = useForm({
     delete_images: []
 });
 
+const submitRoomType = () => {
+    // Validation checks
+    if (!roomTypeForm.name?.trim()) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Room type name is required'
+        });
+        return;
+    }
+    if (!roomTypeForm.max_occupancy || roomTypeForm.max_occupancy < 1) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Maximum occupancy must be at least 1'
+        });
+        return;
+    }
+
+    // Create FormData
+    const formData = new FormData();
+    
+    // Add basic fields
+    formData.append('name', roomTypeForm.name.trim());
+    formData.append('description', roomTypeForm.description?.trim() || '');
+    formData.append('max_occupancy', roomTypeForm.max_occupancy);
+    formData.append('package_id', props.pkg.id);
+    formData.append('return_to_package', 'true');
+
+    // Log the form data before sending
+    console.log('Form data before sending:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+    }
+
+    // Handle images
+    const hasNewImages = roomTypeForm.images.some(image => image instanceof File);
+    console.log('Image status:', {
+        hasNewImages,
+        images: roomTypeForm.images
+    });
+
+    if (hasNewImages) {
+        roomTypeForm.images.forEach((image, index) => {
+            if (image instanceof File) {
+                formData.append(`images[${index}]`, image);
+                console.log(`Appending new image[${index}]:`, image.name);
+            }
+        });
+    }
+
+    // Log final form data
+    console.log('Final form data:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+    }
+
+    // Use axios directly for better control over the request
+    axios.post(route('room-types.store'), formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => {
+        console.log('Create successful:', response);
+        roomTypeForm.processing = false;
+        showAddRoomTypeModal.value = false;
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'Room type created successfully'
+        });
+        // Reset form
+        roomTypeForm.reset();
+        // Refresh the room types list
+        handlePageChange(1);
+    })
+    .catch(error => {
+        console.error('Create failed:', error);
+        roomTypeForm.processing = false;
+        let errorMessage = 'Failed to create room type.';
+        
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors;
+            if (errors.images) {
+                errorMessage = 'Invalid image file. Please ensure all images are valid and under 2MB.';
+            } else if (errors.name) {
+                errorMessage = errors.name[0];
+            } else if (errors.max_occupancy) {
+                errorMessage = errors.max_occupancy[0];
+            } else if (errors.package_id) {
+                errorMessage = errors.package_id[0];
+            }
+        }
+        
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: errorMessage
+        });
+    })
+    .finally(() => {
+        console.log('Create finished');
+        roomTypeForm.processing = false;
+    });
+};
+
 const showEditRoomTypeModal = ref(false);
 const editRoomTypeForm = useForm({
     id: null,
@@ -1609,96 +1717,120 @@ const editRoomType = (roomType) => {
 };
 
 const updateRoomType = () => {
-    // Ensure all required fields are set and valid
+    // Validation checks
     if (!editRoomTypeForm.name?.trim()) {
         Swal.fire({
             icon: 'error',
             title: 'Validation Error',
-            text: 'Room type name is required',
-            showConfirmButton: true,
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#4F46E5'
+            text: 'Room type name is required'
         });
         return;
     }
-
     if (!editRoomTypeForm.max_occupancy || editRoomTypeForm.max_occupancy < 1) {
         Swal.fire({
             icon: 'error',
             title: 'Validation Error',
-            text: 'Max occupancy must be at least 1',
-            showConfirmButton: true,
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#4F46E5'
+            text: 'Maximum occupancy must be at least 1'
         });
         return;
     }
 
-    if (!editRoomTypeForm.package_id) {
+    // Create FormData
+    const formData = new FormData();
+    
+    // Add basic fields
+    formData.append('_method', 'PUT'); // Required for Laravel to recognize this as a PUT request
+    formData.append('name', editRoomTypeForm.name.trim());
+    formData.append('description', editRoomTypeForm.description?.trim() || '');
+    formData.append('max_occupancy', editRoomTypeForm.max_occupancy);
+    formData.append('package_id', props.pkg.id);
+    formData.append('return_to_package', 'true');
+
+    // Log the form data before sending
+    console.log('Form data before sending:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+    }
+
+    // Handle images
+    const hasNewImages = editRoomTypeForm.images.some(image => image instanceof File);
+    const hasDeletedImages = editRoomTypeForm.delete_images.length > 0;
+
+    console.log('Image status:', {
+        hasNewImages,
+        hasDeletedImages,
+        images: editRoomTypeForm.images,
+        delete_images: editRoomTypeForm.delete_images
+    });
+
+    if (hasNewImages) {
+        editRoomTypeForm.images.forEach((image, index) => {
+            if (image instanceof File) {
+                formData.append(`images[${index}]`, image);
+                console.log(`Appending new image[${index}]:`, image.name);
+            }
+        });
+    }
+
+    if (hasDeletedImages) {
+        editRoomTypeForm.delete_images.forEach((imagePath, index) => {
+            formData.append(`delete_images[${index}]`, imagePath);
+            console.log(`Appending delete_images[${index}]:`, imagePath);
+        });
+    }
+
+    // Log final form data
+    console.log('Final form data:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+    }
+
+    // Use axios directly for better control over the request
+    axios.post(route('room-types.update', editRoomTypeForm.id), formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => {
+        console.log('Update successful:', response);
+        editRoomTypeForm.processing = false;
+        showEditRoomTypeModal.value = false;
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'Room type updated successfully'
+        });
+        // Refresh the room types list
+        handlePageChange(1);
+    })
+    .catch(error => {
+        console.error('Update failed:', error);
+        editRoomTypeForm.processing = false;
+        let errorMessage = 'Failed to update room type.';
+        
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors;
+            if (errors.images) {
+                errorMessage = 'Invalid image file. Please ensure all images are valid and under 2MB.';
+            } else if (errors.name) {
+                errorMessage = errors.name[0];
+            } else if (errors.max_occupancy) {
+                errorMessage = errors.max_occupancy[0];
+            } else if (errors.package_id) {
+                errorMessage = errors.package_id[0];
+            }
+        }
+        
         Swal.fire({
             icon: 'error',
-            title: 'Validation Error',
-            text: 'Package ID is required',
-            showConfirmButton: true,
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#4F46E5'
+            title: 'Error',
+            text: errorMessage
         });
-        return;
-    }
-
-    // Create a copy of the form data to ensure all fields are properly set
-    const formData = {
-        id: editRoomTypeForm.id,
-        name: editRoomTypeForm.name.trim(),
-        description: editRoomTypeForm.description?.trim() || '',
-        max_occupancy: parseInt(editRoomTypeForm.max_occupancy),
-        package_id: parseInt(editRoomTypeForm.package_id),
-        images: editRoomTypeForm.images,
-        delete_images: editRoomTypeForm.delete_images,
-        return_to_package: true
-    };
-
-    editRoomTypeForm.put(route('room-types.update', editRoomTypeForm.id), formData, {
-        onSuccess: () => {
-            showEditRoomTypeModal.value = false;
-            editRoomTypeForm.reset();
-            editRoomTypeForm.return_to_package = true;
-            handlePageChange(1);
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'Room type updated successfully',
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#4F46E5'
-            });
-        },
-        onError: (errors) => {
-            console.error('Error updating room type:', errors);
-            let errorMessage = 'Failed to update room type.';
-            
-            // Check for specific error messages
-            if (errors.images) {
-                errorMessage = Array.isArray(errors.images) 
-                    ? errors.images.join('\n')
-                    : errors.images;
-            } else if (errors.name) {
-                errorMessage = errors.name;
-            } else if (errors.max_occupancy) {
-                errorMessage = errors.max_occupancy;
-            } else if (errors.package_id) {
-                errorMessage = errors.package_id;
-            }
-            
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: errorMessage,
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#4F46E5'
-            });
-        }
+    })
+    .finally(() => {
+        console.log('Update finished');
+        editRoomTypeForm.processing = false;
     });
 };
 

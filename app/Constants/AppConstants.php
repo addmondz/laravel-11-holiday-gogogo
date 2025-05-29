@@ -46,4 +46,10 @@ class AppConstants
         ['adults' => 3, 'children' => 1],
         ['adults' => 4, 'children' => 0],
     ];
+
+    public const TESTING_IMAGES = [
+        'room-types/test1.jpg',
+        'room-types/test2.png',
+        'room-types/test3.jpg'
+    ];
 }
