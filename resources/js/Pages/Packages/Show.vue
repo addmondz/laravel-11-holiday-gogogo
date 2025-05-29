@@ -1513,7 +1513,6 @@ const submitDateTypeRange = () => {
         },
         onError: (errors) => {
             showAddDateTypeRangeModal.value = true;
-            console.log(dateTypeRangeForm.errors);
             addDateTypeRangeErrors.value = dateTypeRangeForm.errors.date_range;
         }
     });
@@ -1530,7 +1529,6 @@ const updateDateTypeRange = () => {
         },
         onError: (errors) => {
             showEditDateTypeRangeModal.value = true;
-            console.log(dateTypeRangeForm.errors);
             addDateTypeRangeErrors.value = dateTypeRangeForm.errors.date_range;
         }
     });
@@ -1607,16 +1605,6 @@ const editRoomType = (roomType) => {
     editRoomTypeForm.images = Array.isArray(roomType.images) ? [...roomType.images] : [];
     editRoomTypeForm.delete_images = [];
     editRoomTypeForm.return_to_package = true;
-    
-    // Log form data for debugging
-    console.log('Edit Room Type Form Data:', {
-        id: editRoomTypeForm.id,
-        name: editRoomTypeForm.name,
-        max_occupancy: editRoomTypeForm.max_occupancy,
-        package_id: editRoomTypeForm.package_id,
-        images: editRoomTypeForm.images
-    });
-    
     showEditRoomTypeModal.value = true;
 };
 
@@ -1669,9 +1657,6 @@ const updateRoomType = () => {
         delete_images: editRoomTypeForm.delete_images,
         return_to_package: true
     };
-
-    // Log the data being sent
-    console.log('Updating Room Type with data:', formData);
 
     editRoomTypeForm.put(route('room-types.update', editRoomTypeForm.id), formData, {
         onSuccess: () => {
@@ -2149,6 +2134,21 @@ const getImageUrl = (imagePath) => {
     return `/storage/${imagePath}`;
 };
 
+// Add back the getImagePreviewUrl function for image previews
+const getImagePreviewUrl = (image) => {
+    if (typeof image === 'string') {
+        return getImageUrl(image);
+    }
+    
+    // Check if URL API is available
+    if (typeof window !== 'undefined' && window.URL && window.URL.createObjectURL) {
+        return URL.createObjectURL(image);
+    }
+    
+    // Fallback for when URL API is not available
+    return '';
+};
+
 const showImageModal = (image) => {
     Swal.fire({
         imageUrl: getImageUrl(image),
@@ -2167,6 +2167,13 @@ const showImageModal = (image) => {
         backdrop: 'rgba(0,0,0,0.8)'
     });
 };
+
+// Make sure to expose the functions to the template
+defineExpose({
+    getImageUrl,
+    getImagePreviewUrl,
+    showImageModal
+});
 
 </script>
 <style scoped>

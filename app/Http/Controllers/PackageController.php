@@ -262,10 +262,10 @@ class PackageController extends Controller
         ]);
 
         if ($request->hasFile('icon_photo')) {
-            // Delete old photo if exists
-            if ($package->icon_photo) {
-                Storage::disk('public')->delete($package->icon_photo);
-            }
+            // // Delete old photo if exists
+            // if ($package->icon_photo) {
+            //     Storage::disk('public')->delete($package->icon_photo);
+            // }
             $validated['icon_photo'] = $request->file('icon_photo')->store('packages', 'public');
         }
 
