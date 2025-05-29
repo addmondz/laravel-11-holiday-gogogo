@@ -1,1 +1,0 @@
-import{_ as o}from"./UpdatePasswordForm.vue_vue_type_script_setup_true_lang-BR-U1501.js";import"./app-BgZlRyz4.js";import"./TextInput.vue_vue_type_script_setup_true_lang-Do-nJ1rv.js";import"./PrimaryButton-C55Z57a5.js";import"./_plugin-vue_export-helper-DlAUqK2U.js";export{o as default};
