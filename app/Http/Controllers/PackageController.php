@@ -271,8 +271,8 @@ class PackageController extends Controller
 
         $package->update($validated);
 
-        return redirect()->route('packages.index')
-            ->with('success', 'Package updated successfully.');
+        return redirect()->route('packages.show', $package->id)
+        ->with('success', 'Package updated successfully.');
     }
 
     public function destroy(Package $package)
