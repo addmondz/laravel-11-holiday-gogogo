@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Collection;
 
 class Package extends Model
 {
@@ -56,5 +57,31 @@ class Package extends Model
     public function dateTypeRanges(): HasMany
     {
         return $this->hasMany(DateTypeRange::class);
+    }
+
+    /**
+     * Get unique season_type_id values from configurations.
+     */
+    public function uniqueSeasonTypes(): Collection
+    {
+        $seasonTypeIds = $this->configurations()
+            ->select('season_type_id')
+            ->distinct()
+            ->pluck('season_type_id');
+
+        return SeasonType::whereIn('id', $seasonTypeIds)->get();
+    }
+
+    /**
+     * Get unique date_type_id values from configurations.
+     */
+    public function uniqueDateTypes(): Collection
+    {
+        $dateTypeIds = $this->configurations()
+            ->select('date_type_id')
+            ->distinct()
+            ->pluck('date_type_id');
+
+        return DateType::whereIn('id', $dateTypeIds)->get();
     }
 }

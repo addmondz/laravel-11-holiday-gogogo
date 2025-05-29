@@ -9,9 +9,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use App\Services\CreatePriceConfigurationsService;
 
 class RoomTypeController extends Controller
 {
+    protected CreatePriceConfigurationsService $priceConfigurationService;
+    public function __construct(CreatePriceConfigurationsService $priceConfigurationService)
+    {
+        $this->priceConfigurationService = $priceConfigurationService;
+    }
+
     public function index()
     {
         return Inertia::render('RoomTypes/Index', [
@@ -45,7 +52,8 @@ class RoomTypeController extends Controller
         }
         $validated['images'] = $images;
 
-        RoomType::create($validated);
+        $roomType = RoomType::create($validated);
+        $this->priceConfigurationService->createPriceConfigurationsService(Package::find($validated['package_id']), [$roomType], [], []);
 
         // If the request has a return_to_package parameter, redirect back to the package page
         if ($request->has('return_to_package')) {

@@ -19,12 +19,19 @@ use App\Models\{
     Booking,
     DateBlocker
 };
+use App\Services\CreatePriceConfigurationsService;
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
+    protected CreatePriceConfigurationsService $priceConfigurationService;
+    public function __construct(CreatePriceConfigurationsService $priceConfigurationService)
+    {
+        $this->priceConfigurationService = $priceConfigurationService;
+    }
+
     public function run(): void
     {
         $dummyPackagesCount = 21;
@@ -290,42 +297,17 @@ class DatabaseSeeder extends Seeder
                 $startDate->addDays(1);
             }
 
-            $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
             $seasonType = SeasonType::all();
-            foreach ($seasonType as $seasonType) {
-                $dateType = DateType::all();
-                foreach ($dateType as $dateType) {
-                    $roomType = RoomType::where('package_id', $pkg->id)->get();
-                    foreach ($roomType as $roomType) {
-                        foreach ($combinations as $combo) {
-                            $keyPrefix = "{$combo['adults']}_a_{$combo['children']}_c";
-
-                            // Base charge prices
-                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 100, 1000);
-                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 50, 500);
-
-                            // Surcharge prices
-                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 50, 1000);
-                            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 25, 500);
-                        }
-
-                        PackageConfiguration::create([
-                            'package_id' => $pkg->id,
-                            'season_type_id' => $seasonType->id,
-                            'date_type_id' => $dateType->id,
-                            'room_type_id' => $roomType->id,
-                            'configuration_prices' => json_encode($configurationPrices)
-                        ]);
-                    }
-                }
-            }
+            $dateType = DateType::all();
+            $roomType = RoomType::where('package_id', $pkg->id)->get();
+            $this->priceConfigurationService->createPriceConfigurationsService($pkg, $roomType, $seasonType, $dateType, true);
 
             // 🔒 DATE BLOCKERS
             $startDate = now();
             for ($i = 0; $i < $dummyOtherPackagesCount; $i++) {
                 $currentStart = $startDate->copy()->addDays($i);
                 $currentEnd = $currentStart->copy()->addDay();
-    
+
                 DateBlocker::create([
                     'package_id' => $pkg->id,
                     'start_date' => $currentStart,
