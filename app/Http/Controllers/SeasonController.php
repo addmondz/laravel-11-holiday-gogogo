@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Package;
 use App\Models\Season;
 use App\Models\SeasonType;
+use App\Services\CreatePriceConfigurationsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,6 +13,12 @@ use Illuminate\Support\Facades\Log;
 
 class SeasonController extends Controller
 {
+    protected CreatePriceConfigurationsService $priceConfigurationService;
+    public function __construct(CreatePriceConfigurationsService $priceConfigurationService)
+    {
+        $this->priceConfigurationService = $priceConfigurationService;
+    }
+
     public function index()
     {
         $seasons = Season::with('type')
@@ -55,6 +63,8 @@ class SeasonController extends Controller
         }
 
         Season::create($validated);
+        $seasonType = SeasonType::find($validated['season_type_id']);
+        $this->priceConfigurationService->createPriceConfigurationsService(Package::find($validated['package_id']), [], [$seasonType], [], false);
 
         // If the request has a return_to_package parameter, redirect back to the package page
         if (request()->has('return_to_package')) {

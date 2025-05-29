@@ -4,12 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\DateType;
 use App\Models\DateTypeRange;
+use App\Models\Package;
+use App\Services\CreatePriceConfigurationsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DateTypeRangeController extends Controller
 {
+    protected CreatePriceConfigurationsService $priceConfigurationService;
+    public function __construct(CreatePriceConfigurationsService $priceConfigurationService)
+    {
+        $this->priceConfigurationService = $priceConfigurationService;
+    }
+
     public function index()
     {
         $dateTypeRanges = DateTypeRange::with('dateType')
@@ -52,6 +60,8 @@ class DateTypeRangeController extends Controller
         }
 
         DateTypeRange::create($validated);
+        $dateType = DateType::find($validated['date_type_id']);
+        $this->priceConfigurationService->createPriceConfigurationsService(Package::find($validated['package_id']), [], [], [$dateType], false);
 
         // If the request has a return_to_package parameter, redirect back to the package page
         if ($request->has('return_to_package')) {
