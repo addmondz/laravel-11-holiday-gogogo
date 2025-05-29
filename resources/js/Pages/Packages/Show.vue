@@ -2252,18 +2252,17 @@ const removeImage = (index, formName) => {
     form.images.splice(index, 1);
 };
 
-// Add this new function to handle image URLs
 const getImageUrl = (imagePath) => {
-    // If the path already includes 'storage/', return as is
-    if (imagePath.startsWith('storage/')) {
+    // If the path already includes 'images/', return as is
+    if (imagePath.startsWith('images/')) {
         return `/${imagePath}`;
     }
-    // If the path starts with 'room-types/', add 'storage/' prefix
+    // If the path starts with 'room-types/', add 'images/' prefix
     if (imagePath.startsWith('room-types/')) {
-        return `/storage/${imagePath}`;
+        return `/images/${imagePath}`;
     }
-    // For any other case, assume it's a relative path and add 'storage/' prefix
-    return `/storage/${imagePath}`;
+    // For any other case, assume it's a relative path and add 'images/' prefix
+    return `/images/${imagePath}`;
 };
 
 // Add back the getImagePreviewUrl function for image previews

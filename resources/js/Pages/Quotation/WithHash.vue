@@ -1041,7 +1041,7 @@ const maxStartDate = computed(() => {
 const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
     if (imagePath.startsWith('http')) return imagePath;
-    return `/storage/${imagePath}`;
+    return `/images/${imagePath}`;
 };
 </script>
 
