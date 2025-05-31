@@ -23,6 +23,7 @@ return new class extends Migration
             $table->date('package_start_date');
             $table->date('package_end_date')->nullable();
             $table->string('uuid')->nullable();
+            $table->json('images')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -83,6 +84,7 @@ return new class extends Migration
             $table->foreignId('package_id')->constrained()->onDelete('cascade');
             $table->text('description')->nullable();
             $table->integer('max_occupancy')->default(2);
+            $table->json('images')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

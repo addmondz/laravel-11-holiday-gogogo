@@ -24,7 +24,12 @@ class Package extends Model
         'location',
         'package_start_date',
         'package_end_date',
-        'uuid'
+        'uuid',
+        'images',
+    ];
+
+    protected $casts = [
+        'images' => 'array'
     ];
 
     public function addOns(): HasMany
