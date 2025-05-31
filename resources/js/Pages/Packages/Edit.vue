@@ -46,7 +46,7 @@
                                     <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                                         <div class="space-y-1 text-center">
                                             <!-- Display existing images -->
-                                            <div v-if="form.images && form.images.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                            <div v-if="form.images && form.images.length > 0" class="flex gap-4 mb-4">
                                                 <div v-for="(image, index) in form.images" :key="index" class="relative group">
                                                     <img 
                                                         :src="getImagePreviewUrl(image)" 
@@ -58,11 +58,13 @@
                                                         @click="removeImage(index)"
                                                         class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                                                     >
-                                                        ×
+                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div class="flex text-sm text-gray-600">
+                                            <div class="text-sm text-gray-600">
                                                 <label class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                                     <span>Upload Images</span>
                                                     <input
