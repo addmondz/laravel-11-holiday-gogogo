@@ -63,7 +63,7 @@ class PackageController extends Controller
             $v = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'icon_photo' => 'nullable|image|max:2048',
+                'images.*' => 'nullable|image|max:10240', // 10MB max per image
                 'display_price_adult' => 'nullable|numeric|min:0',
                 'display_price_child' => 'nullable|numeric|min:0',
                 'adult_surcharge' => 'nullable|numeric|min:0',
@@ -79,9 +79,14 @@ class PackageController extends Controller
                 'room_types.*.description' => 'nullable|string',
             ]);
 
-            if ($request->hasFile('icon_photo')) {
-                $v['icon_photo'] = $request->file('icon_photo')->store('packages', 'public');
+            // Handle image uploads
+            $images = [];
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $images[] = $image->store('packages', 'public');
+                }
             }
+            $v['images'] = $images;
 
             $v['uuid'] = Str::uuid()->toString();
             $v['package_min_days'] = $v['package_days'];
@@ -250,7 +255,7 @@ class PackageController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'icon_photo' => 'nullable|image|max:2048',
+            'images.*' => 'nullable|image|max:10240', // 10MB max per image
             'display_price_adult' => 'nullable|numeric|min:0',
             'display_price_child' => 'nullable|numeric|min:0',
             'package_min_days' => 'required|integer|min:1',
@@ -259,27 +264,44 @@ class PackageController extends Controller
             'location' => 'nullable|string|max:255',
             'package_start_date' => 'required|date',
             'package_end_date' => 'nullable|date|after:package_start_date',
+            'delete_images' => 'nullable|array',
+            'delete_images.*' => 'string'
         ]);
 
-        if ($request->hasFile('icon_photo')) {
-            // // Delete old photo if exists
-            // if ($package->icon_photo) {
-            //     Storage::disk('public')->delete($package->icon_photo);
-            // }
-            $validated['icon_photo'] = $request->file('icon_photo')->store('packages', 'public');
+        // Handle image deletions
+        if ($request->has('delete_images')) {
+            foreach ($request->delete_images as $imagePath) {
+                if (in_array($imagePath, $package->images ?? [])) {
+                    Storage::disk('public')->delete($imagePath);
+                }
+            }
+            $currentImages = array_diff($package->images ?? [], $request->delete_images);
+        } else {
+            $currentImages = $package->images ?? [];
         }
+
+        // Handle new image uploads
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $currentImages[] = $image->store('packages', 'public');
+            }
+        }
+
+        $validated['images'] = array_values($currentImages); // Reindex array
 
         $package->update($validated);
 
         return redirect()->route('packages.show', $package->id)
-        ->with('success', 'Package updated successfully.');
+            ->with('success', 'Package updated successfully.');
     }
 
     public function destroy(Package $package)
     {
-        // Delete icon photo if exists
-        if ($package->icon_photo) {
-            Storage::disk('public')->delete($package->icon_photo);
+        // Delete all package images
+        if ($package->images) {
+            foreach ($package->images as $image) {
+                Storage::disk('public')->delete($image);
+            }
         }
 
         $package->addOns()->delete();

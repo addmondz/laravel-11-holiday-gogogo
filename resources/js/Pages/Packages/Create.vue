@@ -40,17 +40,41 @@
                                     </div>
                                 </div>
 
-                                <div class="hidden">
-                                    <label for="icon_photo" class="block text-sm font-medium text-gray-700">Icon Photo</label>
-                                    <input
-                                        type="file"
-                                        id="icon_photo"
-                                        @change="handleFileUpload"
-                                        accept="image/*"
-                                        class="mt-1 block w-full"
-                                    />
-                                    <div v-if="form.errors.icon_photo" class="mt-1 text-sm text-red-600">
-                                        {{ form.errors.icon_photo }}
+                                <!-- Images Section -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Package Images</label>
+                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                        <div class="space-y-1 text-center">
+                                            <!-- Display uploaded images -->
+                                            <div v-if="form.images && form.images.length > 0" class="grid grid-cols-2 gap-4 mb-4">
+                                                <div v-for="(image, index) in imagePreviews" :key="index" class="relative group">
+                                                    <img :src="image" class="h-24 w-full object-cover rounded-lg" />
+                                                    <button
+                                                        type="button"
+                                                        @click="removeImage(index)"
+                                                        class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="text-sm text-gray-600">
+                                                <label class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                    <span>Upload Images</span>
+                                                    <input
+                                                        type="file"
+                                                        @change="handleImagesUpload"
+                                                        accept="image/*"
+                                                        multiple
+                                                        class="sr-only"
+                                                    />
+                                                </label>
+                                            </div>
+                                            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                                        </div>
+                                    </div>
+                                    <div v-if="form.errors.images" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.images }}
                                     </div>
                                 </div>
 
@@ -282,12 +306,12 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { Head } from '@inertiajs/vue3';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, onUnmounted } from 'vue';
 
 const form = useForm({
     name: '',
     description: '',
-    icon_photo: null,
+    images: [],
     display_price_adult: null,
     display_price_child: null,
     adult_surcharge: null,
@@ -305,6 +329,7 @@ const form = useForm({
 });
 
 const dateError = ref('');
+const imagePreviews = ref([]);
 
 const addRoomType = () => {
     form.room_types.push({
@@ -318,9 +343,24 @@ const removeRoomType = (index) => {
     form.room_types.splice(index, 1);
 };
 
-const handleFileUpload = (event) => {
-    form.icon_photo = event.target.files[0];
+const handleImagesUpload = (event) => {
+    const files = Array.from(event.target.files);
+    form.images = [...form.images, ...files];
+    files.forEach(file => {
+        imagePreviews.value.push(URL.createObjectURL(file));
+    });
 };
+
+const removeImage = (index) => {
+    form.images.splice(index, 1);
+    URL.revokeObjectURL(imagePreviews.value[index]);
+    imagePreviews.value.splice(index, 1);
+};
+
+// Clean up preview URLs when component is unmounted
+onUnmounted(() => {
+    imagePreviews.value.forEach(url => URL.revokeObjectURL(url));
+});
 
 const validateDates = () => {
     dateError.value = '';

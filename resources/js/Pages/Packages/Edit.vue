@@ -40,20 +40,45 @@
                                     </div>
                                 </div>
 
-                                <div class="hidden">
-                                    <label for="icon_photo" class="block text-sm font-medium text-gray-700">Icon Photo</label>
-                                    <div v-if="package.icon_photo" class="mt-2">
-                                        <img :src="`/storage/${package.icon_photo}`" :alt="package.name" class="h-20 w-20 rounded-full">
+                                <!-- Images Section -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Package Images</label>
+                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                        <div class="space-y-1 text-center">
+                                            <!-- Display existing images -->
+                                            <div v-if="form.images && form.images.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                                <div v-for="(image, index) in form.images" :key="index" class="relative group">
+                                                    <img 
+                                                        :src="getImagePreviewUrl(image)" 
+                                                        class="h-24 w-full object-cover rounded-lg" 
+                                                        alt="Room type image"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        @click="removeImage(index)"
+                                                        class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="flex text-sm text-gray-600">
+                                                <label class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                    <span>Upload Images</span>
+                                                    <input
+                                                        type="file"
+                                                        @change="handleImagesUpload"
+                                                        accept="image/*"
+                                                        multiple
+                                                        class="sr-only"
+                                                    />
+                                                </label>
+                                            </div>
+                                            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                                        </div>
                                     </div>
-                                    <input
-                                        type="file"
-                                        id="icon_photo"
-                                        @change="handleFileUpload"
-                                        accept="image/*"
-                                        class="mt-1 block w-full"
-                                    />
-                                    <div v-if="form.errors.icon_photo" class="mt-1 text-sm text-red-600">
-                                        {{ form.errors.icon_photo }}
+                                    <div v-if="form.errors.images" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.images }}
                                     </div>
                                 </div>
 
@@ -187,20 +212,21 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { Head } from '@inertiajs/vue3';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+
 const props = defineProps({
     package: Object
 });
 
 const breadcrumbs = computed(() => [
     { title: 'Packages', link: route('packages.index') },
-	{ title: 'Edit Package', },
+    { title: 'Edit Package', },
 ]);
 
 const form = useForm({
     name: props.package.name,
     description: props.package.description,
-    icon_photo: null,
+    images: props.package.images || [],
     display_price_adult: props.package.display_price_adult,
     display_price_child: props.package.display_price_child,
     package_min_days: props.package.package_max_days,
@@ -211,14 +237,47 @@ const form = useForm({
     package_end_date: props.package.package_end_date,
 });
 
-const handleFileUpload = (event) => {
-    form.icon_photo = event.target.files[0];
+const handleImagesUpload = (event) => {
+    const files = Array.from(event.target.files);
+    form.images = [...form.images, ...files];
+};
+
+const removeImage = (index) => {
+    form.images.splice(index, 1);
+};
+
+// Add back the getImagePreviewUrl function for image previews
+const getImagePreviewUrl = (image) => {
+    if (typeof image === 'string') {
+        return getImageUrl(image);
+    }
+    
+    // Check if URL API is available
+    if (typeof window !== 'undefined' && window.URL && window.URL.createObjectURL) {
+        return URL.createObjectURL(image);
+    }
+    
+    // Fallback for when URL API is not available
+    return '';
+};
+
+const getImageUrl = (imagePath) => {
+    // If the path already includes 'images/', return as is
+    if (imagePath.startsWith('images/')) {
+        return `/${imagePath}`;
+    }
+    // If the path starts with 'room-types/', add 'images/' prefix
+    if (imagePath.startsWith('room-types/')) {
+        return `/images/${imagePath}`;
+    }
+    // For any other case, assume it's a relative path and add 'images/' prefix
+    return `/images/${imagePath}`;
 };
 
 const submit = () => {
     form.put(route('packages.update', props.package.id), {
         preserveScroll: true,
-         onSuccess: () => {
+        onSuccess: () => {
             Swal.fire({
                 title: 'Success!',
                 text: 'Package has been updated successfully.',

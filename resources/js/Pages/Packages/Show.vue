@@ -121,6 +121,24 @@
                                             </button>
                                         </div>
                                     </div>
+                                    <div>
+                                        <h4 class="text-sm font-medium text-gray-500">Images</h4>
+                                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                            <div class="space-y-1">
+                                                <div v-if="pkg.images && pkg.images.length > 0" class="grid grid-cols-2 gap-4 mb-4">
+                                                    <div v-for="(image, index) in pkg.images" :key="index">
+                                                        <img 
+                                                            :src="getImageUrl(image)" 
+                                                            class="h-16 w-16 object-cover rounded-lg cursor-pointer" 
+                                                            @click="showImageModal(image)"
+                                                            alt="Room type image"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div v-else class="text-gray-400 text-sm text-center">No images</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -695,9 +713,16 @@
         </div>
 
         <!-- Add Room Type Modal -->
-        <Modal :show="showAddRoomTypeModal" @close="showAddRoomTypeModal = false">
+        <Modal :show="showAddRoomTypeModal" @close="() => {
+            showAddRoomTypeModal = false;
+            roomTypeForm.reset();
+            addRoomTypeErrors.value = '';
+        }">
             <div class="p-6">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Add Room Type</h2>
+                <div v-if="addRoomTypeErrors" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {{ addRoomTypeErrors }}
+                </div>
                 <form @submit.prevent="submitRoomType">
                     <div class="space-y-4">
                         <div>
@@ -740,7 +765,7 @@
                                     <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
                                         <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
-                                    <div class="flex text-sm text-gray-600">
+                                    <div class="text-sm text-gray-600">
                                         <label for="images" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                             <span>Upload images</span>
                                             <input
@@ -782,7 +807,11 @@
                     <div class="mt-6 flex justify-end space-x-3">
                         <button
                             type="button"
-                            @click="showAddRoomTypeModal = false"
+                            @click="() => {
+                                showAddRoomTypeModal = false;
+                                roomTypeForm.reset();
+                                addRoomTypeErrors.value = '';
+                            }"
                             class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
                         >
                             Cancel
@@ -800,9 +829,12 @@
         </Modal>
 
         <!-- Edit Room Type Modal -->
-        <Modal :show="showEditRoomTypeModal" @close="showEditRoomTypeModal = false">
+        <Modal :show="showEditRoomTypeModal" @close="closeEditRoomTypeModal">
             <div class="p-6">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Edit Room Type</h2>
+                <div v-if="roomTypeWarning" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {{ roomTypeWarning }}
+                </div>
                 <form @submit.prevent="updateRoomType">
                     <div class="space-y-4">
                         <div>
@@ -845,7 +877,7 @@
                                     <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
                                         <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
-                                    <div class="flex text-sm text-gray-600">
+                                    <div class="text-sm text-gray-600">
                                         <label for="edit_images" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                             <span>Upload images</span>
                                             <input
@@ -887,7 +919,7 @@
                     <div class="mt-6 flex justify-end space-x-3">
                         <button
                             type="button"
-                            @click="showEditRoomTypeModal = false"
+                            @click="closeEditRoomTypeModal"
                             class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
                         >
                             Cancel
@@ -1301,22 +1333,24 @@ const roomTypeForm = useForm({
     delete_images: []
 });
 
+// Add error message state
+const addRoomTypeErrors = ref('');
+
+// Watch for modal closure to reset error
+watch(showAddRoomTypeModal, (newValue) => {
+    if (!newValue) {
+        addRoomTypeErrors.value = '';
+    }
+});
+
 const submitRoomType = () => {
     // Validation checks
     if (!roomTypeForm.name?.trim()) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Room type name is required'
-        });
+        addRoomTypeErrors.value = 'Room type name is required';
         return;
     }
     if (!roomTypeForm.max_occupancy || roomTypeForm.max_occupancy < 1) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Maximum occupancy must be at least 1'
-        });
+        addRoomTypeErrors.value = 'Maximum occupancy must be at least 1';
         return;
     }
 
@@ -1330,32 +1364,15 @@ const submitRoomType = () => {
     formData.append('package_id', props.pkg.id);
     formData.append('return_to_package', 'true');
 
-    // Log the form data before sending
-    console.log('Form data before sending:');
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-    }
-
     // Handle images
     const hasNewImages = roomTypeForm.images.some(image => image instanceof File);
-    console.log('Image status:', {
-        hasNewImages,
-        images: roomTypeForm.images
-    });
 
     if (hasNewImages) {
         roomTypeForm.images.forEach((image, index) => {
             if (image instanceof File) {
                 formData.append(`images[${index}]`, image);
-                console.log(`Appending new image[${index}]:`, image.name);
             }
         });
-    }
-
-    // Log final form data
-    console.log('Final form data:');
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
     }
 
     // Use axios directly for better control over the request
@@ -1366,7 +1383,6 @@ const submitRoomType = () => {
         }
     })
     .then(response => {
-        console.log('Create successful:', response);
         roomTypeForm.processing = false;
         showAddRoomTypeModal.value = false;
         Swal.fire({
@@ -1380,31 +1396,38 @@ const submitRoomType = () => {
         handlePageChange(1);
     })
     .catch(error => {
-        console.error('Create failed:', error);
         roomTypeForm.processing = false;
-        let errorMessage = 'Failed to create room type.';
         
         if (error.response?.data?.errors) {
             const errors = error.response.data.errors;
+            // Handle image validation errors
             if (errors.images) {
-                errorMessage = 'Invalid image file. Please ensure all images are valid and under 2MB.';
+                // If it's an array of errors, join them
+                if (Array.isArray(errors.images)) {
+                    addRoomTypeErrors.value = errors.images.join(', ');
+                } else {
+                    addRoomTypeErrors.value = errors.images;
+                }
             } else if (errors.name) {
-                errorMessage = errors.name[0];
+                addRoomTypeErrors.value = errors.name[0];
             } else if (errors.max_occupancy) {
-                errorMessage = errors.max_occupancy[0];
+                addRoomTypeErrors.value = errors.max_occupancy[0];
             } else if (errors.package_id) {
-                errorMessage = errors.package_id[0];
+                addRoomTypeErrors.value = errors.package_id[0];
+            } else {
+                // Handle any other validation errors
+                const errorMessages = Object.entries(errors)
+                    .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+                    .join('\n');
+                addRoomTypeErrors.value = errorMessages;
             }
+        } else if (error.response?.data?.message) {
+            addRoomTypeErrors.value = error.response.data.message;
+        } else {
+            addRoomTypeErrors.value = 'Failed to create room type. Please try again.';
         }
-        
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: errorMessage
-        });
     })
     .finally(() => {
-        console.log('Create finished');
         roomTypeForm.processing = false;
     });
 };
@@ -1501,7 +1524,6 @@ const handlePageChange = async (page) => {
         };
         loadingKey.value++;
     } catch (error) {
-        console.error('Error fetching room types:', error);
     }
 };
 
@@ -1559,7 +1581,7 @@ const handleSeasonPageChange = async (page) => {
         };
         loadingKey.value++;
     } catch (error) {
-        console.error('Error fetching seasons:', error);
+        // console.error('Error fetching seasons:', error);
     }
 };
 
@@ -1716,22 +1738,31 @@ const editRoomType = (roomType) => {
     showEditRoomTypeModal.value = true;
 };
 
+
+// Add warning message state
+const roomTypeWarning = ref('');
+
+// Watch for modal closure to reset warning
+watch(showEditRoomTypeModal, (newValue) => {
+    if (!newValue) {
+        roomTypeWarning.value = '';
+    }
+});
+
+const closeEditRoomTypeModal = () => {
+    showEditRoomTypeModal.value = false;
+    editRoomTypeForm.reset();
+    roomTypeWarning.value = ''; // Reset warning when closing modal
+};
+
 const updateRoomType = () => {
     // Validation checks
     if (!editRoomTypeForm.name?.trim()) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Room type name is required'
-        });
+        roomTypeWarning.value = 'Room type name is required';
         return;
     }
     if (!editRoomTypeForm.max_occupancy || editRoomTypeForm.max_occupancy < 1) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Maximum occupancy must be at least 1'
-        });
+        roomTypeWarning.value = 'Maximum occupancy must be at least 1';
         return;
     }
 
@@ -1746,28 +1777,14 @@ const updateRoomType = () => {
     formData.append('package_id', props.pkg.id);
     formData.append('return_to_package', 'true');
 
-    // Log the form data before sending
-    console.log('Form data before sending:');
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-    }
-
     // Handle images
     const hasNewImages = editRoomTypeForm.images.some(image => image instanceof File);
     const hasDeletedImages = editRoomTypeForm.delete_images.length > 0;
-
-    console.log('Image status:', {
-        hasNewImages,
-        hasDeletedImages,
-        images: editRoomTypeForm.images,
-        delete_images: editRoomTypeForm.delete_images
-    });
 
     if (hasNewImages) {
         editRoomTypeForm.images.forEach((image, index) => {
             if (image instanceof File) {
                 formData.append(`images[${index}]`, image);
-                console.log(`Appending new image[${index}]:`, image.name);
             }
         });
     }
@@ -1775,14 +1792,7 @@ const updateRoomType = () => {
     if (hasDeletedImages) {
         editRoomTypeForm.delete_images.forEach((imagePath, index) => {
             formData.append(`delete_images[${index}]`, imagePath);
-            console.log(`Appending delete_images[${index}]:`, imagePath);
         });
-    }
-
-    // Log final form data
-    console.log('Final form data:');
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
     }
 
     // Use axios directly for better control over the request
@@ -1793,7 +1803,6 @@ const updateRoomType = () => {
         }
     })
     .then(response => {
-        console.log('Update successful:', response);
         editRoomTypeForm.processing = false;
         showEditRoomTypeModal.value = false;
         Swal.fire({
@@ -1801,35 +1810,44 @@ const updateRoomType = () => {
             title: 'Success',
             text: 'Room type updated successfully'
         });
+        // Reset form
+        editRoomTypeForm.reset();
         // Refresh the room types list
         handlePageChange(1);
     })
     .catch(error => {
-        console.error('Update failed:', error);
         editRoomTypeForm.processing = false;
-        let errorMessage = 'Failed to update room type.';
         
         if (error.response?.data?.errors) {
             const errors = error.response.data.errors;
+            // Handle image validation errors
             if (errors.images) {
-                errorMessage = 'Invalid image file. Please ensure all images are valid and under 2MB.';
+                // If it's an array of errors, join them
+                if (Array.isArray(errors.images)) {
+                    roomTypeWarning.value = errors.images.join(', ');
+                } else {
+                    roomTypeWarning.value = errors.images;
+                }
             } else if (errors.name) {
-                errorMessage = errors.name[0];
+                roomTypeWarning.value = errors.name[0];
             } else if (errors.max_occupancy) {
-                errorMessage = errors.max_occupancy[0];
+                roomTypeWarning.value = errors.max_occupancy[0];
             } else if (errors.package_id) {
-                errorMessage = errors.package_id[0];
+                roomTypeWarning.value = errors.package_id[0];
+            } else {
+                // Handle any other validation errors
+                const errorMessages = Object.entries(errors)
+                    .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+                    .join('\n');
+                roomTypeWarning.value = errorMessages;
             }
+        } else if (error.response?.data?.message) {
+            roomTypeWarning.value = error.response.data.message;
+        } else {
+            roomTypeWarning.value = 'Failed to update room type. Please try again.';
         }
-        
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: errorMessage
-        });
     })
     .finally(() => {
-        console.log('Update finished');
         editRoomTypeForm.processing = false;
     });
 };
@@ -1929,7 +1947,6 @@ const fetchPrices = () => {
         }
     })
     .catch(error => {
-        console.error('Error fetching prices:', error);
         searched.value = true;
         showPriceMatrix.value = false;
         showPriceForm.value = false;
@@ -2046,7 +2063,6 @@ const submitPrices = () => {
                 });
             })
             .catch(error => {
-                console.error('Error updating prices:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -2080,7 +2096,6 @@ const submitPrices = () => {
                 });
             })
             .catch(error => {
-                console.error('Error creating prices:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',

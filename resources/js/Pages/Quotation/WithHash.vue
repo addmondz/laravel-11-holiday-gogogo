@@ -40,51 +40,63 @@
             <div class="mb-8">
                 <div class="relative">
                     <div class="overflow-hidden rounded-lg shadow-lg">
-                        <!-- <div class="relative min-h-[500px]"> -->
                         <div class="relative mt-10" style="height: 500px;">
-                            <img
-                                v-for="(image, index) in mockImages"
-                                :key="index"
-                                :src="image"
-                                :class="[
-                                    'absolute inset-0 w-full h-full object-cover transition-opacity duration-500  h-[500px]',
-                                    currentImageIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                                ]"
-                                :alt="packageData?.name || 'Package Image'"
-                            />
-                            <!-- Navigation Buttons -->
-                            <button
-                                @click="previousImage"
-                                class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 z-20"
-                                aria-label="Previous image"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                            <button
-                                @click="nextImage"
-                                class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 z-20"
-                                aria-label="Next image"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
+                            <template v-if="packageData.images && packageData.images.length > 0">
+                                <img
+                                    v-for="(image, index) in packageData.images"
+                                    :key="'package-image-' + index"
+                                    :src="getImageUrl(image)"
+                                    :class="[
+                                        'absolute inset-0 w-full h-full object-cover transition-opacity duration-500 h-[500px]',
+                                        currentImageIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                                    ]"
+                                    :alt="packageData?.name || 'Package Image'"
+                                />
+                                <!-- Navigation Buttons -->
+                                <button
+                                    @click="previousImage"
+                                    class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 z-20"
+                                    aria-label="Previous image"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <button
+                                    @click="nextImage"
+                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 z-20"
+                                    aria-label="Next image"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                                <!-- Image Indicators -->
+                                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+                                    <button
+                                        v-for="(image, index) in packageData.images"
+                                        :key="index"
+                                        @click="currentImageIndex = index"
+                                        :class="[
+                                            'w-3 h-3 rounded-full transition-colors duration-200',
+                                            currentImageIndex === index ? 'bg-white' : 'bg-white/50 hover:bg-white/75'
+                                        ]"
+                                        :aria-label="`Go to image ${index + 1}`"
+                                    />
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div class="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+                                    <div class="text-center">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <h3 class="mt-2 text-sm font-medium text-gray-900">No Images Available</h3>
+                                        <p class="mt-1 text-sm text-gray-500">This package does not have any images.</p>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
-                    </div>
-                    <!-- Image Indicators -->
-                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-                        <button
-                            v-for="(image, index) in mockImages"
-                            :key="index"
-                            @click="currentImageIndex = index"
-                            :class="[
-                                'w-3 h-3 rounded-full transition-colors duration-200',
-                                currentImageIndex === index ? 'bg-white' : 'bg-white/50 hover:bg-white/75'
-                            ]"
-                            :aria-label="`Go to image ${index + 1}`"
-                        />
                     </div>
                 </div>
             </div>
@@ -739,11 +751,15 @@ onUnmounted(() => {
 
 // Remove the startAutoRotation function and its call
 const nextImage = () => {
-    currentImageIndex.value = (currentImageIndex.value + 1) % mockImages.length;
+    if (packageData.value?.images?.length > 0) {
+        currentImageIndex.value = (currentImageIndex.value + 1) % packageData.value.images.length;
+    }
 };
 
 const previousImage = () => {
-    currentImageIndex.value = (currentImageIndex.value - 1 + mockImages.length) % mockImages.length;
+    if (packageData.value?.images?.length > 0) {
+        currentImageIndex.value = (currentImageIndex.value - 1 + packageData.value.images.length) % packageData.value.images.length;
+    }
 };
 
 onMounted(async () => {
@@ -754,10 +770,7 @@ onMounted(async () => {
         });
 
         if (response.data.success && response.data.package) {
-            packageData.value = {
-                ...response.data.package,
-                images: mockImages
-            };
+            packageData.value = response.data.package;
             roomTypes.value = response.data.room_types;
         } else {
             packageData.value = null;
@@ -769,13 +782,6 @@ onMounted(async () => {
         isLoading.value = false;
     }
 });
-
-// Update the mock images array with proper URLs
-const mockImages = [
-    'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    'https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'
-];
 
 const form = useForm({
     start_date: '',
