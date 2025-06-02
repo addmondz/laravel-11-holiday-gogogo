@@ -199,6 +199,18 @@ class DatabaseSeeder extends Seeder
                 ]
             ]);
 
+            $grandDeluxeRoom = RoomType::create([
+                'name' => 'Grand Deluxe Room',
+                'description' => 'Luxurious room with premium amenities',
+                'max_occupancy' => 4,
+                'package_id' => $pkg->id,
+                'images' => [
+                    'room-types/test1.jpg',
+                    'room-types/test2.png',
+                    'room-types/test3.jpg'
+                ]
+            ]);
+
             // 🗓️ SEASONS (date ranges for season types)
             // Create non-overlapping seasons for each package
             // Default season (Jan 1 - Feb 28)

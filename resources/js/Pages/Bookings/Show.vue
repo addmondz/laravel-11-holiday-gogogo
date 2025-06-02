@@ -54,10 +54,6 @@
                                         <p class="mt-1 text-sm text-gray-900">{{ booking.package.name }}</p>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700">Room Type</label>
-                                        <p class="mt-1 text-sm text-gray-900">{{ booking.room_type.name }}</p>
-                                    </div>
-                                    <div>
                                         <label class="block text-sm font-medium text-gray-700">Dates</label>
                                         <p class="mt-1 text-sm text-gray-900">
                                             {{ new Date(booking.start_date).toLocaleDateString() }} - {{ new Date(booking.end_date).toLocaleDateString() }}
@@ -65,7 +61,7 @@
                                         </p>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700">Guests</label>
+                                        <label class="block text-sm font-medium text-gray-700">Total Guests</label>
                                         <p class="mt-1 text-sm text-gray-900">
                                             {{ booking.adults }} Adult{{ booking.adults > 1 ? 's' : '' }}
                                             <span v-if="booking.children > 0">
@@ -78,6 +74,61 @@
                                         <p class="mt-1 text-sm font-medium text-gray-900">MYR {{ formatNumber(booking.total_price) }}</p>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Room Details -->
+                        <div class="mt-8">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Room Details</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Guests</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Occupancy</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr v-for="room in booking.rooms" :key="room.id">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-gray-900">{{ room.room_type.name }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900">{{ room.adults }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900">{{ room.children }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900">{{ room.adults + room.children }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900">{{ room.room_type.max_occupancy }} persons</div>
+                                            </td>
+                                        </tr>
+                                        <!-- Summary Row -->
+                                        <!-- <tr class="bg-gray-50">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-gray-900">Total</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-gray-900">{{ booking.adults }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-gray-900">{{ booking.children }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-gray-900">{{ booking.adults + booking.children }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-500">-</div>
+                                            </td>
+                                        </tr> -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 

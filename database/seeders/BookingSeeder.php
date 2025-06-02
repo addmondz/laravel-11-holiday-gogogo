@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Booking;
+use App\Models\BookingRoom;
 use App\Models\Package;
 use App\Models\RoomType;
 use Carbon\Carbon;
@@ -95,36 +96,67 @@ class BookingSeeder extends Seeder
                 continue;
             }
             
-            $roomType = $packageRoomTypes->random();
-            
             // Generate random dates within the next 6 months
             $startDate = Carbon::now()->addDays(rand(1, 30)); // Reduced to 30 days for testing
             $endDate = $startDate->copy()->addDays($package->package_max_days);
             
             // Calculate total price (simplified calculation)
             $nights = $startDate->diffInDays($endDate);
-            $adults = rand(1, 4);
-            $children = rand(0, 3);
             
-            // Use package display prices if room type price is not available
-            $basePrice = $package->display_price_adult ?? 100.00;
-            $totalPrice = ($basePrice * $nights * $adults) + ($basePrice * 0.7 * $nights * $children);
-
+            // Randomly decide number of rooms (1-3)
+            $numberOfRooms = rand(1, 3);
+            $totalAdults = 0;
+            $totalChildren = 0;
+            $totalPrice = 0;
+            
             try {
-                Booking::create([
+                // Create the booking
+                $booking = Booking::create([
                     'package_id' => $package->id,
-                    'room_type_id' => $roomType->id,
                     'booking_name' => $names[$i % count($names)],
                     'phone_number' => $phoneNumbers[$i % count($phoneNumbers)],
                     'booking_ic' => $icNumbers[$i % count($icNumbers)],
                     'start_date' => $startDate,
                     'end_date' => $endDate,
-                    'adults' => $adults,
-                    'children' => $children,
-                    'total_price' => round($totalPrice, 2),
+                    'adults' => 0, // Will be updated after rooms are created
+                    'children' => 0, // Will be updated after rooms are created
+                    'total_price' => 0, // Will be updated after rooms are created
                     'special_remarks' => $remarks[$i % count($remarks)],
-                    'uuid' => Str::uuid()->toString()
+                    'uuid' => Str::uuid()->toString(),
+                    'payment_status' => rand(0, 1) ? 'pending' : 'paid'
                 ]);
+
+                // Create rooms for this booking
+                for ($j = 0; $j < $numberOfRooms; $j++) {
+                    $roomType = $packageRoomTypes->random();
+                    $adults = rand(1, min(4, $roomType->max_occupancy));
+                    $children = rand(0, min(2, $roomType->max_occupancy - $adults));
+                    
+                    // Calculate room price
+                    $basePrice = $package->display_price_adult ?? 100.00;
+                    $roomPrice = ($basePrice * $nights * $adults) + ($basePrice * 0.7 * $nights * $children);
+                    
+                    // Create booking room
+                    BookingRoom::create([
+                        'booking_id' => $booking->id,
+                        'room_type_id' => $roomType->id,
+                        'adults' => $adults,
+                        'children' => $children
+                    ]);
+                    
+                    // Update totals
+                    $totalAdults += $adults;
+                    $totalChildren += $children;
+                    $totalPrice += $roomPrice;
+                }
+                
+                // Update booking with totals
+                $booking->update([
+                    'adults' => $totalAdults,
+                    'children' => $totalChildren,
+                    'total_price' => round($totalPrice, 2)
+                ]);
+
             } catch (\Exception $e) {
                 $this->command->error("Failed to create booking: " . $e->getMessage());
                 continue;

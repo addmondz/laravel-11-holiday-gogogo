@@ -68,7 +68,7 @@ Route::prefix('calculator')->group(function () {
     Route::get('/quotation/{uuid}', function ($uuid, Request $request) {
         $booking = null;
         if ($request->has('booking')) {
-            $booking = Booking::where('uuid', $request->booking)->with('roomType')->first();
+            $booking = Booking::where('uuid', $request->booking)->with('rooms.roomType')->first();
         }
         return Inertia::render('Quotation/WithHash', [
             'uuid' => $uuid,

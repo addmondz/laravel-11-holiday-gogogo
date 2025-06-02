@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Booking extends Model
 {
     protected $fillable = [
         'package_id',
-        'room_type_id',
         'booking_name',
         'phone_number',
         'booking_ic',
@@ -28,7 +29,7 @@ class Booking extends Model
         'total_price' => 'decimal:2'
     ];
 
-    public function package()
+    public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);
     }
@@ -42,4 +43,11 @@ class Booking extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+
+    public function rooms(): HasMany
+    {
+        return $this->hasMany(BookingRoom::class);
+    }
+
+
 }

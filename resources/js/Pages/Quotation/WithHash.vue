@@ -8,7 +8,7 @@
                         <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800" style="max-width: 100px;" />
                     </div>
                     <div class="flex items-center">
-                        <div @click="openWhatsApp" class="bg-sky-600 text-white px-6 py-2 hover:bg-sky-700 flex items-center gap-4 transition-all duration-300" style="border-radius: 50px 50px 50px 50px; height: 40px;">
+                        <div @click="openWhatsApp" class="bg-sky-600 text-white px-6 py-2 hover:bg-sky-700 flex items-center gap-4 transition-all duration-300 cursor-pointer" style="border-radius: 50px 50px 50px 50px; height: 40px;">
                             <WhatsAppOutlined />
                             Enquiry
                         </div>
@@ -64,8 +64,7 @@
                                 </button>
                                 <button
                                     @click="nextImage"
-                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 z-20"
-                                    aria-label="Next image"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -164,64 +163,222 @@
                     </div>
                 </div>
 
-                <!-- Step 1: Quotation Details -->
+                <!-- Step 1: Room Selection -->
                 <div v-if="currentStep === 1">
                     <form @submit.prevent="handleStep1Submit" class="space-y-6">
-                        <!-- Room Type Selection -->
+                        <!-- Room Management -->
                         <div class="space-y-4">
-                            <label class="block text-sm font-medium text-gray-700">Room Type</label>
-                            <div v-if="roomTypes.length === 0" class="text-center py-4">
-                                <p class="text-gray-600">No room types available for this package.</p>
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-medium text-gray-900">Select Rooms</h3>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-sm text-gray-600">
+                                        Total Guests: {{ totalGuests }}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        @click="addRoom"
+                                        :disabled="!canAddRoom"
+                                        :class="[
+                                            'inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                                            canAddRoom
+                                                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        ]"
+                                    >
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        Add Room
+                                    </button>
+                                </div>
                             </div>
-                            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div
-                                    v-for="roomType in roomTypes"
-                                    :key="roomType.id"
-                                    :class="[
-                                        'border rounded-lg p-4 cursor-pointer transition-all duration-200',
-                                        selectedRoomType === roomType.id
-                                            ? 'border-indigo-600 bg-indigo-50'
-                                            : 'border-gray-200 hover:border-indigo-400'
-                                    ]"
-                                    @click="selectedRoomType = roomType.id; form.room_type_id = roomType.id"
-                                >
-                                    <!-- Room Type Images Carousel -->
-                                    <div v-if="roomType.images && roomType.images.length > 0" class="mb-4">
-                                        <Swiper
-                                            :modules="[Navigation, Pagination]"
-                                            :slides-per-view="1"
-                                            :space-between="0"
-                                            :navigation="true"
-                                            :pagination="{ clickable: true }"
-                                            class="rounded-lg overflow-hidden h-48"
-                                            @click.stop
+
+                            <!-- Room Cards -->
+                            <div class="space-y-4">
+                                <div v-for="(room, index) in form.rooms" 
+                                     :key="index"
+                                     class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                                    <!-- Room Header -->
+                                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                                        <h4 class="text-lg font-medium text-gray-900">Room {{ index + 1 }}</h4>
+                                        <button
+                                            v-if="form.rooms.length > 1"
+                                            type="button"
+                                            @click="removeRoom(index)"
+                                            class="text-red-600 hover:text-red-800 transition-colors"
                                         >
-                                            <SwiperSlide v-for="(image, index) in roomType.images" :key="index">
-                                                <img
-                                                    :src="getImageUrl(image)"
-                                                    :alt="`${roomType.name} - Image ${index + 1}`"
-                                                    class="w-full h-full object-cover"
-                                                    @error="e => e.target.src = '/images/placeholder.jpg'"
-                                                />
-                                            </SwiperSlide>
-                                        </Swiper>
-                                    </div>
-                                    <div v-else class="mb-4 h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-                                        <span class="text-gray-400">No images available</span>
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
                                     </div>
 
-                                    <div class="flex items-start justify-between">
+                                    <!-- Room Content -->
+                                    <div class="p-4 space-y-4">
+                                        <!-- Room Type Selection -->
                                         <div>
-                                            <h3 class="text-lg font-semibold text-gray-900">{{ roomType.name }}</h3>
-                                            <p class="text-sm text-gray-600 mt-1">{{ roomType.description }}</p>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Room Type</label>
+                                            <div class="relative">
+                                                <Swiper
+                                                    :modules="[Navigation, Pagination]"
+                                                    :slides-per-view="1.2"
+                                                    :space-between="16"
+                                                    :breakpoints="{
+                                                        '640': {
+                                                            slidesPerView: 2.2,
+                                                            spaceBetween: 16
+                                                        },
+                                                        '1024': {
+                                                            slidesPerView: 3.2,
+                                                            spaceBetween: 16
+                                                        }
+                                                    }"
+                                                    :navigation="true"
+                                                    :pagination="{ clickable: true }"
+                                                    class="room-type-swiper"
+                                                >
+                                                    <SwiperSlide v-for="roomType in roomTypes"
+                                                                 :key="roomType.id">
+                                                        <div :class="[
+                                                            'h-full border rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md',
+                                                            room.room_type_id === roomType.id
+                                                                ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-600'
+                                                                : 'border-gray-200 hover:border-indigo-400'
+                                                        ]"
+                                                        @click="room.room_type_id = roomType.id">
+                                                            <!-- Selected Indicator -->
+                                                            <div v-if="room.room_type_id === roomType.id" 
+                                                                 class="absolute -top-2 -right-2 bg-indigo-600 text-white rounded-full p-1 z-10">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                            </div>
+
+                                                            <!-- Room Type Image -->
+                                                            <div class="aspect-w-16 aspect-h-9 rounded-t-lg overflow-hidden bg-gray-100">
+                                                                <Swiper
+                                                                    :modules="[Pagination]"
+                                                                    :slides-per-view="1"
+                                                                    :space-between="0"
+                                                                    :pagination="{ clickable: true }"
+                                                                    :loop="true"
+                                                                    :autoplay="{
+                                                                        delay: 3000,
+                                                                        disableOnInteraction: false
+                                                                    }"
+                                                                    class="room-image-swiper"
+                                                                >
+                                                                    <SwiperSlide v-for="(image, imgIndex) in roomType.images" 
+                                                                                 :key="imgIndex">
+                                                                        <img
+                                                                            :src="getImageUrl(image)"
+                                                                            :alt="`${roomType.name} - Image ${imgIndex + 1}`"
+                                                                            class="w-full h-full object-cover"
+                                                                            @error="e => e.target.src = '/images/placeholder.jpg'"
+                                                                        />
+                                                                    </SwiperSlide>
+                                                                    <SwiperSlide v-if="!roomType.images?.length">
+                                                                        <div class="w-full h-full flex items-center justify-center bg-gray-100">
+                                                                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                            </svg>
+                                                                        </div>
+                                                                    </SwiperSlide>
+                                                                </Swiper>
+                                                            </div>
+
+                                                            <!-- Room Type Info -->
+                                                            <div class="p-3 space-y-1">
+                                                                <div class="flex items-start justify-between">
+                                                                    <h5 class="font-medium text-gray-900 text-sm">{{ roomType.name }}</h5>
+                                                                    <span class="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded whitespace-nowrap">
+                                                                        Max {{ roomType.max_occupancy }} pax
+                                                                    </span>
+                                                                </div>
+                                                                <p class="text-xs text-gray-600 line-clamp-2">{{ roomType.description }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </SwiperSlide>
+                                                </Swiper>
+                                            </div>
+                                            <p v-if="validationErrors.rooms?.[index]?.room_type_id" 
+                                               class="mt-1 text-sm text-red-600">
+                                                {{ validationErrors.rooms[index].room_type_id }}
+                                            </p>
                                         </div>
-                                    </div>
-                                    <div class="mt-4 text-sm text-indigo-600">
-                                        <p>Max Occupancy: {{ roomType.max_occupancy }} persons</p>
+
+                                        <!-- Guest Selection -->
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label :for="'adults-' + index" 
+                                                       class="block text-sm font-medium text-gray-700 mb-1">
+                                                    Number of Adults
+                                                </label>
+                                                <div class="relative">
+                                                    <input
+                                                        :id="'adults-' + index"
+                                                        type="number"
+                                                        v-model="room.adults"
+                                                        min="1"
+                                                        max="4"
+                                                        :class="[
+                                                            'block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                                            validationErrors.rooms?.[index]?.adults ? 'border-red-500' : 'border-gray-300'
+                                                        ]"
+                                                        @input="room.children = Math.min(room.children, getRoomMaxChildren(room))"
+                                                    />
+                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                        <span class="text-gray-500 sm:text-sm">/ 4</span>
+                                                    </div>
+                                                </div>
+                                                <p v-if="validationErrors.rooms?.[index]?.adults" 
+                                                   class="mt-1 text-sm text-red-600">
+                                                    {{ validationErrors.rooms[index].adults }}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label :for="'children-' + index" 
+                                                       class="block text-sm font-medium text-gray-700 mb-1">
+                                                    Number of Children
+                                                </label>
+                                                <div class="relative">
+                                                    <input
+                                                        :id="'children-' + index"
+                                                        type="number"
+                                                        v-model="room.children"
+                                                        min="0"
+                                                        :max="getRoomMaxChildren(room)"
+                                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    />
+                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                        <span class="text-gray-500 sm:text-sm">/ {{ getRoomMaxChildren(room) }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Room Summary -->
+                                        <div class="bg-gray-50 rounded-md p-3">
+                                            <p class="text-sm text-gray-600">
+                                                Room {{ index + 1 }}: {{ room.adults + room.children }} guests
+                                                ({{ room.adults }} adults, {{ room.children }} children)
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <p v-if="validationErrors.room_type" class="mt-1 text-sm text-red-600">{{ validationErrors.room_type }}</p>
+
+                            <!-- Total Guests Summary -->
+                            <div class="bg-indigo-50 rounded-lg p-4">
+                                <div class="flex justify-between items-center">
+                                    <p class="text-sm font-medium text-indigo-900">
+                                        Total Guests: {{ totalGuests }}
+                                    </p>
+                                    <p class="text-sm text-indigo-600">
+                                        {{ form.rooms.length }} {{ form.rooms.length === 1 ? 'Room' : 'Rooms' }}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Date Selection -->
@@ -258,42 +415,11 @@
                             </div>
                         </div>
 
-                        <!-- Guest Selection -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="adults" class="block text-sm font-medium text-gray-700">Number of Adults</label>
-                                <input
-                                    type="number"
-                                    id="adults"
-                                    v-model="form.adults"
-                                    min="1"
-                                    max="4"
-                                    :class="[
-                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
-                                        validationErrors.adults ? 'border-red-500' : 'border-gray-300'
-                                    ]"
-                                    required
-                                />
-                                <p v-if="validationErrors.adults" class="mt-1 text-sm text-red-600">{{ validationErrors.adults }}</p>
-                            </div>
-                            <div>
-                                <label for="children" class="block text-sm font-medium text-gray-700">Number of Children</label>
-                                <input
-                                    type="number"
-                                    id="children"
-                                    v-model="form.children"
-                                    min="0"
-                                    max="3"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required
-                                />
-                            </div>
-                        </div>
-
+                        <!-- Calculate Button -->
                         <div class="flex justify-end">
                             <button
                                 type="submit"
-                                class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white text-base font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                 :disabled="form.processing"
                             >
                                 Calculate Price
@@ -308,10 +434,14 @@
                         <!-- Booking Summary -->
                         <div v-if="bookingSummary && priceBreakdown?.summary" class="mb-6 border-b pb-4">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
-                            <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <p class="text-sm text-gray-600">Room Type</p>
-                                    <p class="font-medium">{{ bookingSummary.roomType }}</p>
+                                    <p class="text-sm text-gray-600">Total Guests</p>
+                                    <p class="font-medium">
+                                        {{ priceBreakdown.summary.total_adults || 0 }} Adults, 
+                                        {{ priceBreakdown.summary.total_children || 0 }} Children
+                                        ({{ (priceBreakdown.summary.total_adults || 0) + (priceBreakdown.summary.total_children || 0) }} Total)
+                                    </p>
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-600">Duration</p>
@@ -326,133 +456,160 @@
                                     <p class="font-medium">{{ moment(bookingSummary.endDate).format('DD MMM YYYY') }}</p>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Nightly Breakdown -->
-                        <div v-if="priceBreakdown?.nights?.length" class="mb-6">
-                            <h4 class="text-md font-semibold text-gray-900 mb-3">Nightly Breakdown</h4>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200 border-solid rounded-md border">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Night</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Season</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base Charge</th>
-                                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surcharge</th>
-                                            <!-- <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Add-ons</th> -->
-                                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        <template v-for="(night, index) in priceBreakdown.nights" :key="index">
-                                            <!-- Main row -->
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    Night {{ index + 1 }}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ moment(night.date).format('DD MMM YYYY') }}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ night.season_type }}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ night.date_type }}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                                                    <div class="text-gray-900">{{ formatNumber(night.base_charge.total) }} MYR</div>
-                                                    <div class="text-xs text-gray-500">
-                                                        Adult: {{ formatNumber(night.base_charge.adult.total) }} MYR<br>
-                                                        Child: {{ formatNumber(night.base_charge.child.total) }} MYR
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                                                    <div class="text-gray-900">{{ formatNumber(night.surcharge.total) }} MYR</div>
-                                                    <div class="text-xs text-gray-500">
-                                                        Adult: {{ formatNumber(night.surcharge.adult.total) }} MYR<br>
-                                                        Child: {{ formatNumber(night.surcharge.child.total) }} MYR
-                                                    </div>
-                                                </td>
-                                                <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                                                    <div v-if="night.add_ons && night.add_ons.length > 0">
-                                                        <div v-for="(addon, addonIndex) in night.add_ons" :key="addonIndex" class="text-xs text-gray-500">
-                                                            {{ addon.name }}: {{ formatNumber(addon.total) }} MYR
-                                                        </div>
-                                                    </div>
-                                                    <div v-else class="text-gray-500">-</div>
-                                                </td> -->
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-gray-900">
-                                                    {{ formatNumber(night.total) }} MYR
-                                                </td>
-                                            </tr>
-                                            <!-- Add-ons details row (if any) -->
-                                            <tr v-if="night.add_ons && night.add_ons.length > 0" class="bg-gray-50">
-                                                <td colspan="8" class="px-6 py-3">
-                                                    <div class="text-xs text-gray-500">
-                                                        <div v-for="(addon, addonIndex) in night.add_ons" :key="addonIndex" class="mb-1">
-                                                            <span class="font-medium">{{ addon.name }}:</span>
-                                                            <span class="ml-2">
-                                                                Adults ({{ addon.adult_qty }} × {{ formatNumber(addon.adult_price) }} MYR) = {{ formatNumber(addon.adult_total) }} MYR
-                                                                <span v-if="addon.child_qty > 0" class="ml-2">
-                                                                    | Children ({{ addon.child_qty }} × {{ formatNumber(addon.child_price) }} MYR) = {{ formatNumber(addon.child_total) }} MYR
-                                                                </span>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </template>
-                                    </tbody>
-                                </table>
+                            <!-- Room Breakdown -->
+                            <div class="mt-4">
+                                <h4 class="text-sm font-medium text-gray-700 mb-2">Room Details</h4>
+                                <div class="space-y-2">
+                                    <div v-for="(room, roomIndex) in priceBreakdown.rooms" 
+                                         :key="roomIndex"
+                                         class="bg-white rounded-md p-3 border border-gray-100">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <p class="font-medium text-gray-900">{{ room.room_type }}</p>
+                                                <p class="text-sm text-gray-600">
+                                                    {{ room.adults }} Adults, {{ room.children }} Children
+                                                </p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-sm font-medium text-gray-900">
+                                                    {{ formatNumber(room.summary.total) }} MYR
+                                                </p>
+                                                <p class="text-xs text-gray-500">
+                                                    {{ formatNumber(room.summary.total / bookingSummary.duration) }} MYR/night
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Overall Summary -->
-                        <div v-if="priceBreakdown?.summary" class="border-t border-gray-200 pt-4">
-                            <h4 class="text-md font-semibold text-gray-900 mb-3">Overall Summary</h4>
-                            <div class="space-y-2">
-                                <!-- Base Charges Summary -->
-                                <div class="flex justify-between items-start">
+                        <!-- Nightly Breakdown -->
+                        <div v-if="priceBreakdown?.nights" class="mt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Price Breakdown</h3>
+                            
+                            <!-- Room Breakdown -->
+                            <div v-for="(room, roomIndex) in priceBreakdown.rooms" :key="roomIndex" class="mb-6">
+                                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                    <!-- Room Header -->
+                                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                                        <h4 class="text-sm font-medium text-gray-900">
+                                            Room {{ roomIndex + 1 }}: {{ room.room_type }}
+                                            <span class="text-gray-500 ml-2">
+                                                ({{ room.adults }} Adults, {{ room.children }} Children)
+                                            </span>
+                                        </h4>
+                                    </div>
+
+                                    <!-- Nightly Breakdown Table -->
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base Rate</th>
+                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surcharge</th>
+                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                <tr v-for="(night, nightIndex) in priceBreakdown.nights" :key="nightIndex">
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                                        {{ moment(night.date).format('DD MMM YYYY') }}
+                                                        <span class="text-gray-500 ml-1">
+                                                            ({{ night.date_type }})
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                                        <span :class="[
+                                                            'px-2 py-1 text-xs font-semibold rounded-full',
+                                                            night.season_type === 'peak' ? 'bg-red-100 text-red-800' :
+                                                            night.season_type === 'high' ? 'bg-yellow-100 text-yellow-800' :
+                                                            'bg-green-100 text-green-800'
+                                                        ]">
+                                                            {{ night.season_type.charAt(0).toUpperCase() + night.season_type.slice(1) }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
+                                                        <div class="text-gray-900">{{ formatNumber(night.base_charge.total) }}</div>
+                                                        <div class="text-xs text-gray-500">
+                                                            Adult: {{ formatNumber(night.base_charge.adult.total) }}<br>
+                                                            Child: {{ formatNumber(night.base_charge.child.total) }}
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
+                                                        <div class="text-gray-900">{{ formatNumber(night.surcharge.total) }}</div>
+                                                        <div class="text-xs text-gray-500">
+                                                            Adult: {{ formatNumber(night.surcharge.adult.total) }}<br>
+                                                            Child: {{ formatNumber(night.surcharge.child.total) }}
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
+                                                        MYR {{ formatNumber(night.total) }}
+                                                    </td>
+                                                </tr>
+                                                <!-- Room Summary Row -->
+                                                <tr class="bg-gray-50">
+                                                    <td colspan="2" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                        Room {{ roomIndex + 1 }} Total
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
+                                                        <div class="text-gray-900">MYR {{ formatNumber(room.summary.base_charges.total) }}</div>
+                                                        <div class="text-xs text-gray-500">
+                                                            Adult: {{ formatNumber(room.summary.base_charges.adult.total) }}<br>
+                                                            Child: {{ formatNumber(room.summary.base_charges.child.total) }}
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
+                                                        <div class="text-gray-900">MYR {{ formatNumber(room.summary.surcharges.total) }}</div>
+                                                        <div class="text-xs text-gray-500">
+                                                            Adult: {{ formatNumber(room.summary.surcharges.adult.total) }}<br>
+                                                            Child: {{ formatNumber(room.summary.surcharges.child.total) }}
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
+                                                        MYR {{ formatNumber(room.summary.total) }}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Overall Summary -->
+                            <div class="mt-6 bg-gray-50 rounded-lg p-4">
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div>
-                                        <p class="font-medium">Base Charges</p>
-                                        <div class="text-sm text-gray-600 ml-4">
-                                            <p>Adults: {{ formatNumber(priceBreakdown?.summary?.base_charges?.adult?.total || 0) }} MYR</p>
-                                            <p>Children: {{ formatNumber(priceBreakdown?.summary?.base_charges?.child?.total || 0) }} MYR</p>
+                                        <p class="text-sm text-gray-500">Total Base Charge</p>
+                                        <div class="text-lg font-medium text-gray-900">
+                                            MYR {{ formatNumber(priceBreakdown.summary.base_charges.total) }}
+                                            <div class="text-sm text-gray-500">
+                                                Adult: {{ formatNumber(priceBreakdown.summary.base_charges.adult.total) }}<br>
+                                                Child: {{ formatNumber(priceBreakdown.summary.base_charges.child.total) }}
+                                            </div>
                                         </div>
                                     </div>
-                                    <p class="font-medium">{{ formatNumber(priceBreakdown?.summary?.base_charges?.total || 0) }} MYR</p>
-                                </div>
-
-                                <!-- Surcharges Summary -->
-                                <div class="flex justify-between items-start">
                                     <div>
-                                        <p class="font-medium">Surcharges</p>
-                                        <div class="text-sm text-gray-600 ml-4">
-                                            <p>Adults: {{ formatNumber(priceBreakdown?.summary?.surcharges?.adult?.total || 0) }} MYR</p>
-                                            <p>Children: {{ formatNumber(priceBreakdown?.summary?.surcharges?.child?.total || 0) }} MYR</p>
+                                        <p class="text-sm text-gray-500">Total Surcharge</p>
+                                        <div class="text-lg font-medium text-gray-900">
+                                            MYR {{ formatNumber(priceBreakdown.summary.surcharges.total) }}
+                                            <div class="text-sm text-gray-500">
+                                                Adult: {{ formatNumber(priceBreakdown.summary.surcharges.adult.total) }}<br>
+                                                Child: {{ formatNumber(priceBreakdown.summary.surcharges.child.total) }}
+                                            </div>
                                         </div>
                                     </div>
-                                    <p class="font-medium">{{ formatNumber(priceBreakdown?.summary?.surcharges?.total || 0) }} MYR</p>
-                                </div>
-
-                                <!-- Add-ons Summary -->
-                                <div v-if="priceBreakdown?.summary?.add_ons?.total > 0" class="flex justify-between items-start">
                                     <div>
-                                        <p class="font-medium">Add-ons</p>
-                                        <div class="text-sm text-gray-600 ml-4">
-                                            <p>Adults: {{ formatNumber(priceBreakdown?.summary?.add_ons?.adult?.total || 0) }} MYR</p>
-                                            <p>Children: {{ formatNumber(priceBreakdown?.summary?.add_ons?.child?.total || 0) }} MYR</p>
-                                        </div>
+                                        <p class="text-sm text-gray-500">Total Nights</p>
+                                        <p class="text-lg font-medium text-gray-900">{{ bookingSummary.duration }}</p>
                                     </div>
-                                    <p class="font-medium">{{ formatNumber(priceBreakdown?.summary?.add_ons?.total || 0) }} MYR</p>
-                                </div>
-
-                                <!-- Grand Total -->
-                                <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                                    <p class="text-lg font-semibold">Grand Total</p>
-                                    <p class="text-lg font-semibold">{{ formatNumber(priceBreakdown?.total || 0) }} MYR</p>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Grand Total</p>
+                                        <p class="text-lg font-medium text-indigo-600">MYR {{ formatNumber(priceBreakdown.total) }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -485,6 +642,7 @@
                                     type="text"
                                     id="booking_name"
                                     v-model="bookingForm.booking_name"
+                                    placeholder="e.g. John Doe"
                                     :class="[
                                         'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
                                         bookingValidationErrors.booking_name ? 'border-red-500' : 'border-gray-300'
@@ -542,6 +700,7 @@
                                     v-model="bookingForm.special_remarks"
                                     rows="3"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    placeholder="Please specify any special requests or requirements"
                                 ></textarea>
                             </div>
 
@@ -611,7 +770,13 @@
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                                         <h4 class="text-sm font-medium text-gray-500 mb-3">ROOM TYPE</h4>
-                                        <p class="text-lg text-gray-900">{{ bookingSuccess.room_type?.name }}</p>
+                                        <div class="space-y-2">
+                                            <template v-for="(room, roomIndex) in bookingSuccess.rooms" :key="roomIndex">
+                                                <p class="text-sm text-gray-600 font-medium">
+                                                    Room {{ roomIndex + 1 }}:&nbsp; {{ room.room_type.name }} ({{ room.adults }} Adults, {{ room.children }} Children)    
+                                                </p>
+                                            </template>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -706,10 +871,9 @@ const isLoading = ref(true);
 const bookingSummary = ref(null);
 const dateError = ref('');
 const validationErrors = ref({
-    room_type: '',
+    rooms: [],
     start_date: '',
-    end_date: '',
-    adults: ''
+    end_date: ''
 });
 const phone = '60102956786';
 function openWhatsApp() {
@@ -813,25 +977,76 @@ onMounted(async () => {
 const form = useForm({
     start_date: '',
     end_date: '',
-    adults: 1,
-    children: 0,
-    room_type_id: null
+    rooms: [{
+        room_type_id: null,
+        adults: 1,
+        children: 0
+    }]
 });
 
+// Add computed properties for room management
+const totalGuests = computed(() => {
+    return form.rooms.reduce((total, room) => total + room.adults + room.children, 0);
+});
+
+const canAddRoom = computed(() => {
+    return form.rooms.length < 5; // Maximum 5 rooms
+});
+
+const addRoom = () => {
+    if (canAddRoom.value) {
+        form.rooms.push({
+            room_type_id: null,
+            adults: 1,
+            children: 0
+        });
+    }
+};
+
+const removeRoom = (index) => {
+    if (form.rooms.length > 1) {
+        form.rooms.splice(index, 1);
+    }
+};
+
+const getRoomMaxChildren = (room) => {
+    return Math.max(0, 4 - room.adults);
+};
+
+// Update validation logic
 const validateForm = () => {
     let isValid = true;
     validationErrors.value = {
-        room_type: '',
+        rooms: [],
         start_date: '',
-        end_date: '',
-        adults: ''
+        end_date: ''
     };
 
-    // Validate room type
-    if (!form.room_type_id) {
-        validationErrors.value.room_type = 'Please select a room type';
-        isValid = false;
-    }
+    // Validate each room
+    form.rooms.forEach((room, index) => {
+        const roomErrors = {
+            room_type_id: '',
+            adults: '',
+            children: ''
+        };
+
+        if (!room.room_type_id) {
+            roomErrors.room_type_id = 'Please select a room type';
+            isValid = false;
+        }
+
+        if (!room.adults || room.adults < 1) {
+            roomErrors.adults = 'Please select at least 1 adult';
+            isValid = false;
+        }
+
+        if (room.adults + room.children > 4) {
+            roomErrors.adults = 'Maximum 4 guests per room';
+            isValid = false;
+        }
+
+        validationErrors.value.rooms[index] = roomErrors;
+    });
 
     // Validate dates
     if (!form.start_date) {
@@ -883,12 +1098,6 @@ const validateForm = () => {
         }
     }
 
-    // Validate adults
-    if (!form.adults || form.adults < 1) {
-        validationErrors.value.adults = 'Please select at least 1 adult';
-        isValid = false;
-    }
-
     return isValid;
 };
 
@@ -914,30 +1123,48 @@ const calculatePrice = async () => {
     try {
         const response = await axios.post(route('api.package-calculate-price'), {
             package_id: packageData.value.id,
-            room_type: form.room_type_id,
+            rooms: form.rooms.map(room => ({
+                room_type: room.room_type_id,
+                adults: room.adults,
+                children: room.children
+            })),
             start_date: form.start_date,
-            end_date: form.end_date,
-            adults: form.adults,
-            children: form.children
+            end_date: form.end_date
         });
 
         if (response.data.success) {
-            // Update the state with the complete response data
             calculatedPrice.value = parseFloat(response.data.total) || 0;
             priceBreakdown.value = response.data;
             
-            // Update booking summary
-            const selectedRoomType = roomTypes.value.find(rt => rt.id === form.room_type_id);
+            // Calculate total guests
+            const totalAdults = form.rooms.reduce((sum, room) => sum + room.adults, 0);
+            const totalChildren = form.rooms.reduce((sum, room) => sum + room.children, 0);
+            
+            // Update booking summary with total guests
             bookingSummary.value = {
-                roomType: selectedRoomType?.name || '',
+                rooms: form.rooms.map(room => {
+                    const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
+                    return {
+                        roomType: roomType?.name || '',
+                        adults: room.adults,
+                        children: room.children
+                    };
+                }),
                 startDate: form.start_date,
                 endDate: form.end_date,
-                adults: form.adults,
-                children: form.children,
                 duration: Math.ceil((new Date(form.end_date) - new Date(form.start_date)) / (1000 * 60 * 60 * 24)),
                 seasonType: response.data.season_type || '',
                 dateType: response.data.date_type || '',
-                isWeekend: response.data.is_weekend || false
+                isWeekend: response.data.is_weekend || false,
+                totalAdults,
+                totalChildren
+            };
+
+            // Add total guests to price breakdown summary
+            priceBreakdown.value.summary = {
+                ...priceBreakdown.value.summary,
+                total_adults: totalAdults,
+                total_children: totalChildren
             };
 
             currentStep.value = 2;
@@ -1003,24 +1230,24 @@ const validateBookingForm = () => {
     }
 
     // Validate phone number (Malaysian format)
-    const phoneRegex = /^(?:\+?60|0)[1-9]\d{8,9}$/;
-    if (!bookingForm.value.phone_number.trim()) {
-        bookingValidationErrors.value.phone_number = 'Phone number is required';
-        isValid = false;
-    } else if (!phoneRegex.test(bookingForm.value.phone_number.trim())) {
-        bookingValidationErrors.value.phone_number = 'Please enter a valid Malaysian phone number';
-        isValid = false;
-    }
+    // const phoneRegex = /^(?:\+?60|0)[1-9]\d{8,9}$/;
+    // if (!bookingForm.value.phone_number.trim()) {
+    //     bookingValidationErrors.value.phone_number = 'Phone number is required';
+    //     isValid = false;
+    // } else if (!phoneRegex.test(bookingForm.value.phone_number.trim())) {
+    //     bookingValidationErrors.value.phone_number = 'Please enter a valid Malaysian phone number';
+    //     isValid = false;
+    // }
 
-    // Validate IC/Passport
-    const icRegex = /^[A-Z0-9]{6,12}$/;
-    if (!bookingForm.value.booking_ic.trim()) {
-        bookingValidationErrors.value.booking_ic = 'IC/Passport number is required';
-        isValid = false;
-    } else if (!icRegex.test(bookingForm.value.booking_ic.trim().toUpperCase())) {
-        bookingValidationErrors.value.booking_ic = 'Please enter a valid IC/Passport number';
-        isValid = false;
-    }
+    // // Validate IC/Passport
+    // const icRegex = /^[A-Z0-9]{6,12}$/;
+    // if (!bookingForm.value.booking_ic.trim()) {
+    //     bookingValidationErrors.value.booking_ic = 'IC/Passport number is required';
+    //     isValid = false;
+    // } else if (!icRegex.test(bookingForm.value.booking_ic.trim().toUpperCase())) {
+    //     bookingValidationErrors.value.booking_ic = 'Please enter a valid IC/Passport number';
+    //     isValid = false;
+    // }
 
     return isValid;
 };
@@ -1032,14 +1259,16 @@ const submitBooking = async () => {
         isSubmitting.value = true;
         const response = await axios.post(route('api.bookings.store'), {
             package_id: packageData.value.id,
-            room_type_id: form.room_type_id,
-            booking_name: bookingForm.value.booking_name.trim(),
-            phone_number: bookingForm.value.phone_number.trim(),
-            booking_ic: bookingForm.value.booking_ic.trim().toUpperCase(),
+            rooms: form.rooms.map(room => ({
+                room_type_id: room.room_type_id,
+                adults: room.adults,
+                children: room.children
+            })),
+            booking_name: bookingForm.value.booking_name,
+            phone_number: bookingForm.value.phone_number,
+            booking_ic: bookingForm.value.booking_ic,
             start_date: form.start_date,
             end_date: form.end_date,
-            adults: form.adults,
-            children: form.children,
             total_price: priceBreakdown.value.total,
             special_remarks: bookingForm.value.special_remarks.trim()
         });
@@ -1122,6 +1351,15 @@ const getImageUrl = (imagePath) => {
     if (imagePath.startsWith('http')) return imagePath;
     return `/images/${imagePath}`;
 };
+
+const getRoomTypeCounts = (rooms) => {
+    const counts = {};
+    rooms.forEach(room => {
+        const roomTypeName = room.room_type.name;
+        counts[roomTypeName] = (counts[roomTypeName] || 0) + 1;
+    });
+    return counts;
+};
 </script>
 
 <style scoped>
@@ -1189,4 +1427,97 @@ const getImageUrl = (imagePath) => {
 .swiper-pagination-bullet-active {
     background: #4F46E5 !important;
 }
+
+/* Add styles for aspect ratio */
+.aspect-w-16 {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+}
+
+.aspect-w-16 > * {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+/* Add line clamp utility */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Custom styles for room type swiper */
+.room-type-swiper {
+    padding: 0.5rem 0;
+    margin: -0.5rem -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.room-type-swiper :deep(.swiper-button-next),
+.room-type-swiper :deep(.swiper-button-prev) {
+    color: #4F46E5;
+    background: white;
+    width: 2rem !important;
+    height: 2rem !important;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.room-type-swiper :deep(.swiper-button-next:after),
+.room-type-swiper :deep(.swiper-button-prev:after) {
+    font-size: 1rem !important;
+}
+
+.room-type-swiper :deep(.swiper-button-disabled) {
+    opacity: 0.35;
+    cursor: auto;
+    pointer-events: none;
+}
+
+.room-type-swiper :deep(.swiper-pagination) {
+    bottom: -1.5rem;
+}
+
+.room-type-swiper :deep(.swiper-pagination-bullet) {
+    background: #4F46E5;
+    opacity: 0.3;
+}
+
+.room-type-swiper :deep(.swiper-pagination-bullet-active) {
+    opacity: 1;
+}
+
+/* Ensure slides have proper height */
+.room-type-swiper :deep(.swiper-slide) {
+    height: auto;
+}
+
+/* Simplified styles for room image swiper */
+.room-image-swiper {
+    height: 100%;
+}
+
+.room-image-swiper :deep(.swiper-pagination) {
+    bottom: 0.5rem;
+}
+
+.room-image-swiper :deep(.swiper-pagination-bullet) {
+    background: white;
+    opacity: 0.5;
+    width: 0.5rem;
+    height: 0.5rem;
+}
+
+.room-image-swiper :deep(.swiper-pagination-bullet-active) {
+    opacity: 1;
+}
+
+/* Remove navigation button styles since we're not using them anymore */
 </style>

@@ -13,60 +13,82 @@ class BookingController extends Controller
 {
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'package_id' => 'required|exists:packages,id',
-            'room_type_id' => 'required|exists:room_types,id',
-            'booking_name' => 'required|string|max:255',
-            'phone_number' => 'required|string|max:20',
-            'booking_ic' => 'required|string|max:50',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'adults' => 'required|integer|min:1',
-            'children' => 'required|integer|min:0',
-            'total_price' => 'required|numeric|min:0',
-            'special_remarks' => 'nullable|string'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
+            $validator = Validator::make($request->all(), [
+                'package_id' => 'required|exists:packages,id',
+                'rooms' => 'required|array|min:1',
+                'rooms.*.room_type_id' => 'required|exists:room_types,id',
+                'rooms.*.adults' => 'required|integer|min:1|max:4',
+                'rooms.*.children' => 'required|integer|min:0|max:4',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after:start_date',
+                'booking_name' => 'required|string|max:255',
+                'phone_number' => 'required|string|max:20',
+                'booking_ic' => 'required|string|max:20',
+                'total_price' => 'required|numeric|min:0',
+                'special_remarks' => 'nullable|string'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
             DB::beginTransaction();
 
-            $booking = Booking::create([
-                'package_id' => $request->package_id,
-                'room_type_id' => $request->room_type_id,
-                'booking_name' => $request->booking_name,
-                'phone_number' => $request->phone_number,
-                'booking_ic' => $request->booking_ic,
-                'start_date' => $request->start_date,
-                'end_date' => $request->end_date,
-                'adults' => $request->adults,
-                'children' => $request->children,
-                'total_price' => $request->total_price,
-                'special_remarks' => $request->special_remarks,
-                'status' => 'pending',
-                'uuid' => Str::uuid()->toString()
-            ]);
+            try {
+                $totalAdults = 0;
+                $totalChildren = 0;
+                foreach ($request->rooms as $room) {
+                    $totalAdults += $room['adults'];
+                    $totalChildren += $room['children'];
+                }
 
-            DB::commit();
+                // Create the booking
+                $booking = Booking::create([
+                    'package_id' => $request->package_id,
+                    'booking_name' => $request->booking_name,
+                    'phone_number' => $request->phone_number,
+                    'booking_ic' => $request->booking_ic,
+                    'start_date' => $request->start_date,
+                    'end_date' => $request->end_date,
+                    'total_price' => $request->total_price,
+                    'special_remarks' => $request->special_remarks,
+                    'status' => 'pending',
+                    'adults' => $totalAdults,
+                    'children' => $totalChildren,
+                    'uuid' => Str::uuid()
+                ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Booking created successfully',
-                'booking' => $booking->load(['package', 'roomType'])
-            ]);
+                // Create booking rooms
+                foreach ($request->rooms as $room) {
+                    $booking->rooms()->create([
+                        'room_type_id' => $room['room_type_id'],
+                        'adults' => $room['adults'],
+                        'children' => $room['children']
+                    ]);
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Booking created successfully',
+                    'booking' => $booking->load('rooms.roomType')
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create booking',
-                'error' => $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
