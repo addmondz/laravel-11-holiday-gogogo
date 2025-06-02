@@ -307,11 +307,13 @@ class DatabaseSeeder extends Seeder
             for ($i = 0; $i < $dummyOtherPackagesCount; $i++) {
                 $currentStart = $startDate->copy()->addDays($i);
                 $currentEnd = $currentStart->copy()->addDay();
+                $roomTypeId = RoomType::where('package_id', $pkg->id)->get()->random()->id;
 
                 DateBlocker::create([
                     'package_id' => $pkg->id,
                     'start_date' => $currentStart,
-                    'end_date' => $currentEnd
+                    'end_date' => $currentEnd,
+                    'room_type_id' => $roomTypeId
                 ]);
             }
 

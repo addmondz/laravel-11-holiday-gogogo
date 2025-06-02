@@ -25,6 +25,9 @@
                             End Date
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Room Type
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Actions
                         </th>
                     </tr>
@@ -36,6 +39,9 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ moment(blocker.end_date).format('DD/MM/YYYY') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ blocker.room_type?.name }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button
@@ -78,6 +84,17 @@
         <Modal :show="showAddModal" @close="closeAddModal">
             <div class="p-6">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Add Date Blocker</h2>
+                <div v-if="addDateBlockerErrors" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded relative">
+                    <button 
+                        @click="addDateBlockerErrors = ''" 
+                        class="absolute top-2 right-2 text-red-700 hover:text-red-900"
+                    >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    {{ addDateBlockerErrors }}
+                </div>
                 <form @submit.prevent="submitBlocker">
                     <div class="grid grid-cols-1 gap-6">
                         <div>
@@ -108,6 +125,20 @@
                             <div v-if="form.errors.end_date" class="mt-1 text-sm text-red-600">
                                 {{ form.errors.end_date }}
                             </div>
+                        </div>
+
+                        <div>
+                            <label for="room_type_id" class="block text-sm font-medium text-gray-700">Room Type</label>
+                            <select
+                                id="room_type_id"
+                                v-model="form.room_type_id"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            >
+                                <option value="">Select Room Type</option>
+                                <option v-for="roomType in roomTypes" :value="roomType.id" :key="roomType.id">
+                                    {{ roomType.name }}
+                                </option>
+                            </select>
                         </div>
                     </div>
 
@@ -204,6 +235,10 @@ const props = defineProps({
     packageId: {
         type: Number,
         required: true
+    },
+    roomTypes: {
+        type: Array,
+        required: true
     }
 });
 
@@ -217,6 +252,7 @@ const dateBlockers = ref({
     last_page: 1,
     per_page: 10
 });
+const addDateBlockerErrors = ref('');
 const loadingKey = ref(0);
 const showAddModal = ref(false);
 const showEditModal = ref(false);
@@ -225,7 +261,8 @@ const initialLoading = ref(true);
 const form = useForm({
     package_id: props.packageId,
     start_date: '',
-    end_date: ''
+    end_date: '',
+    room_type_id: ''
 });
 
 const editForm = useForm({
@@ -273,20 +310,30 @@ const submitBlocker = () => {
             });
         },
         onError: (errors) => {
-            if (errors.date_range) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: errors.date_range,
-                    icon: 'error',
-                    confirmButtonColor: '#4F46E5'
-                });
+            // Handle all possible error cases
+            if (errors.room_type_id) {
+                addDateBlockerErrors.value = Array.isArray(errors.room_type_id) 
+                    ? errors.room_type_id.join(', ') 
+                    : errors.room_type_id;
+            } else if (errors.date_range) {
+                addDateBlockerErrors.value = Array.isArray(errors.date_range)
+                    ? errors.date_range.join(', ')
+                    : errors.date_range;
+            } else if (errors.start_date) {
+                addDateBlockerErrors.value = Array.isArray(errors.start_date)
+                    ? errors.start_date.join(', ')
+                    : errors.start_date;
+            } else if (errors.end_date) {
+                addDateBlockerErrors.value = Array.isArray(errors.end_date)
+                    ? errors.end_date.join(', ')
+                    : errors.end_date;
             } else if (errors.error) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: errors.error,
-                    icon: 'error',
-                    confirmButtonColor: '#4F46E5'
-                });
+                addDateBlockerErrors.value = Array.isArray(errors.error)
+                    ? errors.error.join(', ')
+                    : errors.error;
+            } else {
+                // Handle any other unexpected errors
+                addDateBlockerErrors.value = 'An unexpected error occurred. Please try again.';
             }
         }
     });
@@ -374,6 +421,7 @@ const closeAddModal = () => {
     showAddModal.value = false;
     form.reset();
     form.clearErrors();
+    addDateBlockerErrors.value = ''; // Clear the error message when closing modal
 };
 
 const closeEditModal = () => {

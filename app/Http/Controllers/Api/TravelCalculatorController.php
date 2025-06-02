@@ -225,6 +225,7 @@ class TravelCalculatorController extends Controller
         $dateBlockers = DateBlocker::where('package_id', $validated['package_id'])
             ->where('start_date', '<=', $validated['end_date'])
             ->where('end_date', '>=', $validated['start_date'])
+            ->where('room_type_id', $validated['room_type'])
             ->get();
 
         $blockedDates = [];
@@ -239,7 +240,7 @@ class TravelCalculatorController extends Controller
         $blockedDates = array_unique($blockedDates); // Ensure no duplicates
 
         if (!empty($blockedDates)) {
-            throw new \Exception('Sorry, the selected dates are not available. Please contact us for more information. ' . implode(', ', $blockedDates));
+            throw new \Exception('Sorry, the selected dates and room type combination are not available. Please try to select another room type or contact us for more information. ' );
         }
 
         try {

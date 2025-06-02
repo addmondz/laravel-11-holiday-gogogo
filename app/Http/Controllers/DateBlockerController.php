@@ -12,7 +12,7 @@ class DateBlockerController extends Controller
 {
     public function index(Request $request)
     {
-        $dateBlockers = DateBlocker::with('package')
+        $dateBlockers = DateBlocker::with('roomType')
             ->where('package_id', $request->package_id)
             ->latest()
             ->paginate(10)
@@ -33,27 +33,29 @@ class DateBlockerController extends Controller
             'package_id' => 'required|exists:packages,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
+            'room_type_id' => 'required|exists:room_types,id',
         ]);
 
         // Check for overlapping dates
-        if (DateBlocker::hasOverlappingDates($validated['start_date'], $validated['end_date'], $validated['package_id'])) {
+        if (DateBlocker::hasOverlappingDates($validated['start_date'], $validated['end_date'], $validated['package_id'], null, $validated['room_type_id'])) {
             $dateBlocker = DateBlocker::where('package_id', $validated['package_id'])
+                ->where('room_type_id', $validated['room_type_id'])
                 ->where('start_date', '<=', $validated['end_date'])
                 ->where('end_date', '>=', $validated['start_date'])
                 ->first();
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'message' => 'This date range overlaps with an existing date blocker for this package in the date range of ' . 
+                    'message' => 'This date range overlaps with an existing date blocker for this package and room type in the date range of ' . 
                         Carbon::parse($dateBlocker->start_date)->format('d-m-Y') . ' to ' . 
-                        Carbon::parse($dateBlocker->end_date)->format('d-m-Y')
+                        Carbon::parse($dateBlocker->end_date)->format('d-m-Y') . ' for room type ' . $dateBlocker->roomType->name
                 ], 422);
             }
 
             return back()->withErrors([
-                'date_range' => 'This date range overlaps with an existing date blocker for this package in the date range of ' . 
+                'date_range' => 'This date range overlaps with an existing date blocker for this package and room type in the date range of ' . 
                     Carbon::parse($dateBlocker->start_date)->format('d-m-Y') . ' to ' . 
-                    Carbon::parse($dateBlocker->end_date)->format('d-m-Y')
+                    Carbon::parse($dateBlocker->end_date)->format('d-m-Y') . ' for room type ' . $dateBlocker->roomType->name
             ]);
         }
 

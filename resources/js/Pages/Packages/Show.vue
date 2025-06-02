@@ -14,7 +14,8 @@
                         <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-6" />
 
                         <!-- Tabs -->
-                        <div class="border-b border-gray-200">
+                        <!-- <div class="border-b border-gray-200"> -->
+                        <div class="border-b border-gray-200 custom-scroll">
                             <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                                 <button
                                     v-for="tab in tabs"
@@ -704,6 +705,7 @@
                             <div v-if="activeTab === 'date-blockers'" class="space-y-6">
                                 <DateBlockers
                                     :package-id="pkg.id"
+                                    :room-types="roomTypesData.data"
                                 />
                             </div>
                         </div>
@@ -2369,5 +2371,15 @@ defineExpose({
 
 :deep(.swal2-close:hover) {
     color: #e5e7eb !important;
+}
+
+.custom-scroll {
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  display: none;
 }
 </style>
