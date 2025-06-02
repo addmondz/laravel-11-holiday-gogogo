@@ -17,6 +17,7 @@ use App\Models\SeasonType;
 use App\Models\DateTypeRange;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 
 class PackageController extends Controller
 {
@@ -60,29 +61,107 @@ class PackageController extends Controller
         DB::beginTransaction();
 
         try {
-            $v = $request->validate([
+            $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'images.*' => 'nullable|image|max:10240', // 10MB max per image
-                'display_price_adult' => 'nullable|numeric|min:0',
-                'display_price_child' => 'nullable|numeric|min:0',
-                'adult_surcharge' => 'nullable|numeric|min:0',
-                'child_surcharge' => 'nullable|numeric|min:0',
+                'images' => 'nullable|array',
+                'images.*' => [
+                    'required',
+                    'file',
+                    'image',
+                    'mimes:jpeg,png,gif',
+                    'max:10240', // 10MB max per image
+                ],
+                'display_price_adult' => 'required|numeric|min:0',
+                'display_price_child' => 'required|numeric|min:0',
+                'adult_surcharge' => 'required|numeric|min:0',
+                'child_surcharge' => 'required|numeric|min:0',
                 'package_days' => 'required|integer|min:1',
                 'terms_and_conditions' => 'nullable|string',
-                'location' => 'nullable|string|max:255',
+                'location' => 'required|string|max:255',
                 'package_start_date' => 'required|date',
-                'package_end_date' => 'nullable|date|after:package_start_date',
+                'package_end_date' => 'required|date|after:package_start_date',
                 'room_types' => 'required|array|min:1',
                 'room_types.*.name' => 'required|string|max:255',
                 'room_types.*.max_occupancy' => 'required|integer|min:1',
                 'room_types.*.description' => 'nullable|string',
+            ], [
+                'name.required' => 'Package name is required',
+                'name.max' => 'Package name cannot exceed 255 characters',
+                'images.array' => 'Images must be provided as a list',
+                'images.*.required' => 'Image file is required',
+                'images.*.file' => 'The uploaded file is invalid',
+                'images.*.image' => 'The file must be an image (JPG, PNG, or GIF)',
+                'images.*.mimes' => 'Only JPG, PNG, and GIF images are allowed',
+                'images.*.max' => 'Each image cannot exceed 10MB',
+                'display_price_adult.required' => 'Adult base price is required',
+                'display_price_adult.numeric' => 'Adult base price must be a number',
+                'display_price_adult.min' => 'Adult base price cannot be negative',
+                'display_price_child.required' => 'Child base price is required',
+                'display_price_child.numeric' => 'Child base price must be a number',
+                'display_price_child.min' => 'Child base price cannot be negative',
+                'adult_surcharge.required' => 'Adult surcharge is required',
+                'adult_surcharge.numeric' => 'Adult surcharge must be a number',
+                'adult_surcharge.min' => 'Adult surcharge cannot be negative',
+                'child_surcharge.required' => 'Child surcharge is required',
+                'child_surcharge.numeric' => 'Child surcharge must be a number',
+                'child_surcharge.min' => 'Child surcharge cannot be negative',
+                'package_days.required' => 'Package duration is required',
+                'package_days.integer' => 'Package duration must be a whole number',
+                'package_days.min' => 'Package duration must be at least 1 night',
+                'location.required' => 'Location is required',
+                'location.max' => 'Location cannot exceed 255 characters',
+                'package_start_date.required' => 'Start date is required',
+                'package_start_date.date' => 'Invalid start date format',
+                'package_end_date.required' => 'End date is required',
+                'package_end_date.date' => 'Invalid end date format',
+                'package_end_date.after' => 'End date must be after start date',
+                'room_types.required' => 'At least one room type is required',
+                'room_types.array' => 'Room types must be provided as a list',
+                'room_types.min' => 'At least one room type is required',
+                'room_types.*.name.required' => 'Room type name is required',
+                'room_types.*.name.max' => 'Room type name cannot exceed 255 characters',
+                'room_types.*.max_occupancy.required' => 'Maximum occupancy is required',
+                'room_types.*.max_occupancy.integer' => 'Maximum occupancy must be a whole number',
+                'room_types.*.max_occupancy.min' => 'Maximum occupancy must be at least 1',
             ]);
 
-            // Handle image uploads
+            if ($validator->fails()) {
+                $errors = $validator->errors();
+                
+                // Format image validation errors to be more user-friendly
+                if ($errors->has('images.*')) {
+                    $imageErrors = collect($errors->get('images.*'))->map(function ($error, $key) {
+                        $index = explode('.', $key)[1];
+                        return "Image " . ($index + 1) . ": " . $error[0];
+                    })->toArray();
+                    
+                    $errors->forget('images.*');
+                    foreach ($imageErrors as $error) {
+                        $errors->add('images', $error);
+                    }
+                }
+                
+                return back()->withErrors($errors)->withInput();
+            }
+
+            $v = $validator->validated();
+
+            // Handle image uploads with additional validation
             $images = [];
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
+                    // Additional validation for image dimensions if needed
+                    $imageInfo = getimagesize($image->getRealPath());
+                    if ($imageInfo === false) {
+                        throw new \Exception('Invalid image file: Unable to read image dimensions');
+                    }
+                    
+                    // Optional: Add dimension validation if needed
+                    // if ($imageInfo[0] > 2000 || $imageInfo[1] > 2000) {
+                    //     throw new \Exception('Image dimensions too large. Maximum dimensions are 2000x2000 pixels');
+                    // }
+                    
                     $images[] = $image->store('packages', 'public');
                 }
             }
@@ -158,7 +237,7 @@ class PackageController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Create package failed: ' . $e->getMessage());
-            return back()->withInput()->with('error', 'Failed to create package: ' . $e->getMessage());
+            return back()->withInput()->withErrors(['error' => 'Failed to create package: ' . $e->getMessage()]);
         }
     }
 
@@ -252,47 +331,109 @@ class PackageController extends Controller
 
     public function update(Request $request, Package $package)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'images.*' => 'nullable|image|max:10240', // 10MB max per image
-            'display_price_adult' => 'nullable|numeric|min:0',
-            'display_price_child' => 'nullable|numeric|min:0',
-            'package_min_days' => 'required|integer|min:1',
-            'package_max_days' => 'required|integer|min:1',
-            'terms_and_conditions' => 'nullable|string',
-            'location' => 'nullable|string|max:255',
-            'package_start_date' => 'required|date',
-            'package_end_date' => 'nullable|date|after:package_start_date',
-            'delete_images' => 'nullable|array',
-            'delete_images.*' => 'string'
-        ]);
+        DB::beginTransaction();
 
-        // Handle image deletions
-        if ($request->has('delete_images')) {
-            foreach ($request->delete_images as $imagePath) {
-                if (in_array($imagePath, $package->images ?? [])) {
-                    Storage::disk('public')->delete($imagePath);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'images' => 'nullable|array',
+                'images.*' => [
+                    'required',
+                    'file',
+                    'image',
+                    'mimes:jpeg,png,gif',
+                    'max:10240', // 10MB max per image
+                ],
+                'display_price_adult' => 'nullable|numeric|min:0',
+                'display_price_child' => 'nullable|numeric|min:0',
+                'package_min_days' => 'required|integer|min:1',
+                'package_max_days' => 'required|integer|min:1',
+                'terms_and_conditions' => 'nullable|string',
+                'location' => 'nullable|string|max:255',
+                'package_start_date' => 'required|date',
+                'package_end_date' => 'nullable|date|after:package_start_date',
+                'delete_images' => 'nullable|array',
+                'delete_images.*' => 'string'
+            ], [
+                'name.required' => 'Package name is required',
+                'name.max' => 'Package name cannot exceed 255 characters',
+                'images.array' => 'Images must be provided as a list',
+                'images.*.required' => 'Image file is required',
+                'images.*.file' => 'The uploaded file is invalid',
+                'images.*.image' => 'The file must be an image (JPG, PNG, or GIF)',
+                'images.*.mimes' => 'Only JPG, PNG, and GIF images are allowed',
+                'images.*.max' => 'Each image cannot exceed 10MB',
+                'package_min_days.required' => 'Minimum package duration is required',
+                'package_min_days.integer' => 'Minimum package duration must be a whole number',
+                'package_min_days.min' => 'Minimum package duration must be at least 1 night',
+                'package_max_days.required' => 'Maximum package duration is required',
+                'package_max_days.integer' => 'Maximum package duration must be a whole number',
+                'package_max_days.min' => 'Maximum package duration must be at least 1 night',
+                'package_start_date.required' => 'Start date is required',
+                'package_start_date.date' => 'Invalid start date format',
+                'package_end_date.date' => 'Invalid end date format',
+                'package_end_date.after' => 'End date must be after start date'
+            ]);
+
+            if ($validator->fails()) {
+                $errors = $validator->errors();
+                
+                // Format image validation errors to be more user-friendly
+                if ($errors->has('images.*')) {
+                    $imageErrors = collect($errors->get('images.*'))->map(function ($error, $key) {
+                        $index = explode('.', $key)[1];
+                        return "Image " . ($index + 1) . ": " . $error[0];
+                    })->toArray();
+                    
+                    $errors->forget('images.*');
+                    foreach ($imageErrors as $error) {
+                        $errors->add('images', $error);
+                    }
+                }
+                
+                return back()->withErrors($errors)->withInput();
+            }
+
+            $validated = $validator->validated();
+
+            // Handle image deletions
+            if ($request->has('delete_images')) {
+                foreach ($request->delete_images as $imagePath) {
+                    if (in_array($imagePath, $package->images ?? [])) {
+                        Storage::disk('public')->delete($imagePath);
+                    }
+                }
+                $currentImages = array_diff($package->images ?? [], $request->delete_images);
+            } else {
+                $currentImages = $package->images ?? [];
+            }
+
+            // Handle new image uploads
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    // Additional validation for image dimensions if needed
+                    $imageInfo = getimagesize($image->getRealPath());
+                    if ($imageInfo === false) {
+                        throw new \Exception('Invalid image file: Unable to read image dimensions');
+                    }
+                    
+                    $currentImages[] = $image->store('packages', 'public');
                 }
             }
-            $currentImages = array_diff($package->images ?? [], $request->delete_images);
-        } else {
-            $currentImages = $package->images ?? [];
+
+            $validated['images'] = array_values($currentImages); // Reindex array
+
+            $package->update($validated);
+
+            DB::commit();
+            return redirect()->route('packages.show', $package->id)
+                ->with('success', 'Package updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Update package failed: ' . $e->getMessage());
+            return back()->withInput()->withErrors(['error' => 'Failed to update package: ' . $e->getMessage()]);
         }
-
-        // Handle new image uploads
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $currentImages[] = $image->store('packages', 'public');
-            }
-        }
-
-        $validated['images'] = array_values($currentImages); // Reindex array
-
-        $package->update($validated);
-
-        return redirect()->route('packages.show', $package->id)
-            ->with('success', 'Package updated successfully.');
     }
 
     public function destroy(Package $package)
@@ -356,6 +497,7 @@ class PackageController extends Controller
 
     public function duplicate(Request $request, Package $package)
     {
+        // dd($request->all());
         try {
             DB::beginTransaction();
 
@@ -370,11 +512,38 @@ class PackageController extends Controller
                 'location' => 'nullable|string|max:255',
                 'package_start_date' => 'required|date',
                 'package_end_date' => 'nullable|date|after:package_start_date',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240', // 10MB max
             ]);
 
             // Create new package with validated data
             $newPackage = new Package($validated);
             $newPackage->uuid = Str::uuid();
+
+            // Handle image uploads and copying
+            $images = [];
+            
+            // Copy existing images if they exist
+            if ($package->images) {
+                foreach ($package->images as $imagePath) {
+                    if (Storage::disk('public')->exists($imagePath)) {
+                        // Generate new path for the copied image
+                        $newPath = 'packages/' . Str::uuid() . '_' . basename($imagePath);
+                        // Copy the image to the new path
+                        Storage::disk('public')->copy($imagePath, $newPath);
+                        $images[] = $newPath;
+                    }
+                }
+            }
+
+            // Handle new image uploads
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('packages', 'public');
+                    $images[] = $path;
+                }
+            }
+
+            $newPackage->images = $images;
             $newPackage->save();
 
             // Step 1: Create new records and build mappings
@@ -412,7 +581,7 @@ class PackageController extends Controller
 
             DB::commit();
 
-            return redirect()->route('packages.index')
+            return redirect()->route('packages.show', $newPackage->id)
                 ->with('success', 'Package duplicated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();

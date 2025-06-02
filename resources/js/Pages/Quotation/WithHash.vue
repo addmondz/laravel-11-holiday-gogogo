@@ -485,9 +485,15 @@
                                     type="text"
                                     id="booking_name"
                                     v-model="bookingForm.booking_name"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    :class="[
+                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                        bookingValidationErrors.booking_name ? 'border-red-500' : 'border-gray-300'
+                                    ]"
                                     required
                                 />
+                                <p v-if="bookingValidationErrors.booking_name" class="mt-1 text-sm text-red-600">
+                                    {{ bookingValidationErrors.booking_name }}
+                                </p>
                             </div>
 
                             <!-- Phone Number -->
@@ -497,9 +503,16 @@
                                     type="tel"
                                     id="phone_number"
                                     v-model="bookingForm.phone_number"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    :class="[
+                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                        bookingValidationErrors.phone_number ? 'border-red-500' : 'border-gray-300'
+                                    ]"
+                                    placeholder="e.g., 60123456789"
                                     required
                                 />
+                                <p v-if="bookingValidationErrors.phone_number" class="mt-1 text-sm text-red-600">
+                                    {{ bookingValidationErrors.phone_number }}
+                                </p>
                             </div>
 
                             <!-- Booking IC -->
@@ -509,9 +522,16 @@
                                     type="text"
                                     id="booking_ic"
                                     v-model="bookingForm.booking_ic"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    :class="[
+                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                        bookingValidationErrors.booking_ic ? 'border-red-500' : 'border-gray-300'
+                                    ]"
+                                    placeholder="e.g., 123456-78-9012 or A12345678"
                                     required
                                 />
+                                <p v-if="bookingValidationErrors.booking_ic" class="mt-1 text-sm text-red-600">
+                                    {{ bookingValidationErrors.booking_ic }}
+                                </p>
                             </div>
 
                             <!-- Special Remarks -->
@@ -535,7 +555,7 @@
                                 </button>
                                 <button
                                     type="submit"
-                                    class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                     :disabled="isSubmitting"
                                 >
                                     {{ isSubmitting ? 'Submitting...' : 'Submit Booking' }}
@@ -727,6 +747,13 @@ const bookingForm = ref({
     phone_number: '',
     booking_ic: '',
     special_remarks: ''
+});
+
+// Add booking form validation errors
+const bookingValidationErrors = ref({
+    booking_name: '',
+    phone_number: '',
+    booking_ic: ''
 });
 
 const isSubmitting = ref(false);
@@ -961,6 +988,43 @@ const handleStep1Submit = async () => {
 const bookingSuccess = ref(null);
 const isProcessingPayment = ref(false);
 
+const validateBookingForm = () => {
+    let isValid = true;
+    bookingValidationErrors.value = {
+        booking_name: '',
+        phone_number: '',
+        booking_ic: ''
+    };
+
+    // Validate booking name
+    if (!bookingForm.value.booking_name.trim()) {
+        bookingValidationErrors.value.booking_name = 'Booking name is required';
+        isValid = false;
+    }
+
+    // Validate phone number (Malaysian format)
+    const phoneRegex = /^(?:\+?60|0)[1-9]\d{8,9}$/;
+    if (!bookingForm.value.phone_number.trim()) {
+        bookingValidationErrors.value.phone_number = 'Phone number is required';
+        isValid = false;
+    } else if (!phoneRegex.test(bookingForm.value.phone_number.trim())) {
+        bookingValidationErrors.value.phone_number = 'Please enter a valid Malaysian phone number';
+        isValid = false;
+    }
+
+    // Validate IC/Passport
+    const icRegex = /^[A-Z0-9]{6,12}$/;
+    if (!bookingForm.value.booking_ic.trim()) {
+        bookingValidationErrors.value.booking_ic = 'IC/Passport number is required';
+        isValid = false;
+    } else if (!icRegex.test(bookingForm.value.booking_ic.trim().toUpperCase())) {
+        bookingValidationErrors.value.booking_ic = 'Please enter a valid IC/Passport number';
+        isValid = false;
+    }
+
+    return isValid;
+};
+
 const submitBooking = async () => {
     if (!validateBookingForm()) return;
 
@@ -969,15 +1033,15 @@ const submitBooking = async () => {
         const response = await axios.post(route('api.bookings.store'), {
             package_id: packageData.value.id,
             room_type_id: form.room_type_id,
-            booking_name: bookingForm.value.booking_name,
-            phone_number: bookingForm.value.phone_number,
-            booking_ic: bookingForm.value.booking_ic,
+            booking_name: bookingForm.value.booking_name.trim(),
+            phone_number: bookingForm.value.phone_number.trim(),
+            booking_ic: bookingForm.value.booking_ic.trim().toUpperCase(),
             start_date: form.start_date,
             end_date: form.end_date,
             adults: form.adults,
             children: form.children,
             total_price: priceBreakdown.value.total,
-            special_remarks: bookingForm.value.special_remarks
+            special_remarks: bookingForm.value.special_remarks.trim()
         });
 
         if (response.data.success) {
@@ -985,17 +1049,31 @@ const submitBooking = async () => {
             const url = new URL(window.location);
             url.searchParams.set('booking', response.data.booking.uuid);
             window.history.replaceState({}, '', url);
+        } else {
+            throw new Error(response.data.message || 'Failed to create booking');
         }
     } catch (error) {
         console.error('Booking error:', error);
-        await Swal.fire({
-            icon: 'error',
-            title: 'Booking Failed',
-            text: error.response?.data?.message || 'Failed to create booking. Please try again.',
-            showConfirmButton: true,
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#EF4444'
-        });
+        
+        // Handle validation errors from backend
+        if (error.response?.data?.errors) {
+            const backendErrors = error.response.data.errors;
+            Object.keys(backendErrors).forEach(key => {
+                if (bookingValidationErrors.value.hasOwnProperty(key)) {
+                    bookingValidationErrors.value[key] = backendErrors[key][0];
+                }
+            });
+        } else {
+            // Show general error message
+            await Swal.fire({
+                icon: 'error',
+                title: 'Booking Failed',
+                text: error.response?.data?.message || 'Failed to create booking. Please try again.',
+                showConfirmButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#EF4444'
+            });
+        }
     } finally {
         isSubmitting.value = false;
     }
@@ -1028,11 +1106,6 @@ const proceedToPayment = async () => {
     } finally {
         isProcessingPayment.value = false;
     }
-};
-
-const validateBookingForm = () => {
-    // Add your booking form validation logic here
-    return true;
 };
 
 // Add a computed property for max start date

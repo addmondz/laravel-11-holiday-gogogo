@@ -347,6 +347,29 @@ const removeRoomType = (index) => {
 
 const handleImagesUpload = (event) => {
     const files = Array.from(event.target.files);
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const errors = [];
+
+    files.forEach(file => {
+        if (!allowedTypes.includes(file.type)) {
+            errors.push(`${file.name} is not a valid image file. Only JPG, PNG, and GIF are allowed.`);
+        }
+        if (file.size > maxSize) {
+            errors.push(`${file.name} is too large. Maximum file size is 10MB.`);
+        }
+    });
+
+    if (errors.length > 0) {
+        Swal.fire({
+            title: 'Invalid Images',
+            html: errors.join('<br>'),
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
     form.images = [...form.images, ...files];
     files.forEach(file => {
         imagePreviews.value.push(URL.createObjectURL(file));
@@ -381,12 +404,57 @@ const validateDates = () => {
 };
 
 const submit = () => {
+    // Validate images before submission
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const imageErrors = [];
+
+    form.images.forEach(file => {
+        if (!allowedTypes.includes(file.type)) {
+            imageErrors.push(`${file.name} is not a valid image file. Only JPG, PNG, and GIF are allowed.`);
+        }
+        if (file.size > maxSize) {
+            imageErrors.push(`${file.name} is too large. Maximum file size is 10MB.`);
+        }
+    });
+
+    if (imageErrors.length > 0) {
+        Swal.fire({
+            title: 'Invalid Images',
+            html: imageErrors.join('<br>'),
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
     // Validate dates before submission
     validateDates();
     if (dateError.value) {
         Swal.fire({
             title: 'Validation Error',
             text: dateError.value,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    // Validate room types before submission
+    const roomTypeErrors = [];
+    form.room_types.forEach((roomType, index) => {
+        if (!roomType.name?.trim()) {
+            roomTypeErrors.push(`Room type ${index + 1}: Name is required`);
+        }
+        if (!roomType.max_occupancy || roomType.max_occupancy < 1) {
+            roomTypeErrors.push(`Room type ${index + 1}: Maximum occupancy must be at least 1`);
+        }
+    });
+
+    if (roomTypeErrors.length > 0) {
+        Swal.fire({
+            title: 'Validation Error',
+            html: roomTypeErrors.join('<br>'),
             icon: 'error',
             confirmButtonText: 'OK'
         });
@@ -407,10 +475,64 @@ const submit = () => {
             });
         },
         onError: (errors) => {
+            // Handle validation errors
+            const errorMessages = [];
+            
+            // Handle date errors
+            if (errors.package_start_date) {
+                errorMessages.push(`Start Date: ${errors.package_start_date}`);
+            }
             if (errors.package_end_date) {
+                errorMessages.push(`End Date: ${errors.package_end_date}`);
+            }
+
+            // Handle room type errors
+            if (errors['room_types']) {
+                if (Array.isArray(errors['room_types'])) {
+                    errorMessages.push(...errors['room_types']);
+                } else {
+                    errorMessages.push(errors['room_types']);
+                }
+            }
+
+            // Handle other field errors
+            const fieldLabels = {
+                name: 'Name',
+                description: 'Description',
+                images: 'Images',
+                display_price_adult: 'Adult Base Price',
+                display_price_child: 'Child Base Price',
+                adult_surcharge: 'Adult Surcharge',
+                child_surcharge: 'Child Surcharge',
+                package_days: 'Package Duration',
+                terms_and_conditions: 'Terms and Conditions',
+                location: 'Location'
+            };
+
+            Object.entries(errors).forEach(([field, messages]) => {
+                if (field !== 'package_start_date' && field !== 'package_end_date' && field !== 'room_types') {
+                    const label = fieldLabels[field] || field;
+                    if (Array.isArray(messages)) {
+                        errorMessages.push(`${label}: ${messages.join(', ')}`);
+                    } else {
+                        errorMessages.push(`${label}: ${messages}`);
+                    }
+                }
+            });
+
+            // Show all validation errors in a single alert
+            if (errorMessages.length > 0) {
                 Swal.fire({
                     title: 'Validation Error',
-                    text: errors.package_end_date,
+                    html: errorMessages.join('<br>'),
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                // Show generic error if no specific validation errors
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to create package. Please check your input and try again.',
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });

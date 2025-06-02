@@ -40,6 +40,50 @@
                                     </div>
                                 </div>
 
+                                <!-- Images Section -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Package Images</label>
+                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                        <div class="space-y-1 text-center">
+                                            <!-- Display existing images -->
+                                            <div v-if="form.images && form.images.length > 0" class="flex gap-4 mb-4">
+                                                <div v-for="(image, index) in form.images" :key="index" class="relative group">
+                                                    <img 
+                                                        :src="getImagePreviewUrl(image)" 
+                                                        class="h-24 w-full object-cover rounded-lg" 
+                                                        alt="Package image"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        @click="removeImage(index)"
+                                                        class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="text-sm text-gray-600">
+                                                <label class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                    <span>Upload Images</span>
+                                                    <input
+                                                        type="file"
+                                                        @change="handleImagesUpload"
+                                                        accept="image/*"
+                                                        multiple
+                                                        class="sr-only"
+                                                    />
+                                                </label>
+                                            </div>
+                                            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                                        </div>
+                                    </div>
+                                    <div v-if="form.errors.images" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.images }}
+                                    </div>
+                                </div>
+
                                 <div class="hidden">
                                     <label for="icon_photo" class="block text-sm font-medium text-gray-700">Icon Photo</label>
                                     <input
@@ -243,7 +287,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { Head } from '@inertiajs/vue3';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const props = defineProps({
@@ -253,7 +297,7 @@ const props = defineProps({
 const form = useForm({
     name: props.package.name,
     description: props.package.description,
-    icon_photo: null,
+    images: props.package.images || [],
     display_price_adult: props.package.display_price_adult,
     display_price_child: props.package.display_price_child,
     package_min_days: props.package.package_min_days,
@@ -288,6 +332,54 @@ const handleFileUpload = (event) => {
     form.icon_photo = event.target.files[0];
 };
 
+const handleImagesUpload = (event) => {
+    const files = Array.from(event.target.files);
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const errors = [];
+
+    files.forEach(file => {
+        if (!allowedTypes.includes(file.type)) {
+            errors.push(`${file.name} is not a valid image file. Only JPG, PNG, and GIF are allowed.`);
+        }
+        if (file.size > maxSize) {
+            errors.push(`${file.name} is too large. Maximum file size is 10MB.`);
+        }
+    });
+
+    if (errors.length > 0) {
+        Swal.fire({
+            title: 'Invalid Images',
+            html: errors.join('<br>'),
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    form.images = [...form.images, ...files];
+};
+
+const removeImage = (index) => {
+    const image = form.images[index];
+    
+    // If it's an existing image (string path), we'll just remove it from the array
+    // since we're duplicating, we don't need to track deletions
+    form.images.splice(index, 1);
+};
+
+const getImagePreviewUrl = (image) => {
+    if (typeof image === 'string') {
+        return `/storage/${image}`;
+    }
+    
+    if (typeof window !== 'undefined' && window.URL && window.URL.createObjectURL) {
+        return URL.createObjectURL(image);
+    }
+    
+    return '';
+};
+
 const validateDates = () => {
     dateError.value = '';
     if (form.package_start_date && form.package_end_date) {
@@ -305,6 +397,53 @@ const validateDates = () => {
 };
 
 const submit = () => {
+    // Validate images before submission
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const imageErrors = [];
+
+    form.images.forEach(file => {
+        if (file instanceof File) {
+            if (!allowedTypes.includes(file.type)) {
+                imageErrors.push(`${file.name} is not a valid image file. Only JPG, PNG, and GIF are allowed.`);
+            }
+            if (file.size > maxSize) {
+                imageErrors.push(`${file.name} is too large. Maximum file size is 10MB.`);
+            }
+        }
+    });
+
+    if (imageErrors.length > 0) {
+        Swal.fire({
+            title: 'Invalid Images',
+            html: imageErrors.join('<br>'),
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    // Create FormData for file upload
+    const formData = new FormData();
+    
+    // Add all form fields to FormData
+    Object.keys(form).forEach(key => {
+        if (key === 'images') {
+            // Handle images separately
+            form.images.forEach((image, index) => {
+                if (image instanceof File) {
+                    formData.append(`images[${index}]`, image);
+                } else if (typeof image === 'string') {
+                    // For existing images, just pass the path
+                    formData.append(`existing_images[${index}]`, image);
+                }
+            });
+        } else {
+            // Handle all other form fields
+            formData.append(key, form[key]);
+        }
+    });
+
     // Validate dates before submission
     validateDates();
     if (dateError.value) {
@@ -317,27 +456,52 @@ const submit = () => {
         return;
     }
 
-    form.post(route('packages.duplicate', props.package.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            Swal.fire({
-                title: 'Success!',
-                text: 'Package has been duplicated successfully.',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                router.visit(route('packages.index'));
-            });
-        },
-        onError: (errors) => {
+    // Use axios for better control over the request
+    axios.post(route('packages.duplicate', props.package.id), formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    }).then(response => {
+        Swal.fire({
+            title: 'Success!',
+            text: 'Package has been duplicated successfully.',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            window.location.href = route('packages.index');
+        });
+    }).catch(error => {
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors;
             if (errors.package_end_date) {
                 Swal.fire({
                     title: 'Validation Error',
-                    text: errors.package_end_date,
+                    text: errors.package_end_date[0],
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            } else if (errors.images) {
+                Swal.fire({
+                    title: 'Validation Error',
+                    html: errors.images.join('<br>'),
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to duplicate package. Please try again.',
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });
             }
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: 'Failed to duplicate package. Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     });
 };
@@ -346,4 +510,13 @@ const breadcrumbs = computed(() => [
     { title: 'Packages', link: route('packages.index') },
     { title: 'Duplicate Package' }
 ]);
+
+// Clean up preview URLs when component is unmounted
+onUnmounted(() => {
+    form.images.forEach(image => {
+        if (image instanceof File) {
+            URL.revokeObjectURL(URL.createObjectURL(image));
+        }
+    });
+});
 </script> 

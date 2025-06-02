@@ -40,50 +40,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Images Section -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Package Images</label>
-                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                        <div class="space-y-1 text-center">
-                                            <!-- Display existing images -->
-                                            <div v-if="form.images && form.images.length > 0" class="flex gap-4 mb-4">
-                                                <div v-for="(image, index) in form.images" :key="index" class="relative group">
-                                                    <img 
-                                                        :src="getImagePreviewUrl(image)" 
-                                                        class="h-24 w-full object-cover rounded-lg" 
-                                                        alt="Room type image"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        @click="removeImage(index)"
-                                                        class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    >
-                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div class="text-sm text-gray-600">
-                                                <label class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                                    <span>Upload Images</span>
-                                                    <input
-                                                        type="file"
-                                                        @change="handleImagesUpload"
-                                                        accept="image/*"
-                                                        multiple
-                                                        class="sr-only"
-                                                    />
-                                                </label>
-                                            </div>
-                                            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                                        </div>
-                                    </div>
-                                    <div v-if="form.errors.images" class="mt-1 text-sm text-red-600">
-                                        {{ form.errors.images }}
-                                    </div>
-                                </div>
-
                                 <div class="grid grid-cols-2 gap-6">
                                     <div>
                                         <!-- <label for="display_price_adult" class="block text-sm font-medium text-gray-700">Display Price (Adult)</label> -->
@@ -183,6 +139,50 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Images Section -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Package Images</label>
+                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                        <div class="space-y-1 text-center">
+                                            <!-- Display existing images -->
+                                            <div v-if="form.images && form.images.length > 0" class="flex gap-4 mb-4">
+                                                <div v-for="(image, index) in form.images" :key="index" class="relative group">
+                                                    <img 
+                                                        :src="getImagePreviewUrl(image)" 
+                                                        class="h-24 w-full object-cover rounded-lg" 
+                                                        alt="Room type image"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        @click="removeImage(index)"
+                                                        class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="text-sm text-gray-600">
+                                                <label class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                    <span>Upload Images</span>
+                                                    <input
+                                                        type="file"
+                                                        @change="handleImagesUpload"
+                                                        accept="image/*"
+                                                        multiple
+                                                        class="sr-only"
+                                                    />
+                                                </label>
+                                            </div>
+                                            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                                        </div>
+                                    </div>
+                                    <div v-if="form.errors.images" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.images }}
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="mt-6 flex justify-end">
@@ -214,7 +214,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { Head } from '@inertiajs/vue3';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, onUnmounted } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
     package: Object
@@ -241,10 +242,43 @@ const form = useForm({
 
 const handleImagesUpload = (event) => {
     const files = Array.from(event.target.files);
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const errors = [];
+
+    files.forEach(file => {
+        if (!allowedTypes.includes(file.type)) {
+            errors.push(`${file.name} is not a valid image file. Only JPG, PNG, and GIF are allowed.`);
+        }
+        if (file.size > maxSize) {
+            errors.push(`${file.name} is too large. Maximum file size is 10MB.`);
+        }
+    });
+
+    if (errors.length > 0) {
+        Swal.fire({
+            title: 'Invalid Images',
+            html: errors.join('<br>'),
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
     form.images = [...form.images, ...files];
 };
 
 const removeImage = (index) => {
+    const image = form.images[index];
+    
+    // If it's an existing image (string path), add to delete_images
+    if (typeof image === 'string') {
+        if (!form.delete_images) {
+            form.delete_images = [];
+        }
+        form.delete_images.push(image);
+    }
+    
     form.images.splice(index, 1);
 };
 
@@ -276,17 +310,91 @@ const getImageUrl = (imagePath) => {
     return `/images/${imagePath}`;
 };
 
+
+// Clean up preview URLs when component is unmounted
+onUnmounted(() => {
+    form.images.forEach(image => {
+        if (image instanceof File) {
+            URL.revokeObjectURL(URL.createObjectURL(image));
+        }
+    });
+});
+
 const submit = () => {
-    form.put(route('packages.update', props.package.id), {
-        preserveScroll: true,
-        onSuccess: () => {
+    // Create FormData for file upload
+    const formData = new FormData();
+    
+    // Add all form fields to FormData
+    Object.keys(form).forEach(key => {
+        if (key === 'images') {
+            // Handle images separately
+            form.images.forEach((image, index) => {
+                if (image instanceof File) {
+                    formData.append(`images[${index}]`, image);
+                } else if (typeof image === 'string') {
+                    // For existing images, just pass the path
+                    formData.append(`existing_images[${index}]`, image);
+                }
+            });
+        } else if (key === 'delete_images') {
+            // Handle deleted images
+            if (form.delete_images && form.delete_images.length > 0) {
+                form.delete_images.forEach((image, index) => {
+                    formData.append(`delete_images[${index}]`, image);
+                });
+            }
+        } else {
+            // Handle all other form fields
+            formData.append(key, form[key]);
+        }
+    });
+
+    // Use axios for better control over the request
+    axios.post(route('packages.update', props.package.id), formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'X-HTTP-Method-Override': 'PUT' // This is needed because Laravel expects PUT for updates
+        }
+    })
+    .then(response => {
+        Swal.fire({
+            title: 'Success!',
+            text: 'Package has been updated successfully.',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            window.location.href = route('packages.show', props.package.id);
+        });
+    })
+    .catch(error => {
+        console.error('Error updating package:', error);
+        
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors;
+            const errorMessages = [];
+            
+            // Format validation errors
+            Object.entries(errors).forEach(([field, messages]) => {
+                if (Array.isArray(messages)) {
+                    errorMessages.push(`${field}: ${messages.join(', ')}`);
+                } else {
+                    errorMessages.push(`${field}: ${messages}`);
+                }
+            });
+
             Swal.fire({
-                title: 'Success!',
-                text: 'Package has been updated successfully.',
-                icon: 'success',
+                title: 'Validation Error',
+                html: errorMessages.join('<br>'),
+                icon: 'error',
                 confirmButtonText: 'OK'
-            }).then(() => {
-                form.reset();
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: error.response?.data?.message || 'Failed to update package. Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
             });
         }
     });
