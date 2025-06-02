@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\Package;
 use App\Models\PackageAddOn;
 use App\Models\PackageConfiguration;
+use App\Models\RoomType;
 use App\Models\Season;
 use App\Models\SeasonType;
 use Carbon\Carbon;
@@ -369,6 +370,7 @@ class TravelCalculatorController extends Controller
                 $sum = fn($key) => array_sum(array_map(fn($night) => floatval(data_get($night, $key)), $roomNights));
 
                 $roomBreakdowns[] = [
+                    'room_type_name' => RoomType::find($roomTypeId)->name,
                     'room_type' => $roomTypeId,
                     'adults' => $adults,
                     'children' => $children,

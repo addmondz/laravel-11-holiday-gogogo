@@ -141,7 +141,7 @@
 
             <!-- Booking Form -->
             <div class="bg-white rounded-lg shadow-lg p-6" id="booking-form">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Book Your Stay</h2>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ currentStep === 3 ? 'Your Booking' : 'Book Your Stay' }}</h2>
                 
                 <!-- Step Indicators -->
                 <div class="mb-8">
@@ -456,33 +456,6 @@
                                     <p class="font-medium">{{ moment(bookingSummary.endDate).format('DD MMM YYYY') }}</p>
                                 </div>
                             </div>
-
-                            <!-- Room Breakdown -->
-                            <div class="mt-4">
-                                <h4 class="text-sm font-medium text-gray-700 mb-2">Room Details</h4>
-                                <div class="space-y-2">
-                                    <div v-for="(room, roomIndex) in priceBreakdown.rooms" 
-                                         :key="roomIndex"
-                                         class="bg-white rounded-md p-3 border border-gray-100">
-                                        <div class="flex justify-between items-start">
-                                            <div>
-                                                <p class="font-medium text-gray-900">{{ room.room_type }}</p>
-                                                <p class="text-sm text-gray-600">
-                                                    {{ room.adults }} Adults, {{ room.children }} Children
-                                                </p>
-                                            </div>
-                                            <div class="text-right">
-                                                <p class="text-sm font-medium text-gray-900">
-                                                    {{ formatNumber(room.summary.total) }} MYR
-                                                </p>
-                                                <p class="text-xs text-gray-500">
-                                                    {{ formatNumber(room.summary.total / bookingSummary.duration) }} MYR/night
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Nightly Breakdown -->
@@ -495,7 +468,7 @@
                                     <!-- Room Header -->
                                     <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
                                         <h4 class="text-sm font-medium text-gray-900">
-                                            Room {{ roomIndex + 1 }}: {{ room.room_type }}
+                                            Room {{ roomIndex + 1 }}: {{ room.room_type_name }}
                                             <span class="text-gray-500 ml-2">
                                                 ({{ room.adults }} Adults, {{ room.children }} Children)
                                             </span>
@@ -606,7 +579,7 @@
                                         <p class="text-sm text-gray-500">Total Nights</p>
                                         <p class="text-lg font-medium text-gray-900">{{ bookingSummary.duration }}</p>
                                     </div>
-                                    <div>
+                                    <div class="text-right">
                                         <p class="text-sm text-gray-500">Grand Total</p>
                                         <p class="text-lg font-medium text-indigo-600">MYR {{ formatNumber(priceBreakdown.total) }}</p>
                                     </div>
