@@ -85,6 +85,14 @@ class PackageController extends Controller
                 'room_types.*.name' => 'required|string|max:255',
                 'room_types.*.max_occupancy' => 'required|integer|min:1',
                 'room_types.*.description' => 'nullable|string',
+                'room_types.*.images' => 'nullable|array',
+                'room_types.*.images.*' => [
+                    'required',
+                    'file',
+                    'image',
+                    'mimes:jpeg,png,gif',
+                    'max:10240', // 10MB max per image
+                ],
             ], [
                 'name.required' => 'Package name is required',
                 'name.max' => 'Package name cannot exceed 255 characters',
@@ -124,6 +132,12 @@ class PackageController extends Controller
                 'room_types.*.max_occupancy.required' => 'Maximum occupancy is required',
                 'room_types.*.max_occupancy.integer' => 'Maximum occupancy must be a whole number',
                 'room_types.*.max_occupancy.min' => 'Maximum occupancy must be at least 1',
+                'room_types.*.images.array' => 'Room type images must be provided as a list',
+                'room_types.*.images.*.required' => 'Room type image file is required',
+                'room_types.*.images.*.file' => 'The uploaded file is invalid',
+                'room_types.*.images.*.image' => 'The file must be an image (JPG, PNG, or GIF)',
+                'room_types.*.images.*.mimes' => 'Only JPG, PNG, and GIF images are allowed',
+                'room_types.*.images.*.max' => 'Each image cannot exceed 10MB',
             ]);
 
             if ($validator->fails()) {
@@ -133,12 +147,27 @@ class PackageController extends Controller
                 if ($errors->has('images.*')) {
                     $imageErrors = collect($errors->get('images.*'))->map(function ($error, $key) {
                         $index = explode('.', $key)[1];
-                        return "Image " . ($index + 1) . ": " . $error[0];
+                        return "Package Image " . ($index + 1) . ": " . $error[0];
                     })->toArray();
                     
                     $errors->forget('images.*');
                     foreach ($imageErrors as $error) {
                         $errors->add('images', $error);
+                    }
+                }
+
+                // Format room type image validation errors
+                if ($errors->has('room_types.*.images.*')) {
+                    $roomTypeImageErrors = collect($errors->get('room_types.*.images.*'))->map(function ($error, $key) {
+                        $parts = explode('.', $key);
+                        $roomTypeIndex = $parts[1];
+                        $imageIndex = $parts[3];
+                        return "Room Type " . ($roomTypeIndex + 1) . ", Image " . ($imageIndex + 1) . ": " . $error[0];
+                    })->toArray();
+                    
+                    $errors->forget('room_types.*.images.*');
+                    foreach ($roomTypeImageErrors as $error) {
+                        $errors->add('room_types', $error);
                     }
                 }
                 
@@ -147,21 +176,10 @@ class PackageController extends Controller
 
             $v = $validator->validated();
 
-            // Handle image uploads with additional validation
+            // Handle package image uploads
             $images = [];
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
-                    // Additional validation for image dimensions if needed
-                    $imageInfo = getimagesize($image->getRealPath());
-                    if ($imageInfo === false) {
-                        throw new \Exception('Invalid image file: Unable to read image dimensions');
-                    }
-                    
-                    // Optional: Add dimension validation if needed
-                    // if ($imageInfo[0] > 2000 || $imageInfo[1] > 2000) {
-                    //     throw new \Exception('Image dimensions too large. Maximum dimensions are 2000x2000 pixels');
-                    // }
-                    
                     $images[] = $image->store('packages', 'public');
                 }
             }
@@ -197,12 +215,23 @@ class PackageController extends Controller
                 'package_id' => $package->id,
             ]));
 
-            $roomTypes = collect($v['room_types'])->map(fn($r) => RoomType::create([
-                'name' => $r['name'],
-                'description' => $r['description'] ?? null,
-                'max_occupancy' => $r['max_occupancy'],
-                'package_id' => $package->id,
-            ]));
+            // Handle room types with their images
+            $roomTypes = collect($request->room_types)->map(function ($roomTypeData, $roomTypeIndex) use ($package, $request) {
+                $roomTypeImages = [];
+                if ($request->hasFile("room_types.{$roomTypeIndex}.images")) {
+                    foreach ($request->file("room_types.{$roomTypeIndex}.images") as $image) {
+                        $roomTypeImages[] = $image->store('room-types', 'public');
+                    }
+                }
+
+                return RoomType::create([
+                    'name' => $roomTypeData['name'],
+                    'description' => $roomTypeData['description'] ?? null,
+                    'max_occupancy' => $roomTypeData['max_occupancy'],
+                    'package_id' => $package->id,
+                    'images' => $roomTypeImages
+                ]);
+            });
 
             $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
             $baseKey = AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE;

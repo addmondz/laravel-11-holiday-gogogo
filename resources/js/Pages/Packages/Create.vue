@@ -232,6 +232,7 @@
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Occupancy</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                                 </tr>
                                             </thead>
@@ -262,6 +263,44 @@
                                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                             placeholder="Description"
                                                         />
+                                                    </td>
+                                                    <td class="px-6 py-4">
+                                                        <div class="space-y-2">
+                                                            <!-- Image Preview -->
+                                                            <div v-if="roomType.imagePreviews?.length" class="flex flex-wrap gap-2">
+                                                                <div v-for="(preview, previewIndex) in roomType.imagePreviews" :key="previewIndex" class="relative">
+                                                                    <img :src="preview" class="h-20 w-20 object-cover rounded" />
+                                                                    <button
+                                                                        type="button"
+                                                                        @click="removeRoomTypeImage(index, previewIndex)"
+                                                                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                                                    >
+                                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <!-- Upload Button -->
+                                                            <div class="flex justify-center border-2 border-gray-300 border-dashed rounded-md">
+                                                                <div class="space-y-1 text-center">
+                                                                    <div class="text-sm text-gray-600">
+                                                                        <label :for="'room-type-images-' + index" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                                            <span>Upload images</span>
+                                                                            <input
+                                                                                :id="'room-type-images-' + index"
+                                                                                type="file"
+                                                                                multiple
+                                                                                accept="image/*"
+                                                                                class="sr-only"
+                                                                                @change="handleRoomTypeImagesUpload($event, index)"
+                                                                            />
+                                                                        </label>
+                                                                        <p class="pl-1">or drag and drop</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <button
@@ -327,6 +366,8 @@ const form = useForm({
         name: '',
         max_occupancy: 2,
         description: '',
+        images: [],
+        imagePreviews: []
     }]
 });
 
@@ -338,6 +379,8 @@ const addRoomType = () => {
         name: '',
         max_occupancy: 2,
         description: '',
+        images: [],
+        imagePreviews: []
     });
 };
 
@@ -382,8 +425,59 @@ const removeImage = (index) => {
     imagePreviews.value.splice(index, 1);
 };
 
+const handleRoomTypeImagesUpload = (event, index) => {
+    const files = Array.from(event.target.files);
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const errors = [];
+
+    files.forEach(file => {
+        if (!allowedTypes.includes(file.type)) {
+            errors.push(`${file.name} is not a valid image file. Only JPG, PNG, and GIF are allowed.`);
+        }
+        if (file.size > maxSize) {
+            errors.push(`${file.name} is too large. Maximum file size is 10MB.`);
+        }
+    });
+
+    if (errors.length > 0) {
+        Swal.fire({
+            title: 'Invalid Images',
+            html: errors.join('<br>'),
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    // Add files to the room type's images array
+    form.room_types[index].images = [...(form.room_types[index].images || []), ...files];
+    
+    // Create preview URLs
+    files.forEach(file => {
+        if (!form.room_types[index].imagePreviews) {
+            form.room_types[index].imagePreviews = [];
+        }
+        form.room_types[index].imagePreviews.push(URL.createObjectURL(file));
+    });
+};
+
+const removeRoomTypeImage = (roomTypeIndex, imageIndex) => {
+    // Remove the image from the array
+    form.room_types[roomTypeIndex].images.splice(imageIndex, 1);
+    
+    // Revoke the preview URL to prevent memory leaks
+    URL.revokeObjectURL(form.room_types[roomTypeIndex].imagePreviews[imageIndex]);
+    form.room_types[roomTypeIndex].imagePreviews.splice(imageIndex, 1);
+};
+
 // Clean up preview URLs when component is unmounted
 onUnmounted(() => {
+    form.room_types.forEach(roomType => {
+        if (roomType.imagePreviews) {
+            roomType.imagePreviews.forEach(url => URL.revokeObjectURL(url));
+        }
+    });
     imagePreviews.value.forEach(url => URL.revokeObjectURL(url));
 });
 
@@ -449,6 +543,18 @@ const submit = () => {
         if (!roomType.max_occupancy || roomType.max_occupancy < 1) {
             roomTypeErrors.push(`Room type ${index + 1}: Maximum occupancy must be at least 1`);
         }
+        
+        // Validate room type images
+        if (roomType.images) {
+            roomType.images.forEach((file, fileIndex) => {
+                if (!allowedTypes.includes(file.type)) {
+                    roomTypeErrors.push(`Room type ${index + 1}, Image ${fileIndex + 1}: Invalid file type. Only JPG, PNG, and GIF are allowed.`);
+                }
+                if (file.size > maxSize) {
+                    roomTypeErrors.push(`Room type ${index + 1}, Image ${fileIndex + 1}: File too large. Maximum size is 10MB.`);
+                }
+            });
+        }
     });
 
     if (roomTypeErrors.length > 0) {
@@ -461,82 +567,53 @@ const submit = () => {
         return;
     }
 
+    // Create FormData for submission
+    const formData = new FormData();
+    
+    // Add basic package fields
+    Object.keys(form).forEach(key => {
+        if (key !== 'room_types' && key !== 'images') {
+            formData.append(key, form[key]);
+        }
+    });
+
+    // Add package images
+    if (form.images.length > 0) {
+        form.images.forEach((file, index) => {
+            formData.append(`images[${index}]`, file);
+        });
+    }
+
+    // Add room types with their images
+    form.room_types.forEach((roomType, index) => {
+        formData.append(`room_types[${index}][name]`, roomType.name);
+        formData.append(`room_types[${index}][max_occupancy]`, roomType.max_occupancy);
+        formData.append(`room_types[${index}][description]`, roomType.description || '');
+        
+        if (roomType.images && roomType.images.length > 0) {
+            roomType.images.forEach((file, fileIndex) => {
+                formData.append(`room_types[${index}][images][${fileIndex}]`, file);
+            });
+        }
+    });
+
+    // Submit the form
     form.post(route('packages.store'), {
-        preserveScroll: true,
+        forceFormData: true,
+        data: formData,
         onSuccess: () => {
             Swal.fire({
-                title: 'Success!',
-                text: 'Package has been created successfully.',
                 icon: 'success',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                form.reset();
-                dateError.value = '';
+                title: 'Success',
+                text: 'Package created successfully'
             });
         },
         onError: (errors) => {
-            // Handle validation errors
-            const errorMessages = [];
-            
-            // Handle date errors
-            if (errors.package_start_date) {
-                errorMessages.push(`Start Date: ${errors.package_start_date}`);
-            }
-            if (errors.package_end_date) {
-                errorMessages.push(`End Date: ${errors.package_end_date}`);
-            }
-
-            // Handle room type errors
-            if (errors['room_types']) {
-                if (Array.isArray(errors['room_types'])) {
-                    errorMessages.push(...errors['room_types']);
-                } else {
-                    errorMessages.push(errors['room_types']);
-                }
-            }
-
-            // Handle other field errors
-            const fieldLabels = {
-                name: 'Name',
-                description: 'Description',
-                images: 'Images',
-                display_price_adult: 'Adult Base Price',
-                display_price_child: 'Child Base Price',
-                adult_surcharge: 'Adult Surcharge',
-                child_surcharge: 'Child Surcharge',
-                package_days: 'Package Duration',
-                terms_and_conditions: 'Terms and Conditions',
-                location: 'Location'
-            };
-
-            Object.entries(errors).forEach(([field, messages]) => {
-                if (field !== 'package_start_date' && field !== 'package_end_date' && field !== 'room_types') {
-                    const label = fieldLabels[field] || field;
-                    if (Array.isArray(messages)) {
-                        errorMessages.push(`${label}: ${messages.join(', ')}`);
-                    } else {
-                        errorMessages.push(`${label}: ${messages}`);
-                    }
-                }
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: Object.values(errors).flat().join('\n')
             });
-
-            // Show all validation errors in a single alert
-            if (errorMessages.length > 0) {
-                Swal.fire({
-                    title: 'Validation Error',
-                    html: errorMessages.join('<br>'),
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            } else {
-                // Show generic error if no specific validation errors
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Failed to create package. Please check your input and try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            }
         }
     });
 };
