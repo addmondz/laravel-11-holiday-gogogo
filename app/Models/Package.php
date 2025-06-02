@@ -64,6 +64,11 @@ class Package extends Model
         return $this->hasMany(DateTypeRange::class);
     }
 
+    public function dateBlockers(): HasMany
+    {
+        return $this->hasMany(DateBlocker::class);
+    }
+
     /**
      * Get unique season_type_id values from configurations.
      */

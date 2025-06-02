@@ -331,9 +331,9 @@ const deleteBlocker = async (id) => {
         text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#4F46E5',
-        cancelButtonColor: '#EF4444',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonColor: '#e3342f',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, delete it!',
     });
 
     if (result.isConfirmed) {

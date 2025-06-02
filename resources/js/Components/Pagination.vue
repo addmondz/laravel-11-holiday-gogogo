@@ -1,5 +1,5 @@
 <template>
-    <div v-if="links.length > 3" class="flex items-center justify-between">
+    <div class="flex items-center justify-between">
         <transition name="fade">
             <div v-show="loading" class="absolute inset-0 bg-white/80 flex items-center justify-center transition-opacity duration-300 ease-in-out">
                 <LoadingComponent :loading="loading" />
@@ -18,7 +18,7 @@
         </div>
 
         <!-- Pagination Controls -->
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-2" v-if="links.length > 3">
             <!-- Previous Button -->
             <button
                 v-if="links[0].url"

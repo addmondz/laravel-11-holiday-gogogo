@@ -579,6 +579,13 @@ class PackageController extends Controller
                 $newConfig->save();
             }
 
+            // date blockers
+            foreach ($package->dateBlockers as $dateBlocker) {
+                $newDateBlocker = $dateBlocker->replicate();
+                $newDateBlocker->package_id = $newPackage->id;
+                $newDateBlocker->save();
+            }
+
             DB::commit();
 
             return redirect()->route('packages.show', $newPackage->id)
