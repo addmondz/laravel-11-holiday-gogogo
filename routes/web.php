@@ -28,6 +28,7 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\DateBlockerController;
+use App\Http\Controllers\SenangPayController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -55,7 +56,7 @@ Route::prefix('calculator')->group(function () {
         Route::post('/package-calculate-price', [TravelCalculatorController::class, 'packageCalculatePrice'])->name('api.package-calculate-price');
         Route::post('/bookings', [ApiBookingController::class, 'store'])->name('api.bookings.store');
         Route::post('/transactions', [TransactionController::class, 'store'])->name('api.transactions.store');
-        
+
         // Payment routes
         Route::prefix('bookings/{uuid}/payment')->name('api.payment.')->group(function ($uuid) {
             Route::get('/', [PaymentController::class, 'show'])->name('show');
@@ -246,3 +247,7 @@ Route::get('/test', function () {
 
 // Payment Simulation Routes
 Route::get('/payment/{transaction}/simulate', [PaymentSimulationController::class, 'show'])->name('payment.simulate');
+
+// senang pay 
+Route::get('/payment/return', [SenangPayController::class, 'handleReturn']);
+Route::post('/payment/callback', [SenangPayController::class, 'handleCallback']);

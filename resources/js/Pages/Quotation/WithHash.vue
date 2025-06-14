@@ -1359,23 +1359,20 @@ const proceedToPayment = async () => {
 
     try {
         isProcessingPayment.value = true;
-        const transactionResponse = await axios.post('/calculator/api/transactions', {
-            booking_id: bookingSuccess.value.id,
-            amount: bookingSuccess.value.total_price,
-            status: 'pending'
-        });
 
-        if (transactionResponse.data.success) {
-            window.location.href = route('api.payment.show', bookingSuccess.value.uuid);
+        const response = await axios.post(route('api.payment.handle', bookingSuccess.value.uuid));
+
+        if (response.data.success && response.data.redirect_url) {
+            window.location.href = response.data.redirect_url;
         } else {
-            throw new Error(transactionResponse.data.message || 'Failed to create transaction');
+            throw new Error(response.data.message || 'Payment URL not received');
         }
     } catch (error) {
-        console.error('Transaction creation error:', error);
+        console.error('Payment error:', error);
         await Swal.fire({
             icon: 'error',
-            title: 'Payment Initialization Failed',
-            text: error.response?.data?.message || error.message || 'Failed to initialize payment. Please try again.',
+            title: 'Payment Failed',
+            text: error.response?.data?.message || error.message,
             confirmButtonColor: '#EF4444'
         });
     } finally {

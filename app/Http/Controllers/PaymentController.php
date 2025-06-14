@@ -7,13 +7,13 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 
 class PaymentController extends Controller
 {
     public function show($uuid)
     {
-        $booking = Booking::where('uuid', $uuid)->first();
-        // Retrieve or create the latest pending transaction for this booking
+        $booking = Booking::where('uuid', $uuid)->firstOrFail();
         $transaction = Transaction::where('booking_id', $booking->id)
             ->whereIn('status', ['in progress', 'pending'])
             ->latest()
@@ -27,110 +27,71 @@ class PaymentController extends Controller
 
     public function handlePayment(Request $request, $uuid)
     {
-        $booking = Booking::where('uuid', $uuid)->first();
-        
-        // Validate request
-        $validated = $request->validate([
-            'payment_method' => 'nullable|string|in:credit_card,bank_transfer',
-            'status' => 'nullable|in:success,failed',
-            'transaction_id' => 'required|exists:transactions,id',
-            'is_simulation' => 'nullable|boolean'
+        $booking = Booking::where('uuid', $uuid)->firstOrFail();
+
+        // Create or get pending transaction
+        $transaction = Transaction::firstOrCreate(
+            ['booking_id' => $booking->id, 'status' => 'pending'],
+            ['amount' => $booking->total_price]
+        );
+
+        // Generate senangPay URL
+        $detail = 'Booking #' . $booking->id;
+        $amount = number_format($transaction->amount, 2, '.', '');
+        $order_id = $booking->uuid;
+        $secret = config('senangpay.secret_key');
+        $merchant_id = config('senangpay.merchant_id');
+
+        $hash = hash('sha256', $secret . $detail . $amount . $order_id);
+
+        $url = config('senangpay.base_url') . "{$merchant_id}?detail=" . urlencode($detail) .
+            "&amount={$amount}&order_id={$order_id}&hash={$hash}";
+
+        // ✅ Return the URL to be used by frontend for redirection
+        return response()->json([
+            'success' => true,
+            'redirect_url' => $url
+        ]);
+    }
+
+    public function handleSenangPayCallback(Request $request)
+    {
+        $booking = Booking::where('uuid', $request->order_id)->first();
+
+        if (!$booking) return response('Booking not found', 404);
+
+        $transaction = Transaction::where('booking_id', $booking->id)->latest()->first();
+
+        $statusText = $request->status == '1' ? 'paid' : 'failed';
+
+        $transaction->update([
+            'status' => $statusText,
+            'payment_method' => 'senangpay',
+            'transaction_id' => $request->transaction_id ?? null,
+            'payment_details' => json_encode($request->all())
         ]);
 
-        try {
-            DB::beginTransaction();
+        $booking->update([
+            'payment_status' => $statusText
+        ]);
 
-            $transaction = Transaction::findOrFail($validated['transaction_id']);
-
-            // Handle payment based on whether it's a simulation or real payment
-            if ($validated['is_simulation'] ?? false) {
-                // This is a simulation
-                $transaction->update([
-                    'status' => $validated['status'],
-                    'payment_method' => 'simulation',
-                    'transaction_id' => 'SIM_' . time(),
-                    'payment_details' => json_encode([
-                        'payment_time' => now(),
-                        'payment_method' => 'simulation',
-                        'simulation_status' => $validated['status']
-                    ])
-                ]);
-            } else {
-                // This is a real payment
-                // Here you would integrate with your payment gateway
-                $paymentSuccess = $this->processPaymentWithGateway($transaction);
-
-                if (!$paymentSuccess) {
-                    throw new \Exception('Payment processing failed');
-                }
-
-                $transaction->update([
-                    'status' => 'paid',
-                    'payment_method' => $validated['payment_method'] ?? 'credit_card',
-                    'transaction_id' => 'TRANS_' . time(), // Replace with actual transaction ID from payment gateway
-                    'payment_details' => json_encode([
-                        'payment_time' => now(),
-                        'payment_method' => $validated['payment_method'] ?? 'credit_card'
-                    ])
-                ]);
-            }
-
-            // Update booking payment status if payment was successful
-            if ($transaction->status === 'paid' || $transaction->status === 'success') {
-                $booking->update(['payment_status' => 'paid']);
-            }
-
-            DB::commit();
-
-            // Return appropriate response based on payment type
-            if ($validated['is_simulation'] ?? false) {
-                return response()->json([
-                    'success' => true,
-                    'transaction' => $transaction
-                ]);
-            } else {
-                return redirect()->route('bookings.payment.success', $booking);
-            }
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            if ($validated['is_simulation'] ?? false) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Payment simulation failed: ' . $e->getMessage()
-                ], 500);
-            } else {
-                return redirect()->route('bookings.payment.failed', $booking)
-                    ->with('error', 'Payment failed: ' . $e->getMessage());
-            }
-        }
+        return response('OK');
     }
 
     public function success($uuid)
     {
-        $booking = Booking::where('uuid', $uuid)->first();
-        $bookingUuid = $booking->uuid;
-        $package = $booking->package;
-        $packageUuid = $package->uuid;
+        $booking = Booking::where('uuid', $uuid)->firstOrFail();
         return Inertia::render('Payments/Success', [
-            'bookingUuid' => $bookingUuid,
-            'packageUuid' => $packageUuid
+            'bookingUuid' => $booking->uuid,
+            'packageUuid' => $booking->package->uuid,
         ]);
     }
 
     public function failed($uuid)
     {
-        $booking = Booking::where('uuid', $uuid)->first();
+        $booking = Booking::where('uuid', $uuid)->firstOrFail();
         return Inertia::render('Payments/Failed', [
             'booking' => $booking
         ]);
-    }
-
-    private function processPaymentWithGateway($transaction)
-    {
-        // This is a placeholder for payment gateway integration
-        // In a real application, you would integrate with Stripe, PayPal, etc.
-        return true;
     }
 }
