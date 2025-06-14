@@ -215,19 +215,17 @@
                                     </button>
                                 </div>
                                 <table class="min-w-full divide-y divide-gray-200">
-                                    <thead>
-                                        <tr class="bg-gray-100">
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
-                                        </tr>
-                                    </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         <template v-for="config in configurations" :key="config.id">
+                                            <tr class="bg-gray-100">
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
+                                            </tr>
                                             <template v-for="combination in VALID_OCCUPANCY_COMBINATIONS" :key="`${config.id}-${combination.adults}-${combination.children}-${combination.infants}`">
                                                 <tr v-if="isValidOccupancy(combination.adults, combination.children, combination.infants, 'adult', true)">
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -289,19 +287,17 @@
                                     </button>
                                 </div>
                                 <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-100">
-                                        <tr>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
-                                        </tr>
-                                    </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         <template v-for="config in configurations" :key="config.id">
+                                            <tr class="bg-gray-100">
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
+                                            </tr>
                                             <template v-for="combination in VALID_OCCUPANCY_COMBINATIONS" :key="`${config.id}-${combination.adults}-${combination.children}-${combination.infants}`">
                                                 <tr v-if="isValidOccupancy(combination.adults, combination.children, combination.infants, 'adult', true)">
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
