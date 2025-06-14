@@ -249,5 +249,6 @@ Route::get('/test', function () {
 Route::get('/payment/{transaction}/simulate', [PaymentSimulationController::class, 'show'])->name('payment.simulate');
 
 // senang pay 
+Route::get('/payment/initiate/{uuid}', [PaymentController::class, 'handlePayment'])->name('payment.initiate');
 Route::get('/payment/return', [SenangPayController::class, 'handleReturn']);
 Route::post('/payment/callback', [SenangPayController::class, 'handleCallback']);

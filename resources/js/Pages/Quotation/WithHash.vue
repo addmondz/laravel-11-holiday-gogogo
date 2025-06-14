@@ -1354,30 +1354,13 @@ const submitBooking = async () => {
     }
 };
 
-const proceedToPayment = async () => {
+const proceedToPayment = () => {
     if (!bookingSuccess.value) return;
 
-    try {
-        isProcessingPayment.value = true;
+    isProcessingPayment.value = true;
 
-        const response = await axios.post(route('api.payment.handle', bookingSuccess.value.uuid));
-
-        if (response.data.success && response.data.redirect_url) {
-            window.location.href = response.data.redirect_url;
-        } else {
-            throw new Error(response.data.message || 'Payment URL not received');
-        }
-    } catch (error) {
-        console.error('Payment error:', error);
-        await Swal.fire({
-            icon: 'error',
-            title: 'Payment Failed',
-            text: error.response?.data?.message || error.message,
-            confirmButtonColor: '#EF4444'
-        });
-    } finally {
-        isProcessingPayment.value = false;
-    }
+    // ✅ Use the web route (not the API route)
+    window.location.href = route('payment.initiate', bookingSuccess.value.uuid);
 };
 
 // Add a computed property for max start date

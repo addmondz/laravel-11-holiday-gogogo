@@ -6,8 +6,7 @@ use App\Models\Booking;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -29,28 +28,28 @@ class PaymentController extends Controller
     {
         $booking = Booking::where('uuid', $uuid)->firstOrFail();
 
-        // Create or get pending transaction
         $transaction = Transaction::firstOrCreate(
             ['booking_id' => $booking->id, 'status' => 'pending'],
             ['amount' => $booking->total_price]
         );
 
-        // Generate senangPay URL
         $detail = 'Booking #' . $booking->id;
         $amount = number_format($transaction->amount, 2, '.', '');
         $order_id = $booking->uuid;
         $secret = config('senangpay.secret_key');
         $merchant_id = config('senangpay.merchant_id');
 
-        $hash = hash('sha256', $secret . $detail . $amount . $order_id);
+        $hash = hash_hmac('sha256', $secret . $detail . $amount . $order_id, $secret);
 
-        $url = config('senangpay.base_url') . "{$merchant_id}?detail=" . urlencode($detail) .
-            "&amount={$amount}&order_id={$order_id}&hash={$hash}";
-
-        // ✅ Return the URL to be used by frontend for redirection
-        return response()->json([
-            'success' => true,
-            'redirect_url' => $url
+        return view('payments.senangpay_form', [
+            'merchant_id' => $merchant_id,
+            'detail' => $detail,
+            'amount' => $amount,
+            'order_id' => $order_id,
+            'name' => $booking->booking_name,
+            'email' => 'test@example.com', // Get from user or fallback
+            'phone' => $booking->phone_number,
+            'hash' => $hash
         ]);
     }
 
