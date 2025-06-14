@@ -6,7 +6,7 @@
                 @click="showAddSeasonTypeModal = true"
                 class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
             >
-                Add Season Type
+                Add Season
             </button>
         </div>
 
@@ -67,31 +67,48 @@
             addSeasonTypeErrors.value = '';
         }">
             <div class="p-6">
-                <h2 class="text-lg font-medium text-gray-900 mb-4">Add Season Type</h2>
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Add Season</h2>
                 <div v-if="addSeasonTypeErrors" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
                     {{ addSeasonTypeErrors }}
                 </div>
                 <form @submit.prevent="submitSeasonType">
                     <div class="space-y-4">
+                        <!-- Season Type Selection -->
                         <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                            <label for="season_type_id" class="block text-sm font-medium text-gray-700">Season Type</label>
+                            <select
+                                id="season_type_id"
+                                v-model="seasonTypeForm.season_type_id"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                            >
+                                <option value="">Select a season type</option>
+                                <option v-for="type in seasonTypes" :key="type.id" :value="type.id">
+                                    {{ type.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Date Range Picker -->
+                        <div>
+                            <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
                             <input
-                                type="text"
-                                id="name"
-                                v-model="seasonTypeForm.name"
+                                type="date"
+                                id="start_date"
+                                v-model="seasonTypeForm.start_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required
                             />
                         </div>
-
                         <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea
-                                id="description"
-                                v-model="seasonTypeForm.description"
+                            <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                            <input
+                                type="date"
+                                id="end_date"
+                                v-model="seasonTypeForm.end_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                rows="3"
-                            ></textarea>
+                                required
+                            />
                         </div>
                     </div>
 
@@ -112,7 +129,7 @@
                             class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                             :disabled="seasonTypeForm.processing"
                         >
-                            Create Season Type
+                            Create Season
                         </button>
                     </div>
                 </form>
@@ -200,6 +217,11 @@ const props = defineProps({
             last_page: 1,
             per_page: 10
         })
+    },
+    seasonTypes: {
+        type: Array,
+        required: true,
+        default: () => []
     }
 });
 
@@ -227,8 +249,9 @@ const seasonsPagination = computed(() => ({
 }));
 
 const seasonTypeForm = useForm({
-    name: '',
-    description: '',
+    season_type_id: '',
+    start_date: '',
+    end_date: '',
     package_id: props.package.id,
     return_to_package: true
 });
@@ -278,12 +301,20 @@ const handlePageChange = async (page) => {
 };
 
 const submitSeasonType = () => {
-    if (!seasonTypeForm.name?.trim()) {
-        addSeasonTypeErrors.value = 'Season type name is required';
+    if (!seasonTypeForm.season_type_id) {
+        addSeasonTypeErrors.value = 'Season type is required';
+        return;
+    }
+    if (!seasonTypeForm.start_date) {
+        addSeasonTypeErrors.value = 'Start date is required';
+        return;
+    }
+    if (!seasonTypeForm.end_date) {
+        addSeasonTypeErrors.value = 'End date is required';
         return;
     }
 
-    seasonTypeForm.post(route('season-types.store'), {
+    seasonTypeForm.post(route('seasons.store'), {
         preserveScroll: true,
         onSuccess: () => {
             showAddSeasonTypeModal.value = false;
@@ -291,20 +322,21 @@ const submitSeasonType = () => {
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
-                text: 'Season type created successfully'
+                text: 'Season created successfully'
             });
-            // handlePageChange(1);
             router.get(route('packages.show', props.package.id));
         },
         onError: (errors) => {
-            if (errors.name) {
-                addSeasonTypeErrors.value = errors.name;
-            } else if (errors.description) {
-                addSeasonTypeErrors.value = errors.description;
-            } else if (errors.package_id) {
-                addSeasonTypeErrors.value = errors.package_id;
+            if (errors.season_type_id) {
+                addSeasonTypeErrors.value = errors.season_type_id;
+            } else if (errors.start_date) {
+                addSeasonTypeErrors.value = errors.start_date;
+            } else if (errors.end_date) {
+                addSeasonTypeErrors.value = errors.end_date;
+            } else if (errors.date_range) {
+                addSeasonTypeErrors.value = errors.date_range;
             } else {
-                addSeasonTypeErrors.value = 'Failed to create season type. Please try again.';
+                addSeasonTypeErrors.value = 'Failed to create season. Please try again.';
             }
         }
     });
