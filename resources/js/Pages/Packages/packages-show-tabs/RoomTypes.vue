@@ -15,7 +15,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Occupancy</th>
+                        <!-- <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Occupancy</th> -->
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -36,7 +36,7 @@
                             <span v-else class="text-gray-400 text-sm">No images</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.max_occupancy }}</td>
+                        <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.max_occupancy }}</td> -->
                         <td class="px-6 py-4 text-sm text-gray-900">{{ roomType.description }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button
@@ -97,7 +97,7 @@
                             />
                         </div>
 
-                        <div>
+                        <!-- <div>
                             <label for="max_occupancy" class="block text-sm font-medium text-gray-700">Max Occupancy</label>
                             <input
                                 type="number"
@@ -107,7 +107,7 @@
                                 min="1"
                                 required
                             />
-                        </div>
+                        </div> -->
 
                         <div>
                             <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
@@ -209,7 +209,7 @@
                             />
                         </div>
 
-                        <div>
+                        <!-- <div>
                             <label for="edit_max_occupancy" class="block text-sm font-medium text-gray-700">Max Occupancy</label>
                             <input
                                 type="number"
@@ -219,7 +219,7 @@
                                 min="1"
                                 required
                             />
-                        </div>
+                        </div> -->
 
                         <div>
                             <label for="edit_description" class="block text-sm font-medium text-gray-700">Description</label>
@@ -355,7 +355,7 @@ const roomTypesPagination = computed(() => ({
 const roomTypeForm = useForm({
     name: '',
     description: '',
-    max_occupancy: 2,
+    max_occupancy: 4,
     package_id: props.package.id,
     return_to_package: true,
     images: [],

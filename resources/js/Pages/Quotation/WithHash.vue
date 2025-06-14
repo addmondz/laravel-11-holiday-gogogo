@@ -291,9 +291,9 @@
                                                             <div class="p-3 space-y-1">
                                                                 <div class="flex items-start justify-between">
                                                                     <h5 class="font-medium text-gray-900 text-sm">{{ roomType.name }}</h5>
-                                                                    <span class="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded whitespace-nowrap">
+                                                                    <!-- <span class="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded whitespace-nowrap">
                                                                         Max {{ roomType.max_occupancy }} pax
-                                                                    </span>
+                                                                    </span> -->
                                                                 </div>
                                                                 <p class="text-xs text-gray-600 line-clamp-2">{{ roomType.description }}</p>
                                                             </div>
