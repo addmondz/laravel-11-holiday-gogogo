@@ -56,6 +56,8 @@
                                 :packageId="pkg.id"
                                 :seasonTypes="seasonTypes"
                                 :packageUniqueRoomTypes="packageUniqueRoomTypes"
+                                :allSeasonTypes="allSeasonTypes"
+                                :allDateTypes="allDateTypes"
                             />
                         </div>
                     </div>
@@ -107,6 +109,14 @@ const props = defineProps({
         required: true
     },
     packageUniqueRoomTypes: {
+        type: Object,
+        required: true
+    },
+    allSeasonTypes: {
+        type: Object,
+        required: true
+    },
+    allDateTypes: {
         type: Object,
         required: true
     }

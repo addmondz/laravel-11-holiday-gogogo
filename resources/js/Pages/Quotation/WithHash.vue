@@ -308,7 +308,7 @@
                                         </div>
 
                                         <!-- Guest Selection -->
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
                                                 <label :for="'adults-' + index" 
                                                        class="block text-sm font-medium text-gray-700 mb-1">
@@ -318,14 +318,14 @@
                                                     <input
                                                         :id="'adults-' + index"
                                                         type="number"
-                                                        v-model="room.adults"
+                                                        v-model.number="room.adults"
                                                         min="1"
                                                         max="4"
                                                         :class="[
                                                             'block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
                                                             validationErrors.rooms?.[index]?.adults ? 'border-red-500' : 'border-gray-300'
                                                         ]"
-                                                        @input="room.children = Math.min(room.children, getRoomMaxChildren(room))"
+                                                        @input="handleAdultsChange(room, index)"
                                                     />
                                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                                         <span class="text-gray-500 sm:text-sm">/ 4</span>
@@ -334,6 +334,10 @@
                                                 <p v-if="validationErrors.rooms?.[index]?.adults" 
                                                    class="mt-1 text-sm text-red-600">
                                                     {{ validationErrors.rooms[index].adults }}
+                                                </p>
+                                                <p v-if="helperMessages[index]?.adults" 
+                                                   class="mt-1 text-sm text-indigo-600 animate-fade-in">
+                                                    {{ helperMessages[index].adults }}
                                                 </p>
                                             </div>
                                             <div>
@@ -345,23 +349,66 @@
                                                     <input
                                                         :id="'children-' + index"
                                                         type="number"
-                                                        v-model="room.children"
+                                                        v-model.number="room.children"
                                                         min="0"
                                                         :max="getRoomMaxChildren(room)"
-                                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                        :class="[
+                                                            'block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                                            validationErrors.rooms?.[index]?.children ? 'border-red-500' : 'border-gray-300'
+                                                        ]"
+                                                        @input="handleChildrenChange(room, index)"
                                                     />
                                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                                         <span class="text-gray-500 sm:text-sm">/ {{ getRoomMaxChildren(room) }}</span>
                                                     </div>
                                                 </div>
+                                                <p v-if="validationErrors.rooms?.[index]?.children" 
+                                                   class="mt-1 text-sm text-red-600">
+                                                    {{ validationErrors.rooms[index].children }}
+                                                </p>
+                                                <p v-if="helperMessages[index]?.children" 
+                                                   class="mt-1 text-sm text-indigo-600 animate-fade-in">
+                                                    {{ helperMessages[index].children }}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label :for="'infants-' + index" 
+                                                       class="block text-sm font-medium text-gray-700 mb-1">
+                                                    Number of Infants
+                                                </label>
+                                                <div class="relative">
+                                                    <input
+                                                        :id="'infants-' + index"
+                                                        type="number"
+                                                        v-model.number="room.infants"
+                                                        min="0"
+                                                        :max="getRoomMaxInfants(room)"
+                                                        :class="[
+                                                            'block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                                            validationErrors.rooms?.[index]?.infants ? 'border-red-500' : 'border-gray-300'
+                                                        ]"
+                                                        @input="handleInfantsChange(room, index)"
+                                                    />
+                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                        <span class="text-gray-500 sm:text-sm">/ {{ getRoomMaxInfants(room) }}</span>
+                                                    </div>
+                                                </div>
+                                                <p v-if="validationErrors.rooms?.[index]?.infants" 
+                                                   class="mt-1 text-sm text-red-600">
+                                                    {{ validationErrors.rooms[index].infants }}
+                                                </p>
+                                                <p v-if="helperMessages[index]?.infants" 
+                                                   class="mt-1 text-sm text-indigo-600 animate-fade-in">
+                                                    {{ helperMessages[index].infants }}
+                                                </p>
                                             </div>
                                         </div>
 
                                         <!-- Room Summary -->
                                         <div class="bg-gray-50 rounded-md p-3">
                                             <p class="text-sm text-gray-600">
-                                                Room {{ index + 1 }}: {{ room.adults + room.children }} guests
-                                                ({{ room.adults }} adults, {{ room.children }} children)
+                                                Room {{ index + 1 }}: {{ room.adults + room.children + room.infants }} guests
+                                                ({{ room.adults }} adults, {{ room.children }} children, {{ room.infants }} infants)
                                             </p>
                                         </div>
                                     </div>
@@ -439,8 +486,9 @@
                                     <p class="text-sm text-gray-600">Total Guests</p>
                                     <p class="font-medium">
                                         {{ priceBreakdown.summary.total_adults || 0 }} Adults, 
-                                        {{ priceBreakdown.summary.total_children || 0 }} Children
-                                        ({{ (priceBreakdown.summary.total_adults || 0) + (priceBreakdown.summary.total_children || 0) }} Total)
+                                        {{ priceBreakdown.summary.total_children || 0 }} Children,
+                                        {{ priceBreakdown.summary.total_infants || 0 }} Infants
+                                        ({{ (priceBreakdown.summary.total_adults || 0) + (priceBreakdown.summary.total_children || 0) + (priceBreakdown.summary.total_infants || 0) }} Total)
                                     </p>
                                 </div>
                                 <div>
@@ -470,7 +518,7 @@
                                         <h4 class="text-sm font-medium text-gray-900">
                                             Room {{ roomIndex + 1 }}: {{ room.room_type_name }}
                                             <span class="text-gray-500 ml-2">
-                                                ({{ room.adults }} Adults, {{ room.children }} Children)
+                                                ({{ room.adults ?? 0 }} Adults, {{ room.children ?? 0 }} Children, {{ room.infants ?? 0 }} Infants)
                                             </span>
                                         </h4>
                                     </div>
@@ -509,14 +557,16 @@
                                                         <div class="text-gray-900">{{ formatNumber(night.base_charge.total) }}</div>
                                                         <div class="text-xs text-gray-500">
                                                             Adult: {{ formatNumber(night.base_charge.adult.total) }}<br>
-                                                            Child: {{ formatNumber(night.base_charge.child.total) }}
+                                                            Child: {{ formatNumber(night.base_charge.child.total) }}<br>
+                                                            Infant: {{ formatNumber(night.base_charge.infant.total) }}
                                                         </div>
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
                                                         <div class="text-gray-900">{{ formatNumber(night.surcharge.total) }}</div>
                                                         <div class="text-xs text-gray-500">
                                                             Adult: {{ formatNumber(night.surcharge.adult.total) }}<br>
-                                                            Child: {{ formatNumber(night.surcharge.child.total) }}
+                                                            Child: {{ formatNumber(night.surcharge.child.total) }}<br>
+                                                            Infant: {{ formatNumber(night.surcharge.infant.total) }}
                                                         </div>
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
@@ -532,14 +582,16 @@
                                                         <div class="text-gray-900">MYR {{ formatNumber(room.summary.base_charges.total) }}</div>
                                                         <div class="text-xs text-gray-500">
                                                             Adult: {{ formatNumber(room.summary.base_charges.adult.total) }}<br>
-                                                            Child: {{ formatNumber(room.summary.base_charges.child.total) }}
+                                                            Child: {{ formatNumber(room.summary.base_charges.child.total) }}<br>
+                                                            Infant: {{ formatNumber(room.summary.base_charges.infant.total) }}
                                                         </div>
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
                                                         <div class="text-gray-900">MYR {{ formatNumber(room.summary.surcharges.total) }}</div>
                                                         <div class="text-xs text-gray-500">
                                                             Adult: {{ formatNumber(room.summary.surcharges.adult.total) }}<br>
-                                                            Child: {{ formatNumber(room.summary.surcharges.child.total) }}
+                                                            Child: {{ formatNumber(room.summary.surcharges.child.total) }}<br>
+                                                            Infant: {{ formatNumber(room.summary.base_charges.infant.total) }}
                                                         </div>
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
@@ -561,7 +613,8 @@
                                             MYR {{ formatNumber(priceBreakdown.summary.base_charges.total) }}
                                             <div class="text-sm text-gray-500">
                                                 Adult: {{ formatNumber(priceBreakdown.summary.base_charges.adult.total) }}<br>
-                                                Child: {{ formatNumber(priceBreakdown.summary.base_charges.child.total) }}
+                                                Child: {{ formatNumber(priceBreakdown.summary.base_charges.child.total) }}<br>
+                                                Infant: {{ formatNumber(priceBreakdown.summary.base_charges.infant.total) }}
                                             </div>
                                         </div>
                                     </div>
@@ -571,7 +624,8 @@
                                             MYR {{ formatNumber(priceBreakdown.summary.surcharges.total) }}
                                             <div class="text-sm text-gray-500">
                                                 Adult: {{ formatNumber(priceBreakdown.summary.surcharges.adult.total) }}<br>
-                                                Child: {{ formatNumber(priceBreakdown.summary.surcharges.child.total) }}
+                                                Child: {{ formatNumber(priceBreakdown.summary.surcharges.child.total) }}<br>
+                                                Infant: {{ formatNumber(priceBreakdown.summary.surcharges.infant.total) }}
                                             </div>
                                         </div>
                                     </div>
@@ -746,7 +800,7 @@
                                         <div class="space-y-2">
                                             <template v-for="(room, roomIndex) in bookingSuccess.rooms" :key="roomIndex">
                                                 <p class="text-sm text-gray-600 font-medium">
-                                                    Room {{ roomIndex + 1 }}:&nbsp; {{ room.room_type.name }} ({{ room.adults }} Adults, {{ room.children }} Children)    
+                                                    Room {{ roomIndex + 1 }}:&nbsp; {{ room.room_type.name }} ({{ room.adults }} Adults, {{ room.children }} Children, {{ room.infants }} Infants)    
                                                 </p>
                                             </template>
                                         </div>
@@ -768,7 +822,7 @@
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                                         <h4 class="text-sm font-medium text-gray-500 mb-3">GUESTS</h4>
-                                        <p class="text-lg text-gray-900">{{ bookingSuccess.adults }} Adults, {{ bookingSuccess.children }} Children</p>
+                                        <p class="text-lg text-gray-900">{{ bookingSuccess.adults }} Adults, {{ bookingSuccess.children }} Children, {{ bookingSuccess.infants }} Infants</p>
                                     </div>
                                 </div>
                             </div>
@@ -953,13 +1007,14 @@ const form = useForm({
     rooms: [{
         room_type_id: null,
         adults: 1,
-        children: 0
+        children: 0,
+        infants: 0
     }]
 });
 
 // Add computed properties for room management
 const totalGuests = computed(() => {
-    return form.rooms.reduce((total, room) => total + room.adults + room.children, 0);
+    return form.rooms.reduce((total, room) => total + room.adults + room.children + room.infants, 0);
 });
 
 const canAddRoom = computed(() => {
@@ -971,7 +1026,8 @@ const addRoom = () => {
         form.rooms.push({
             room_type_id: null,
             adults: 1,
-            children: 0
+            children: 0,
+            infants: 0
         });
     }
 };
@@ -983,7 +1039,13 @@ const removeRoom = (index) => {
 };
 
 const getRoomMaxChildren = (room) => {
-    return Math.max(0, 4 - room.adults);
+    const maxOccupancy = roomTypes.value.find(rt => rt.id === room.room_type_id)?.max_occupancy || 4;
+    return Math.max(0, maxOccupancy - room.adults - room.infants);
+};
+
+const getRoomMaxInfants = (room) => {
+    const maxOccupancy = roomTypes.value.find(rt => rt.id === room.room_type_id)?.max_occupancy || 4;
+    return Math.max(0, maxOccupancy - room.adults - room.children);
 };
 
 // Update validation logic
@@ -1000,7 +1062,8 @@ const validateForm = () => {
         const roomErrors = {
             room_type_id: '',
             adults: '',
-            children: ''
+            children: '',
+            infants: ''
         };
 
         if (!room.room_type_id) {
@@ -1008,13 +1071,17 @@ const validateForm = () => {
             isValid = false;
         }
 
+        const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
+        const maxOccupancy = roomType?.max_occupancy || 4;
+        const totalOccupants = room.adults + room.children + room.infants;
+
         if (!room.adults || room.adults < 1) {
             roomErrors.adults = 'Please select at least 1 adult';
             isValid = false;
         }
 
-        if (room.adults + room.children > 4) {
-            roomErrors.adults = 'Maximum 4 guests per room';
+        if (totalOccupants > maxOccupancy) {
+            roomErrors.adults = `Maximum ${maxOccupancy} guests per room (including infants)`;
             isValid = false;
         }
 
@@ -1099,7 +1166,8 @@ const calculatePrice = async () => {
             rooms: form.rooms.map(room => ({
                 room_type: room.room_type_id,
                 adults: room.adults,
-                children: room.children
+                children: room.children,
+                infants: room.infants
             })),
             start_date: form.start_date,
             end_date: form.end_date
@@ -1112,6 +1180,7 @@ const calculatePrice = async () => {
             // Calculate total guests
             const totalAdults = form.rooms.reduce((sum, room) => sum + room.adults, 0);
             const totalChildren = form.rooms.reduce((sum, room) => sum + room.children, 0);
+            const totalInfants = form.rooms.reduce((sum, room) => sum + room.infants, 0);
             
             // Update booking summary with total guests
             bookingSummary.value = {
@@ -1120,7 +1189,8 @@ const calculatePrice = async () => {
                     return {
                         roomType: roomType?.name || '',
                         adults: room.adults,
-                        children: room.children
+                        children: room.children,
+                        infants: room.infants
                     };
                 }),
                 startDate: form.start_date,
@@ -1130,14 +1200,16 @@ const calculatePrice = async () => {
                 dateType: response.data.date_type || '',
                 isWeekend: response.data.is_weekend || false,
                 totalAdults,
-                totalChildren
+                totalChildren,
+                totalInfants
             };
 
             // Add total guests to price breakdown summary
             priceBreakdown.value.summary = {
                 ...priceBreakdown.value.summary,
                 total_adults: totalAdults,
-                total_children: totalChildren
+                total_children: totalChildren,
+                total_infants: totalInfants
             };
 
             currentStep.value = 2;
@@ -1235,7 +1307,8 @@ const submitBooking = async () => {
             rooms: form.rooms.map(room => ({
                 room_type_id: room.room_type_id,
                 adults: room.adults,
-                children: room.children
+                children: room.children,
+                infants: room.infants
             })),
             booking_name: bookingForm.value.booking_name,
             phone_number: bookingForm.value.phone_number,
@@ -1332,6 +1405,147 @@ const getRoomTypeCounts = (rooms) => {
         counts[roomTypeName] = (counts[roomTypeName] || 0) + 1;
     });
     return counts;
+};
+
+const validateRoomOccupancy = (room, index) => {
+    const roomErrors = {
+        room_type_id: '',
+        adults: '',
+        children: '',
+        infants: ''
+    };
+
+    // Get room type and max occupancy
+    const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
+    const maxOccupancy = roomType?.max_occupancy || 4;
+
+    // Validate adults
+    if (!room.adults || room.adults < 1) {
+        roomErrors.adults = 'At least 1 adult is required';
+        return roomErrors;
+    }
+
+    // Validate total occupancy
+    const totalOccupants = room.adults + room.children + room.infants;
+    if (totalOccupants > maxOccupancy) {
+        const excess = totalOccupants - maxOccupancy;
+        if (room.infants > 0) {
+            roomErrors.infants = `Too many guests. Please reduce by ${excess} guest(s)`;
+        } else if (room.children > 0) {
+            roomErrors.children = `Too many guests. Please reduce by ${excess} guest(s)`;
+        } else {
+            roomErrors.adults = `Maximum ${maxOccupancy} guests per room`;
+        }
+        return roomErrors;
+    }
+
+    // Validate children
+    const maxChildren = getRoomMaxChildren(room);
+    if (room.children > maxChildren) {
+        roomErrors.children = `Maximum ${maxChildren} children allowed for this room`;
+        return roomErrors;
+    }
+
+    // Validate infants
+    const maxInfants = getRoomMaxInfants(room);
+    if (room.infants > maxInfants) {
+        roomErrors.infants = `Maximum ${maxInfants} infants allowed for this room`;
+        return roomErrors;
+    }
+
+    return roomErrors;
+};
+
+// Add a new ref for helper messages
+const helperMessages = ref({});
+
+const showHelperMessage = (roomIndex, field, message, duration = 3000) => {
+    if (!helperMessages.value[roomIndex]) {
+        helperMessages.value[roomIndex] = {};
+    }
+    helperMessages.value[roomIndex][field] = message;
+    
+    // Clear the message after duration
+    setTimeout(() => {
+        if (helperMessages.value[roomIndex]) {
+            helperMessages.value[roomIndex][field] = '';
+        }
+    }, duration);
+};
+
+const handleAdultsChange = (room, index) => {
+    const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
+    const maxOccupancy = roomType?.max_occupancy || 4;
+    const oldAdults = room.adults;
+    
+    // Ensure adults is at least 1
+    room.adults = Math.max(1, Math.min(4, parseInt(room.adults) || 1));
+    
+    // Show helper message if value was adjusted
+    if (oldAdults !== room.adults) {
+        showHelperMessage(index, 'adults', `Maximum ${maxOccupancy} guests per room. Adults adjusted to ${room.adults}`);
+    }
+    
+    // Adjust children and infants if needed
+    const maxChildren = getRoomMaxChildren(room);
+    const maxInfants = getRoomMaxInfants(room);
+    
+    if (room.children > maxChildren) {
+        const oldChildren = room.children;
+        room.children = maxChildren;
+        showHelperMessage(index, 'children', `Children reduced to ${maxChildren} to maintain maximum occupancy of ${maxOccupancy} guests`);
+    }
+    
+    if (room.infants > maxInfants) {
+        const oldInfants = room.infants;
+        room.infants = maxInfants;
+        showHelperMessage(index, 'infants', `Infants reduced to ${maxInfants} to maintain maximum occupancy of ${maxOccupancy} guests`);
+    }
+    
+    // Validate and update errors
+    validationErrors.value.rooms[index] = validateRoomOccupancy(room, index);
+};
+
+const handleChildrenChange = (room, index) => {
+    const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
+    const maxOccupancy = roomType?.max_occupancy || 4;
+    const oldChildren = room.children;
+    
+    // Ensure children is not negative
+    room.children = Math.max(0, Math.min(getRoomMaxChildren(room), parseInt(room.children) || 0));
+    
+    // Show helper message if value was adjusted
+    if (oldChildren !== room.children) {
+        showHelperMessage(index, 'children', `Maximum ${maxOccupancy} guests per room. Children adjusted to ${room.children}`);
+    }
+    
+    // Adjust infants if needed
+    const maxInfants = getRoomMaxInfants(room);
+    if (room.infants > maxInfants) {
+        const oldInfants = room.infants;
+        room.infants = maxInfants;
+        showHelperMessage(index, 'infants', `Infants reduced to ${maxInfants} to maintain maximum occupancy of ${maxOccupancy} guests`);
+    }
+    
+    // Validate and update errors
+    validationErrors.value.rooms[index] = validateRoomOccupancy(room, index);
+};
+
+const handleInfantsChange = (room, index) => {
+    const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
+    const maxOccupancy = roomType?.max_occupancy || 4;
+    const oldInfants = room.infants;
+    
+    // Ensure infants is not negative
+    room.infants = Math.max(0, Math.min(getRoomMaxInfants(room), parseInt(room.infants) || 0));
+    
+    // Show helper message if value was adjusted
+    if (oldInfants !== room.infants) {
+        showHelperMessage(index, 'infants', `Maximum ${maxOccupancy} guests per room. Infants adjusted to ${room.infants}`);
+    }
+    
+    // Validate and update errors
+    validationErrors.value.rooms[index] = validateRoomOccupancy(room, index);
 };
 </script>
 
@@ -1493,4 +1707,20 @@ const getRoomTypeCounts = (rooms) => {
 }
 
 /* Remove navigation button styles since we're not using them anymore */
+
+/* Add animation for helper messages */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 </style>

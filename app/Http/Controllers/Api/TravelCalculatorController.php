@@ -237,6 +237,7 @@ class TravelCalculatorController extends Controller
             'rooms.*.room_type' => 'required|exists:room_types,id',
             'rooms.*.adults' => 'required|integer|min:1|max:4',
             'rooms.*.children' => 'required|integer|min:0|max:4',
+            'rooms.*.infants' => 'required|integer|min:0|max:2',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
         ]);
@@ -276,6 +277,7 @@ class TravelCalculatorController extends Controller
                 $roomTypeId = $room['room_type'];
                 $adults = $room['adults'];
                 $children = $room['children'];
+                $infants = $room['infants'];
                 $roomNights = [];
 
                 for ($date = $startDate->copy(); $date->lt($endDate); $date->addDay()) {
@@ -328,16 +330,19 @@ class TravelCalculatorController extends Controller
 
                     $prices = json_decode($packageConfig->configuration_prices, true) ?? [];
 
-                    $keyAdult = "{$adults}_a_{$children}_c_a";
-                    $keyChild = "{$adults}_a_{$children}_c_c";
+                    $keyAdult = "{$adults}_a_{$children}_c_{$infants}_i_a";
+                    $keyChild = "{$adults}_a_{$children}_c_{$infants}_i_c";
+                    $keyInfant = "{$adults}_a_{$children}_c_{$infants}_i_i";
 
                     $baseAdult = $prices['b'][$keyAdult] ?? 0;
                     $baseChild = $prices['b'][$keyChild] ?? 0;
+                    $baseInfant = $prices['b'][$keyInfant] ?? 0;
                     $surAdult = $prices['s'][$keyAdult] ?? 0;
                     $surChild = $prices['s'][$keyChild] ?? 0;
+                    $surInfant = $prices['s'][$keyInfant] ?? 0;
 
-                    $baseTotal = $baseAdult * $adults + $baseChild * $children;
-                    $surTotal = $surAdult * $adults + $surChild * $children;
+                    $baseTotal = $baseAdult * $adults + $baseChild * $children + $baseInfant * $infants;
+                    $surTotal = $surAdult * $adults + $surChild * $children + $surInfant * $infants;
                     $nightTotal = $baseTotal + $surTotal;
 
                     $nightData = [
@@ -349,14 +354,17 @@ class TravelCalculatorController extends Controller
                         'room_type' => $roomTypeId,
                         'adults' => $adults,
                         'children' => $children,
+                        'infants' => $infants,
                         'base_charge' => [
                             'adult' => ['price' => $baseAdult, 'quantity' => $adults, 'total' => $baseAdult * $adults],
                             'child' => ['price' => $baseChild, 'quantity' => $children, 'total' => $baseChild * $children],
+                            'infant' => ['price' => $baseInfant, 'quantity' => $infants, 'total' => $baseInfant * $infants],
                             'total' => $baseTotal,
                         ],
                         'surcharge' => [
                             'adult' => ['price' => $surAdult, 'quantity' => $adults, 'total' => $surAdult * $adults],
                             'child' => ['price' => $surChild, 'quantity' => $children, 'total' => $surChild * $children],
+                            'infant' => ['price' => $surInfant, 'quantity' => $infants, 'total' => $surInfant * $infants],
                             'total' => $surTotal,
                         ],
                         'total' => $nightTotal,
@@ -387,6 +395,11 @@ class TravelCalculatorController extends Controller
                                 'quantity' => $children,
                                 'total' => $sum('base_charge.child.total')
                             ],
+                            'infant' => [
+                                'price_per_night' => $roomNights[0]['base_charge']['infant']['price'],
+                                'quantity' => $infants,
+                                'total' => $sum('base_charge.infant.total')
+                            ],
                             'total' => $sum('base_charge.total'),
                         ],
                         'surcharges' => [
@@ -399,6 +412,11 @@ class TravelCalculatorController extends Controller
                                 'price_per_night' => $roomNights[0]['surcharge']['child']['price'],
                                 'quantity' => $children,
                                 'total' => $sum('surcharge.child.total')
+                            ],
+                            'infant' => [
+                                'price_per_night' => $roomNights[0]['surcharge']['infant']['price'],
+                                'quantity' => $infants,
+                                'total' => $sum('surcharge.infant.total')
                             ],
                             'total' => $sum('surcharge.total'),
                         ],
@@ -424,6 +442,9 @@ class TravelCalculatorController extends Controller
                         'child' => [
                             'total' => $sum('base_charge.child.total')
                         ],
+                        'infant' => [
+                            'total' => $sum('base_charge.infant.total')
+                        ],
                         'total' => $sum('base_charge.total'),
                     ],
                     'surcharges' => [
@@ -432,6 +453,9 @@ class TravelCalculatorController extends Controller
                         ],
                         'child' => [
                             'total' => $sum('surcharge.child.total')
+                        ],
+                        'infant' => [
+                            'total' => $sum('surcharge.infant.total')
                         ],
                         'total' => $sum('surcharge.total'),
                     ],

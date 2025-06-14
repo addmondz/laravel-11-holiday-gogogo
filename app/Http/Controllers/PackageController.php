@@ -297,7 +297,9 @@ class PackageController extends Controller
             ->paginate(10);
 
         $seasonTypes = SeasonType::whereNot('name', 'Default')->get()->toArray();
+        $allSeasonTypes = SeasonType::all()->toArray();
         $dateTypes = DateType::whereNotIn('name', ['Default', 'Weekday', 'Weekend'])->get()->toArray();
+        $allDateTypes = DateType::all()->toArray();
 
         $priceConfigSeasonChoice = SeasonType::whereHas('seasons', function ($query) use ($package) {
             $query->where('package_id', $package->id);
@@ -317,7 +319,9 @@ class PackageController extends Controller
             'dateTypes' => $dateTypes,
             'priceConfigSeasonChoice' => $priceConfigSeasonChoice,
             'priceConfigDateTypeChoice' => $priceConfigDateTypeChoice,
-            'packageUniqueRoomTypes' => $packageUniqueRoomTypes
+            'packageUniqueRoomTypes' => $packageUniqueRoomTypes,
+            'allSeasonTypes' => $allSeasonTypes,
+            'allDateTypes' => $allDateTypes
         ]);
     }
 
