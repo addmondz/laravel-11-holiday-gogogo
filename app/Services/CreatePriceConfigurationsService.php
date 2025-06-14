@@ -71,15 +71,17 @@ class CreatePriceConfigurationsService
         $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
         $configurationPrices = [];
         foreach ($combinations as $combo) {
-            $keyPrefix = "{$combo['adults']}_a_{$combo['children']}_c";
+            $keyPrefix = "{$combo['adults']}_a_{$combo['children']}_c_{$combo['infants']}_i";
 
             // Base charge prices
             $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 100, 1000);
             $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 50, 500);
+            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_i"] = $faker->randomFloat(2, 0, 100);
 
             // Surcharge prices
             $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 50, 1000);
             $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 25, 500);
+            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_i"] = $faker->randomFloat(2, 0, 100);
         }
 
         return $configurationPrices;

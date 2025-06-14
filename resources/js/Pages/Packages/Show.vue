@@ -55,6 +55,7 @@
                                 :dateTypes="dateTypes"
                                 :packageId="pkg.id"
                                 :seasonTypes="seasonTypes"
+                                :packageUniqueRoomTypes="packageUniqueRoomTypes"
                             />
                         </div>
                     </div>

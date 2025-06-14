@@ -255,13 +255,19 @@ class ConfigurationPriceController extends Controller
             'package_id' => 'required|exists:packages,id',
             'season_type_id' => 'required|exists:season_types,id',
             'date_type_id' => 'required|exists:date_types,id',
+            'room_type_id' => 'nullable|exists:room_types,id'
         ]);
 
-        $configurations = PackageConfiguration::with('roomType')
+        $query = PackageConfiguration::with('roomType')
             ->where('package_id', $request->package_id)
             ->where('season_type_id', $request->season_type_id)
-            ->where('date_type_id', $request->date_type_id)
-            ->get();
+            ->where('date_type_id', $request->date_type_id);
+
+        if ($request->filled('room_type_id')) {
+            $query->where('room_type_id', $request->room_type_id);
+        }
+
+        $configurations = $query->get();
 
         // If no configurations exist, return empty array
         if ($configurations->isEmpty()) {
@@ -277,20 +283,22 @@ class ConfigurationPriceController extends Controller
                 if (!isset($rawPrices[$jsonKey])) continue;
 
                 foreach ($rawPrices[$jsonKey] as $code => $price) {
-                    // Example code: "1_a_2_c_a" (1 adult, 2 children, adult price)
-                    preg_match('/(\d+)_a_(\d+)_c_([ac])/', $code, $matches);
+                    // Example code: "1_a_0_c_1_i_a" (1 adult, 0 children, 1 infant, adult price)
+                    preg_match('/(\d+)_a_(\d+)_c_(\d+)_i_([aci])/', $code, $matches);
                     if (!$matches) continue;
 
-                    [$full, $adults, $children, $personType] = $matches;
-                    $key = "{$adults}_{$children}_{$type}";
+                    [$full, $adults, $children, $infants, $personType] = $matches;
+                    $key = "{$adults}_{$children}_{$infants}_{$type}";
 
                     if (!isset($structuredPrices[$key])) {
                         $structuredPrices[$key] = [
                             'type' => $type,
                             'number_of_adults' => (int) $adults,
                             'number_of_children' => (int) $children,
+                            'number_of_infants' => (int) $infants,
                             'adult_price' => null,
                             'child_price' => null,
+                            'infant_price' => null,
                         ];
                     }
 
@@ -298,6 +306,8 @@ class ConfigurationPriceController extends Controller
                         $structuredPrices[$key]['adult_price'] = number_format($price, 2, '.', '');
                     } elseif ($personType === 'c') {
                         $structuredPrices[$key]['child_price'] = number_format($price, 2, '.', '');
+                    } elseif ($personType === 'i') {
+                        $structuredPrices[$key]['infant_price'] = number_format($price, 2, '.', '');
                     }
                 }
             }

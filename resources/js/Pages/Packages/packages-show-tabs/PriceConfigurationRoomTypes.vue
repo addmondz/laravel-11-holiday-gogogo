@@ -2,7 +2,7 @@
     <div class="space-y-6">
         <!-- Filters -->
         <div class="bg-white shadow rounded-lg p-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label for="season" class="block text-sm font-medium text-gray-700">Season</label>
                     <select
@@ -27,6 +27,20 @@
                         <option value="">Select Date Type</option>
                         <option v-for="type in dateTypes" :key="type.id" :value="type.id">
                             {{ type.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="roomType" class="block text-sm font-medium text-gray-700">Room Type (Optional)</label>
+                    <select
+                        id="roomType"
+                        v-model="selectedRoomType"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    >
+                        <option value="">All Room Types</option>
+                        <option v-for="(name, id) in packageUniqueRoomTypes" :key="id" :value="id">
+                            {{ name }}
                         </option>
                     </select>
                 </div>
@@ -97,45 +111,39 @@
                     <div class="overflow-x-auto">
                         <h4 class="text-lg font-bold text-gray-700 mb-2">Base Charge</h4>
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Adults</th>
-                                    <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        {{ children-1 }} Children
-                                    </th>
-                                </tr>
-                            </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <template v-for="config in configurations" :key="config.id">
-                                    <template v-for="adults in 4" :key="`${config.id}-${adults}`">
-                                        <tr>
+                                    <tr class="bg-gray-100">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
+                                    </tr>
+                                    <template v-for="combination in VALID_OCCUPANCY_COMBINATIONS" :key="`${config.id}-${combination.adults}-${combination.children}-${combination.infants}`">
+                                        <tr v-if="isValidOccupancy(combination.adults, combination.children, combination.infants, 'adult')" class="hover:bg-gray-50">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                 {{ config.room_type.name }}
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {{ adults }} Adults
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ combination.adults }}
                                             </td>
-                                            <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                <template v-if="isValidOccupancy(adults, children-1, 'adult')">
-                                                    <div class="font-medium">Adult: {{ getPrice(config, adults, children-1, 'base_charge', 'adult') }}</div>
-                                                </template>
-                                                <template v-else>
-                                                    <div class="text-gray-400">Adult: -</div>
-                                                </template>
-                                                <template v-if="isValidOccupancy(adults, children-1, 'child')">
-                                                    <div class="font-medium">Child: {{ getPrice(config, adults, children-1, 'base_charge', 'child') }}</div>
-                                                </template>
-                                                <template v-else>
-                                                    <div class="text-gray-400">Child: -</div>
-                                                </template>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ combination.children }}
                                             </td>
-                                        </tr>
-                                        <tr v-if="adults == 4" class="bg-gray-100">
-                                            <td class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</td>
-                                            <td class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Adults</td>
-                                            <td v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                {{ children-1 }} Children
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ combination.infants }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ getPrice(config, combination.adults, combination.children, 'base_charge', 'adult', combination.infants) }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ getPrice(config, combination.adults, combination.children, 'base_charge', 'child', combination.infants) }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ getPrice(config, combination.adults, combination.children, 'base_charge', 'infant', combination.infants) }}
                                             </td>
                                         </tr>
                                     </template>
@@ -145,48 +153,42 @@
                     </div>
 
                     <!-- Surcharge Table -->
-                    <div v-if="hasSurcharges" class="overflow-x-auto">
+                    <div v-if="hasSurcharges" class="overflow-x-auto mt-8">
                         <h4 class="text-lg font-bold text-gray-700 mb-2">Surcharge</h4>
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Adults</th>
-                                    <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        {{ children-1 }} Children
-                                    </th>
-                                </tr>
-                            </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <template v-for="config in configurations" :key="config.id">
-                                    <template v-for="adults in 4" :key="`${config.id}-${adults}`">
-                                        <tr>
+                                    <tr class="bg-gray-100">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
+                                    </tr>
+                                    <template v-for="combination in VALID_OCCUPANCY_COMBINATIONS" :key="`${config.id}-${combination.adults}-${combination.children}-${combination.infants}`">
+                                        <tr v-if="isValidOccupancy(combination.adults, combination.children, combination.infants, 'adult')" class="hover:bg-gray-50">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                 {{ config.room_type.name }}
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {{ adults }} Adults
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ combination.adults }}
                                             </td>
-                                            <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                <template v-if="isValidOccupancy(adults, children-1, 'adult')">
-                                                    <div class="font-medium">Adult: {{ getPrice(config, adults, children-1, 'sur_charge', 'adult') }}</div>
-                                                </template>
-                                                <template v-else>
-                                                    <div class="text-gray-400">Adult: -</div>
-                                                </template>
-                                                <template v-if="isValidOccupancy(adults, children-1, 'child')">
-                                                    <div class="font-medium">Child: {{ getPrice(config, adults, children-1, 'sur_charge', 'child') }}</div>
-                                                </template>
-                                                <template v-else>
-                                                    <div class="text-gray-400">Child: -</div>
-                                                </template>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ combination.children }}
                                             </td>
-                                        </tr>
-                                        <tr v-if="adults == 4" class="bg-gray-100">
-                                            <td class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</td>
-                                            <td class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Adults</td>
-                                            <td v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                {{ children-1 }} Children
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ combination.infants }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ getPrice(config, combination.adults, combination.children, 'sur_charge', 'adult', combination.infants) }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ getPrice(config, combination.adults, combination.children, 'sur_charge', 'child', combination.infants) }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                {{ getPrice(config, combination.adults, combination.children, 'sur_charge', 'infant', combination.infants) }}
                                             </td>
                                         </tr>
                                     </template>
@@ -213,65 +215,59 @@
                                     </button>
                                 </div>
                                 <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
-                                        <tr>
+                                    <thead>
+                                        <tr class="bg-gray-100">
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Adults</th>
-                                            <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                {{ children-1 }} Children
-                                            </th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         <template v-for="config in configurations" :key="config.id">
-                                            <template v-for="adults in 4" :key="`${config.id}-${adults}`">
-                                                <tr>
+                                            <template v-for="combination in VALID_OCCUPANCY_COMBINATIONS" :key="`${config.id}-${combination.adults}-${combination.children}-${combination.infants}`">
+                                                <tr v-if="isValidOccupancy(combination.adults, combination.children, combination.infants, 'adult', true)">
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                         {{ config.room_type.name }}
                                                     </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {{ adults }} Adults
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                        {{ combination.adults }}
                                                     </td>
-                                                    <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        <template v-if="isValidOccupancy(adults, children-1, 'adult', true)">
-                                                            <div class="font-medium">
-                                                                Adult: 
-                                                                <input
-                                                                    type="number"
-                                                                    v-model="priceForm.prices[config.room_type_id].base_charge[getPriceIndex(adults, children-1, 'base_charge')].adult_price"
-                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm mb-4"
-                                                                    placeholder="Adult Price"
-                                                                    step="0.01"
-                                                                />
-                                                            </div>
-                                                        </template>
-                                                        <template v-else>
-                                                            Adult: 
-                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100 mb-4">-</span>
-                                                        </template>
-                                                        <template v-if="isValidOccupancy(adults, children-1, 'child', true)">
-                                                            <div class="font-medium">
-                                                                Child: 
-                                                                <input
-                                                                    type="number"
-                                                                    v-model="priceForm.prices[config.room_type_id].base_charge[getPriceIndex(adults, children-1, 'base_charge')].child_price"
-                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm mb-4"
-                                                                    placeholder="Child Price"
-                                                                    step="0.01"
-                                                                />
-                                                            </div>
-                                                        </template>
-                                                        <template v-else>
-                                                            Child: 
-                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100 mb-4">-</span>
-                                                        </template>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                        {{ combination.children }}
                                                     </td>
-                                                </tr>
-                                                <tr v-if="adults == 4" class="bg-gray-100">
-                                                    <td class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</td>
-                                                    <td class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Adults</td>
-                                                    <td v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        {{ children-1 }} Children
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                        {{ combination.infants }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        <input
+                                                            type="number"
+                                                            v-model="priceForm.prices[config.room_type_id].base_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'base_charge')].adult_price"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                            placeholder="Adult Price"
+                                                            step="0.01"
+                                                        />
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        <input
+                                                            type="number"
+                                                            v-model="priceForm.prices[config.room_type_id].base_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'base_charge')].child_price"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                            placeholder="Child Price"
+                                                            step="0.01"
+                                                        />
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        <input
+                                                            type="number"
+                                                            v-model="priceForm.prices[config.room_type_id].base_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'base_charge')].infant_price"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                            placeholder="Infant Price"
+                                                            step="0.01"
+                                                        />
                                                     </td>
                                                 </tr>
                                             </template>
@@ -293,65 +289,59 @@
                                     </button>
                                 </div>
                                 <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
+                                    <thead class="bg-gray-100">
                                         <tr>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Adults</th>
-                                            <th v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                {{ children-1 }} Children
-                                            </th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
+                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         <template v-for="config in configurations" :key="config.id">
-                                            <template v-for="adults in 4" :key="`${config.id}-${adults}`">
-                                                <tr>
+                                            <template v-for="combination in VALID_OCCUPANCY_COMBINATIONS" :key="`${config.id}-${combination.adults}-${combination.children}-${combination.infants}`">
+                                                <tr v-if="isValidOccupancy(combination.adults, combination.children, combination.infants, 'adult', true)">
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                         {{ config.room_type.name }}
                                                     </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {{ adults }} Adults
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                        {{ combination.adults }}
                                                     </td>
-                                                    <td v-for="children in 4" :key="children-1" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        <template v-if="isValidOccupancy(adults, children-1, 'adult', true)">
-                                                            <div class="font-medium">
-                                                                Adult: 
-                                                                <input
-                                                                    type="number"
-                                                                    v-model="priceForm.prices[config.room_type_id].sur_charge[getPriceIndex(adults, children-1, 'sur_charge')].adult_price"
-                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm mb-4"
-                                                                    placeholder="Adult Price"
-                                                                    step="0.01"
-                                                                />
-                                                            </div>
-                                                        </template>
-                                                        <template v-else>
-                                                            Adult: 
-                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100 mb-4">-</span>
-                                                        </template>
-                                                        <template v-if="isValidOccupancy(adults, children-1, 'child', true)">
-                                                            <div class="font-medium">
-                                                                Child: 
-                                                                <input
-                                                                    type="number"
-                                                                    v-model="priceForm.prices[config.room_type_id].sur_charge[getPriceIndex(adults, children-1, 'sur_charge')].child_price"
-                                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm mb-4"
-                                                                    placeholder="Child Price"
-                                                                    step="0.01"
-                                                                />
-                                                            </div>
-                                                        </template>
-                                                        <template v-else>
-                                                            Child: 
-                                                            <span class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border border-solid bg-gray-100 mb-4">-</span>
-                                                        </template>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                        {{ combination.children }}
                                                     </td>
-                                                </tr>
-                                                <tr v-if="adults == 4" class="bg-gray-100">
-                                                    <td class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</td>
-                                                    <td class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Adults</td>
-                                                    <td v-for="children in 4" :key="children-1" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        {{ children-1 }} Children
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                        {{ combination.infants }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        <input
+                                                            type="number"
+                                                            v-model="priceForm.prices[config.room_type_id].sur_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'sur_charge')].adult_price"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                            placeholder="Adult Price"
+                                                            step="0.01"
+                                                        />
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        <input
+                                                            type="number"
+                                                            v-model="priceForm.prices[config.room_type_id].sur_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'sur_charge')].child_price"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                            placeholder="Child Price"
+                                                            step="0.01"
+                                                        />
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        <input
+                                                            type="number"
+                                                            v-model="priceForm.prices[config.room_type_id].sur_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'sur_charge')].infant_price"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                            placeholder="Infant Price"
+                                                            step="0.01"
+                                                        />
                                                     </td>
                                                 </tr>
                                             </template>
@@ -386,12 +376,17 @@ const props = defineProps({
     dateTypes: {
         type: Array,
         required: true
+    },
+    packageUniqueRoomTypes: {
+        type: Object,
+        required: true
     }
 });
 
 // State
 const selectedSeason = ref('');
 const selectedDateType = ref('');
+const selectedRoomType = ref('');
 const searched = ref(false);
 const showPriceMatrix = ref(false);
 const configurations = ref([]);
@@ -424,7 +419,8 @@ const fetchPrices = () => {
     axios.post(route('configuration-prices.fetchPricesRoomTypes'), {
         package_id: props.packageId,
         season_type_id: selectedSeason.value,
-        date_type_id: selectedDateType.value
+        date_type_id: selectedDateType.value,
+        room_type_id: selectedRoomType.value || undefined
     })
     .then(response => {
         if (response.data && response.data.length > 0) {
@@ -452,10 +448,11 @@ const fetchPrices = () => {
     });
 };
 
-const getPrice = (config, adults, children, type, personType) => {
+const getPrice = (config, adults, children, type, personType, infants = 0) => {
     const price = config.prices.find(p =>
         p.number_of_adults === adults &&
         p.number_of_children === children &&
+        p.number_of_infants === infants &&
         p.type === type
     );
     return price ? `MYR ${price[personType + '_price']}` : '-';
@@ -464,6 +461,7 @@ const getPrice = (config, adults, children, type, personType) => {
 const resetSearch = () => {
     selectedSeason.value = '';
     selectedDateType.value = '';
+    selectedRoomType.value = '';
     searched.value = false;
     showPriceMatrix.value = false;
     showPriceForm.value = false;
@@ -472,8 +470,50 @@ const resetSearch = () => {
     priceForm.reset();
 };
 
-const getPriceIndex = (adults, children, type) => {
-    return (adults - 1) * 4 + children;
+const VALID_OCCUPANCY_COMBINATIONS = [
+    { adults: 1, children: 0, infants: 0 },
+    { adults: 1, children: 0, infants: 1 },
+    { adults: 1, children: 0, infants: 2 },
+    { adults: 1, children: 0, infants: 3 },
+    { adults: 1, children: 1, infants: 0 },
+    { adults: 1, children: 1, infants: 1 },
+    { adults: 1, children: 1, infants: 2 },
+    { adults: 1, children: 2, infants: 0 },
+    { adults: 1, children: 2, infants: 1 },
+    { adults: 1, children: 3, infants: 0 },
+    { adults: 2, children: 0, infants: 0 },
+    { adults: 2, children: 0, infants: 1 },
+    { adults: 2, children: 0, infants: 2 },
+    { adults: 2, children: 1, infants: 0 },
+    { adults: 2, children: 1, infants: 1 },
+    { adults: 2, children: 2, infants: 0 },
+    { adults: 2, children: 0, infants: 2 },
+    { adults: 3, children: 0, infants: 0 },
+    { adults: 3, children: 0, infants: 1 },
+    { adults: 3, children: 1, infants: 0 },
+    { adults: 4, children: 0, infants: 0 }
+];
+
+const isValidOccupancy = (adults, children, infants, type, isEditMode = false) => {
+    // Check if total occupancy exceeds 4
+    if (adults + children + infants > 4) return false;
+
+    const isValidCombo = VALID_OCCUPANCY_COMBINATIONS.some(
+        combo => combo.adults === adults && combo.children === children && combo.infants === infants
+    );
+
+    if (adults === 1 && children === 0 && infants === 0 && isEditMode) return true;
+    if (!isValidCombo) return false;
+    if (type === 'child' && children === 0) return false;
+    if (type === 'infant' && infants === 0) return false;
+
+    return true;
+};
+
+const getPriceIndex = (adults, children, infants, type) => {
+    return VALID_OCCUPANCY_COMBINATIONS.findIndex(
+        combo => combo.adults === adults && combo.children === children && combo.infants === infants
+    );
 };
 
 const openPriceForm = (mode) => {
@@ -492,7 +532,8 @@ const openPriceForm = (mode) => {
             number_of_adults: Math.floor(index / 4) + 1,
             number_of_children: index % 4,
             adult_price: '',
-            child_price: ''
+            child_price: '',
+            infant_price: ''
         }));
 
         // Initialize the room type structure
@@ -504,12 +545,13 @@ const openPriceForm = (mode) => {
         // If editing, populate form with existing prices for this room type
         if (isEditMode.value) {
             config.prices.forEach(price => {
-                const index = getPriceIndex(price.number_of_adults, price.number_of_children, price.type);
+                const index = getPriceIndex(price.number_of_adults, price.number_of_children, price.number_of_infants, price.type);
                 const type = price.type === 'base_charge' ? 'base_charge' : 'sur_charge';
                 priceForm.prices[roomTypeId][type][index] = {
                     ...priceForm.prices[roomTypeId][type][index],
                     adult_price: price.adult_price,
-                    child_price: price.child_price
+                    child_price: price.child_price,
+                    infant_price: price.infant_price
                 };
             });
         }
@@ -574,7 +616,8 @@ const applyBasePricesToAll = () => {
             number_of_adults: Math.floor(index / 4) + 1,
             number_of_children: index % 4,
             adult_price: firstPrice.adult_price,
-            child_price: firstPrice.child_price
+            child_price: firstPrice.child_price,
+            infant_price: firstPrice.infant_price
         }));
     });
 };
@@ -592,34 +635,10 @@ const applySurchargePricesToAll = () => {
             number_of_adults: Math.floor(index / 4) + 1,
             number_of_children: index % 4,
             adult_price: firstPrice.adult_price,
-            child_price: firstPrice.child_price
+            child_price: firstPrice.child_price,
+            infant_price: firstPrice.infant_price
         }));
     });
-};
-
-const isValidOccupancy = (adults, children, type, isEditMode = false) => {
-    const validCombinations = [
-        { adults: 1, children: 0 },
-        { adults: 1, children: 1 },
-        { adults: 1, children: 2 },
-        { adults: 1, children: 3 },
-        { adults: 2, children: 0 },
-        { adults: 2, children: 1 },
-        { adults: 2, children: 2 },
-        { adults: 3, children: 0 },
-        { adults: 3, children: 1 },
-        { adults: 4, children: 0 },
-    ];
-
-    const isValidCombo = validCombinations.some(
-        combo => combo.adults === adults && combo.children === children
-    );
-
-    if (adults == 1 && children == 0 && isEditMode) return true;
-    if (!isValidCombo) return false;
-    if (type == 'child' && children == 0) return false;
-
-    return true;
 };
 </script>
 
