@@ -54,6 +54,7 @@
                                 :dateTypeRanges="dateTypeRanges"
                                 :dateTypes="dateTypes"
                                 :packageId="pkg.id"
+                                :seasonTypes="seasonTypes"
                             />
                         </div>
                     </div>
@@ -136,8 +137,8 @@ const currentTabComponent = computed(() => {
             return SeasonTypes;
         case 'date-types-ranges':
             return DateTypesRanges;
-        // case 'price-configuration':
-        //     return PriceConfigurationRoomTypes;
+        case 'price-configuration':
+            return PriceConfigurationRoomTypes;
         case 'date-blockers':
             return DateBlockers;
         default:
