@@ -20,6 +20,7 @@ class BookingController extends Controller
                 'rooms.*.room_type_id' => 'required|exists:room_types,id',
                 'rooms.*.adults' => 'required|integer|min:1|max:4',
                 'rooms.*.children' => 'required|integer|min:0|max:4',
+                'rooms.*.infants' => 'required|integer|min:0|max:4',
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'booking_name' => 'required|string|max:255',
@@ -42,9 +43,11 @@ class BookingController extends Controller
             try {
                 $totalAdults = 0;
                 $totalChildren = 0;
+                $totalInfants = 0;
                 foreach ($request->rooms as $room) {
                     $totalAdults += $room['adults'];
                     $totalChildren += $room['children'];
+                    $totalInfants += $room['infants'];
                 }
 
                 // Create the booking
@@ -60,6 +63,7 @@ class BookingController extends Controller
                     'status' => 'pending',
                     'adults' => $totalAdults,
                     'children' => $totalChildren,
+                    'infants' => $totalInfants,
                     'uuid' => Str::uuid()
                 ]);
 
@@ -68,7 +72,8 @@ class BookingController extends Controller
                     $booking->rooms()->create([
                         'room_type_id' => $room['room_type_id'],
                         'adults' => $room['adults'],
-                        'children' => $room['children']
+                        'children' => $room['children'],
+                        'infants' => $room['infants']
                     ]);
                 }
 
