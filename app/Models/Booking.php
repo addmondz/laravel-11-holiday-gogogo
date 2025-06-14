@@ -17,6 +17,7 @@ class Booking extends Model
         'end_date',
         'adults',
         'children',
+        'infants',
         'total_price',
         'special_remarks',
         'payment_status',

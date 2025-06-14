@@ -87,14 +87,18 @@
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Guests</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Occupancy</th>
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         <tr v-for="room in booking.rooms" :key="room.id">
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-gray-900">{{ room.room_type.name }}</div>
+                                                <div class="text-sm font-medium text-gray-900">{{ room.room_type.name }} 
+                                                    <span class="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded whitespace-nowrap">
+                                                        Max {{ room.room_type.max_occupancy }} pax
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-900">{{ room.adults }}</div>
@@ -103,10 +107,10 @@
                                                 <div class="text-sm text-gray-900">{{ room.children }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ room.adults + room.children }}</div>
+                                                <div class="text-sm text-gray-900">{{ room.infants }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ room.room_type.max_occupancy }} persons</div>
+                                                <div class="text-sm text-gray-900">{{ room.adults + room.children + room.infants }}</div>
                                             </td>
                                         </tr>
                                         <!-- Summary Row -->

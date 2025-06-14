@@ -107,6 +107,7 @@ class BookingSeeder extends Seeder
             $numberOfRooms = rand(1, 3);
             $totalAdults = 0;
             $totalChildren = 0;
+            $totalInfants = 0;
             $totalPrice = 0;
             
             try {
@@ -120,6 +121,7 @@ class BookingSeeder extends Seeder
                     'end_date' => $endDate,
                     'adults' => 0, // Will be updated after rooms are created
                     'children' => 0, // Will be updated after rooms are created
+                    'infants' => 0, // Will be updated after rooms are created
                     'total_price' => 0, // Will be updated after rooms are created
                     'special_remarks' => $remarks[$i % count($remarks)],
                     'uuid' => Str::uuid()->toString(),
@@ -129,24 +131,28 @@ class BookingSeeder extends Seeder
                 // Create rooms for this booking
                 for ($j = 0; $j < $numberOfRooms; $j++) {
                     $roomType = $packageRoomTypes->random();
-                    $adults = rand(1, min(4, $roomType->max_occupancy));
-                    $children = rand(0, min(2, $roomType->max_occupancy - $adults));
+                    $max = min(4, $packageRoomTypes->random()->max_occupancy);
+                    $adults = rand(1, $max);
+                    $children = rand(0, min(2, $max - $adults));
+                    $infants = rand(0, min(2, $max - $adults - $children));
                     
                     // Calculate room price
                     $basePrice = $package->display_price_adult ?? 100.00;
-                    $roomPrice = ($basePrice * $nights * $adults) + ($basePrice * 0.7 * $nights * $children);
+                    $roomPrice = ($basePrice * $nights * $adults) + ($basePrice * 0.7 * $nights * $children) + ($basePrice * 0.3 * $nights * $infants);
                     
                     // Create booking room
                     BookingRoom::create([
                         'booking_id' => $booking->id,
                         'room_type_id' => $roomType->id,
                         'adults' => $adults,
-                        'children' => $children
+                        'children' => $children,
+                        'infants' => $infants
                     ]);
                     
                     // Update totals
                     $totalAdults += $adults;
                     $totalChildren += $children;
+                    $totalInfants += $infants;
                     $totalPrice += $roomPrice;
                 }
                 
@@ -154,6 +160,7 @@ class BookingSeeder extends Seeder
                 $booking->update([
                     'adults' => $totalAdults,
                     'children' => $totalChildren,
+                    'infants' => $totalInfants,
                     'total_price' => round($totalPrice, 2)
                 ]);
 

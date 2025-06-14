@@ -85,6 +85,9 @@
                                                 <span v-if="booking.children > 0">
                                                     , {{ booking.children }} Child{{ booking.children > 1 ? 'ren' : '' }}
                                                 </span>
+                                                <span v-if="booking.infants > 0">
+                                                    , {{ booking.infants }} Infant{{ booking.infants > 1 ? 's' : '' }}
+                                                </span>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">

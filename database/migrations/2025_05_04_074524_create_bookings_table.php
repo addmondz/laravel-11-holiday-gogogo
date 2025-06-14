@@ -23,6 +23,7 @@ return new class extends Migration
             $table->date('end_date');
             $table->integer('adults');
             $table->integer('children');
+            $table->integer('infants');
             $table->decimal('total_price', 10, 2);
             $table->text('special_remarks')->nullable();
             $table->timestamps();

@@ -11,7 +11,8 @@ class BookingRoom extends Model
         'booking_id',
         'room_type_id',
         'adults',
-        'children'
+        'children',
+        'infants'
     ];
 
     public function booking(): BelongsTo

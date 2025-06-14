@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('room_type_id')->constrained()->onDelete('restrict');
             $table->integer('adults')->default(1);
             $table->integer('children')->default(0);
+            $table->integer('infants')->default(0);
             $table->timestamps();
         });
     }

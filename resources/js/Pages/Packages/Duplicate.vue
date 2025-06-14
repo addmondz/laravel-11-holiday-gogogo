@@ -319,7 +319,7 @@ const router = useRouter();
 const addRoomType = () => {
     form.room_types.push({
         name: '',
-        max_occupancy: 2,
+        max_occupancy: 4,
         description: '',
     });
 };
