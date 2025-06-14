@@ -528,31 +528,42 @@ const openPriceForm = (mode) => {
     // Initialize price structure for each room type
     configurations.value.forEach(config => {
         const roomTypeId = config.room_type_id;
-        const combinations = Array(16).fill().map((_, index) => ({
-            number_of_adults: Math.floor(index / 4) + 1,
-            number_of_children: index % 4,
-            adult_price: '',
-            child_price: '',
-            infant_price: ''
-        }));
-
-        // Initialize the room type structure
+        
+        // Initialize the room type structure with all valid combinations
         priceForm.prices[roomTypeId] = {
-            base_charge: [...combinations],
-            sur_charge: [...combinations]
+            base_charge: VALID_OCCUPANCY_COMBINATIONS.map(combo => ({
+                number_of_adults: combo.adults,
+                number_of_children: combo.children,
+                number_of_infants: combo.infants,
+                adult_price: '',
+                child_price: '',
+                infant_price: ''
+            })),
+            sur_charge: VALID_OCCUPANCY_COMBINATIONS.map(combo => ({
+                number_of_adults: combo.adults,
+                number_of_children: combo.children,
+                number_of_infants: combo.infants,
+                adult_price: '',
+                child_price: '',
+                infant_price: ''
+            }))
         };
 
         // If editing, populate form with existing prices for this room type
         if (isEditMode.value) {
             config.prices.forEach(price => {
                 const index = getPriceIndex(price.number_of_adults, price.number_of_children, price.number_of_infants, price.type);
-                const type = price.type === 'base_charge' ? 'base_charge' : 'sur_charge';
-                priceForm.prices[roomTypeId][type][index] = {
-                    ...priceForm.prices[roomTypeId][type][index],
-                    adult_price: price.adult_price,
-                    child_price: price.child_price,
-                    infant_price: price.infant_price
-                };
+                if (index !== -1) {
+                    const type = price.type === 'base_charge' ? 'base_charge' : 'sur_charge';
+                    priceForm.prices[roomTypeId][type][index] = {
+                        number_of_adults: price.number_of_adults,
+                        number_of_children: price.number_of_children,
+                        number_of_infants: price.number_of_infants,
+                        adult_price: price.adult_price,
+                        child_price: price.child_price,
+                        infant_price: price.infant_price || '' // Handle cases where infant_price might be null
+                    };
+                }
             });
         }
     });
@@ -564,20 +575,43 @@ const closePriceForm = () => {
 };
 
 const submitPrices = () => {
-    const promises = configurations.value.map(config => {
-        const data = {
-            package_id: props.packageId,
-            season_type_id: selectedSeason.value,
-            date_type_id: selectedDateType.value,
-            prices: priceForm.prices
+    // Prepare data for all room types in a single object
+    const allPrices = {};
+    configurations.value.forEach(config => {
+        const roomTypeId = config.room_type_id;
+        allPrices[roomTypeId] = {
+            base_charge: priceForm.prices[roomTypeId].base_charge.map(price => ({
+                number_of_adults: price.number_of_adults,
+                number_of_children: price.number_of_children,
+                number_of_infants: price.number_of_infants,
+                adult_price: price.adult_price,
+                child_price: price.child_price,
+                infant_price: price.infant_price || 0
+            })),
+            sur_charge: priceForm.prices[roomTypeId].sur_charge.map(price => ({
+                number_of_adults: price.number_of_adults,
+                number_of_children: price.number_of_children,
+                number_of_infants: price.number_of_infants,
+                adult_price: price.adult_price,
+                child_price: price.child_price,
+                infant_price: price.infant_price || 0
+            }))
         };
-
-        return isEditMode.value
-            ? axios.put(route('configuration-prices.updateRoomTypePrices', config.id), data)
-            : axios.post(route('configuration-prices.store'), data);
     });
 
-    Promise.all(promises)
+    const data = {
+        package_id: props.packageId,
+        season_type_id: selectedSeason.value,
+        date_type_id: selectedDateType.value,
+        prices: allPrices
+    };
+
+    // Make a single API call with all room types' data
+    const request = isEditMode.value
+        ? axios.put(route('configuration-prices.updateRoomTypePrices', configurations.value[0].id), data)
+        : axios.post(route('configuration-prices.store'), data);
+
+    request
         .then(() => {
             closePriceForm();
             fetchPrices();
@@ -612,9 +646,10 @@ const applyBasePricesToAll = () => {
 
     configurations.value.forEach(config => {
         const roomTypeId = config.room_type_id;
-        priceForm.prices[roomTypeId].base_charge = priceForm.prices[roomTypeId].base_charge.map((_, index) => ({
-            number_of_adults: Math.floor(index / 4) + 1,
-            number_of_children: index % 4,
+        priceForm.prices[roomTypeId].base_charge = VALID_OCCUPANCY_COMBINATIONS.map(combo => ({
+            number_of_adults: combo.adults,
+            number_of_children: combo.children,
+            number_of_infants: combo.infants,
             adult_price: firstPrice.adult_price,
             child_price: firstPrice.child_price,
             infant_price: firstPrice.infant_price
@@ -631,9 +666,10 @@ const applySurchargePricesToAll = () => {
 
     configurations.value.forEach(config => {
         const roomTypeId = config.room_type_id;
-        priceForm.prices[roomTypeId].sur_charge = priceForm.prices[roomTypeId].sur_charge.map((_, index) => ({
-            number_of_adults: Math.floor(index / 4) + 1,
-            number_of_children: index % 4,
+        priceForm.prices[roomTypeId].sur_charge = VALID_OCCUPANCY_COMBINATIONS.map(combo => ({
+            number_of_adults: combo.adults,
+            number_of_children: combo.children,
+            number_of_infants: combo.infants,
             adult_price: firstPrice.adult_price,
             child_price: firstPrice.child_price,
             infant_price: firstPrice.infant_price

@@ -84,14 +84,16 @@ class ConfigurationPriceController extends Controller
             foreach ($prices[$inputType] as $price) {
                 $combination = [
                     'adults' => $price['number_of_adults'],
-                    'children' => $price['number_of_children']
+                    'children' => $price['number_of_children'],
+                    'infants' => $price['number_of_infants']
                 ];
                 if (!in_array($combination, $combinations)) {
                     continue;
                 }
 
-                $adultKey = "{$combination['adults']}_a_{$combination['children']}_c_a";
-                $childKey = "{$combination['adults']}_a_{$combination['children']}_c_c";
+                $adultKey = "{$combination['adults']}_a_{$combination['children']}_c_{$combination['infants']}_i_a";
+                $childKey = "{$combination['adults']}_a_{$combination['children']}_c_{$combination['infants']}_i_c";
+                $infantKey = "{$combination['adults']}_a_{$combination['children']}_c_{$combination['infants']}_i_i";
 
                 if (!isset($configurationPrices[$jsonKey])) {
                     $configurationPrices[$jsonKey] = [];
@@ -103,6 +105,10 @@ class ConfigurationPriceController extends Controller
 
                 if (!empty($price['child_price'])) {
                     $configurationPrices[$jsonKey][$childKey] = (float) $price['child_price'];
+                }
+
+                if (!empty($price['infant_price'])) {
+                    $configurationPrices[$jsonKey][$infantKey] = (float) $price['infant_price'];
                 }
             }
         }
@@ -339,7 +345,6 @@ class ConfigurationPriceController extends Controller
 
         try {
             DB::beginTransaction();
-            // $this->handlePriceConfiguration($validated);
             foreach ($validated['prices'] as $room_type_id => $prices) {
                 $this->handlePriceConfigurationNew($prices, $validated['package_id'], $validated['season_type_id'], $validated['date_type_id'], $room_type_id);
             }
