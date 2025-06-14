@@ -4,7 +4,7 @@
     <title>Redirecting to SenangPay...</title>
 </head>
 <body onload="document.forms[0].submit();">
-    <form method="POST" action="https://sandbox.senangpay.my/payment/{{ $merchant_id }}">
+    <form method="POST" action="{{ $senangpay_url }}/{{ $merchant_id }}">
         <input type="hidden" name="detail" value="{{ $data['detail'] }}">
         <input type="hidden" name="amount" value="{{ $data['amount'] }}">
         <input type="hidden" name="order_id" value="{{ $data['order_id'] }}">

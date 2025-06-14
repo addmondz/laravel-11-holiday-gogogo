@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Log;
 
 class SenangPayController extends Controller
 {
-    private $merchant_id = '839174991356979';
-    private $secret_key = 'SK-H2wRDRAd5oO0BlwDsBfG';
 
     public function form()
     {
@@ -26,16 +24,22 @@ class SenangPayController extends Controller
             'phone' => 'required|string',
         ]);
 
+        $merchant_id = config('senangpay.merchant_id');
+        $secret_key = config('senangpay.secret_key');
+
         $hash = hash_hmac(
             'sha256',
-            $this->secret_key . urldecode($request->detail) . urldecode($request->amount) . urldecode($request->order_id),
-            $this->secret_key
+            $secret_key . urldecode($request->detail) . urldecode($request->amount) . urldecode($request->order_id),
+            $secret_key
         );
 
+        $senangpay_url = config('senangpay.base_url');
+
         return view('senangpay.redirect', [
-            'merchant_id' => $this->merchant_id,
+            'merchant_id' => $merchant_id,
             'data' => $request->all(),
-            'hash' => $hash
+            'hash' => $hash,
+            'senangpay_url' => $senangpay_url
         ]);
     }
 
