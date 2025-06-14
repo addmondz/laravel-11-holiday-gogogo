@@ -293,7 +293,8 @@ const submitSeasonType = () => {
                 title: 'Success',
                 text: 'Season type created successfully'
             });
-            handlePageChange(1);
+            // handlePageChange(1);
+            router.get(route('packages.show', props.package.id));
         },
         onError: (errors) => {
             if (errors.name) {

@@ -458,7 +458,8 @@ const submitRoomType = () => {
         // Reset form
         roomTypeForm.reset();
         // Refresh the room types list
-        handlePageChange(1);
+        // handlePageChange(1);
+        router.get(route('packages.show', props.package.id));
     })
     .catch(error => {
         roomTypeForm.processing = false;
