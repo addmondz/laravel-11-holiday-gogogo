@@ -246,3 +246,10 @@ Route::get('/test', function () {
 
 // Payment Simulation Routes
 Route::get('/payment/{transaction}/simulate', [PaymentSimulationController::class, 'show'])->name('payment.simulate');
+
+use App\Http\Controllers\SenangPayController;
+Route::get('/payment', [SenangPayController::class, 'form']);
+Route::post('/payment/process', [SenangPayController::class, 'process']);
+Route::get('/payment/return', [SenangPayController::class, 'handleReturn']);
+Route::post('/payment/callback', [SenangPayController::class, 'handleCallback']);
+
