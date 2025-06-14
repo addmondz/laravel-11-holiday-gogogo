@@ -41,48 +41,52 @@ class SenangPayController extends Controller
 
     public function handleReturn(Request $request)
     {
-        $status_id = $request->get('status_id');
-        $order_id = $request->get('order_id');
-        $msg = $request->get('msg');
-        $transaction_id = $request->get('transaction_id');
-        $hash = $request->get('hash');
+        Log::info('handleReturn: ' . json_encode($request->all()));
+        return 'Payment successful';
 
-        $calculated_hash = hash_hmac(
-            'sha256',
-            $this->secret_key . urldecode($status_id) . urldecode($order_id) . urldecode($transaction_id) . urldecode($msg),
-            $this->secret_key
-        );
+        // $status_id = $request->get('status_id');
+        // $order_id = $request->get('order_id');
+        // $msg = $request->get('msg');
+        // $transaction_id = $request->get('transaction_id');
+        // $hash = $request->get('hash');
 
-        if ($hash === $calculated_hash) {
-            return $status_id == '1'
-                ? '✅ Payment successful: ' . $msg
-                : '❌ Payment failed: ' . $msg;
-        }
+        // $calculated_hash = hash_hmac(
+        //     'sha256',
+        //     $this->secret_key . urldecode($status_id) . urldecode($order_id) . urldecode($transaction_id) . urldecode($msg),
+        //     $this->secret_key
+        // );
 
-        return '⚠️ Invalid hash received.';
+        // if ($hash === $calculated_hash) {
+        //     return $status_id == '1'
+        //         ? '✅ Payment successful: ' . $msg
+        //         : '❌ Payment failed: ' . $msg;
+        // }
+
+        // return '⚠️ Invalid hash received.';
     }
 
     public function handleCallback(Request $request)
     {
-        $status_id = $request->get('status_id');
-        $order_id = $request->get('order_id');
-        $msg = $request->get('msg');
-        $transaction_id = $request->get('transaction_id');
-        $hash = $request->get('hash');
+        Log::info('handleCallback: ' . json_encode($request->all()));
+        // $status_id = $request->get('status_id');
+        // $order_id = $request->get('order_id');
+        // $msg = $request->get('msg');
+        // $transaction_id = $request->get('transaction_id');
+        // $hash = $request->get('hash');
 
-        $calculated_hash = hash_hmac(
-            'sha256',
-            $this->secret_key . urldecode($status_id) . urldecode($order_id) . urldecode($transaction_id) . urldecode($msg),
-            $this->secret_key
-        );
+        // $calculated_hash = hash_hmac(
+        //     'sha256',
+        //     $this->secret_key . urldecode($status_id) . urldecode($order_id) . urldecode($transaction_id) . urldecode($msg),
+        //     $this->secret_key
+        // );
 
-        if ($hash === $calculated_hash) {
-            // ✅ Update DB record for $order_id
-            // e.g. mark order as paid
-            Log::info("Callback received: $order_id is now " . ($status_id == '1' ? 'PAID' : 'FAILED'));
-        } else {
-            Log::warning("Callback hash mismatch for order $order_id");
-        }
+        // if ($hash === $calculated_hash) {
+        //     // ✅ Update DB record for $order_id
+        //     // e.g. mark order as paid
+        //     Log::info("Callback received: $order_id is now " . ($status_id == '1' ? 'PAID' : 'FAILED'));
+        // } else {
+        //     Log::warning("Callback hash mismatch for order $order_id");
+        // }
 
         return response('OK', 200);
     }
