@@ -15,7 +15,12 @@ class SenangPayController extends Controller
 
     public function process(Request $request)
     {
-        $request->validate([
+        Log::info('--- SenangPay Payment Process Start ---');
+
+        // Log the raw incoming request data
+        Log::info('Incoming request data:', $request->all());
+
+        $validated = $request->validate([
             'detail' => 'required|string',
             'amount' => 'required|numeric',
             'order_id' => 'required|string',
@@ -24,8 +29,15 @@ class SenangPayController extends Controller
             'phone' => 'required|string',
         ]);
 
+        Log::info('Validated data:', $validated);
+
         $merchant_id = config('senangpay.merchant_id');
         $secret_key = config('senangpay.secret_key');
+        $senangpay_url = config('senangpay.base_url');
+
+        Log::info("Merchant ID: {$merchant_id}");
+        Log::info("Secret Key: {$secret_key}");
+        Log::info("Base URL: {$senangpay_url}");
 
         $hash = hash_hmac(
             'sha256',
@@ -33,15 +45,21 @@ class SenangPayController extends Controller
             $secret_key
         );
 
-        $senangpay_url = config('senangpay.base_url');
+        Log::info("Generated Hash: {$hash}");
 
-        return view('senangpay.redirect', [
+        $viewData = [
             'merchant_id' => $merchant_id,
             'data' => $request->all(),
             'hash' => $hash,
             'senangpay_url' => $senangpay_url
-        ]);
+        ];
+
+        Log::info('View data for redirection:', $viewData);
+        Log::info('--- SenangPay Payment Process End ---');
+
+        return view('senangpay.redirect', $viewData);
     }
+
 
     public function handleReturn(Request $request)
     {
