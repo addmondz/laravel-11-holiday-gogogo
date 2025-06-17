@@ -34,6 +34,25 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        User::create([
+            'name' => 'At Ease Admin',
+            'email' => 'admin@admin.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('12345678'), // You can set the password as per your choice
+        ]);
+
+        // default config
+        $defaultSeason = SeasonType::create(['name' => 'Default']);
+        $weekend = DateType::create(['name' => 'Weekend']);
+        $weekday = DateType::create(['name' => 'Weekday']);
+
+        $isProduction = env('APP_ENV', 'production');
+        // $isProduction = false;
+        $isProduction = true;
+        if ($isProduction) {
+            return;
+        }
+
         $dummyPackagesCount = 21;
         $dummyOtherPackagesCount = 11;
         $earliestDate = Carbon::parse('1970-01-01');
@@ -70,7 +89,6 @@ class DatabaseSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // 🟢 SEASON TYPES
-        $defaultSeason = SeasonType::create(['name' => 'Default']);
         $earlyBird = SeasonType::create(['name' => 'Early Bird']);
         $peakSeason = SeasonType::create(['name' => 'Peak Season']);
         $ph120 = SeasonType::create(['name' => 'Public Holiday 120']);
@@ -81,8 +99,6 @@ class DatabaseSeeder extends Seeder
 
         // 🟡 DATE TYPES
         // defualt date type is weekday / weekend
-        $weekend = DateType::create(['name' => 'Weekend']);
-        $weekday = DateType::create(['name' => 'Weekday']);
         $roomsur60 = DateType::create(['name' => 'Roomsur 60']);
         $roomsur30 = DateType::create(['name' => 'Roomsur 30']);
         for ($i = 0; $i < $dummyOtherPackagesCount; $i++) {
@@ -161,7 +177,6 @@ class DatabaseSeeder extends Seeder
         }
 
         $packages = Package::all();
-
         foreach ($packages as $pkg) {
             // 🏠 ROOM TYPES
             $deluxeRoom = RoomType::create([

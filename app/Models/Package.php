@@ -18,6 +18,7 @@ class Package extends Model
         'icon_photo',
         'display_price_adult',
         'display_price_child',
+        'display_price_infant',
         'package_min_days',
         'package_max_days',
         'terms_and_conditions',
@@ -26,6 +27,8 @@ class Package extends Model
         'package_end_date',
         'uuid',
         'images',
+        'child_max_age_desc',
+        'infant_max_age_desc',
     ];
 
     protected $casts = [

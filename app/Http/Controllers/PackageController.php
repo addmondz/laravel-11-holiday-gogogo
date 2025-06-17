@@ -72,10 +72,14 @@ class PackageController extends Controller
                     'mimes:jpeg,png,gif',
                     'max:10240', // 10MB max per image
                 ],
+                'child_max_age_desc' => 'nullable|string',
+                'infant_max_age_desc' => 'nullable|string',
                 'display_price_adult' => 'required|numeric|min:0',
                 'display_price_child' => 'required|numeric|min:0',
+                'display_price_infant' => 'required|numeric|min:0',
                 'adult_surcharge' => 'required|numeric|min:0',
                 'child_surcharge' => 'required|numeric|min:0',
+                'infant_surcharge' => 'required|numeric|min:0',
                 'package_days' => 'required|integer|min:1',
                 'terms_and_conditions' => 'nullable|string',
                 'location' => 'required|string|max:255',
@@ -94,6 +98,8 @@ class PackageController extends Controller
                     'max:10240', // 10MB max per image
                 ],
             ], [
+                'child_max_age_desc.string' => 'Child age description must be a string',
+                'infant_max_age_desc.string' => 'Infant age description must be a string',
                 'name.required' => 'Package name is required',
                 'name.max' => 'Package name cannot exceed 255 characters',
                 'images.array' => 'Images must be provided as a list',
@@ -108,12 +114,18 @@ class PackageController extends Controller
                 'display_price_child.required' => 'Child base price is required',
                 'display_price_child.numeric' => 'Child base price must be a number',
                 'display_price_child.min' => 'Child base price cannot be negative',
+                'display_price_infant.required' => 'Infant base price is required',
+                'display_price_infant.numeric' => 'Infant base price must be a number',
+                'display_price_infant.min' => 'Infant base price cannot be negative',
                 'adult_surcharge.required' => 'Adult surcharge is required',
                 'adult_surcharge.numeric' => 'Adult surcharge must be a number',
                 'adult_surcharge.min' => 'Adult surcharge cannot be negative',
                 'child_surcharge.required' => 'Child surcharge is required',
                 'child_surcharge.numeric' => 'Child surcharge must be a number',
                 'child_surcharge.min' => 'Child surcharge cannot be negative',
+                'infant_surcharge.required' => 'Infant surcharge is required',
+                'infant_surcharge.numeric' => 'Infant surcharge must be a number',
+                'infant_surcharge.min' => 'Infant surcharge cannot be negative',
                 'package_days.required' => 'Package duration is required',
                 'package_days.integer' => 'Package duration must be a whole number',
                 'package_days.min' => 'Package duration must be at least 1 night',
@@ -243,11 +255,13 @@ class PackageController extends Controller
                         $prices = [];
 
                         foreach ($combinations as $c) {
-                            $k = "{$c['adults']}_a_{$c['children']}_c";
+                            $k = "{$c['adults']}_a_{$c['children']}_c_{$c['infants']}_i";
                             $prices[$baseKey]["{$k}_a"] = $v['display_price_adult'];
                             $prices[$baseKey]["{$k}_c"] = $v['display_price_child'];
+                            $prices[$baseKey]["{$k}_i"] = $v['display_price_infant'];
                             $prices[$surKey]["{$k}_a"] = $v['adult_surcharge'];
                             $prices[$surKey]["{$k}_c"] = $v['child_surcharge'];
+                            $prices[$surKey]["{$k}_i"] = $v['infant_surcharge'];
                         }
 
                         PackageConfiguration::create([

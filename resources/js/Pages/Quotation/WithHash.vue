@@ -343,7 +343,10 @@
                                             <div>
                                                 <label :for="'children-' + index" 
                                                        class="block text-sm font-medium text-gray-700 mb-1">
-                                                    Number of Children
+                                                    Number of Children 
+                                                    <span class="text-xs text-gray-500">
+                                                        ({{ packageData.child_max_age_desc }})
+                                                    </span>
                                                 </label>
                                                 <div class="relative">
                                                     <input
@@ -374,7 +377,10 @@
                                             <div>
                                                 <label :for="'infants-' + index" 
                                                        class="block text-sm font-medium text-gray-700 mb-1">
-                                                    Number of Infants
+                                                    Number of Infants 
+                                                    <span class="text-xs text-gray-500">
+                                                        ({{ packageData.infant_max_age_desc }})
+                                                    </span>
                                                 </label>
                                                 <div class="relative">
                                                     <input

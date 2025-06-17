@@ -80,7 +80,7 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-6">
+                                <div class="grid grid-cols-3 gap-6">
                                     <div>
                                         <label for="display_price_adult" class="block text-sm font-medium text-gray-700"><b class="text-[15px]">Display Price</b> / Adult Base Price</label>
                                         <input
@@ -100,6 +100,19 @@
                                             type="number"
                                             id="display_price_child"
                                             v-model="form.display_price_child"
+                                            step="0.01"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        <div v-if="form.errors.display_price_child" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.display_price_child }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="display_price_adult" class="block text-sm font-medium text-gray-700">Infant Base Price</label>
+                                        <input
+                                            type="number"
+                                            id="display_price_infant"
+                                            v-model="form.display_price_infant"
                                             step="0.01"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         />
@@ -134,6 +147,47 @@
                                         </div>
                                     </div>
 
+                                    <div>
+                                        <label for="infant_surcharge" class="block text-sm font-medium text-gray-700">Default Infant Surcharge</label>
+                                        <input
+                                            type="number"
+                                            id="infant_surcharge"
+                                            v-model="form.infant_surcharge"
+                                            step="0.01"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        <div v-if="form.errors.infant_surcharge" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.infant_surcharge }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="infant_max_age_desc" class="block text-sm font-medium text-gray-700">Infant Age Description</label>
+                                        <input
+                                            type="text"
+                                            id="infant_max_age_desc"
+                                            v-model="form.infant_max_age_desc"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            placeholder="e.g. 0 - 11 months old"
+                                        />
+                                        <div v-if="form.errors.infant_max_age_desc" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.infant_max_age_desc }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="child_max_age_desc" class="block text-sm font-medium text-gray-700">Child Age Description</label>
+                                        <input
+                                            type="text"
+                                            id="child_max_age_desc"
+                                            v-model="form.child_max_age_desc"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            placeholder="e.g. 1 - 12 years old"
+                                        />
+                                        <div v-if="form.errors.child_max_age_desc" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.child_max_age_desc }}
+                                        </div>
+                                    </div>
                                     <div>
                                         <label for="package_days" class="block text-sm font-medium text-gray-700">Package Duration (Nights)</label>
                                         <input
@@ -355,8 +409,12 @@ const form = useForm({
     images: [],
     display_price_adult: null,
     display_price_child: null,
+    display_price_infant: null,
     adult_surcharge: null,
     child_surcharge: null,
+    infant_surcharge: null,
+    infant_max_age_desc: '',
+    child_max_age_desc: '',
     package_days: 2,
     terms_and_conditions: '',
     location: '',

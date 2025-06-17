@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('icon_photo')->nullable();
             $table->decimal('display_price_adult', 10, 2)->nullable();
             $table->decimal('display_price_child', 10, 2)->nullable();
+            $table->decimal('display_price_infant', 10, 2)->nullable();
             $table->integer('package_min_days');
             $table->integer('package_max_days');
             $table->text('terms_and_conditions')->nullable();
@@ -24,6 +25,8 @@ return new class extends Migration
             $table->date('package_end_date')->nullable();
             $table->string('uuid')->nullable();
             $table->json('images')->nullable();
+            $table->string('child_max_age_desc')->nullable();
+            $table->string('infant_max_age_desc')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
