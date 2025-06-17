@@ -308,7 +308,7 @@
                                         </div>
 
                                         <!-- Guest Selection -->
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div v-if="room.room_type_id" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
                                                 <label :for="'adults-' + index" 
                                                        class="block text-sm font-medium text-gray-700 mb-1">
@@ -320,7 +320,7 @@
                                                         type="number"
                                                         v-model.number="room.adults"
                                                         min="1"
-                                                        max="4"
+                                                        :max="getRoomMaxAdults(room)"
                                                         :class="[
                                                             'block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
                                                             validationErrors.rooms?.[index]?.adults ? 'border-red-500' : 'border-gray-300'
@@ -328,7 +328,7 @@
                                                         @input="handleAdultsChange(room, index)"
                                                     />
                                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                        <span class="text-gray-500 sm:text-sm">/ 4</span>
+                                                        <span class="text-gray-500 sm:text-sm">/ {{ getRoomMaxAdults(room) }}</span>
                                                     </div>
                                                 </div>
                                                 <p v-if="validationErrors.rooms?.[index]?.adults" 
@@ -411,10 +411,18 @@
                                         </div>
 
                                         <!-- Room Summary -->
-                                        <div class="bg-gray-50 rounded-md p-3">
+                                        <div v-if="room.room_type_id" class="bg-gray-50 rounded-md p-3">
                                             <p class="text-sm text-gray-600">
+                                                Room {{ index + 1 }}: {{ (room.adults || 0) + (room.children || 0) + (room.infants || 0) }} guests
                                                 Room {{ index + 1 }}: {{ room.adults + room.children + room.infants }} guests
                                                 ({{ room.adults }} adults, {{ room.children }} children, {{ room.infants }} infants)
+                                            </p>
+                                        </div>
+
+                                        <!-- Room Type Not Selected Message -->
+                                        <div v-if="!room.room_type_id" class="bg-blue-50 rounded-md p-3 border border-blue-200">
+                                            <p class="text-sm text-blue-700">
+                                                Please select a room type above to configure guest details
                                             </p>
                                         </div>
                                     </div>
@@ -542,7 +550,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
-                                                <tr v-for="(night, nightIndex) in priceBreakdown.nights" :key="nightIndex">
+                                                <tr v-for="(night, nightIndex) in room.nights" :key="nightIndex">
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                                         {{ moment(night.date).format('DD MMM YYYY') }}
                                                         <span class="text-gray-500 ml-1">
@@ -1012,15 +1020,20 @@ const form = useForm({
     end_date: '',
     rooms: [{
         room_type_id: null,
-        adults: 1,
-        children: 0,
-        infants: 0
+        adults: null,
+        children: null,
+        infants: null
     }]
 });
 
 // Add computed properties for room management
 const totalGuests = computed(() => {
-    return form.rooms.reduce((total, room) => total + room.adults + room.children + room.infants, 0);
+    return form.rooms.reduce((total, room) => {
+        const adults = room.adults || 0;
+        const children = room.children || 0;
+        const infants = room.infants || 0;
+        return total + adults + children + infants;
+    }, 0);
 });
 
 const canAddRoom = computed(() => {
@@ -1031,9 +1044,9 @@ const addRoom = () => {
     if (canAddRoom.value) {
         form.rooms.push({
             room_type_id: null,
-            adults: 1,
-            children: 0,
-            infants: 0
+            adults: null,
+            children: null,
+            infants: null
         });
     }
 };
@@ -1052,6 +1065,11 @@ const getRoomMaxChildren = (room) => {
 const getRoomMaxInfants = (room) => {
     const maxOccupancy = roomTypes.value.find(rt => rt.id === room.room_type_id)?.max_occupancy || 4;
     return Math.max(0, maxOccupancy - room.adults - room.children);
+};
+
+const getRoomMaxAdults = (room) => {
+    const maxOccupancy = roomTypes.value.find(rt => rt.id === room.room_type_id)?.max_occupancy || 4;
+    return Math.max(1, maxOccupancy - room.children - room.infants);
 };
 
 // Update validation logic
@@ -1079,7 +1097,7 @@ const validateForm = () => {
 
         const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
         const maxOccupancy = roomType?.max_occupancy || 4;
-        const totalOccupants = room.adults + room.children + room.infants;
+        const totalOccupants = (room.adults || 0) + (room.children || 0) + (room.infants || 0);
 
         if (!room.adults || room.adults < 1) {
             roomErrors.adults = 'Please select at least 1 adult';
@@ -1163,6 +1181,18 @@ watch(() => form.start_date, () => {
     }
 });
 
+// Watch for room type changes to set default guest values
+watch(() => form.rooms, (newRooms) => {
+    newRooms.forEach((room, index) => {
+        if (room.room_type_id && (room.adults === null || room.children === null || room.infants === null)) {
+            // Set default values when room type is selected
+            room.adults = 1;
+            room.children = 0;
+            room.infants = 0;
+        }
+    });
+}, { deep: true });
+
 const calculatePrice = async () => {
     if (!validateForm()) return;
 
@@ -1184,9 +1214,9 @@ const calculatePrice = async () => {
             priceBreakdown.value = response.data;
             
             // Calculate total guests
-            const totalAdults = form.rooms.reduce((sum, room) => sum + room.adults, 0);
-            const totalChildren = form.rooms.reduce((sum, room) => sum + room.children, 0);
-            const totalInfants = form.rooms.reduce((sum, room) => sum + room.infants, 0);
+            const totalAdults = form.rooms.reduce((sum, room) => sum + (room.adults || 0), 0);
+            const totalChildren = form.rooms.reduce((sum, room) => sum + (room.children || 0), 0);
+            const totalInfants = form.rooms.reduce((sum, room) => sum + (room.infants || 0), 0);
             
             // Update booking summary with total guests
             bookingSummary.value = {
@@ -1194,9 +1224,9 @@ const calculatePrice = async () => {
                     const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
                     return {
                         roomType: roomType?.name || '',
-                        adults: room.adults,
-                        children: room.children,
-                        infants: room.infants
+                        adults: room.adults || 0,
+                        children: room.children || 0,
+                        infants: room.infants || 0
                     };
                 }),
                 startDate: form.start_date,
@@ -1312,9 +1342,9 @@ const submitBooking = async () => {
             package_id: packageData.value.id,
             rooms: form.rooms.map(room => ({
                 room_type_id: room.room_type_id,
-                adults: room.adults,
-                children: room.children,
-                infants: room.infants
+                adults: room.adults || 0,
+                children: room.children || 0,
+                infants: room.infants || 0
             })),
             booking_name: bookingForm.value.booking_name,
             phone_number: bookingForm.value.phone_number,
@@ -1432,12 +1462,12 @@ const validateRoomOccupancy = (room, index) => {
     }
 
     // Validate total occupancy
-    const totalOccupants = room.adults + room.children + room.infants;
+    const totalOccupants = (room.adults || 0) + (room.children || 0) + (room.infants || 0);
     if (totalOccupants > maxOccupancy) {
         const excess = totalOccupants - maxOccupancy;
-        if (room.infants > 0) {
+        if ((room.infants || 0) > 0) {
             roomErrors.infants = `Too many guests. Please reduce by ${excess} guest(s)`;
-        } else if (room.children > 0) {
+        } else if ((room.children || 0) > 0) {
             roomErrors.children = `Too many guests. Please reduce by ${excess} guest(s)`;
         } else {
             roomErrors.adults = `Maximum ${maxOccupancy} guests per room`;
@@ -1447,14 +1477,14 @@ const validateRoomOccupancy = (room, index) => {
 
     // Validate children
     const maxChildren = getRoomMaxChildren(room);
-    if (room.children > maxChildren) {
+    if ((room.children || 0) > maxChildren) {
         roomErrors.children = `Maximum ${maxChildren} children allowed for this room`;
         return roomErrors;
     }
 
     // Validate infants
     const maxInfants = getRoomMaxInfants(room);
-    if (room.infants > maxInfants) {
+    if ((room.infants || 0) > maxInfants) {
         roomErrors.infants = `Maximum ${maxInfants} infants allowed for this room`;
         return roomErrors;
     }
@@ -1484,8 +1514,8 @@ const handleAdultsChange = (room, index) => {
     const maxOccupancy = roomType?.max_occupancy || 4;
     const oldAdults = room.adults;
     
-    // Ensure adults is at least 1
-    room.adults = Math.max(1, Math.min(4, parseInt(room.adults) || 1));
+    // Ensure adults is at least 1 and not more than max capacity
+    room.adults = Math.max(1, Math.min(getRoomMaxAdults(room), parseInt(room.adults) || 1));
     
     // Show helper message if value was adjusted
     if (oldAdults !== room.adults) {
@@ -1496,13 +1526,13 @@ const handleAdultsChange = (room, index) => {
     const maxChildren = getRoomMaxChildren(room);
     const maxInfants = getRoomMaxInfants(room);
     
-    if (room.children > maxChildren) {
+    if ((room.children || 0) > maxChildren) {
         const oldChildren = room.children;
         room.children = maxChildren;
         showHelperMessage(index, 'children', `Children reduced to ${maxChildren} to maintain maximum occupancy of ${maxOccupancy} guests`);
     }
     
-    if (room.infants > maxInfants) {
+    if ((room.infants || 0) > maxInfants) {
         const oldInfants = room.infants;
         room.infants = maxInfants;
         showHelperMessage(index, 'infants', `Infants reduced to ${maxInfants} to maintain maximum occupancy of ${maxOccupancy} guests`);

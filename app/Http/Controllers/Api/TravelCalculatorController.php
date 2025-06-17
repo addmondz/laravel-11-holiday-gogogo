@@ -237,7 +237,7 @@ class TravelCalculatorController extends Controller
             'rooms.*.room_type' => 'required|exists:room_types,id',
             'rooms.*.adults' => 'required|integer|min:1|max:4',
             'rooms.*.children' => 'required|integer|min:0|max:4',
-            'rooms.*.infants' => 'required|integer|min:0|max:2',
+            'rooms.*.infants' => 'required|integer|min:0',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
         ]);
