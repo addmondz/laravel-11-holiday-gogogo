@@ -47,8 +47,8 @@ class DatabaseSeeder extends Seeder
         $weekday = DateType::create(['name' => 'Weekday']);
 
         $isProduction = env('APP_ENV', 'production');
-        // $isProduction = false;
-        $isProduction = true;
+        $isProduction = false;
+        // $isProduction = true;
         if ($isProduction) {
             return;
         }
@@ -59,13 +59,6 @@ class DatabaseSeeder extends Seeder
         $earliestNextDate = Carbon::parse('1970-01-02');
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
-        User::create([
-            'name' => 'At Ease Admin',
-            'email' => 'admin@admin.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('12345678'), // You can set the password as per your choice
-        ]);
 
         for ($i = 0; $i <= $dummyOtherPackagesCount; $i++) {
             User::create([

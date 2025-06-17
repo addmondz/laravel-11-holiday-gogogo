@@ -1495,7 +1495,13 @@ const validateRoomOccupancy = (room, index) => {
 // Add a new ref for helper messages
 const helperMessages = ref({});
 
-const showHelperMessage = (roomIndex, field, message, duration = 3000) => {
+const resetHelperMessage = (roomIndex, field) => {
+    if (helperMessages.value[roomIndex]) {
+        helperMessages.value[roomIndex][field] = '';
+    }
+};
+
+const showHelperMessage = (roomIndex, field, message, duration = 10000) => {
     if (!helperMessages.value[roomIndex]) {
         helperMessages.value[roomIndex] = {};
     }
@@ -1510,6 +1516,7 @@ const showHelperMessage = (roomIndex, field, message, duration = 3000) => {
 };
 
 const handleAdultsChange = (room, index) => {
+    resetHelperMessage(index, 'adults');
     const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
     const maxOccupancy = roomType?.max_occupancy || 4;
     const oldAdults = room.adults;
@@ -1518,8 +1525,14 @@ const handleAdultsChange = (room, index) => {
     room.adults = Math.max(1, Math.min(getRoomMaxAdults(room), parseInt(room.adults) || 1));
     
     // Show helper message if value was adjusted
-    if (oldAdults !== room.adults) {
-        showHelperMessage(index, 'adults', `Maximum ${maxOccupancy} guests per room. Adults adjusted to ${room.adults}`);
+    if (oldAdults <= 1) {
+        showHelperMessage(index, 'adults', `Minimum 1 adult is required per room.`);
+    }
+    else if (oldAdults == maxOccupancy) {
+        console.log('ok');
+    }
+    else if (oldAdults !== room.adults) {
+        showHelperMessage(index, 'adults', `Maximum ${maxOccupancy} guests per room. Adults adjusted to ${room.adults}.`);
     }
     
     // Adjust children and infants if needed
@@ -1543,6 +1556,7 @@ const handleAdultsChange = (room, index) => {
 };
 
 const handleChildrenChange = (room, index) => {
+    resetHelperMessage(index, 'children');
     const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
     const maxOccupancy = roomType?.max_occupancy || 4;
     const oldChildren = room.children;
@@ -1568,6 +1582,7 @@ const handleChildrenChange = (room, index) => {
 };
 
 const handleInfantsChange = (room, index) => {
+    resetHelperMessage(index, 'infants');
     const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
     const maxOccupancy = roomType?.max_occupancy || 4;
     const oldInfants = room.infants;
