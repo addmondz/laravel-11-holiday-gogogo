@@ -30,6 +30,7 @@ class PaymentSimulationController extends Controller
         $merchant_id = config('senangpay.merchant_id'); // e.g., '839174991356979'
         $secret_key = config('senangpay.secret_key');   // e.g., 'SK-H2wRDRAd5oO0BlwDsBfG'
         $base_url = config('senangpay.base_url');       // e.g., 'https://sandbox.senangpay.my/payment'
+        $is_sandbox = config('senangpay.sandbox');
 
         // Input values
         $detail = $request->detail;
@@ -53,7 +54,11 @@ class PaymentSimulationController extends Controller
 
         Log::info('Hash input string:', ['hash_input' => $hash_input]);
 
-        $hash = hash_hmac('sha256', $hash_input, $secret_key);
+        if ($is_sandbox) {
+            $hash = md5($hash_input);
+        } else {
+            $hash = hash_hmac('sha256', $hash_input, $secret_key);
+        }
 
         Log::info('Generated hash:', ['hash' => $hash]);
 
