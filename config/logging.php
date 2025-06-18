@@ -104,7 +104,7 @@ return [
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],
-
+        
         'syslog' => [
             'driver' => 'syslog',
             'level' => env('LOG_LEVEL', 'debug'),
@@ -125,6 +125,13 @@ return [
 
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
+        ],
+
+        'senangpay' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/senangpay.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
         ],
 
     ],

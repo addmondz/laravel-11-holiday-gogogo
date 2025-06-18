@@ -40,9 +40,9 @@ class PaymentSimulationController extends Controller
         $customer_email = $request->customer_email;
         $customer_contact = $request->customer_contact;
 
-        Log::info('SENANGPAY_SANDBOX: ' . config('senangpay.sandbox'));
+        Log::channel('senangpay')->info('SENANGPAY_SANDBOX: ' . config('senangpay.sandbox'));
         // Log inputs
-        Log::info('--- SenangPay Hash Generation Inputs ---' . json_encode([
+        Log::channel('senangpay')->info('--- SenangPay Hash Generation Inputs ---' . json_encode([
             'detail' => $detail,
             'amount' => $amount,
             'order_id' => $order_id,
@@ -52,7 +52,7 @@ class PaymentSimulationController extends Controller
         // Generate hash
         $hash_input = $secret_key . urldecode($detail) . urldecode($amount) . urldecode($order_id);
 
-        Log::info('Hash input string:', ['hash_input' => $hash_input]);
+        Log::channel('senangpay')->info('Hash input string:', ['hash_input' => $hash_input]);
 
         if ($is_sandbox) {
             $hash = md5($hash_input);
@@ -60,7 +60,7 @@ class PaymentSimulationController extends Controller
             $hash = hash_hmac('sha256', $hash_input, $secret_key);
         }
 
-        Log::info('Generated hash:', ['hash' => $hash]);
+        Log::channel('senangpay')->info('Generated hash:', ['hash' => $hash]);
 
         // Build URL
         $payment_url = "{$base_url}/{$merchant_id}?" . http_build_query([
@@ -73,7 +73,7 @@ class PaymentSimulationController extends Controller
             'hash' => $hash,
         ]);
 
-        Log::info('Final payment URL:', ['url' => $payment_url]);
+        Log::channel('senangpay')->info('Final payment URL:', ['url' => $payment_url]);
 
         return response()->json([
             'status' => 'success',

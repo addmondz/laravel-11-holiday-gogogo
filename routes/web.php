@@ -28,6 +28,7 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\DateBlockerController;
+use App\Http\Controllers\SenangPayController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
