@@ -34,6 +34,18 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        
+        SeasonType::truncate();
+        Season::truncate();
+        DateType::truncate();
+        DateTypeRange::truncate();
+        Package::truncate();
+        PackageAddOn::truncate();
+        PackageConfiguration::truncate();
+        RoomType::truncate();
+        Booking::truncate();
+
         User::create([
             'name' => 'At Ease Admin',
             'email' => 'admin@admin.com',
@@ -58,8 +70,6 @@ class DatabaseSeeder extends Seeder
         $earliestDate = Carbon::parse('1970-01-01');
         $earliestNextDate = Carbon::parse('1970-01-02');
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
         for ($i = 0; $i <= $dummyOtherPackagesCount; $i++) {
             User::create([
                 'name' => 'Test User ' . $i,
@@ -68,16 +78,6 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('12345678'), // You can set the password as per your choice
             ]);
         }
-
-        SeasonType::truncate();
-        Season::truncate();
-        DateType::truncate();
-        DateTypeRange::truncate();
-        Package::truncate();
-        PackageAddOn::truncate();
-        PackageConfiguration::truncate();
-        RoomType::truncate();
-        Booking::truncate();
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
