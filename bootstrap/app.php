@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\LogApiActivity::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'payment/callback',
+        ]);
+
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
