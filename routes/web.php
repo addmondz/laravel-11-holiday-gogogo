@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\BotApiController;
 use App\Http\Controllers\DateBlockerController;
 use App\Http\Controllers\SenangPayController;
+use App\Models\Transaction;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -247,13 +248,39 @@ Route::get('/test', function () {
 });
 
 // Payment Simulation Routes
-Route::get('/payment/{transaction}/simulate', [PaymentSimulationController::class, 'show'])->name('payment.simulate');
-Route::get('/test-payment', [PaymentSimulationController::class, 'showTestPayment'])->name('payment.test-payment');
-Route::post('/create-test-payment-transaction', [PaymentSimulationController::class, 'createTestPaymentTransaction'])->name('payment.create-test-payment-transaction');
 Route::get('/payment/return', [SenangPayController::class, 'handleReturn']);
 Route::post('/payment/callback', [SenangPayController::class, 'handleCallback']);
+Route::post('/payment/initiate/{bookingId}', [SenangPayController::class, 'initiatePayment'])->name('payment.initiate');
 
+// General Payment Result Routes
+Route::get('/payments/success/{transaction_id}', function ($transaction_id) {
+    $transaction = Transaction::findOrFail($transaction_id);
+    $booking = $transaction->booking;
+    
+    if (!$booking) {
+        abort(404, 'Booking not found');
+    }
+    
+    return Inertia::render('Payments/Success', [
+        'bookingUuid' => $booking->uuid,
+        'packageUuid' => $booking->package->uuid ?? null,
+        'transaction' => $transaction
+    ]);
+})->name('payments.success');
 
+Route::get('/payments/failed/{transaction_id}', function ($transaction_id) {
+    $transaction = Transaction::findOrFail($transaction_id);
+    $booking = $transaction->booking;
+    
+    if (!$booking) {
+        abort(404, 'Booking not found');
+    }
+    
+    return Inertia::render('Payments/Failed', [
+        'booking' => $booking,
+        'transaction' => $transaction
+    ]);
+})->name('payments.failed');
 
 // Bot API routes - no authentication required
 $botPrefix = 'bot-api';

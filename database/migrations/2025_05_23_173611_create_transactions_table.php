@@ -11,14 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transactions', function (Blueprint $table) {
+        Schema::create('booking_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('booking_id')->constrained()->onDelete('cascade');
             $table->string('payment_method')->nullable();
             $table->decimal('amount', 10, 2);
             $table->string('status'); // pending, paid, failed
-            $table->string('transaction_id')->nullable(); // For payment gateway reference
-            $table->text('payment_details')->nullable(); // JSON encoded payment gateway response
+            $table->string('transaction_id')->nullable();
+            $table->string('status_id')->nullable();
+            $table->string('message')->nullable();
+            $table->string('order_id')->nullable();
+            $table->timestamp('processed_at')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transactions');
+        Schema::dropIfExists('booking_transactions');
     }
 };

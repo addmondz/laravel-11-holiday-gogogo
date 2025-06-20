@@ -777,8 +777,9 @@
                                     </svg>
                                 </div>
                                 <div class="space-y-2">
-                                    <h2 class="text-3xl font-bold text-white mb-2">Payment Completed</h2>
-                                    <p class="text-white/90 text-lg">Your booking details will be sent to your email.</p>
+                                    <h2 class="text-3xl font-bold text-white mb-2">Payment Completed!</h2>
+                                    <p class="text-white/90 text-lg">Your booking has been confirmed and payment received.</p>
+                                    <p class="text-white/80 text-sm">Booking details will be sent to your email shortly.</p>
                                 </div>
                             </div>
                         </div>
@@ -791,7 +792,7 @@
                                 </div>
                                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Booking Successful!</h3>
                                 <p class="text-gray-600">Your booking has been submitted successfully.</p>
-                                <p class="text-gray-600">Please proceed to make payment.</p>
+                                <p class="text-gray-600">Please proceed to make payment to confirm your reservation.</p>
                             </div>
                         </div>
 
@@ -849,15 +850,59 @@
                                 </div>
                             </div>
 
+                            <!-- Payment Status -->
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-sm font-medium text-gray-500 mb-1">PAYMENT STATUS</h4>
+                                        <div class="flex items-center">
+                                            <span :class="[
+                                                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                                                bookingSuccess.payment_status === 'paid' 
+                                                    ? 'bg-green-100 text-green-800' 
+                                                    : 'bg-yellow-100 text-yellow-800'
+                                            ]">
+                                                <span :class="[
+                                                    'w-2 h-2 rounded-full mr-2',
+                                                    bookingSuccess.payment_status === 'paid' ? 'bg-green-400' : 'bg-yellow-400'
+                                                ]"></span>
+                                                {{ bookingSuccess.payment_status === 'paid' ? 'Paid' : 'Pending Payment' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div v-if="bookingSuccess.payment_status === 'paid'" class="text-right">
+                                        <p class="text-xs text-gray-500">Payment Method</p>
+                                        <p class="text-sm font-medium text-gray-900">SenangPay</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Pay Now Button -->
                             <div v-if="bookingSuccess.payment_status !== 'paid'" class="flex justify-center pt-4">
-                                <button
-                                    @click="proceedToPayment"
-                                    class="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium"
-                                    :disabled="isProcessingPayment"
-                                >
-                                    {{ isProcessingPayment ? 'Processing...' : 'Pay Now' }}
-                                </button>
+                                <div class="text-center">
+                                    <button
+                                        @click="proceedToPayment"
+                                        class="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                        :disabled="isProcessingPayment"
+                                    >
+                                        <span v-if="isProcessingPayment" class="flex items-center">
+                                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Initializing Payment...
+                                        </span>
+                                        <span v-else class="flex items-center">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                            </svg>
+                                            Pay Now with SenangPay
+                                        </span>
+                                    </button>
+                                    <p class="text-sm text-gray-500 mt-2">
+                                        You will be redirected to SenangPay's secure payment gateway
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -899,7 +944,42 @@ onMounted(() => {
             }
         }, 100);
     }
+    
+    // Check if user is returning from payment (URL has payment parameters)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('payment_status') || urlParams.has('transaction_id')) {
+        // Refresh booking data to get updated payment status
+        refreshBookingData();
+    }
 });
+
+// Add function to refresh booking data
+const refreshBookingData = async () => {
+    if (!bookingSuccess.value?.uuid) return;
+    
+    try {
+        const response = await axios.post(route('api.fetch-package-by-uuid'), {
+            uuid: props.uuid,
+            booking_uuid: bookingSuccess.value.uuid,
+        });
+
+        if (response.data.success && response.data.booking) {
+            bookingSuccess.value = response.data.booking;
+            
+            // Show success message if payment was completed
+            if (bookingSuccess.value.payment_status === 'paid') {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Payment Successful!',
+                    text: 'Your payment has been processed successfully. Your booking is now confirmed.',
+                    confirmButtonColor: '#10B981'
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error refreshing booking data:', error);
+    }
+};
 
 const packageData = ref(null);
 const currentImageIndex = ref(0);
@@ -1395,19 +1475,18 @@ const proceedToPayment = async () => {
 
     try {
         isProcessingPayment.value = true;
-        const transactionResponse = await axios.post('/calculator/api/transactions', {
-            booking_id: bookingSuccess.value.id,
-            amount: bookingSuccess.value.total_price,
-            status: 'pending'
-        });
+        
+        // Use the new SenangPay payment initiation endpoint
+        const response = await axios.post(`/payment/initiate/${bookingSuccess.value.id}`);
 
-        if (transactionResponse.data.success) {
-            window.location.href = route('api.payment.show', bookingSuccess.value.uuid);
+        if (response.data.success) {
+            // Redirect user to SenangPay payment page
+            window.location.href = response.data.payment_url;
         } else {
-            throw new Error(transactionResponse.data.message || 'Failed to create transaction');
+            throw new Error(response.data.message || 'Failed to initiate payment');
         }
     } catch (error) {
-        console.error('Transaction creation error:', error);
+        console.error('Payment initiation error:', error);
         await Swal.fire({
             icon: 'error',
             title: 'Payment Initialization Failed',
