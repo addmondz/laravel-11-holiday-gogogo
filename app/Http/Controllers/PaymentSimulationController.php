@@ -34,7 +34,7 @@ class PaymentSimulationController extends Controller
 
         // Input values
         $detail = $request->detail;
-        $amount = $request->amount;
+        $amount = $is_sandbox ? $request->amount : 2;
         $order_id = $request->order_id;
         $customer_name = $request->customer_name;
         $customer_email = $request->customer_email;

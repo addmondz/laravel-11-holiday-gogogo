@@ -27,6 +27,7 @@ use App\Http\Controllers\PaymentSimulationController;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\BotApiController;
 use App\Http\Controllers\DateBlockerController;
 use App\Http\Controllers\SenangPayController;
 
@@ -251,3 +252,16 @@ Route::get('/test-payment', [PaymentSimulationController::class, 'showTestPaymen
 Route::post('/create-test-payment-transaction', [PaymentSimulationController::class, 'createTestPaymentTransaction'])->name('payment.create-test-payment-transaction');
 Route::get('/payment/return', [SenangPayController::class, 'handleReturn']);
 Route::post('/payment/callback', [SenangPayController::class, 'handleCallback']);
+
+
+
+// Bot API routes - no authentication required
+Route::prefix('bot-api')->group(function () {
+    Route::post('/fetch-room-types', [BotApiController::class, 'fetchRoomTypesByPackageName']);
+    Route::post('/fetch-quotation', [BotApiController::class, 'fetchQuotation']);
+
+    // API Documentation
+    Route::get('/api-docs', function () {
+        return view('api-docs');
+    })->name('bot-api.docs');
+});

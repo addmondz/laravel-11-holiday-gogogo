@@ -97,4 +97,14 @@ class Package extends Model
 
         return DateType::whereIn('id', $dateTypeIds)->get();
     }
+
+    public function getUniqueSeasonTypesAttribute()
+    {
+        return $this->roomTypes->pluck('seasonType')->unique();
+    }
+
+    public function getUniqueDateTypesAttribute()
+    {
+        return $this->roomTypes->pluck('dateType')->filter()->unique('id')->values();
+    }
 }
