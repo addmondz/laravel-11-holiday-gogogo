@@ -57,7 +57,7 @@ Route::prefix('calculator')->group(function () {
         Route::post('/package-calculate-price', [TravelCalculatorController::class, 'packageCalculatePrice'])->name('api.package-calculate-price');
         Route::post('/bookings', [ApiBookingController::class, 'store'])->name('api.bookings.store');
         Route::post('/transactions', [TransactionController::class, 'store'])->name('api.transactions.store');
-        
+
         // Payment routes
         Route::prefix('bookings/{uuid}/payment')->name('api.payment.')->group(function ($uuid) {
             Route::get('/', [PaymentController::class, 'show'])->name('show');
@@ -262,6 +262,7 @@ Route::prefix('bot-api')->group(function () {
 
     // API Documentation
     Route::get('/api-docs', function () {
-        return view('api-docs');
+        $baseUrl = url('/');
+        return view('api-docs', compact('baseUrl'));
     })->name('bot-api.docs');
 });

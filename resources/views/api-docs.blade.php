@@ -49,7 +49,7 @@
             <h1 class="text-4xl font-bold text-gray-900 mb-4">Bot API Documentation</h1>
             <p class="text-xl text-gray-600">Complete guide for chatbot integration endpoints</p>
             <div class="mt-4 p-4 bg-blue-50 rounded-lg">
-                <p class="text-blue-800 font-medium">Base URL: <code class="bg-blue-100 px-2 py-1 rounded">http://127.0.0.1:8000/bot-api</code></p>
+                <p class="text-blue-800 font-medium">Base URL: <code class="bg-blue-100 px-2 py-1 rounded">{{ $baseUrl }}/bot-api</code></p>
             </div>
         </div>
 
@@ -108,7 +108,7 @@
                         <div class="endpoint-header">
                             <div class="flex items-center gap-3">
                                 <span class="method-badge method-post">POST</span>
-                                <code class="text-lg font-mono">http://127.0.0.1:8000/bot-api/fetch-room-types</code>
+                                <code class="text-lg font-mono">{{ $baseUrl }}/bot-api/fetch-room-types</code>
                             </div>
                             <p class="text-gray-600 mt-2">Get available room types, dates, and package information for a specific package.</p>
                         </div>
@@ -176,7 +176,7 @@
                         <div class="endpoint-header">
                             <div class="flex items-center gap-3">
                                 <span class="method-badge method-post">POST</span>
-                                <code class="text-lg font-mono">http://127.0.0.1:8000/bot-api/fetch-quotation</code>
+                                <code class="text-lg font-mono">{{ $baseUrl }}/bot-api/fetch-quotation</code>
                             </div>
                             <p class="text-gray-600 mt-2">Get detailed pricing quotation for a specific travel date and room allocation.</p>
                         </div>
@@ -333,7 +333,7 @@
                                 </div>
                                 <div class="endpoint-body">
                                     <div class="code-block">
-                                        <pre><code class="language-bash">curl -X POST http://127.0.0.1:8000/bot-api/fetch-room-types \
+                                        <pre><code class="language-bash">curl -X POST {{ $baseUrl }}/bot-api/fetch-room-types \
   -H "Content-Type: application/json" \
   -d '{"package_name": "Langkawi Island Resort"}'</code></pre>
                                     </div>
@@ -346,7 +346,7 @@
                                 </div>
                                 <div class="endpoint-body">
                                     <div class="code-block">
-                                        <pre><code class="language-bash">curl -X POST http://127.0.0.1:8000/bot-api/fetch-quotation \
+                                        <pre><code class="language-bash">curl -X POST {{ $baseUrl }}/bot-api/fetch-quotation \
   -H "Content-Type: application/json" \
   -d '{
     "package_name": "Langkawi Island Resort",
@@ -377,7 +377,7 @@
                                 </div>
                                 <div class="endpoint-body">
                                     <div class="code-block">
-                                        <pre><code class="language-javascript">const response = await fetch('http://127.0.0.1:8000/bot-api/fetch-room-types', {
+                                        <pre><code class="language-javascript">const response = await fetch('{{ $baseUrl }}/bot-api/fetch-room-types', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -399,7 +399,7 @@ console.log(data);</code></pre>
                                 </div>
                                 <div class="endpoint-body">
                                     <div class="code-block">
-                                        <pre><code class="language-javascript">const response = await fetch('http://127.0.0.1:8000/bot-api/fetch-quotation', {
+                                        <pre><code class="language-javascript">const response = await fetch('{{ $baseUrl }}/bot-api/fetch-quotation', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
