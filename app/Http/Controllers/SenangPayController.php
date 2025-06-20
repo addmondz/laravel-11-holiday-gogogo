@@ -12,32 +12,48 @@ class SenangPayController extends Controller
 {
     public function handleReturn(Request $request)
     {
-        Log::channel('senangpay')->info('handleReturn: ' . json_encode($request->all()));
+        $requestData = $request->all();
+        Log::channel('senangpay')->info('handleReturn: ' . json_encode($requestData));
+        
+        // Check if we have valid data
+        if (empty($requestData) || !isset($requestData['order_id'])) {
+            Log::channel('senangpay')->warning('Invalid or empty return data received', $requestData);
+            // Redirect to a generic error page or home page
+            return redirect()->route('welcome')->with('error', 'Invalid payment response received.');
+        }
         
         // Log the return request
-        $this->logApiRequest('return', $request->all());
+        $this->logApiRequest('return', $requestData);
         
         // Process the payment response
-        $result = $this->processPaymentResponse($request->all());
+        $result = $this->processPaymentResponse($requestData);
         
         if ($result['success']) {
             // Redirect to success page
             return redirect()->route('payments.success', ['transaction_id' => $result['transaction_id']]);
         } else {
             // Redirect to failed page
-            return redirect()->route('payments.failed', ['transaction_id' => $result['transaction_id']]);
+            return redirect()->route('payments.failed', ['transaction_id' => $result['transaction_id'] ?? 0]);
         }
     }
 
     public function handleCallback(Request $request)
     {
-        Log::channel('senangpay')->info('handleCallback: ' . json_encode($request->all()));
+        $requestData = $request->all();
+        Log::channel('senangpay')->info('handleCallback: ' . json_encode($requestData));
+        
+        // Check if we have valid data
+        if (empty($requestData) || !isset($requestData['order_id'])) {
+            Log::channel('senangpay')->warning('Invalid or empty callback data received', $requestData);
+            // For callbacks, we still return OK to SenangPay even if data is invalid
+            return response('OK', 200);
+        }
         
         // Log the callback request
-        $this->logApiRequest('callback', $request->all());
+        $this->logApiRequest('callback', $requestData);
         
         // Process the payment response
-        $result = $this->processPaymentResponse($request->all());
+        $result = $this->processPaymentResponse($requestData);
         
         // For callbacks, we always return OK to SenangPay
         return response('OK', 200);
@@ -174,6 +190,9 @@ class SenangPayController extends Controller
     private function processPaymentResponse(array $data)
     {
         try {
+            // Log the incoming data for debugging
+            Log::channel('senangpay')->info('Processing payment response', $data);
+            
             // Extract data from SenangPay response
             $statusId = $data['status_id'] ?? null;
             $orderId = $data['order_id'] ?? null;
@@ -181,10 +200,28 @@ class SenangPayController extends Controller
             $message = $data['msg'] ?? null;
             $hash = $data['hash'] ?? null;
             
+            // Log extracted values for debugging
+            Log::channel('senangpay')->info('Extracted payment data', [
+                'status_id' => $statusId,
+                'order_id' => $orderId,
+                'transaction_id' => $transactionId,
+                'message' => $message,
+                'hash' => $hash ? 'present' : 'missing'
+            ]);
+            
             // Validate required fields
             if (!$statusId || !$orderId || !$transactionId || !$hash) {
-                Log::channel('senangpay')->error('Missing required fields in payment response', $data);
-                return ['success' => false, 'error' => 'Missing required fields'];
+                $missingFields = [];
+                if (!$statusId) $missingFields[] = 'status_id';
+                if (!$orderId) $missingFields[] = 'order_id';
+                if (!$transactionId) $missingFields[] = 'transaction_id';
+                if (!$hash) $missingFields[] = 'hash';
+                
+                Log::channel('senangpay')->error('Missing required fields in payment response', [
+                    'missing_fields' => $missingFields,
+                    'received_data' => $data
+                ]);
+                return ['success' => false, 'error' => 'Missing required fields: ' . implode(', ', $missingFields)];
             }
             
             // Verify hash
@@ -197,8 +234,11 @@ class SenangPayController extends Controller
             $transaction = Transaction::where('order_id', $orderId)->first();
             
             if (!$transaction) {
-                Log::channel('senangpay')->error('Transaction not found for order_id: ' . $orderId);
-                return ['success' => false, 'error' => 'Transaction not found'];
+                Log::channel('senangpay')->error('Transaction not found for order_id: ' . $orderId, [
+                    'order_id' => $orderId,
+                    'available_transactions' => Transaction::whereNotNull('order_id')->pluck('order_id')->toArray()
+                ]);
+                return ['success' => false, 'error' => 'Transaction not found for order_id: ' . $orderId];
             }
             
             // Update transaction status
@@ -214,6 +254,11 @@ class SenangPayController extends Controller
             if ($isSuccess && $transaction->booking) {
                 $transaction->booking->payment_status = 'paid';
                 $transaction->booking->save();
+                
+                Log::channel('senangpay')->info('Booking payment status updated to paid', [
+                    'booking_id' => $transaction->booking->id,
+                    'transaction_id' => $transaction->id
+                ]);
             }
             
             // Mark the API log as processed
@@ -222,7 +267,8 @@ class SenangPayController extends Controller
             Log::channel('senangpay')->info('Payment processed successfully', [
                 'order_id' => $orderId,
                 'status' => $isSuccess ? 'success' : 'failed',
-                'transaction_id' => $transaction->id
+                'transaction_id' => $transaction->id,
+                'booking_id' => $transaction->booking_id
             ]);
             
             return [
@@ -275,27 +321,51 @@ class SenangPayController extends Controller
     
     private function logApiRequest(string $type, array $data)
     {
-        SenangPayApiLog::create([
-            'log_type' => $type,
-            'status_id' => $data['status_id'] ?? null,
-            'order_id' => $data['order_id'] ?? null,
-            'transaction_id' => $data['transaction_id'] ?? null,
-            'msg' => $data['msg'] ?? null,
-            'hash' => $data['hash'] ?? null,
-            'raw_payload' => $data,
-            'is_processed' => false,
-        ]);
+        try {
+            SenangPayApiLog::create([
+                'log_type' => $type,
+                'status_id' => $data['status_id'] ?? null,
+                'order_id' => $data['order_id'] ?? null,
+                'transaction_id' => $data['transaction_id'] ?? null,
+                'msg' => $data['msg'] ?? null,
+                'hash' => $data['hash'] ?? null,
+                'raw_payload' => $data,
+                'is_processed' => false,
+            ]);
+        } catch (\Exception $e) {
+            Log::channel('senangpay')->error('Failed to log API request: ' . $e->getMessage(), [
+                'type' => $type,
+                'data' => $data,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
     
     private function markApiLogAsProcessed(array $data)
     {
-        $log = SenangPayApiLog::where('order_id', $data['order_id'])
-            ->where('transaction_id', $data['transaction_id'])
-            ->where('is_processed', false)
-            ->first();
-            
-        if ($log) {
-            $log->update(['is_processed' => true]);
+        try {
+            $log = SenangPayApiLog::where('order_id', $data['order_id'])
+                ->where('transaction_id', $data['transaction_id'])
+                ->where('is_processed', false)
+                ->first();
+                
+            if ($log) {
+                $log->update(['is_processed' => true]);
+                Log::channel('senangpay')->info('API log marked as processed', [
+                    'log_id' => $log->id,
+                    'order_id' => $data['order_id']
+                ]);
+            } else {
+                Log::channel('senangpay')->warning('No unprocessed API log found to mark', [
+                    'order_id' => $data['order_id'] ?? 'missing',
+                    'transaction_id' => $data['transaction_id'] ?? 'missing'
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::channel('senangpay')->error('Failed to mark API log as processed: ' . $e->getMessage(), [
+                'data' => $data,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 }
