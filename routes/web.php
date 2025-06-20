@@ -209,88 +209,51 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__ . '/auth.php';
 
-
-Route::get('/test', function () {
-    $package_id = 1;
-
-    $season_name = 'Default';
-    $season_type_id = SeasonType::where('name', $season_name)->first()?->id;
-    $season_id = Season::where('season_type_id', $season_type_id)->where('package_id', $package_id)->first()?->id;
-
-    $date_type_name = 'Weekday';
-    $date_type_id = DateType::where('name', $date_type_name)->first()?->id;
-    $date_type_range_id = DateTypeRange::where('date_type_id', $date_type_id)->where('package_id', $package_id)->first()?->id;
-
-    $room_type_name = 'Deluxe Room';
-    $room_type_id = RoomType::where('name', $room_type_name)->first()?->id;
-
-    dump([
-        'season_name' => $season_name,
-        'season_type_id' => $season_type_id,
-        'season_id' => $season_id,
-        'date_type_name' => $date_type_name,
-        'date_type_id' => $date_type_id,
-        'room_type_name' => $room_type_name,
-        'room_type_id' => $room_type_id,
-    ]);
-
-    $package_config = PackageConfiguration::where('package_id', $package_id)
-        ->where('season_id', $season_id)
-        ->where('date_type_id', $date_type_range_id)
-        ->where('room_type_id', $room_type_id)
-        ->first();
-
-    dump('package_config id: ' . $package_config?->id);
-
-    $configurationPrices = $package_config ? json_decode($package_config->configuration_prices, true) : [];
-
-    dd($configurationPrices ?: 'No prices found.');
-});
-
-// Payment Simulation Routes
+// Payment Routes
 Route::get('/payment/return', [SenangPayController::class, 'handleReturn']);
 Route::post('/payment/callback', [SenangPayController::class, 'handleCallback']);
 Route::post('/payment/initiate/{bookingId}', [SenangPayController::class, 'initiatePayment'])->name('payment.initiate');
 
-// General Payment Result Routes
+// Payment Result Routes
 Route::get('/payments/success/{transaction_id}', function ($transaction_id) {
-    $transaction = Transaction::findOrFail($transaction_id);
-    $booking = $transaction->booking;
-    
-    if (!$booking) {
-        abort(404, 'Booking not found');
+    if ($transaction_id == 0) {
+        return Inertia::render('Payments/Success', [
+            'bookingUuid' => null,
+            'packageUuid' => null,
+            'transaction' => null,
+            'error' => 'Payment processing failed'
+        ]);
     }
     
+    $transaction = Transaction::findOrFail($transaction_id);
     return Inertia::render('Payments/Success', [
-        'bookingUuid' => $booking->uuid,
-        'packageUuid' => $booking->package->uuid ?? null,
+        'bookingUuid' => $transaction->booking?->uuid,
+        'packageUuid' => $transaction->booking?->package?->uuid,
         'transaction' => $transaction
     ]);
 })->name('payments.success');
 
 Route::get('/payments/failed/{transaction_id}', function ($transaction_id) {
-    $transaction = Transaction::findOrFail($transaction_id);
-    $booking = $transaction->booking;
-    
-    if (!$booking) {
-        abort(404, 'Booking not found');
+    if ($transaction_id == 0) {
+        return Inertia::render('Payments/Failed', [
+            'booking' => null,
+            'transaction' => null,
+            'error' => 'Payment processing failed'
+        ]);
     }
     
+    $transaction = Transaction::findOrFail($transaction_id);
     return Inertia::render('Payments/Failed', [
-        'booking' => $booking,
+        'booking' => $transaction->booking,
         'transaction' => $transaction
     ]);
 })->name('payments.failed');
 
-// Bot API routes - no authentication required
-$botPrefix = 'bot-api';
-Route::prefix($botPrefix)->group(function () use ($botPrefix) {
+// Bot API Routes
+Route::prefix('bot-api')->group(function () {
     Route::post('/fetch-room-types', [BotApiController::class, 'fetchRoomTypesByPackageName']);
     Route::post('/fetch-quotation', [BotApiController::class, 'fetchQuotation']);
-
-    // API Documentation
-    Route::get('/api-docs', function () use ($botPrefix) {
-        $baseUrl = url('/');
-        return view('api-docs', compact('baseUrl', 'botPrefix'));
+    Route::get('/api-docs', function () {
+        return view('api-docs', ['baseUrl' => url('/'), 'botPrefix' => 'bot-api']);
     })->name('bot-api.docs');
 });

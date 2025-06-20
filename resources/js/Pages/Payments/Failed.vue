@@ -9,6 +9,16 @@
                 </div>
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h1>
                 <p class="text-gray-600">We were unable to process your payment.</p>
+                
+                <!-- Error message for processing failures -->
+                <div v-if="error" class="mt-4 p-3 bg-red-100 border border-red-400 rounded-md">
+                    <p class="text-red-800 text-sm">{{ error }}</p>
+                </div>
+                
+                <!-- Transaction details if available -->
+                <div v-if="transaction && transaction.message" class="mt-4 p-3 bg-gray-100 rounded-md">
+                    <p class="text-gray-700 text-sm">Reason: {{ transaction.message }}</p>
+                </div>
             </div>
 
             <div class="space-y-4">
@@ -19,12 +29,12 @@
                     Try Again
                 </button>
 
-                <button
-                    @click="goBack"
-                    class="block w-full bg-gray-200 text-gray-700 px-4 py-3 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                <a
+                    href="/"
+                    class="block w-full bg-gray-200 text-gray-700 px-4 py-3 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors text-center"
                 >
-                    Back
-                </button>
+                    Back to Home
+                </a>
             </div>
         </div>
     </div>
@@ -34,4 +44,10 @@
 const goBack = () => {
     window.history.back();
 };
+
+const props = defineProps({
+    booking: Object,
+    transaction: Object,
+    error: String
+});
 </script> 

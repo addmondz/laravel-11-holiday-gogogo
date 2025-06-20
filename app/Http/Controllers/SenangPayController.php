@@ -13,49 +13,31 @@ class SenangPayController extends Controller
     public function handleReturn(Request $request)
     {
         $requestData = $request->all();
-        Log::channel('senangpay')->info('handleReturn: ' . json_encode($requestData));
+        Log::channel('senangpay')->info('handleReturn', $requestData);
 
-        // Check if we have valid data
-        if (empty($requestData) || !isset($requestData['order_id'])) {
-            Log::channel('senangpay')->warning('Invalid or empty return data received', $requestData);
-            // Redirect to a generic error page or home page
-            return redirect()->route('welcome')->with('error', 'Invalid payment response received.');
-        }
+        // start testing remove later
+        // Mock SenangPay response
+        // $mockJson = '{"status_id":"0","order_id":"5","transaction_id":"1750435827000053875","msg":"The_payment_was_declined._Please_contact_your_bank._Thank_you._","hash":"73be61722c981594ab3e6b2b10c1bc7c6867a7a7ddb83c6b2e8d522c37d082d6"}';
 
-        // Log the return request
-        $this->logApiRequest('return', $requestData);
+        // Decode JSON to array to simulate $request->all()
+        // $requestData = json_decode($mockJson, true);
+        // end testing remove later
 
-        // Process the payment response
         $result = $this->processPaymentResponse($requestData);
-        Log::info('handleReturn - result: ' . json_encode($result));
 
-        if ($result['success']) {
-            // Redirect to success page
-            return redirect()->route('payments.success', ['transaction_id' => $result['transaction_id']]);
-        } else {
-            return redirect()->route('payments.failed', ['transaction_id' => $result['transaction_id']]);
-        }
+        Log::info('handleReturn - result', $result);
+
+        $route = $result['success'] ? 'payments.success' : 'payments.failed';
+
+        return redirect()->route($route, ['transaction_id' => $result['transaction_id'] ?? 0]);
     }
 
     public function handleCallback(Request $request)
     {
         $requestData = $request->all();
-        Log::channel('senangpay')->info('handleCallback: ' . json_encode($requestData));
+        Log::channel('senangpay')->info('handleCallback', $requestData);
 
-        // Check if we have valid data
-        if (empty($requestData) || !isset($requestData['order_id'])) {
-            Log::channel('senangpay')->warning('Invalid or empty callback data received', $requestData);
-            // For callbacks, we still return OK to SenangPay even if data is invalid
-            return response('OK', 200);
-        }
-
-        // Log the callback request
-        $this->logApiRequest('callback', $requestData);
-
-        // Process the payment response
-        $result = $this->processPaymentResponse($requestData);
-
-        // For callbacks, we always return OK to SenangPay
+        $this->processPaymentResponse($requestData);
         return response('OK', 200);
     }
 
@@ -96,47 +78,27 @@ class SenangPayController extends Controller
         try {
             $booking = \App\Models\Booking::findOrFail($bookingId);
 
-            // Check if booking is already paid
             if ($booking->payment_status === 'paid') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Booking is already paid'
-                ], 400);
+                return response()->json(['success' => false, 'message' => 'Booking is already paid'], 400);
             }
 
-            // Create transaction
-            $transaction = self::createTransaction(
-                bookingId: $booking->id,
-                amount: $booking->total_price,
-                paymentMethod: 'senangpay'
-            );
-
-            // Generate SenangPay payment URL
-            $paymentUrl = $this->generatePaymentUrl($transaction, $booking);
-
-            Log::channel('senangpay')->info('Payment initiated', [
+            $transaction = Transaction::create([
                 'booking_id' => $booking->id,
-                'transaction_id' => $transaction->id,
                 'amount' => $booking->total_price,
-                'payment_url' => $paymentUrl
+                'status' => 'pending',
+                'payment_method' => 'senangpay',
             ]);
+
+            $paymentUrl = $this->generatePaymentUrl($transaction, $booking);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Payment URL generated successfully',
                 'payment_url' => $paymentUrl,
                 'transaction' => $transaction
             ]);
         } catch (\Exception $e) {
-            Log::channel('senangpay')->error('Failed to initiate payment: ' . $e->getMessage(), [
-                'booking_id' => $bookingId,
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to initiate payment: ' . $e->getMessage()
-            ], 500);
+            Log::channel('senangpay')->error('Payment initiation failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Payment initiation failed'], 500);
         }
     }
 
@@ -150,125 +112,71 @@ class SenangPayController extends Controller
         $baseUrl = config('senangpay.base_url');
         $isSandbox = config('senangpay.sandbox');
 
-        // Generate order ID for this transaction
-        $orderId = self::generateOrderId();
+        $orderId = $booking->id;
+        $transaction->update(['order_id' => NULL]);
 
-        // Update transaction with order ID
-        $transaction->update(['order_id' => $orderId]);
-
-        // Prepare payment data
         $detail = "Payment for booking #{$booking->uuid} - {$booking->package->name}";
-        $amount = $isSandbox ? $transaction->amount : $transaction->amount;
-        $customerName = $booking->booking_name;
-        $customerEmail = 'customer@example.com'; // You might want to add email to booking
-        $customerContact = $booking->phone_number;
+        $hashInput = $secretKey . urldecode($detail) . urldecode($transaction->amount) . urldecode($orderId);
+        $hash = $isSandbox ? md5($hashInput) : hash_hmac('sha256', $hashInput, $secretKey);
 
-        // Generate hash
-        $hashInput = $secretKey . urldecode($detail) . urldecode($amount) . urldecode($orderId);
-
-        if ($isSandbox) {
-            $hash = md5($hashInput);
-        } else {
-            $hash = hash_hmac('sha256', $hashInput, $secretKey);
-        }
-
-        // Build payment URL
-        $paymentUrl = "{$baseUrl}/{$merchantId}?" . http_build_query([
+        return "{$baseUrl}/{$merchantId}?" . http_build_query([
             'detail' => $detail,
-            'amount' => $amount,
+            'amount' => $transaction->amount,
             'order_id' => $orderId,
-            'name' => $customerName,
-            'email' => $customerEmail,
-            'phone' => $customerContact,
+            'name' => $booking->booking_name,
+            'email' => 'customer@example.com',
+            'phone' => $booking->phone_number,
             'hash' => $hash,
         ]);
-
-        return $paymentUrl;
     }
 
     private function processPaymentResponse(array $data)
     {
         try {
-            // Log the incoming data for debugging
-            Log::channel('senangpay')->info('Processing payment response', $data);
+            // Extract required fields
+            $statusId = $data['status_id'] ?? '';
+            $orderId = $data['order_id'] ?? '';
+            $transactionId = $data['transaction_id'] ?? '';
+            $message = $data['msg'] ?? '';
+            $hash = $data['hash'] ?? '';
 
-            // Extract data from SenangPay response
-            $statusId = $data['status_id'] ?? null;
-            $orderId = $data['order_id'] ?? null;
-            $transactionId = $data['transaction_id'] ?? null;
-            $message = $data['msg'] ?? null;
-            $hash = $data['hash'] ?? null;
-
-            // Log extracted values for debugging
-            Log::channel('senangpay')->info('Extracted payment data', [
-                'status_id' => $statusId,
-                'order_id' => $orderId,
-                'transaction_id' => $transactionId,
-                'message' => $message,
-                'hash' => $hash ? 'present' : 'missing'
-            ]);
-
-            // Validate required fields
-            if (!$statusId || !$orderId || !$transactionId || !$hash) {
-                $missingFields = [];
-                if ($statusId === null || $statusId === '') $missingFields[] = 'status_id';
-                if ($orderId === null || $orderId === '') $missingFields[] = 'order_id';
-                if ($transactionId === null || $transactionId === '') $missingFields[] = 'transaction_id';
-                if ($hash === null || $hash === '') $missingFields[] = 'hash';
-
-                Log::channel('senangpay')->error('Missing required fields in payment response', [
-                    'missing_fields' => $missingFields,
-                    'received_data' => $data
-                ]);
-                return ['success' => false, 'error' => 'Missing required fields: ' . implode(', ', $missingFields)];
+            // Basic validation
+            $missingFields = [];
+            if ($statusId === null || $statusId === '') $missingFields[] = 'status_id';
+            if ($orderId === null || $orderId === '') $missingFields[] = 'order_id';
+            if ($transactionId === null || $transactionId === '') $missingFields[] = 'transaction_id';
+            if ($hash === null || $hash === '') $missingFields[] = 'hash';
+            if (count($missingFields) > 0) {
+                return ['success' => false, 'transaction_id' => 0, 'message' => 'Missing required fields: ' . implode(', ', $missingFields)];
             }
 
             // Verify hash
             if (!$this->verifyHash($data)) {
-                Log::channel('senangpay')->error('Hash verification failed', $data);
-                return ['success' => false, 'error' => 'Hash verification failed'];
+                return ['success' => false, 'transaction_id' => 0, 'message' => 'Hash verification failed'];
             }
 
-            // Find the transaction by order_id
+            // Find and update transaction
             $transaction = Transaction::where('order_id', $orderId)->first();
-
             if (!$transaction) {
-                Log::channel('senangpay')->error('Transaction not found for order_id: ' . $orderId, [
-                    'order_id' => $orderId,
-                    'available_transactions' => Transaction::whereNotNull('order_id')->pluck('order_id')->toArray()
-                ]);
-                return ['success' => false, 'error' => 'Transaction not found for order_id: ' . $orderId];
+                return ['success' => false, 'transaction_id' => 0, 'message' => 'Transaction not found'];
             }
 
-            // Update transaction status
             $isSuccess = $statusId === '1';
-            $transaction->status = $isSuccess ? 'completed' : 'failed';
-            $transaction->status_id = $statusId;
-            $transaction->message = $message;
-            $transaction->transaction_id = $transactionId; // SenangPay transaction ID
-            $transaction->processed_at = now();
-            $transaction->save();
+            $transaction->update([
+                'status' => $isSuccess ? 'completed' : 'failed',
+                'status_id' => $statusId,
+                'message' => $message,
+                'transaction_id' => $transactionId,
+                'processed_at' => now(),
+            ]);
 
-            // Update booking payment status if transaction is successful
+            // Update booking if successful
             if ($isSuccess && $transaction->booking) {
-                $transaction->booking->payment_status = 'paid';
-                $transaction->booking->save();
-
-                Log::channel('senangpay')->info('Booking payment status updated to paid', [
-                    'booking_id' => $transaction->booking->id,
-                    'transaction_id' => $transaction->id
-                ]);
+                $transaction->booking->update(['payment_status' => 'paid']);
             }
 
-            // Mark the API log as processed
-            $this->markApiLogAsProcessed($data);
-
-            Log::channel('senangpay')->info('Payment processed successfully', [
-                'order_id' => $orderId,
-                'status' => $isSuccess ? 'success' : 'failed',
-                'transaction_id' => $transaction->id,
-                'booking_id' => $transaction->booking_id
-            ]);
+            // Log the request
+            $this->logApiRequest($data);
 
             return [
                 'success' => $isSuccess,
@@ -276,12 +184,8 @@ class SenangPayController extends Controller
                 'message' => $message
             ];
         } catch (\Exception $e) {
-            Log::channel('senangpay')->error('Error processing payment response: ' . $e->getMessage(), [
-                'data' => $data,
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return ['success' => false, 'error' => $e->getMessage()];
+            Log::channel('senangpay')->error('Payment processing failed', ['error' => $e->getMessage()]);
+            return ['success' => false, 'transaction_id' => 0];
         }
     }
 
@@ -290,80 +194,32 @@ class SenangPayController extends Controller
         $secretKey = config('senangpay.secret_key');
         $isSandbox = config('senangpay.sandbox');
 
-        // Extract required fields for hash verification
-        $statusId = $data['status_id'] ?? '';
-        $orderId = $data['order_id'] ?? '';
-        $transactionId = $data['transaction_id'] ?? '';
-        $message = $data['msg'] ?? '';
-        $receivedHash = $data['hash'] ?? '';
+        $hashInput = $secretKey .
+            ($data['status_id'] ?? '') .
+            ($data['order_id'] ?? '') .
+            ($data['transaction_id'] ?? '') .
+            ($data['msg'] ?? '');
 
-        // Create hash input string (same format as SenangPay documentation)
-        $hashInput = $secretKey . $statusId . $orderId . $transactionId . $message;
+        $expectedHash = $isSandbox ? md5($hashInput) : hash_hmac('sha256', $hashInput, $secretKey);
 
-        // Generate hash based on environment
-        if ($isSandbox) {
-            $expectedHash = md5($hashInput);
-        } else {
-            $expectedHash = hash_hmac('sha256', $hashInput, $secretKey);
-        }
-
-        Log::channel('senangpay')->info('Hash verification', [
-            'received_hash' => $receivedHash,
-            'expected_hash' => $expectedHash,
-            'hash_input' => $hashInput,
-            'is_sandbox' => $isSandbox
-        ]);
-
-        return hash_equals($expectedHash, $receivedHash);
+        return hash_equals($expectedHash, $data['hash'] ?? '');
     }
 
-    private function logApiRequest(string $type, array $data)
+    private function logApiRequest(array $data)
     {
         try {
             SenangPayApiLog::create([
-                'log_type' => $type,
+                'log_type' => 'payment_response',
                 'status_id' => $data['status_id'] ?? null,
                 'order_id' => $data['order_id'] ?? null,
                 'transaction_id' => $data['transaction_id'] ?? null,
                 'msg' => $data['msg'] ?? null,
                 'hash' => $data['hash'] ?? null,
                 'raw_payload' => $data,
-                'is_processed' => false,
+                'is_processed' => true,
             ]);
         } catch (\Exception $e) {
-            Log::channel('senangpay')->error('Failed to log API request: ' . $e->getMessage(), [
-                'type' => $type,
-                'data' => $data,
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-    private function markApiLogAsProcessed(array $data)
-    {
-        try {
-            $log = SenangPayApiLog::where('order_id', $data['order_id'])
-                ->where('transaction_id', $data['transaction_id'])
-                ->where('is_processed', false)
-                ->first();
-
-            if ($log) {
-                $log->update(['is_processed' => true]);
-                Log::channel('senangpay')->info('API log marked as processed', [
-                    'log_id' => $log->id,
-                    'order_id' => $data['order_id']
-                ]);
-            } else {
-                Log::channel('senangpay')->warning('No unprocessed API log found to mark', [
-                    'order_id' => $data['order_id'] ?? 'missing',
-                    'transaction_id' => $data['transaction_id'] ?? 'missing'
-                ]);
-            }
-        } catch (\Exception $e) {
-            Log::channel('senangpay')->error('Failed to mark API log as processed: ' . $e->getMessage(), [
-                'data' => $data,
-                'error' => $e->getMessage()
-            ]);
+            Log::channel('senangpay')->error('Failed to log API request', ['error' => $e->getMessage()]);
         }
     }
 }

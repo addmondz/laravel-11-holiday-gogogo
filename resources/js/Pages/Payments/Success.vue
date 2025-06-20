@@ -10,10 +10,27 @@
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
                 <p class="text-gray-600">Your payment has been processed successfully.</p>
                 <p class="text-gray-600">The booking details will be sent to your email.</p>
+                
+                <!-- Error message for processing failures -->
+                <div v-if="error" class="mt-4 p-3 bg-yellow-100 border border-yellow-400 rounded-md">
+                    <p class="text-yellow-800 text-sm">{{ error }}</p>
+                </div>
             </div>  
+            
             <div class="flex justify-center">
-                <a :href="`${route('quotation.with-hash', packageUuid)}?booking=${bookingUuid}`" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium">
+                <a 
+                    v-if="bookingUuid && packageUuid" 
+                    :href="`${route('quotation.with-hash', packageUuid)}?booking=${bookingUuid}`" 
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium"
+                >
                     Back to Booking
+                </a>
+                <a 
+                    v-else 
+                    href="/" 
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium"
+                >
+                    Back to Home
                 </a>
             </div>
         </div>
@@ -27,6 +44,8 @@ const goBack = () => {
 
 const props = defineProps({
     bookingUuid: String,
-    packageUuid: String
+    packageUuid: String,
+    transaction: Object,
+    error: String
 });
 </script> 
