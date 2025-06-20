@@ -256,13 +256,14 @@ Route::post('/payment/callback', [SenangPayController::class, 'handleCallback'])
 
 
 // Bot API routes - no authentication required
-Route::prefix('bot-api')->group(function () {
+$botPrefix = 'bot-api';
+Route::prefix($botPrefix)->group(function () use ($botPrefix) {
     Route::post('/fetch-room-types', [BotApiController::class, 'fetchRoomTypesByPackageName']);
     Route::post('/fetch-quotation', [BotApiController::class, 'fetchQuotation']);
 
     // API Documentation
-    Route::get('/api-docs', function () {
+    Route::get('/api-docs', function () use ($botPrefix) {
         $baseUrl = url('/');
-        return view('api-docs', compact('baseUrl'));
+        return view('api-docs', compact('baseUrl', 'botPrefix'));
     })->name('bot-api.docs');
 });
