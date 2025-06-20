@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
 use App\Models\Transaction;
 use App\Models\SenangPayApiLog;
 use Illuminate\Http\Request;
@@ -12,15 +13,15 @@ class SenangPayController extends Controller
 {
     public function handleReturn(Request $request)
     {
-        $requestData = $request->all();
-        Log::channel('senangpay')->info('handleReturn', $requestData);
+        // $requestData = $request->all();
+        // Log::channel('senangpay')->info('handleReturn', $requestData);
 
         // start testing remove later
         // Mock SenangPay response
-        // $mockJson = '{"status_id":"0","order_id":"5","transaction_id":"1750435827000053875","msg":"The_payment_was_declined._Please_contact_your_bank._Thank_you._","hash":"73be61722c981594ab3e6b2b10c1bc7c6867a7a7ddb83c6b2e8d522c37d082d6"}';
+        $mockJson = '{"status_id":"0","order_id":"10","transaction_id":"1750438825000316388","msg":"The_payment_was_declined._Please_contact_your_bank._Thank_you._","hash":"6f94c182585db9f64eb3aca65ef938b837bd31fe1cff88234dc9065c0f127091"}';
 
         // Decode JSON to array to simulate $request->all()
-        // $requestData = json_decode($mockJson, true);
+        $requestData = json_decode($mockJson, true);
         // end testing remove later
 
         $result = $this->processPaymentResponse($requestData);
@@ -132,6 +133,9 @@ class SenangPayController extends Controller
 
     private function processPaymentResponse(array $data)
     {
+        // Log the request
+        $this->logApiRequest($data);
+
         try {
             // Extract required fields
             $statusId = $data['status_id'] ?? '';
@@ -156,7 +160,8 @@ class SenangPayController extends Controller
             }
 
             // Find and update transaction
-            $transaction = Transaction::where('order_id', $orderId)->first();
+            $booking = Booking::where('id', $orderId)->first();
+            $transaction = $booking->transactions()->latest()->whereNotIn('status', ['completed', 'failed'])->first();
             if (!$transaction) {
                 return ['success' => false, 'transaction_id' => 0, 'message' => 'Transaction not found'];
             }
@@ -174,9 +179,6 @@ class SenangPayController extends Controller
             if ($isSuccess && $transaction->booking) {
                 $transaction->booking->update(['payment_status' => 'paid']);
             }
-
-            // Log the request
-            $this->logApiRequest($data);
 
             return [
                 'success' => $isSuccess,
