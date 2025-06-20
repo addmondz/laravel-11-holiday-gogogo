@@ -65,7 +65,7 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        $dummyPackagesCount = 21;
+        $dummyPackagesCount = 2;
         $dummyOtherPackagesCount = 11;
         $earliestDate = Carbon::parse('1970-01-01');
         $earliestNextDate = Carbon::parse('1970-01-02');

@@ -27,13 +27,13 @@ class SenangPayController extends Controller
         
         // Process the payment response
         $result = $this->processPaymentResponse($requestData);
+        Log::info('handleReturn - result: ' . json_encode($result));
         
         if ($result['success']) {
             // Redirect to success page
             return redirect()->route('payments.success', ['transaction_id' => $result['transaction_id']]);
         } else {
-            // Redirect to failed page
-            return redirect()->route('payments.failed', ['transaction_id' => $result['transaction_id'] ?? 0]);
+            return redirect()->route('payments.failed', ['transaction_id' => $result['transaction_id']]);
         }
     }
 
