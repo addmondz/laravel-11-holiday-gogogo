@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('senang_pay_api_log', function (Blueprint $table) {
+        Schema::create('senang_pay_api_logs', function (Blueprint $table) {
             $table->id();
             $table->string('log_type')->nullable();
             $table->string('status_id')->nullable();
