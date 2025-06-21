@@ -46,6 +46,9 @@ class PaymentSimulationController extends Controller
             'detail' => $detail,
             'amount' => $amount,
             'order_id' => $order_id,
+            'customer_name' => $customer_name,
+            'customer_email' => $customer_email,
+            'customer_contact' => $customer_contact,
             'secret_key (partial)' => substr($secret_key, 0, 5) . '***',
         ], JSON_PRETTY_PRINT));
 

@@ -213,6 +213,9 @@ require __DIR__ . '/auth.php';
 Route::get('/payment/return', [SenangPayController::class, 'handleReturn']);
 Route::post('/payment/callback', [SenangPayController::class, 'handleCallback']);
 Route::post('/payment/initiate/{bookingId}', [SenangPayController::class, 'initiatePayment'])->name('payment.initiate');
+// payment testing
+Route::get('/test-payment', [PaymentSimulationController::class, 'showTestPayment'])->name('payment.test-payment');
+Route::post('/create-test-payment-transaction', [PaymentSimulationController::class, 'createTestPaymentTransaction'])->name('payment.create-test-payment-transaction');
 
 // Payment Result Routes
 Route::get('/payments/success/{transaction_id}', function ($transaction_id) {

@@ -58,9 +58,10 @@ class SenangPayController extends Controller
             $secret_key = config('senangpay.secret_key');
             $base_url = config('senangpay.base_url');
             $is_sandbox = config('senangpay.sandbox');
+            $package_hash = $booking->package->uuid;
 
-            $detail = "Payment for booking #{$booking->uuid} - {$booking->package->name}";
-            $amount = (string) $booking->total_price;
+            $detail = "Payment for booking {$booking->uuid}. Package: {$package_hash}";
+            $amount = round((float) $booking->total_price, 2);
             $order_id = (string) $booking->id;
             $customer_name = $booking->booking_name;
             $customer_email = $booking->email ?? 'customer@example.com';
@@ -72,6 +73,9 @@ class SenangPayController extends Controller
                 'detail' => $detail,
                 'amount' => $amount,
                 'order_id' => $order_id,
+                'customer_name' => $customer_name,
+                'customer_email' => $customer_email,
+                'customer_contact' => $customer_contact,
                 'secret_key (partial)' => substr($secret_key, 0, 5) . '***',
             ], JSON_PRETTY_PRINT));
 
@@ -98,6 +102,8 @@ class SenangPayController extends Controller
                 'phone' => $customer_contact,
                 'hash' => $hash,
             ]);
+
+            Log::channel('senangpay')->info('Final payment URL:', ['url' => $payment_url]);
 
             return response()->json([
                 'success' => true,
