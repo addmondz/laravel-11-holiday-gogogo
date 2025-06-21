@@ -104,7 +104,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span 
                                                 :class="[
-                                                    'px-2 py-1 text-xs font-semibold rounded-full',
+                                                    'px-4 py-1 text-xs font-semibold rounded-full block min-w-[50px] text-center',
                                                     booking.payment_status === 'paid' ? 'bg-green-100 text-green-800' :
                                                     booking.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                                     'bg-red-100 text-red-800'
