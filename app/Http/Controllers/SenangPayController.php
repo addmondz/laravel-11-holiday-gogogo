@@ -66,13 +66,27 @@ class SenangPayController extends Controller
             $customer_email = $booking->email ?? 'customer@example.com';
             $customer_contact = $booking->phone_number;
 
+            Log::channel('senangpay')->info('SENANGPAY_SANDBOX: ' . config('senangpay.sandbox'));
+            // Log inputs
+            Log::channel('senangpay')->info('--- SenangPay Hash Generation Inputs ---' . json_encode([
+                'detail' => $detail,
+                'amount' => $amount,
+                'order_id' => $order_id,
+                'secret_key (partial)' => substr($secret_key, 0, 5) . '***',
+            ], JSON_PRETTY_PRINT));
+
             // Generate hash
             $hash_input = $secret_key . urldecode($detail) . urldecode($amount) . urldecode($order_id);
+
+            Log::channel('senangpay')->info('Hash input string:', ['hash_input' => $hash_input]);
+
             if ($is_sandbox) {
                 $hash = md5($hash_input);
             } else {
                 $hash = hash_hmac('sha256', $hash_input, $secret_key);
             }
+
+            Log::channel('senangpay')->info('Generated hash:', ['hash' => $hash]);
 
             // Build URL
             $payment_url = "{$base_url}/{$merchant_id}?" . http_build_query([
@@ -84,7 +98,7 @@ class SenangPayController extends Controller
                 'phone' => $customer_contact,
                 'hash' => $hash,
             ]);
-            
+
             return response()->json([
                 'success' => true,
                 'payment_url' => $payment_url,
