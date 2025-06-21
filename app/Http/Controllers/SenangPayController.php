@@ -119,7 +119,7 @@ class SenangPayController extends Controller
     private function processPaymentResponse(array $data)
     {
         // Log the request
-        $this->logApiRequest($data);
+        $senangPayApiLogId = $this->logApiRequest($data);
 
         try {
             // Extract required fields
@@ -150,31 +150,45 @@ class SenangPayController extends Controller
                 return ['success' => false, 'transaction_id' => 0, 'message' => 'Booking not found'];
             }
 
-            // Create or find transaction
-            $transaction = $booking->transactions()->latest()->whereNotIn('status', ['completed', 'failed'])->first();
-            if (!$transaction) {
-                // Create new transaction if none exists
-                $transaction = Transaction::create([
-                    'booking_id' => $booking->id,
-                    'amount' => $booking->total_price,
-                    'status' => 'pending',
-                    'payment_method' => 'senangpay',
-                    'order_id' => $orderId,
+            // check if already have transaction
+            $transaction = Transaction::where('transaction_id', $transactionId)->first();
+            if ($transaction) {
+                $transaction->update([
+                    'status' => $statusId === '1' ? 'completed' : 'failed',
+                    'status_id' => $statusId,
+                    'message' => $message,
+                    'transaction_id' => $transactionId,
+                    'processed_at' => now(),
+                    'senang_pay_api_log_id' => $senangPayApiLogId,
                 ]);
-            }
+            } else {
+                // Create or find transaction
+                $transaction = $booking->transactions()->latest()->whereNotIn('status', ['completed', 'failed'])->first();
+                if (!$transaction) {
+                    // Create new transaction if none exists
+                    $transaction = Transaction::create([
+                        'booking_id' => $booking->id,
+                        'amount' => $booking->total_price,
+                        'status' => 'pending',
+                        'payment_method' => 'senangpay',
+                        'order_id' => $orderId,
+                        'senang_pay_api_log_id' => $senangPayApiLogId,
+                    ]);
+                }
 
-            $isSuccess = $statusId === '1';
-            $transaction->update([
-                'status' => $isSuccess ? 'completed' : 'failed',
-                'status_id' => $statusId,
-                'message' => $message,
-                'transaction_id' => $transactionId,
-                'processed_at' => now(),
-            ]);
+                $isSuccess = $statusId === '1';
+                $transaction->update([
+                    'status' => $isSuccess ? 'completed' : 'failed',
+                    'status_id' => $statusId,
+                    'message' => $message,
+                    'transaction_id' => $transactionId,
+                    'processed_at' => now(),
+                ]);
 
-            // Update booking if successful
-            if ($isSuccess && $transaction->booking) {
-                $transaction->booking->update(['payment_status' => 'paid']);
+                // Update booking if successful
+                if ($isSuccess && $transaction->booking) {
+                    $transaction->booking->update(['payment_status' => 'paid']);
+                }
             }
 
             return [
@@ -207,7 +221,7 @@ class SenangPayController extends Controller
     private function logApiRequest(array $data)
     {
         try {
-            SenangPayApiLog::create([
+            $senangPayApiLog = SenangPayApiLog::create([
                 'log_type' => 'payment_response',
                 'status_id' => $data['status_id'] ?? null,
                 'order_id' => $data['order_id'] ?? null,
@@ -217,8 +231,11 @@ class SenangPayController extends Controller
                 'raw_payload' => $data,
                 'is_processed' => true,
             ]);
+    
+            return $senangPayApiLog->id;
         } catch (\Exception $e) {
             Log::channel('senangpay')->error('Failed to log API request', ['error' => $e->getMessage()]);
+            return null;
         }
     }
 }

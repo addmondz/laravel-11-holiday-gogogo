@@ -17,7 +17,8 @@ class Transaction extends Model
         'status_id',
         'message',
         'order_id',
-        'processed_at'
+        'processed_at',
+        'senang_pay_api_log_id'
     ];
 
     protected $casts = [

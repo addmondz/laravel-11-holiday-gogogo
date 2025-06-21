@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('message')->nullable();
             $table->string('order_id')->nullable();
             $table->timestamp('processed_at')->nullable();
+            $table->foreignId('senang_pay_api_log_id')->nullable()->constrained('senang_pay_api_logs')->onDelete('cascade');
             $table->timestamps();
         });
     }
