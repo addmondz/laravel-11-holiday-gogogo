@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Services\GenerateBookingUid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -64,7 +65,7 @@ class BookingController extends Controller
                     'adults' => $totalAdults,
                     'children' => $totalChildren,
                     'infants' => $totalInfants,
-                    'uuid' => Str::uuid()
+                    'uuid' => (new GenerateBookingUid())->execute()
                 ]);
 
                 // Create booking rooms

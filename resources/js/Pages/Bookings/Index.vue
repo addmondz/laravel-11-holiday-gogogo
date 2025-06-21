@@ -38,6 +38,9 @@
                                             Booking Name
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Booking ID
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Package
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -67,6 +70,9 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">{{ booking.booking_name }}</div>
                                             <div class="text-sm text-gray-500">{{ booking.phone_number }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ booking.uuid }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">{{ booking.package.name }}</div>
@@ -123,7 +129,13 @@
                                                 </Link>
                                                 <a
                                                     :href="route('quotation.with-hash', booking.package.uuid) + '?booking=' + booking.uuid"
-                                                    class="text-green-600 hover:text-green-900 ml-4"
+                                                    class="ml-4"
+                                                    :class="[
+                                                        'ml-4',
+                                                        booking.payment_status == 'paid' ? 'text-blue-600 hover:text-blue-900' :
+                                                        booking.payment_status == 'pending' ? 'text-green-600 hover:text-green-900' :
+                                                        'text-red-600 hover:text-red-900'
+                                                    ]"
                                                 >
                                                     {{ booking.payment_status === 'paid' ? 'View Payment' : 'Pay Now' }}
                                                 </a>

@@ -13,15 +13,15 @@ class SenangPayController extends Controller
 {
     public function handleReturn(Request $request)
     {
-        // $requestData = $request->all();
-        // Log::channel('senangpay')->info('handleReturn', $requestData);
+        $requestData = $request->all();
+        Log::channel('senangpay')->info('handleReturn', $requestData);
 
         // start testing remove later
         // Mock SenangPay response
-        $mockJson = '{"status_id":"0","order_id":"10","transaction_id":"1750438825000316388","msg":"The_payment_was_declined._Please_contact_your_bank._Thank_you._","hash":"6f94c182585db9f64eb3aca65ef938b837bd31fe1cff88234dc9065c0f127091"}';
+        // $mockJson = '{"status_id":"0","order_id":"10","transaction_id":"1750438825000316388","msg":"The_payment_was_declined._Please_contact_your_bank._Thank_you._","hash":"6f94c182585db9f64eb3aca65ef938b837bd31fe1cff88234dc9065c0f127091"}';
 
         // Decode JSON to array to simulate $request->all()
-        $requestData = json_decode($mockJson, true);
+        // $requestData = json_decode($mockJson, true);
         // end testing remove later
 
         $result = $this->processPaymentResponse($requestData);
@@ -43,92 +43,57 @@ class SenangPayController extends Controller
     }
 
     /**
-     * Create a transaction for SenangPay payment
-     */
-    public static function createTransaction($bookingId, $amount, $paymentMethod = 'senangpay')
-    {
-        $transaction = Transaction::create([
-            'booking_id' => $bookingId,
-            'amount' => $amount,
-            'status' => 'pending',
-            'payment_method' => $paymentMethod,
-        ]);
-
-        Log::channel('senangpay')->info('Transaction created for SenangPay', [
-            'transaction_id' => $transaction->id,
-            'booking_id' => $bookingId,
-            'amount' => $amount
-        ]);
-
-        return $transaction;
-    }
-
-    /**
-     * Generate a timestamp-based order ID for SenangPay
-     */
-    public static function generateOrderId()
-    {
-        return (string) (time() * 1000 + rand(0, 999)); // Millisecond timestamp + random
-    }
-
-    /**
      * Initiate a SenangPay payment for a booking
      */
     public function initiatePayment(Request $request, $bookingId)
     {
         try {
-            $booking = \App\Models\Booking::findOrFail($bookingId);
+            $booking = Booking::findOrFail($bookingId);
 
             if ($booking->payment_status === 'paid') {
                 return response()->json(['success' => false, 'message' => 'Booking is already paid'], 400);
             }
 
-            $transaction = Transaction::create([
-                'booking_id' => $booking->id,
-                'amount' => $booking->total_price,
-                'status' => 'pending',
-                'payment_method' => 'senangpay',
+            $merchant_id = config('senangpay.merchant_id');
+            $secret_key = config('senangpay.secret_key');
+            $base_url = config('senangpay.base_url');
+            $is_sandbox = config('senangpay.sandbox');
+
+            $detail = "Payment for booking #{$booking->uuid} - {$booking->package->name}";
+            $amount = (string) $booking->total_price;
+            $order_id = (string) $booking->id;
+            $customer_name = $booking->booking_name;
+            $customer_email = $booking->email ?? 'customer@example.com';
+            $customer_contact = $booking->phone_number;
+
+            // Generate hash
+            $hash_input = $secret_key . urldecode($detail) . urldecode($amount) . urldecode($order_id);
+            if ($is_sandbox) {
+                $hash = md5($hash_input);
+            } else {
+                $hash = hash_hmac('sha256', $hash_input, $secret_key);
+            }
+
+            // Build URL
+            $payment_url = "{$base_url}/{$merchant_id}?" . http_build_query([
+                'detail' => $detail,
+                'amount' => $amount,
+                'order_id' => $order_id,
+                'name' => $customer_name,
+                'email' => $customer_email,
+                'phone' => $customer_contact,
+                'hash' => $hash,
             ]);
-
-            $paymentUrl = $this->generatePaymentUrl($transaction, $booking);
-
+            
             return response()->json([
                 'success' => true,
-                'payment_url' => $paymentUrl,
-                'transaction' => $transaction
+                'payment_url' => $payment_url,
+                'order_id' => $order_id
             ]);
         } catch (\Exception $e) {
             Log::channel('senangpay')->error('Payment initiation failed', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => 'Payment initiation failed'], 500);
         }
-    }
-
-    /**
-     * Generate SenangPay payment URL
-     */
-    private function generatePaymentUrl($transaction, $booking)
-    {
-        $merchantId = config('senangpay.merchant_id');
-        $secretKey = config('senangpay.secret_key');
-        $baseUrl = config('senangpay.base_url');
-        $isSandbox = config('senangpay.sandbox');
-
-        $orderId = $booking->id;
-        $transaction->update(['order_id' => NULL]);
-
-        $detail = "Payment for booking #{$booking->uuid} - {$booking->package->name}";
-        $hashInput = $secretKey . urldecode($detail) . urldecode($transaction->amount) . urldecode($orderId);
-        $hash = $isSandbox ? md5($hashInput) : hash_hmac('sha256', $hashInput, $secretKey);
-
-        return "{$baseUrl}/{$merchantId}?" . http_build_query([
-            'detail' => $detail,
-            'amount' => $transaction->amount,
-            'order_id' => $orderId,
-            'name' => $booking->booking_name,
-            'email' => 'customer@example.com',
-            'phone' => $booking->phone_number,
-            'hash' => $hash,
-        ]);
     }
 
     private function processPaymentResponse(array $data)
@@ -159,11 +124,23 @@ class SenangPayController extends Controller
                 return ['success' => false, 'transaction_id' => 0, 'message' => 'Hash verification failed'];
             }
 
-            // Find and update transaction
+            // Find booking by order_id
             $booking = Booking::where('id', $orderId)->first();
+            if (!$booking) {
+                return ['success' => false, 'transaction_id' => 0, 'message' => 'Booking not found'];
+            }
+
+            // Create or find transaction
             $transaction = $booking->transactions()->latest()->whereNotIn('status', ['completed', 'failed'])->first();
             if (!$transaction) {
-                return ['success' => false, 'transaction_id' => 0, 'message' => 'Transaction not found'];
+                // Create new transaction if none exists
+                $transaction = Transaction::create([
+                    'booking_id' => $booking->id,
+                    'amount' => $booking->total_price,
+                    'status' => 'pending',
+                    'payment_method' => 'senangpay',
+                    'order_id' => $orderId,
+                ]);
             }
 
             $isSuccess = $statusId === '1';

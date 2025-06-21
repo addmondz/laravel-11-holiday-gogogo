@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\BookingRoom;
 use App\Models\Package;
 use App\Models\RoomType;
+use App\Services\GenerateBookingUid;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
@@ -124,7 +125,7 @@ class BookingSeeder extends Seeder
                     'infants' => 0, // Will be updated after rooms are created
                     'total_price' => 0, // Will be updated after rooms are created
                     'special_remarks' => $remarks[$i % count($remarks)],
-                    'uuid' => Str::uuid()->toString(),
+                    'uuid' => (new GenerateBookingUid())->execute(),
                     'payment_status' => rand(0, 1) ? 'pending' : 'paid'
                 ]);
 

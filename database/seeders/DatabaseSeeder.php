@@ -20,6 +20,7 @@ use App\Models\{
     DateBlocker
 };
 use App\Services\CreatePriceConfigurationsService;
+use App\Services\GeneratePackageUid;
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
@@ -152,9 +153,10 @@ class DatabaseSeeder extends Seeder
 
             // Random days within the range
             $days = $faker->numberBetween($minDays, $maxDays);
+            $packageName = $location . ' ' . $packageType['title'];
 
             Package::create([
-                'name' => $location . ' ' . $packageType['title'],
+                'name' => $packageName,
                 'description' => ($days + 1) . "D{$days}N " . strtolower($packageType['title']) . " in {$location}. " . $faker->sentence(8),
                 'icon_photo' => $packageType['icon'],
                 'display_price_adult' => $faker->randomFloat(2, $packageType['price_range'][0], $packageType['price_range'][1]),
@@ -165,7 +167,7 @@ class DatabaseSeeder extends Seeder
                 'location' => $location,
                 'package_start_date' => '2025-01-01',
                 'package_end_date' => '2025-12-31',
-                'uuid' => Str::uuid(),
+                'uuid' => (new GeneratePackageUid())->execute($packageName),
             ]);
         }
 

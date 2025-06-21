@@ -133,6 +133,12 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
+        'bookingUidRegeneration' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/bookingUidRegeneration.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+        ],
 
     ],
 

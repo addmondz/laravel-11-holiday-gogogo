@@ -811,7 +811,7 @@
                                             <p class="text-sm text-gray-600">Phone: {{bookingSuccess.phone_number}}</p>
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                                        <h4 class="text-sm font-medium text-gray-500 mb-3">ROOM TYPE</h4>
+                                        <h4 class="text-sm font-medium text-gray-500 mb-3">ROOMS</h4>
                                         <div class="space-y-2">
                                             <template v-for="(room, roomIndex) in bookingSuccess.rooms" :key="roomIndex">
                                                 <p class="text-sm text-gray-600 font-medium">
@@ -825,19 +825,47 @@
                                 <!-- Right Column -->
                                 <div class="space-y-6">
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                                        <h4 class="text-sm font-medium text-gray-500 mb-3">DURATION</h4>
-                                        <p class="text-lg text-gray-900">{{ moment(bookingSuccess.end_date).diff(moment(bookingSuccess.start_date), 'days') +1 }} Days {{ moment(bookingSuccess.end_date).diff(moment(bookingSuccess.start_date), 'days') }} Nights</p>
-                                    </div>
-                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                                        <h4 class="text-sm font-medium text-gray-500 mb-3">CHECK-IN / CHECK-OUT</h4>
-                                        <div class="space-y-1">
-                                            <p class="text-sm text-gray-600 font-medium">Check-in: {{ moment(bookingSuccess.start_date).format('DD MMM YYYY') }}</p>
-                                            <p class="text-sm text-gray-600 font-medium">Check-out: {{ moment(bookingSuccess.end_date).format('DD MMM YYYY') }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                                         <h4 class="text-sm font-medium text-gray-500 mb-3">GUESTS</h4>
                                         <p class="text-lg text-gray-900">{{ bookingSuccess.adults }} Adults, {{ bookingSuccess.children }} Children, {{ bookingSuccess.infants }} Infants</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                        <h4 class="text-sm font-medium text-gray-500 mb-3">DURATION</h4>
+                                        <p class="text-lg text-gray-900">{{ moment(bookingSuccess.end_date).diff(moment(bookingSuccess.start_date), 'days') + 1 }} Days, {{ moment(bookingSuccess.end_date).diff(moment(bookingSuccess.start_date), 'days') }} Nights</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 shadow-sm">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <!-- Check-in -->
+                                            <div class="bg-white rounded-lg p-4 border border-blue-200 shadow-sm">
+                                                <div class="flex items-center mb-2">
+                                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <span>Check-in</span>
+                                                </div>
+                                                <div class="ml-11">
+                                                    <p class="text-lg font-bold text-gray-900">{{ moment(bookingSuccess.start_date).format('DD') }} {{ moment(bookingSuccess.start_date).format('MMM YYYY') }}</p>
+                                                    <p class="text-xs text-gray-500 mt-1">{{ moment(bookingSuccess.start_date).format('dddd') }}</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Check-out -->
+                                            <div class="bg-white rounded-lg p-4 border border-blue-200 shadow-sm">
+                                                <div class="flex items-center mb-2">
+                                                    <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                                                        <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <span>Check-out</span>
+                                                </div>
+                                                <div class="ml-11">
+                                                    <p class="text-lg font-bold text-gray-900">{{ moment(bookingSuccess.end_date).format('DD') }} {{ moment(bookingSuccess.end_date).format('MMM YYYY') }}</p>
+                                                    <p class="text-xs text-gray-500 mt-1">{{ moment(bookingSuccess.end_date).format('dddd') }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -847,33 +875,6 @@
                                 <div class="flex justify-between items-center">
                                     <h4 class="text-lg font-semibold text-indigo-900">Total Amount</h4>
                                     <p class="text-2xl font-bold text-indigo-600">MYR {{ formatNumber(bookingSuccess.total_price) }}</p>
-                                </div>
-                            </div>
-
-                            <!-- Payment Status -->
-                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <h4 class="text-sm font-medium text-gray-500 mb-1">PAYMENT STATUS</h4>
-                                        <div class="flex items-center">
-                                            <span :class="[
-                                                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                                                bookingSuccess.payment_status === 'paid' 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-yellow-100 text-yellow-800'
-                                            ]">
-                                                <span :class="[
-                                                    'w-2 h-2 rounded-full mr-2',
-                                                    bookingSuccess.payment_status === 'paid' ? 'bg-green-400' : 'bg-yellow-400'
-                                                ]"></span>
-                                                {{ bookingSuccess.payment_status === 'paid' ? 'Paid' : 'Pending Payment' }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div v-if="bookingSuccess.payment_status === 'paid'" class="text-right">
-                                        <p class="text-xs text-gray-500">Payment Method</p>
-                                        <p class="text-sm font-medium text-gray-900">SenangPay</p>
-                                    </div>
                                 </div>
                             </div>
 
