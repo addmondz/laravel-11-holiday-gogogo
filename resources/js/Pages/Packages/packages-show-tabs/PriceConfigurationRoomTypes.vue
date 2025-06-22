@@ -158,7 +158,7 @@
                     </div>
 
                     <!-- Surcharge Table -->
-                    <div v-if="hasSurcharges" class="overflow-x-auto mt-8">
+                    <div class="overflow-x-auto mt-8">
                         <h4 class="text-lg font-bold text-gray-700 mb-2">Surcharge</h4>
                         <table class="min-w-full divide-y divide-gray-200">
                             <tbody class="bg-white divide-y divide-gray-200">
