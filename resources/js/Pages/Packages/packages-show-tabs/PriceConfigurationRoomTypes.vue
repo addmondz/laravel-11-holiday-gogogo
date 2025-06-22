@@ -77,39 +77,38 @@
 
             <div v-else class="space-y-8">
                 <!-- Price Matrix for all Room Types -->
-                <div class="flex justify-between items-center">
-                    <h3 class="text-lg font-medium text-gray-900">Price Matrix for All Room Types</h3>
-                    <div class="space-x-2">
-                        <button
-                            v-if="!isEditMode"
-                            @click="openPriceForm('edit')"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
-                        >
-                            Edit All Prices
-                        </button>
-                        <template v-else>
-                            <button
-                                @click="closePriceForm"
-                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                @click="submitPrices"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
-                                :disabled="priceForm.processing"
-                            >
-                                {{ isEditMode ? 'Update All Prices' : 'Create Prices' }}
-                            </button>
-                        </template>
-                    </div>
-                </div>
 
                 <!-- Display View -->
                 <template v-if="!isEditMode">
                     <!-- Base Charge Table -->
                     <div class="overflow-x-auto">
-                        <h4 class="text-lg font-bold text-gray-700 mb-2">Base Charge</h4>
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-lg font-bold text-gray-700 mb-2">Base Charge</h4>
+                            <div class="space-x-2 mb-4">
+                                <button
+                                    v-if="!isEditMode"
+                                    @click="openPriceForm('edit')"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
+                                >
+                                    Edit All Prices
+                                </button>
+                                <template v-else>
+                                    <button
+                                        @click="closePriceForm"
+                                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        @click="submitPrices"
+                                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
+                                        :disabled="priceForm.processing"
+                                    >
+                                        {{ isEditMode ? 'Update All Prices' : 'Create Prices' }}
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
                         <table class="min-w-full divide-y divide-gray-200">
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <template v-for="config in configurations" :key="config.id">
@@ -218,12 +217,17 @@
                             <div class="overflow-x-auto">
                                 <div class="flex justify-between items-center mb-4">
                                     <h3 class="text-lg font-bold text-gray-900">Base Charges</h3>
-                                    <button 
+                                    <div class="flex flex-1 gap-2 items-center justify-end mr-4">
+                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Adult Price"  v-model="applyAllBasePrice.adult_price" />
+                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Child Price"  v-model="applyAllBasePrice.child_price" /> 
+                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Infant Price"  v-model="applyAllBasePrice.infant_price" />
+                                    </div>
+                                    <button  
                                         type="button"
                                         @click="applyBasePricesToAll"
                                         class="px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors duration-200 border border-yellow-300 hover:border-yellow-400"
                                     >
-                                        Apply 1st Price To All
+                                        Apply Prices To All
                                     </button>
                                 </div>
                                 <table class="min-w-full divide-y divide-gray-200">
@@ -262,7 +266,10 @@
                                                         />
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      
+                                                        <span v-if="combination.children === 0"> - </span>
                                                         <input
+                                                            v-else
                                                             type="number"
                                                             v-model="priceForm.prices[config.room_type_id].base_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'base_charge')].child_price"
                                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
@@ -271,7 +278,9 @@
                                                         />
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        <span v-if="combination.infants === 0"> - </span>
                                                         <input
+                                                            v-else
                                                             type="number"
                                                             v-model="priceForm.prices[config.room_type_id].base_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'base_charge')].infant_price"
                                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
@@ -290,12 +299,17 @@
                             <div class="overflow-x-auto">
                                 <div class="flex justify-between items-center mb-4">
                                     <h3 class="text-lg font-bold text-gray-900">Surcharges</h3>
+                                    <div class="flex flex-1 gap-2 items-center justify-end mr-4">
+                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Adult Price"  v-model="applyAllSurcharge.adult_price" />
+                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Child Price"  v-model="applyAllSurcharge.child_price" /> 
+                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Infant Price"  v-model="applyAllSurcharge.infant_price" />
+                                    </div>
                                     <button 
                                         type="button"
                                         @click="applySurchargePricesToAll"
                                         class="px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors duration-200 border border-yellow-300 hover:border-yellow-400"
                                     >
-                                        Apply 1st Price To All
+                                        Apply Prices To All
                                     </button>
                                 </div>
                                 <table class="min-w-full divide-y divide-gray-200">
@@ -334,7 +348,9 @@
                                                         />
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        <span v-if="combination.children === 0"> - </span>
                                                         <input
+                                                            v-else
                                                             type="number"
                                                             v-model="priceForm.prices[config.room_type_id].sur_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'sur_charge')].child_price"
                                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
@@ -343,6 +359,7 @@
                                                         />
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        <span v-if="combination.infants === 0"> - </span>
                                                         <input
                                                             type="number"
                                                             v-model="priceForm.prices[config.room_type_id].sur_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'sur_charge')].infant_price"
@@ -409,6 +426,16 @@ const configurations = ref([]);
 const isPriceLoading = ref(false);
 const showPriceForm = ref(false);
 const isEditMode = ref(false);
+const applyAllBasePrice = ref({
+    adult_price: '',
+    child_price: '',
+    infant_price: ''
+});
+const applyAllSurcharge = ref({
+    adult_price: '',
+    child_price: '',
+    infant_price: ''
+});
 
 // Form
 const priceForm = useForm({
@@ -656,8 +683,7 @@ const submitPrices = () => {
 const applyBasePricesToAll = () => {
     if (!configurations.value.length) return;
     
-    const firstRoomTypeId = configurations.value[0].room_type_id;
-    const firstPrice = priceForm.prices[firstRoomTypeId].base_charge[0];
+    const firstPrice = applyAllBasePrice.value;
     if (!firstPrice) return;
 
     configurations.value.forEach(config => {
@@ -676,8 +702,7 @@ const applyBasePricesToAll = () => {
 const applySurchargePricesToAll = () => {
     if (!configurations.value.length) return;
     
-    const firstRoomTypeId = configurations.value[0].room_type_id;
-    const firstPrice = priceForm.prices[firstRoomTypeId].sur_charge[0];
+    const firstPrice = applyAllSurcharge.value;
     if (!firstPrice) return;
 
     configurations.value.forEach(config => {
