@@ -94,6 +94,22 @@
                                         <label class="block text-sm font-medium text-gray-700">Booking Reference</label>
                                         <p class="mt-1 text-sm text-gray-900">{{ booking.uuid }}</p>
                                     </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Pay now / view payment</label>
+                                        <div class="mt-1 text-sm text-gray-900 flex items-center gap-2">
+                                            <Link :href="route('quotation.with-hash', booking.package.uuid) + '?booking=' + booking.uuid" class="text-indigo-600 hover:text-indigo-900 mr-2">
+                                                Go to payment page
+                                            </Link>
+
+                                            <button @click="copyLinkToClipboard(route('quotation.with-hash', booking.package.uuid) + '?booking=' + booking.uuid)" class="flex items-center gap-2 bg-gray-100 px-2 rounded-sm border border-gray-300">
+                                                copy link
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -303,5 +319,10 @@ const formatPaymentStatus = (status) => {
         default:
             return 'Unpaid';
     }
+};
+
+const copyLinkToClipboard = (link) => {
+    navigator.clipboard.writeText(link);
+    alert('Link copied to clipboard');
 };
 </script>
