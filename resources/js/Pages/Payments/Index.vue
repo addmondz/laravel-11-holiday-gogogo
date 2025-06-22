@@ -166,10 +166,10 @@
                                     <tr v-else v-for="transaction in transactions.data" :key="transaction.id">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ transaction.transaction_id || 'N/A' }}
+                                                {{ transaction.transaction_id || '-' }}
                                             </div>
                                             <div class="text-sm text-gray-500">
-                                                Order: {{ transaction.order_id || 'N/A' }}
+                                                Booking ID: {{ transaction.order_id || 'N/A' }}
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -185,7 +185,7 @@
                                                 {{ transaction.booking?.package?.name || 'N/A' }}
                                             </div>
                                             <div class="text-sm text-gray-500">
-                                                Booking #{{ transaction.booking?.id || 'N/A' }}
+                                                Booking #{{ transaction.booking?.uuid || 'N/A' }}
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -313,7 +313,7 @@
                                 {{ formatStatus(selectedTransaction.status) }}
                             </h4>
                             <p class="text-sm text-gray-500">
-                                Transaction ID: {{ selectedTransaction.transaction_id || 'N/A' }}
+                                Transaction ID: {{ selectedTransaction.transaction_id || '-' }}
                             </p>
                         </div>
                     </div>

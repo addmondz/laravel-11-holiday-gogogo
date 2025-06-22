@@ -120,6 +120,14 @@ class SenangPayController extends Controller
                 'hash' => $hash,
             ]);
 
+            $transaction = new Transaction();
+            $transaction->booking_id = $booking->id;
+            $transaction->payment_method = 'senangpay';
+            $transaction->amount = $amount;
+            $transaction->status = 'pending';
+            $transaction->order_id = $order_id;
+            $transaction->save();
+
             Log::channel('senangpay')->info('Final payment URL:', ['url' => $payment_url]);
 
             return response()->json([
