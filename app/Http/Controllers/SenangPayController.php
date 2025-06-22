@@ -17,11 +17,8 @@ class SenangPayController extends Controller
         Log::channel('senangpay')->info('handleReturn', $requestData);
 
         // start testing remove later
-        // Mock SenangPay response
-        // $mockJson = '{"status_id":"0","order_id":"10","transaction_id":"1750438825000316388","msg":"The_payment_was_declined._Please_contact_your_bank._Thank_you._","hash":"6f94c182585db9f64eb3aca65ef938b837bd31fe1cff88234dc9065c0f127091"}';
-
-        // Decode JSON to array to simulate $request->all()
-        // $requestData = json_decode($mockJson, true);
+        $mockJson = '{"status_id":"0","order_id":"10","transaction_id":"1750438825000316388","msg":"The_payment_was_declined._Please_contact_your_bank._Thank_you._","hash":"6f94c182585db9f64eb3aca65ef938b837bd31fe1cff88234dc9065c0f127091"}';
+        $requestData = json_decode($mockJson, true);
         // end testing remove later
 
         $result = $this->processPaymentResponse($requestData);
