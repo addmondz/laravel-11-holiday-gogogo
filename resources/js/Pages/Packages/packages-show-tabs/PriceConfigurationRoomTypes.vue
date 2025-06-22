@@ -140,10 +140,16 @@
                                                 {{ getPrice(config, combination.adults, combination.children, 'base_charge', 'adult', combination.infants) }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ getPrice(config, combination.adults, combination.children, 'base_charge', 'child', combination.infants) }}
+                                                <span v-if="combination.children === 0"> - </span>
+                                                <span v-else>
+                                                    {{ getPrice(config, combination.adults, combination.children, 'base_charge', 'child', combination.infants) }}
+                                                </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ getPrice(config, combination.adults, combination.children, 'base_charge', 'infant', combination.infants) }}
+                                                <span v-if="combination.infants === 0"> - </span>
+                                                <span v-else>
+                                                    {{ getPrice(config, combination.adults, combination.children, 'base_charge', 'infant', combination.infants) }}
+                                                </span>
                                             </td>
                                         </tr>
                                     </template>
@@ -185,10 +191,16 @@
                                                 {{ getPrice(config, combination.adults, combination.children, 'sur_charge', 'adult', combination.infants) }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ getPrice(config, combination.adults, combination.children, 'sur_charge', 'child', combination.infants) }}
+                                                <span v-if="combination.children === 0"> - </span>
+                                                <span v-else>
+                                                    {{ getPrice(config, combination.adults, combination.children, 'sur_charge', 'child', combination.infants) }}
+                                                </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ getPrice(config, combination.adults, combination.children, 'sur_charge', 'infant', combination.infants) }}
+                                                <span v-if="combination.infants === 0"> - </span>
+                                                <span v-else>
+                                                    {{ getPrice(config, combination.adults, combination.children, 'sur_charge', 'infant', combination.infants) }}
+                                                </span>
                                             </td>
                                         </tr>
                                     </template>
