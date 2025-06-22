@@ -18,10 +18,61 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-6" />
+
+                        <!-- Payment Status -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div 
+                                        :class="[
+                                            'w-12 h-12 rounded-full flex items-center justify-center',
+                                            getPaymentStatusColor(booking.payment_status).bg
+                                        ]"
+                                    >
+                                        <svg 
+                                            :class="['w-6 h-6', getPaymentStatusColor(booking.payment_status).icon]"
+                                            fill="none" 
+                                            stroke="currentColor" 
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                v-if="booking.payment_status === 'paid'"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M5 13l4 4L19 7"
+                                            />
+                                            <path
+                                                v-else-if="booking.payment_status === 'failed'"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"
+                                            />
+                                            <path
+                                                v-else
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Payment Status</p>
+                                    <p class="text-lg font-semibold text-gray-900">
+                                        {{ formatPaymentStatus(booking.payment_status) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Booking Information -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Booking Information</h3>
+                                
                                 <div class="space-y-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Booking Name</label>
@@ -76,68 +127,74 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8">
+                    <div class="p-6 text-gray-900">
                         <!-- Room Details -->
-                        <div class="mt-8">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Room Details</h3>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Guests</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        <tr v-for="room in booking.rooms" :key="room.id">
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-gray-900">{{ room.room_type.name }} 
-                                                    <span class="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded whitespace-nowrap">
-                                                        Max {{ room.room_type.max_occupancy }} pax
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ room.adults }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ room.children }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ room.infants }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ room.adults + room.children + room.infants }}</div>
-                                            </td>
-                                        </tr>
-                                        <!-- Summary Row -->
-                                        <!-- <tr class="bg-gray-50">
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-gray-900">Total</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-gray-900">{{ booking.adults }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-gray-900">{{ booking.children }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-gray-900">{{ booking.adults + booking.children }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-500">-</div>
-                                            </td>
-                                        </tr> -->
-                                    </tbody>
-                                </table>
-                            </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Room Details</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Guests</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr v-for="room in booking.rooms" :key="room.id">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ room.room_type.name }} 
+                                                <span class="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded whitespace-nowrap">
+                                                    Max {{ room.room_type.max_occupancy }} pax
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ room.adults }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ room.children }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ room.infants }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ room.adults + room.children + room.infants }}</div>
+                                        </td>
+                                    </tr>
+                                    <!-- Summary Row -->
+                                    <!-- <tr class="bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">Total</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ booking.adults }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ booking.children }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ booking.adults + booking.children }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-500">-</div>
+                                        </td>
+                                    </tr> -->
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                </div>
 
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8">
+                    <div class="p-6 text-gray-900">
                         <!-- Transaction History -->
-                        <div v-if="booking.transactions && booking.transactions.length > 0" class="mt-8">
+                        <div v-if="booking.transactions && booking.transactions.length > 0">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Transaction History</h3>
                             <div class="overflow-x-auto">
                                 <table class="min-w-full divide-y divide-gray-200">
@@ -209,4 +266,42 @@ const breadcrumbs = computed(() => [
     { title: 'Bookings', link: route('bookings.index') },
     { title: 'Booking Details' }
 ]);
+
+const getPaymentStatusColor = (status) => {
+    switch (status) {
+        case 'paid':
+            return {
+                bg: 'bg-green-100',
+                icon: 'text-green-600'
+            };
+        case 'failed':
+            return {
+                bg: 'bg-red-100',
+                icon: 'text-red-600'
+            };
+        case 'pending':
+            return {
+                bg: 'bg-yellow-100',
+                icon: 'text-yellow-600'
+            };
+        default:
+            return {
+                bg: 'bg-gray-100',
+                icon: 'text-gray-600'
+            };
+    }
+};
+
+const formatPaymentStatus = (status) => {
+    switch (status) {
+        case 'paid':
+            return 'Paid';
+        case 'pending':
+            return 'Pending Payment';
+        case 'failed':
+            return 'Payment Failed';
+        default:
+            return 'Unpaid';
+    }
+};
 </script>

@@ -44,4 +44,31 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
+    public function getPaymentHistory(Request $request)
+    {
+        try {
+            $limit = $request->get('limit', 10);
+            $status = $request->get('status'); // optional filter by status
+            
+            $query = Transaction::with(['booking.package', 'booking.rooms.roomType'])
+                ->orderBy('created_at', 'desc');
+            
+            if ($status) {
+                $query->where('status', $status);
+            }
+            
+            $transactions = $query->limit($limit)->get();
+            
+            return response()->json([
+                'success' => true,
+                'transactions' => $transactions
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

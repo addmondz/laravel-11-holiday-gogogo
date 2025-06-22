@@ -15,12 +15,6 @@ use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\DateTypeRangeController;
 use App\Http\Controllers\PackageConfigurationController;
 use App\Http\Controllers\RoomTypeController;
-use App\Models\DateType;
-use App\Models\DateTypeRange;
-use App\Models\PackageConfiguration;
-use App\Models\RoomType;
-use App\Models\Season;
-use App\Models\SeasonType;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentSimulationController;
@@ -58,6 +52,7 @@ Route::prefix('calculator')->group(function () {
         Route::post('/package-calculate-price', [TravelCalculatorController::class, 'packageCalculatePrice'])->name('api.package-calculate-price');
         Route::post('/bookings', [ApiBookingController::class, 'store'])->name('api.bookings.store');
         Route::post('/transactions', [TransactionController::class, 'store'])->name('api.transactions.store');
+        Route::get('/payment-history', [TransactionController::class, 'getPaymentHistory'])->name('api.payment-history');
 
         // Payment routes
         Route::prefix('bookings/{uuid}/payment')->name('api.payment.')->group(function ($uuid) {
@@ -183,6 +178,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'edit' => 'bookings.edit',
         'update' => 'bookings.update'
     ]);
+
+    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
 
     Route::resource('users', UserController::class)->names([
         'index' => 'users.index',

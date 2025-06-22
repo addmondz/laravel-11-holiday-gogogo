@@ -7,7 +7,7 @@
         </transition>
 
         <!-- Record Count -->
-        <div class="text-sm text-gray-700 select-none">
+        <div class="text-sm text-gray-700 select-none" v-if="total > 0">
             Showing
             <span class="font-medium">{{ from }}</span>
             to

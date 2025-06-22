@@ -121,6 +121,9 @@ const toggleSidebar = () => {
                                 <NavLink :href="route('bookings.index')" :active="route().current('bookings.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
                                     Bookings
                                 </NavLink>
+                                <NavLink :href="route('payments.index')" :active="route().current('payments.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                    Payments
+                                </NavLink>
                                 <NavLink :href="route('users.index')" :active="route().current('users.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
                                     Users
                                 </NavLink>
