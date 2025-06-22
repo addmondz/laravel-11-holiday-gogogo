@@ -11,6 +11,7 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-9" />
+                        
                         <form @submit.prevent="submit">
                             <div class="grid grid-cols-1 gap-6">
                                 <div>
@@ -20,6 +21,7 @@
                                         id="name"
                                         v-model="form.name"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        :class="{ 'border-red-500': form.errors.name }"
                                         required
                                     />
                                     <div v-if="form.errors.name" class="mt-1 text-sm text-red-600">
@@ -34,6 +36,7 @@
                                         v-model="form.description"
                                         rows="3"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        :class="{ 'border-red-500': form.errors.description }"
                                     ></textarea>
                                     <div v-if="form.errors.description" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.description }}
@@ -89,35 +92,38 @@
                                             v-model="form.display_price_adult"
                                             step="0.01"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.display_price_adult }"
                                         />
                                         <div v-if="form.errors.display_price_adult" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.display_price_adult }}
                                         </div>
                                     </div>
                                     <div>
-                                        <label for="display_price_adult" class="block text-sm font-medium text-gray-700">Child Base Price</label>
+                                        <label for="display_price_child" class="block text-sm font-medium text-gray-700">Child Base Price</label>
                                         <input
                                             type="number"
                                             id="display_price_child"
                                             v-model="form.display_price_child"
                                             step="0.01"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.display_price_child }"
                                         />
                                         <div v-if="form.errors.display_price_child" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.display_price_child }}
                                         </div>
                                     </div>
                                     <div>
-                                        <label for="display_price_adult" class="block text-sm font-medium text-gray-700">Infant Base Price</label>
+                                        <label for="display_price_infant" class="block text-sm font-medium text-gray-700">Infant Base Price</label>
                                         <input
                                             type="number"
                                             id="display_price_infant"
                                             v-model="form.display_price_infant"
                                             step="0.01"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.display_price_infant }"
                                         />
-                                        <div v-if="form.errors.display_price_child" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.display_price_child }}
+                                        <div v-if="form.errors.display_price_infant" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.display_price_infant }}
                                         </div>
                                     </div>
                                     <div>
@@ -128,6 +134,7 @@
                                             v-model="form.adult_surcharge"
                                             step="0.01"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.adult_surcharge }"
                                         />
                                         <div v-if="form.errors.adult_surcharge" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.adult_surcharge }}
@@ -141,6 +148,7 @@
                                             v-model="form.child_surcharge"
                                             step="0.01"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.child_surcharge }"
                                         />
                                         <div v-if="form.errors.child_surcharge" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.child_surcharge }}
@@ -155,6 +163,7 @@
                                             v-model="form.infant_surcharge"
                                             step="0.01"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.infant_surcharge }"
                                         />
                                         <div v-if="form.errors.infant_surcharge" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.infant_surcharge }}
@@ -169,6 +178,7 @@
                                             id="infant_max_age_desc"
                                             v-model="form.infant_max_age_desc"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.infant_max_age_desc }"
                                             placeholder="e.g. 0 - 11 months old"
                                         />
                                         <div v-if="form.errors.infant_max_age_desc" class="mt-1 text-sm text-red-600">
@@ -182,6 +192,7 @@
                                             id="child_max_age_desc"
                                             v-model="form.child_max_age_desc"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.child_max_age_desc }"
                                             placeholder="e.g. 1 - 12 years old"
                                         />
                                         <div v-if="form.errors.child_max_age_desc" class="mt-1 text-sm text-red-600">
@@ -195,6 +206,7 @@
                                             id="package_days"
                                             v-model="form.package_days"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.package_days }"
                                             required
                                         />
                                         <div v-if="form.errors.package_days" class="mt-1 text-sm text-red-600">
@@ -210,6 +222,7 @@
                                         v-model="form.terms_and_conditions"
                                         rows="3"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        :class="{ 'border-red-500': form.errors.terms_and_conditions }"
                                     ></textarea>
                                     <div v-if="form.errors.terms_and_conditions" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.terms_and_conditions }}
@@ -223,6 +236,7 @@
                                         id="location"
                                         v-model="form.location"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        :class="{ 'border-red-500': form.errors.location }"
                                     />
                                     <div v-if="form.errors.location" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.location }}
@@ -279,6 +293,13 @@
                                         </button>
                                     </div>
 
+                                    <!-- Room Types General Error -->
+                                    <div v-if="form.errors.room_types" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                                        <div class="text-sm text-red-600">
+                                            {{ form.errors.room_types }}
+                                        </div>
+                                    </div>
+
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50">
@@ -297,18 +318,26 @@
                                                             type="text"
                                                             v-model="roomType.name"
                                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            :class="{ 'border-red-500': form.errors[`room_types.${index}.name`] }"
                                                             placeholder="Room Type Name"
                                                             required
                                                         />
+                                                        <div v-if="form.errors[`room_types.${index}.name`]" class="mt-1 text-sm text-red-600">
+                                                            {{ form.errors[`room_types.${index}.name`] }}
+                                                        </div>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap">
                                                         <input
                                                             type="number"
                                                             v-model="roomType.max_occupancy"
                                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            :class="{ 'border-red-500': form.errors[`room_types.${index}.max_occupancy`] }"
                                                             min="1"
                                                             required
                                                         />
+                                                        <div v-if="form.errors[`room_types.${index}.max_occupancy`]" class="mt-1 text-sm text-red-600">
+                                                            {{ form.errors[`room_types.${index}.max_occupancy`] }}
+                                                        </div>
                                                     </td>
                                                     <td class="px-6 py-4">
                                                         <input
@@ -625,40 +654,8 @@ const submit = () => {
         return;
     }
 
-    // Create FormData for submission
-    const formData = new FormData();
-    
-    // Add basic package fields
-    Object.keys(form).forEach(key => {
-        if (key !== 'room_types' && key !== 'images') {
-            formData.append(key, form[key]);
-        }
-    });
-
-    // Add package images
-    if (form.images.length > 0) {
-        form.images.forEach((file, index) => {
-            formData.append(`images[${index}]`, file);
-        });
-    }
-
-    // Add room types with their images
-    form.room_types.forEach((roomType, index) => {
-        formData.append(`room_types[${index}][name]`, roomType.name);
-        formData.append(`room_types[${index}][max_occupancy]`, roomType.max_occupancy);
-        formData.append(`room_types[${index}][description]`, roomType.description || '');
-        
-        if (roomType.images && roomType.images.length > 0) {
-            roomType.images.forEach((file, fileIndex) => {
-                formData.append(`room_types[${index}][images][${fileIndex}]`, file);
-            });
-        }
-    });
-
-    // Submit the form
+    // Use Inertia's standard form submission to properly handle validation errors
     form.post(route('packages.store'), {
-        forceFormData: true,
-        data: formData,
         onSuccess: () => {
             Swal.fire({
                 icon: 'success',
@@ -667,11 +664,9 @@ const submit = () => {
             });
         },
         onError: (errors) => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: Object.values(errors).flat().join('\n')
-            });
+            console.log('Validation errors:', errors);
+            // The errors will automatically be bound to form.errors
+            // No need to manually handle them here as they'll show in the template
         }
     });
 };

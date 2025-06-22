@@ -15,9 +15,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\SeasonType;
 use App\Models\DateTypeRange;
+use App\Services\GeneratePackageUid;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class PackageController extends Controller
 {
@@ -62,7 +64,7 @@ class PackageController extends Controller
 
         try {
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
+                'name' => 'required|string|max:255|unique:packages,name',
                 'description' => 'nullable|string',
                 'images' => 'nullable|array',
                 'images.*' => [
@@ -152,39 +154,39 @@ class PackageController extends Controller
                 'room_types.*.images.*.max' => 'Each image cannot exceed 10MB',
             ]);
 
-            if ($validator->fails()) {
-                $errors = $validator->errors();
-                
-                // Format image validation errors to be more user-friendly
-                if ($errors->has('images.*')) {
-                    $imageErrors = collect($errors->get('images.*'))->map(function ($error, $key) {
-                        $index = explode('.', $key)[1];
-                        return "Package Image " . ($index + 1) . ": " . $error[0];
-                    })->toArray();
-                    
-                    $errors->forget('images.*');
-                    foreach ($imageErrors as $error) {
-                        $errors->add('images', $error);
-                    }
-                }
+            // if ($validator->fails()) {
+            //     $errors = $validator->errors();
 
-                // Format room type image validation errors
-                if ($errors->has('room_types.*.images.*')) {
-                    $roomTypeImageErrors = collect($errors->get('room_types.*.images.*'))->map(function ($error, $key) {
-                        $parts = explode('.', $key);
-                        $roomTypeIndex = $parts[1];
-                        $imageIndex = $parts[3];
-                        return "Room Type " . ($roomTypeIndex + 1) . ", Image " . ($imageIndex + 1) . ": " . $error[0];
-                    })->toArray();
-                    
-                    $errors->forget('room_types.*.images.*');
-                    foreach ($roomTypeImageErrors as $error) {
-                        $errors->add('room_types', $error);
-                    }
-                }
-                
-                return back()->withErrors($errors)->withInput();
-            }
+            //     // Format image validation errors to be more user-friendly
+            //     if ($errors->has('images.*')) {
+            //         $imageErrors = collect($errors->get('images.*'))->map(function ($error, $key) {
+            //             $index = explode('.', $key)[1];
+            //             return "Package Image " . ($index + 1) . ": " . $error[0];
+            //         })->toArray();
+
+            //         $errors->forget('images.*');
+            //         foreach ($imageErrors as $error) {
+            //             $errors->add('images', $error);
+            //         }
+            //     }
+
+            //     // Format room type image validation errors
+            //     if ($errors->has('room_types.*.images.*')) {
+            //         $roomTypeImageErrors = collect($errors->get('room_types.*.images.*'))->map(function ($error, $key) {
+            //             $parts = explode('.', $key);
+            //             $roomTypeIndex = $parts[1];
+            //             $imageIndex = $parts[3];
+            //             return "Room Type " . ($roomTypeIndex + 1) . ", Image " . ($imageIndex + 1) . ": " . $error[0];
+            //         })->toArray();
+
+            //         $errors->forget('room_types.*.images.*');
+            //         foreach ($roomTypeImageErrors as $error) {
+            //             $errors->add('room_types', $error);
+            //         }
+            //     }
+
+            //     return back()->withErrors($errors)->withInput();
+            // }
 
             $v = $validator->validated();
 
@@ -197,7 +199,7 @@ class PackageController extends Controller
             }
             $v['images'] = $images;
 
-            $v['uuid'] = Str::uuid()->toString();
+            $v['uuid'] = (new GeneratePackageUid())->execute($v['name']);
             $v['package_min_days'] = $v['package_days'];
             $v['package_max_days'] = $v['package_days'];
 
@@ -277,13 +279,17 @@ class PackageController extends Controller
 
             DB::commit();
             return redirect()->route('packages.index')->with('success', 'Package created successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            // Return validation errors to the frontend
+            Log::error('Package creation validation error: ' . $e->getMessage());
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Create package failed: ' . $e->getMessage());
             return back()->withInput()->withErrors(['error' => 'Failed to create package: ' . $e->getMessage()]);
         }
     }
-
 
     public function show(Package $package, Request $request)
     {
@@ -428,20 +434,20 @@ class PackageController extends Controller
 
             if ($validator->fails()) {
                 $errors = $validator->errors();
-                
+
                 // Format image validation errors to be more user-friendly
                 if ($errors->has('images.*')) {
                     $imageErrors = collect($errors->get('images.*'))->map(function ($error, $key) {
                         $index = explode('.', $key)[1];
                         return "Image " . ($index + 1) . ": " . $error[0];
                     })->toArray();
-                    
+
                     $errors->forget('images.*');
                     foreach ($imageErrors as $error) {
                         $errors->add('images', $error);
                     }
                 }
-                
+
                 return back()->withErrors($errors)->withInput();
             }
 
@@ -467,7 +473,7 @@ class PackageController extends Controller
                     if ($imageInfo === false) {
                         throw new \Exception('Invalid image file: Unable to read image dimensions');
                     }
-                    
+
                     $currentImages[] = $image->store('packages', 'public');
                 }
             }
@@ -547,12 +553,11 @@ class PackageController extends Controller
 
     public function duplicate(Request $request, Package $package)
     {
-        // dd($request->all());
         try {
             DB::beginTransaction();
 
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
+                'name' => 'required|string|max:255|unique:packages,name',
                 'description' => 'nullable|string',
                 'display_price_adult' => 'nullable|numeric|min:0',
                 'display_price_child' => 'nullable|numeric|min:0',
@@ -563,15 +568,45 @@ class PackageController extends Controller
                 'package_start_date' => 'required|date',
                 'package_end_date' => 'nullable|date|after:package_start_date',
                 'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240', // 10MB max
+                'room_types' => 'required|array|min:1',
+                'room_types.*.name' => 'required|string|max:255',
+                'room_types.*.max_occupancy' => 'required|integer|min:1',
+                'room_types.*.description' => 'nullable|string',
+            ], [
+                'name.required' => 'Package name is required',
+                'name.max' => 'Package name cannot exceed 255 characters',
+                'name.unique' => 'A package with this name already exists',
+                'package_min_days.required' => 'Package minimum days is required',
+                'package_min_days.integer' => 'Package minimum days must be a whole number',
+                'package_min_days.min' => 'Package minimum days must be at least 1',
+                'package_max_days.required' => 'Package maximum days is required',
+                'package_max_days.integer' => 'Package maximum days must be a whole number',
+                'package_max_days.min' => 'Package maximum days must be at least 1',
+                'package_max_days.gte' => 'Package maximum days must be greater than or equal to minimum days',
+                'package_start_date.required' => 'Start date is required',
+                'package_start_date.date' => 'Invalid start date format',
+                'package_end_date.date' => 'Invalid end date format',
+                'package_end_date.after' => 'End date must be after start date',
+                'images.*.image' => 'The file must be an image (JPG, PNG, or GIF)',
+                'images.*.mimes' => 'Only JPG, PNG, and GIF images are allowed',
+                'images.*.max' => 'Each image cannot exceed 10MB',
+                'room_types.required' => 'At least one room type is required',
+                'room_types.array' => 'Room types must be provided as a list',
+                'room_types.min' => 'At least one room type is required',
+                'room_types.*.name.required' => 'Room type name is required',
+                'room_types.*.name.max' => 'Room type name cannot exceed 255 characters',
+                'room_types.*.max_occupancy.required' => 'Maximum occupancy is required',
+                'room_types.*.max_occupancy.integer' => 'Maximum occupancy must be a whole number',
+                'room_types.*.max_occupancy.min' => 'Maximum occupancy must be at least 1',
             ]);
 
             // Create new package with validated data
             $newPackage = new Package($validated);
-            $newPackage->uuid = Str::uuid();
+            $newPackage->uuid = (new GeneratePackageUid())->execute($newPackage->name);
 
             // Handle image uploads and copying
             $images = [];
-            
+
             // Copy existing images if they exist
             if ($package->images) {
                 foreach ($package->images as $imagePath) {
@@ -640,14 +675,17 @@ class PackageController extends Controller
 
             return redirect()->route('packages.show', $newPackage->id)
                 ->with('success', 'Package duplicated successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            // Return validation errors to the frontend
+            Log::error('Package duplication validation error: ' . $e->getMessage());
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Package duplication failed: ' . $e->getMessage());
             Log::error($e->getTraceAsString());
 
-            return back()
-                ->withInput()
-                ->with('error', 'Failed to duplicate package: ' . $e->getMessage());
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
     }
 }

@@ -204,6 +204,13 @@
                                         </button>
                                     </div>
 
+                                    <!-- Room Types General Error -->
+                                    <div v-if="form.errors.room_types" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                                        <div class="text-sm text-red-600">
+                                            {{ form.errors.room_types }}
+                                        </div>
+                                    </div>
+
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50">
@@ -221,18 +228,26 @@
                                                             type="text"
                                                             v-model="roomType.name"
                                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            :class="{ 'border-red-500': form.errors[`room_types.${index}.name`] }"
                                                             placeholder="Room Type Name"
                                                             required
                                                         />
+                                                        <div v-if="form.errors[`room_types.${index}.name`]" class="mt-1 text-sm text-red-600">
+                                                            {{ form.errors[`room_types.${index}.name`] }}
+                                                        </div>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap">
                                                         <input
                                                             type="number"
                                                             v-model="roomType.max_occupancy"
                                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            :class="{ 'border-red-500': form.errors[`room_types.${index}.max_occupancy`] }"
                                                             min="1"
                                                             required
                                                         />
+                                                        <div v-if="form.errors[`room_types.${index}.max_occupancy`]" class="mt-1 text-sm text-red-600">
+                                                            {{ form.errors[`room_types.${index}.max_occupancy`] }}
+                                                        </div>
                                                     </td>
                                                     <td class="px-6 py-4">
                                                         <input
@@ -423,27 +438,6 @@ const submit = () => {
         return;
     }
 
-    // Create FormData for file upload
-    const formData = new FormData();
-    
-    // Add all form fields to FormData
-    Object.keys(form).forEach(key => {
-        if (key === 'images') {
-            // Handle images separately
-            form.images.forEach((image, index) => {
-                if (image instanceof File) {
-                    formData.append(`images[${index}]`, image);
-                } else if (typeof image === 'string') {
-                    // For existing images, just pass the path
-                    formData.append(`existing_images[${index}]`, image);
-                }
-            });
-        } else {
-            // Handle all other form fields
-            formData.append(key, form[key]);
-        }
-    });
-
     // Validate dates before submission
     validateDates();
     if (dateError.value) {
@@ -456,52 +450,22 @@ const submit = () => {
         return;
     }
 
-    // Use axios for better control over the request
-    axios.post(route('packages.duplicate', props.package.id), formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    }).then(response => {
-        Swal.fire({
-            title: 'Success!',
-            text: 'Package has been duplicated successfully.',
-            icon: 'success',
-            confirmButtonText: 'OK'
-        }).then(() => {
-            window.location.href = route('packages.index');
-        });
-    }).catch(error => {
-        if (error.response?.data?.errors) {
-            const errors = error.response.data.errors;
-            if (errors.package_end_date) {
-                Swal.fire({
-                    title: 'Validation Error',
-                    text: errors.package_end_date[0],
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            } else if (errors.images) {
-                Swal.fire({
-                    title: 'Validation Error',
-                    html: errors.images.join('<br>'),
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            } else {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Failed to duplicate package. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            }
-        } else {
+    // Use Inertia's form submission to properly handle validation errors
+    form.post(route('packages.duplicate', props.package.id), {
+        onSuccess: () => {
             Swal.fire({
-                title: 'Error',
-                text: 'Failed to duplicate package. Please try again.',
-                icon: 'error',
+                title: 'Success!',
+                text: 'Package has been duplicated successfully.',
+                icon: 'success',
                 confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = route('packages.index');
             });
+        },
+        onError: (errors) => {
+            console.log('Validation errors:', errors);
+            // The errors will automatically be bound to form.errors
+            // No need to manually handle them here as they'll show in the template
         }
     });
 };
