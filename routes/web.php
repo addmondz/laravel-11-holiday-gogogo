@@ -217,41 +217,6 @@ Route::post('/payment/initiate/{bookingId}', [SenangPayController::class, 'initi
 Route::get('/test-payment', [PaymentSimulationController::class, 'showTestPayment'])->name('payment.test-payment');
 Route::post('/create-test-payment-transaction', [PaymentSimulationController::class, 'createTestPaymentTransaction'])->name('payment.create-test-payment-transaction');
 
-// Payment Result Routes
-Route::get('/payments/success/{transaction_id}', function ($transaction_id) {
-    if ($transaction_id == 0) {
-        return Inertia::render('Payments/Success', [
-            'bookingUuid' => null,
-            'packageUuid' => null,
-            'transaction' => null,
-            'error' => 'Payment processing failed'
-        ]);
-    }
-    
-    $transaction = Transaction::findOrFail($transaction_id);
-    return Inertia::render('Payments/Success', [
-        'bookingUuid' => $transaction->booking?->uuid,
-        'packageUuid' => $transaction->booking?->package?->uuid,
-        'transaction' => $transaction
-    ]);
-})->name('payments.success');
-
-Route::get('/payments/failed/{transaction_id}', function ($transaction_id) {
-    if ($transaction_id == 0) {
-        return Inertia::render('Payments/Failed', [
-            'booking' => null,
-            'transaction' => null,
-            'error' => 'Payment processing failed'
-        ]);
-    }
-    
-    $transaction = Transaction::findOrFail($transaction_id);
-    return Inertia::render('Payments/Failed', [
-        'booking' => $transaction->booking,
-        'transaction' => $transaction
-    ]);
-})->name('payments.failed');
-
 // Bot API Routes
 Route::prefix('bot-api')->group(function () {
     Route::post('/fetch-room-types', [BotApiController::class, 'fetchRoomTypesByPackageName']);

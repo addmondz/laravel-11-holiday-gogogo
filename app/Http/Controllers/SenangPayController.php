@@ -17,17 +17,37 @@ class SenangPayController extends Controller
         Log::channel('senangpay')->info('handleReturn', $requestData);
 
         // start testing remove later
-        $mockJson = '{"status_id":"0","order_id":"10","transaction_id":"1750438825000316388","msg":"The_payment_was_declined._Please_contact_your_bank._Thank_you._","hash":"6f94c182585db9f64eb3aca65ef938b837bd31fe1cff88234dc9065c0f127091"}';
-        $requestData = json_decode($mockJson, true);
+        // $mockJson = '{"status_id":"0","order_id":"1","transaction_id":"1750598447008714710","msg":"The_payment_was_declined._Please_contact_your_bank._Thank_you._","hash":"dd96358091218465a92f738fe64636b4e46d0901d98cc1aacdbd011ff4d81ac2"}';
+        // $requestData = json_decode($mockJson, true);
         // end testing remove later
 
         $result = $this->processPaymentResponse($requestData);
 
         Log::info('handleReturn - result', $result);
 
-        $route = $result['success'] ? 'payments.success' : 'payments.failed';
+        // Get the booking to find the package UUID
+        $booking = null;
+        if ($result['transaction_id'] && $result['transaction_id'] !== 0) {
+            $transaction = Transaction::find($result['transaction_id']);
+            if ($transaction) {
+                $booking = $transaction->booking;
+            }
+        }
 
-        return redirect()->route($route, ['transaction_id' => $result['transaction_id'] ?? 0]);
+        // Redirect to quotation page with payment status
+        $redirectParams = [
+            'uuid' => $booking?->package?->uuid ?? request()->get('package_uuid'),
+            'booking' => $booking?->uuid ?? request()->get('booking_uuid'),
+            'payment_status' => $result['success'] ? 'success' : 'failed',
+            'transaction_id' => $result['transaction_id'] ?? 0
+        ];
+
+        if (!$result['success']) {
+            $redirectParams['error'] = $result['message'] ?? 'Payment processing failed';
+            $redirectParams['error'] = str_replace('_', ' ', rtrim($redirectParams['error'], '_'));
+        }
+
+        return redirect()->route('quotation.with-hash', $redirectParams);
     }
 
     public function handleCallback(Request $request)
@@ -147,6 +167,8 @@ class SenangPayController extends Controller
                 return ['success' => false, 'transaction_id' => 0, 'message' => 'Booking not found'];
             }
 
+            $isSuccess = ($statusId === '1') ? true : false;
+
             // check if already have transaction
             $transaction = Transaction::where('transaction_id', $transactionId)->first();
             if ($transaction) {
@@ -173,7 +195,6 @@ class SenangPayController extends Controller
                     ]);
                 }
 
-                $isSuccess = $statusId === '1';
                 $transaction->update([
                     'status' => $isSuccess ? 'completed' : 'failed',
                     'status_id' => $statusId,
@@ -195,7 +216,7 @@ class SenangPayController extends Controller
             ];
         } catch (\Exception $e) {
             Log::channel('senangpay')->error('Payment processing failed', ['error' => $e->getMessage()]);
-            return ['success' => false, 'transaction_id' => 0];
+            return ['success' => false, 'transaction_id' => 0, 'error' => $e->getMessage()];
         }
     }
 
@@ -228,7 +249,7 @@ class SenangPayController extends Controller
                 'raw_payload' => $data,
                 'is_processed' => true,
             ]);
-    
+
             return $senangPayApiLog->id;
         } catch (\Exception $e) {
             Log::channel('senangpay')->error('Failed to log API request', ['error' => $e->getMessage()]);

@@ -881,28 +881,80 @@
                             <!-- Pay Now Button -->
                             <div v-if="bookingSuccess.payment_status !== 'paid'" class="flex justify-center pt-4">
                                 <div class="text-center">
-                                    <button
-                                        @click="proceedToPayment"
-                                        class="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                                        :disabled="isProcessingPayment"
-                                    >
-                                        <span v-if="isProcessingPayment" class="flex items-center">
-                                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            Initializing Payment...
-                                        </span>
-                                        <span v-else class="flex items-center">
-                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                                            </svg>
-                                            Pay Now with SenangPay
-                                        </span>
-                                    </button>
-                                    <p class="text-sm text-gray-500 mt-2">
-                                        You will be redirected to SenangPay's secure payment gateway
-                                    </p>
+                                    <!-- Payment Failed Status -->
+                                    <div v-if="paymentStatus === 'failed'" class="mb-6">
+                                        <div class="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+                                            <div class="flex items-center justify-center mb-4">
+                                                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <h3 class="text-lg font-semibold text-red-800 mb-2">Payment Failed</h3>
+                                            <p class="text-red-700 mb-6">{{ paymentError || 'Your payment could not be processed. Please try again.' }}</p>
+                                            <button
+                                                @click="proceedToPayment"
+                                                :disabled="isProcessingPayment"
+                                                class="w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
+                                            >
+                                                <span v-if="isProcessingPayment" class="flex items-center justify-center">
+                                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Processing...
+                                                </span>
+                                                <span v-else class="flex items-center justify-center">
+                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                    </svg>
+                                                    Retry Payment
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Payment Success Status -->
+                                    <div v-else-if="paymentStatus === 'success'" class="mb-6">
+                                        <div class="bg-green-50 border border-green-200 rounded-lg p-6 max-w-md mx-auto">
+                                            <div class="flex items-center justify-center mb-4">
+                                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <h3 class="text-lg font-semibold text-green-800 mb-2">Payment Successful!</h3>
+                                            <p class="text-green-700">Your payment has been processed successfully. Your booking is now confirmed.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Regular Pay Now Button (when no payment status) -->
+                                    <div v-else>
+                                        <button
+                                            @click="proceedToPayment"
+                                            class="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                            :disabled="isProcessingPayment"
+                                        >
+                                            <span v-if="isProcessingPayment" class="flex items-center">
+                                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Initializing Payment...
+                                            </span>
+                                            <span v-else class="flex items-center">
+                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                                </svg>
+                                                Pay Now
+                                            </span>
+                                        </button>
+                                        <p class="text-sm text-gray-500 mt-2">
+                                            You will be redirected to secure payment gateway
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -949,10 +1001,48 @@ onMounted(() => {
     // Check if user is returning from payment (URL has payment parameters)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('payment_status') || urlParams.has('transaction_id')) {
+        paymentStatus.value = urlParams.get('payment_status');
+        transactionId.value = urlParams.get('transaction_id');
+        paymentError.value = urlParams.get('error');
+        
         // Refresh booking data to get updated payment status
         refreshBookingData();
     }
 });
+
+// Function to retry payment
+const retryPayment = async () => {
+    if (!bookingSuccess.value?.uuid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Booking information not found. Please start over.',
+            confirmButtonColor: '#EF4444'
+        });
+        return;
+    }
+    
+    isProcessingPayment.value = true;
+    
+    try {
+        const response = await axios.post(route('payment.initiate', bookingSuccess.value.uuid));
+        if (response.data.success && response.data.payment_url) {
+            window.location.href = response.data.payment_url;
+        } else {
+            throw new Error('Failed to initiate payment');
+        }
+    } catch (error) {
+        console.error('Error retrying payment:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Error',
+            text: 'Unable to retry payment. Please contact support.',
+            confirmButtonColor: '#EF4444'
+        });
+    } finally {
+        isProcessingPayment.value = false;
+    }
+};
 
 // Add function to refresh booking data
 const refreshBookingData = async () => {
@@ -966,16 +1056,6 @@ const refreshBookingData = async () => {
 
         if (response.data.success && response.data.booking) {
             bookingSuccess.value = response.data.booking;
-            
-            // Show success message if payment was completed
-            if (bookingSuccess.value.payment_status === 'paid') {
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Payment Successful!',
-                    text: 'Your payment has been processed successfully. Your booking is now confirmed.',
-                    confirmButtonColor: '#10B981'
-                });
-            }
         }
     } catch (error) {
         console.error('Error refreshing booking data:', error);
@@ -1375,6 +1455,9 @@ const handleStep1Submit = async () => {
 
 // Add new refs for booking success state
 const bookingSuccess = ref(null);
+const paymentStatus = ref(null);
+const paymentError = ref(null);
+const transactionId = ref(null);
 const isProcessingPayment = ref(false);
 
 const validateBookingForm = () => {
