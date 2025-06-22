@@ -11,7 +11,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     >
                         <option value="">Select Season</option>
-                        <option v-for="season in allSeasonTypes" :key="season.id" :value="season.id">
+                        <option v-for="season in assignedSeasonTypes" :key="season.id" :value="season.id">
                             {{ season.name }}
                         </option>
                     </select>
@@ -25,7 +25,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     >
                         <option value="">Select Date Type</option>
-                        <option v-for="type in allDateTypes" :key="type.id" :value="type.id">
+                        <option v-for="type in assignedDateTypes" :key="type.id" :value="type.id">
                             {{ type.name }}
                         </option>
                     </select>
@@ -411,6 +411,14 @@ const props = defineProps({
         required: true
     },
     allDateTypes: {
+        type: Array,
+        required: true
+    },
+    assignedSeasonTypes: {
+        type: Array,
+        required: true
+    },
+    assignedDateTypes: {
         type: Array,
         required: true
     }

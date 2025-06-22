@@ -331,6 +331,14 @@ class PackageController extends Controller
 
         $packageUniqueRoomTypes = $package->loadRoomTypes()->get()->pluck('name', 'id');
 
+        $assignedSeasonTypes = SeasonType::whereHas('seasons', function ($query) use ($package) {
+            $query->where('package_id', $package->id);
+        })->orWhere('name', 'Default')->get();
+
+        $assignedDateTypes = DateType::whereHas('ranges', function ($query) use ($package) {
+            $query->where('package_id', $package->id);
+        })->orWhereIn('name', ['Default', 'Weekday', 'Weekend'])->get();
+
         return Inertia::render('Packages/Show', [
             'pkg' => $package->setRelation('load_room_types', $roomTypes),
             'seasons' => $seasons,
@@ -341,7 +349,9 @@ class PackageController extends Controller
             'priceConfigDateTypeChoice' => $priceConfigDateTypeChoice,
             'packageUniqueRoomTypes' => $packageUniqueRoomTypes,
             'allSeasonTypes' => $allSeasonTypes,
-            'allDateTypes' => $allDateTypes
+            'allDateTypes' => $allDateTypes,
+            'assignedSeasonTypes' => $assignedSeasonTypes,
+            'assignedDateTypes' => $assignedDateTypes
         ]);
     }
 
