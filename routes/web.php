@@ -218,7 +218,7 @@ Route::post('/create-test-payment-transaction', [PaymentSimulationController::cl
 Route::prefix('bot-api')->group(function () {
     Route::post('/fetch-room-types', [BotApiController::class, 'fetchRoomTypesByPackageName']);
     Route::post('/fetch-quotation', [BotApiController::class, 'fetchQuotation']);
-    Route::get('/api-docs', function () {
+    Route::get('/docs', function () {
         return view('api-docs', ['baseUrl' => url('/'), 'botPrefix' => 'bot-api']);
     })->name('bot-api.docs');
 });

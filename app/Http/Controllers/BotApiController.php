@@ -34,10 +34,12 @@ class BotApiController extends Controller
         }
 
         try {
+
+            $package = Package::where('name', $request->package_name)->first();
+
             // Removed invalid eager loads
             $package = Package::with([
                 'roomTypes',
-                'dateBlockers',
             ])->where('name', $request->package_name)->first();
 
             if (!$package) {
@@ -47,35 +49,6 @@ class BotApiController extends Controller
                 ], 404);
             }
 
-            // Get date blockers for the next 12 months
-            $startDate = Carbon::now();
-            $endDate = Carbon::now()->addMonths(12);
-
-            $dateBlockers = DateBlocker::where('package_id', $package->id)
-                ->whereBetween('start_date', [$startDate, $endDate])
-                ->orWhereBetween('end_date', [$startDate, $endDate])
-                ->get()
-                ->map(function ($blocker) {
-                    return [
-                        'start_date' => $blocker->start_date->format('Y-m-d'),
-                        'end_date' => $blocker->end_date->format('Y-m-d'),
-                        'room_type_id' => $blocker->room_type_id,
-                        'room_type_name' => $blocker->roomType?->name
-                    ];
-                });
-
-            // Format room types with availability info
-            $roomTypes = $package->roomTypes->map(function ($roomType) use ($package) {
-                return [
-                    'id' => $roomType->id,
-                    'name' => $roomType->name,
-                    'description' => $roomType->description,
-                    'max_occupancy' => $roomType->max_occupancy,
-                    'images' => $roomType->images ?? [],
-                    'available_dates' => $this->getAvailableDates($package->id, $roomType->id),
-                ];
-            });
-
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -84,20 +57,20 @@ class BotApiController extends Controller
                         'name' => $package->name,
                         'description' => $package->description,
                         'location' => $package->location,
-                        'min_days' => $package->package_min_days,
-                        'max_days' => $package->package_max_days,
+                        'package_nights' => $package->package_min_days,
                         'child_max_age_desc' => $package->child_max_age_desc,
                         'infant_max_age_desc' => $package->infant_max_age_desc,
-                        'display_prices' => [
-                            'adult' => $package->display_price_adult,
-                            'child' => $package->display_price_child,
-                            'infant' => $package->display_price_infant,
-                        ]
+                        'package_display_price' => $package->display_price_adult,
+                        'room_types' => $package->roomTypes->map(function ($roomType) {
+                            return [
+                                'id' => $roomType->id,
+                                'name' => $roomType->name,
+                                'description' => $roomType->description,
+                                'max_occupancy' => $roomType->max_occupancy,
+                                'images' => $roomType->images ?? [],
+                            ];
+                        }),
                     ],
-                    'room_types' => $roomTypes,
-                    'date_blockers' => $dateBlockers,
-                    'season_types' => $package->uniqueSeasonTypes->pluck('name'),
-                    'date_types' => $package->uniqueDateTypes->pluck('name'),
                 ]
             ]);
         } catch (\Exception $e) {
