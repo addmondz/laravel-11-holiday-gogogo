@@ -559,6 +559,17 @@
 }</code></pre>
                             </div>
                         </div>
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-red-800 mb-2">Max Occupancy Error (400)</h4>
+                            <div class="code-block">
+                                <pre><code class="language-json">{
+    "success": false,
+    "message": "The selected room type id `1` and name `Deluxe Room` has a maximum capacity of `2` guests. Please select a different room type.",
+    "max_occupancy": 2,
+    "current_occupancy": 4
+}</code></pre>
+                            </div>
+                        </div>
 
                         <div class="bg-red-50 border border-red-200 rounded-lg p-4">
                             <h4 class="font-semibold text-red-800 mb-2">Package Not Found (404)</h4>
