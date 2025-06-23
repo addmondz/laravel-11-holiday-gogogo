@@ -40,31 +40,16 @@ Route::middleware('guest')->group(function () {
     Route::get('', [AuthenticatedSessionController::class, 'create'])->name('login');
 });
 
-Route::prefix('calculator')->group(function () {
-    // Route::get('/', function () {
-    //     return Inertia::render('Calculator');
-    // })->name('calculator');
-
+Route::prefix('quotation')->group(function () {
     Route::prefix('api')->group(function () {
-        // Route::get('/get-resources', [TravelCalculatorController::class, 'getResources']);
-        // Route::get('/get-room-types/{packageId}', [TravelCalculatorController::class, 'getRoomTypes']);
-        // Route::post('/calculate-total', [TravelCalculatorController::class, 'calculate']);
         Route::post('/fetch-package-by-uuid', [TravelCalculatorController::class, 'fetchPackageByUuid'])->name('api.fetch-package-by-uuid');
         Route::post('/package-calculate-price', [TravelCalculatorController::class, 'packageCalculatePrice'])->name('api.package-calculate-price');
         Route::post('/bookings', [ApiBookingController::class, 'store'])->name('api.bookings.store');
         Route::post('/transactions', [TransactionController::class, 'store'])->name('api.transactions.store');
         Route::get('/payment-history', [TransactionController::class, 'getPaymentHistory'])->name('api.payment-history');
-
-        // Payment routes
-        Route::prefix('bookings/{uuid}/payment')->name('api.payment.')->group(function ($uuid) {
-            Route::get('/', [PaymentController::class, 'show'])->name('show');
-            Route::post('/', [PaymentController::class, 'handlePayment'])->name('handle');
-            Route::get('/success', [PaymentController::class, 'success'])->name('success');
-            Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
-        });
     });
 
-    Route::get('/quotation/{uuid}', function ($uuid, Request $request) {
+    Route::get('/fetch/{uuid}', function ($uuid, Request $request) {
         $booking = null;
         if ($request->has('booking')) {
             $booking = Booking::where('uuid', $request->booking)->with('rooms.roomType')->first();
@@ -93,21 +78,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/packages/{package}/duplicate', [PackageController::class, 'duplicateForm'])->name('packages.duplicate-form');
     Route::post('/packages/{package}/duplicate', [PackageController::class, 'duplicate'])->name('packages.duplicate');
-
     Route::get('/packages/{package}/room-types', [PackageController::class, 'getRoomTypes'])->name('packages.room-types');
     Route::get('/packages/{package}/seasons', [PackageController::class, 'getSeasons'])->name('packages.seasons');
     Route::get('/packages/{package}/date-type-ranges', [PackageController::class, 'getDateTypeRanges'])->name('packages.date-type-ranges');
-
-    // Route::resource('package-add-ons', PackageAddOnController::class)->names([
-    //     'index' => 'package-add-ons.index',
-    //     'create' => 'package-add-ons.create',
-    //     'store' => 'package-add-ons.store',
-    //     'show' => 'package-add-ons.show',
-    //     'edit' => 'package-add-ons.edit',
-    //     'update' => 'package-add-ons.update',
-    //     'destroy' => 'package-add-ons.destroy'
-    // ]);
-
 
     Route::resource('season-types', SeasonTypeController::class)->names([
         'index' => 'season-types.index',
@@ -118,7 +91,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'update' => 'season-types.update',
         'destroy' => 'season-types.destroy'
     ]);
-
 
     Route::resource('seasons', SeasonController::class)->names([
         'index' => 'seasons.index',
