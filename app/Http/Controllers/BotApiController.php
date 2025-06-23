@@ -135,14 +135,7 @@ class BotApiController extends Controller
 
         $package = Package::find($request->package_id);
         $endDate = Carbon::parse($request->travel_date_start)->addDays($package->package_min_days);
-        
-        try {
-            return app(TravelCalculatorController::class)->calculatePriceByParams($request->package_id, $rooms, $request->travel_date_start, $endDate);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
-        }
+
+        return app(TravelCalculatorController::class)->calculatePriceByParams($request->package_id, $rooms, $request->travel_date_start, $endDate, true);
     }
 }

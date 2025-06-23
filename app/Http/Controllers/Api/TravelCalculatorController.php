@@ -244,7 +244,40 @@ class TravelCalculatorController extends Controller
         return $this->calculatePriceByParams($validated['package_id'], $validated['rooms'], $validated['start_date'], $validated['end_date']);
     }
 
-    public function calculatePriceByParams($packageId, $rooms, $startDate, $endDate)
+    public function getSuggestedDates(int $packageId, Carbon $blockedDate): array
+    {
+        $suggestions = [];
+
+        // Suggest dates before and after the blocked date
+        for ($i = 1; $i <= 7; $i++) {
+            $beforeDate = $blockedDate->copy()->subDays($i);
+            $afterDate = $blockedDate->copy()->addDays($i);
+
+            if ($beforeDate->isFuture()) {
+                $isBeforeBlocked = DateBlocker::where('package_id', $packageId)
+                    ->where('start_date', '<=', $beforeDate)
+                    ->where('end_date', '>=', $beforeDate)
+                    ->doesntExist();
+
+                if ($isBeforeBlocked) {
+                    $suggestions[] = $beforeDate->format('Y-m-d');
+                }
+            }
+
+            $isAfterBlocked = DateBlocker::where('package_id', $packageId)
+                ->where('start_date', '<=', $afterDate)
+                ->where('end_date', '>=', $afterDate)
+                ->doesntExist();
+
+            if ($isAfterBlocked) {
+                $suggestions[] = $afterDate->format('Y-m-d');
+            }
+        }
+
+        return array_slice($suggestions, 0, 5); // Return max 5 suggestions
+    }
+
+    public function calculatePriceByParams($packageId, $rooms, $startDate, $endDate, $isFromBot = false)
     {
         try {
             $startDate = Carbon::parse($startDate);
@@ -296,7 +329,8 @@ class TravelCalculatorController extends Controller
                     }
 
                     if (!$dateType) {
-                        throw new \Exception('Date type not found for ' . $date->format('Y-m-d'));
+                        throw new \Exception('An expected error occurred. Please contact admin. Date type not found for ' . $date->format('Y-m-d'));
+                        Log::error('Date type not found for ' . $date->format('Y-m-d') . ' for package ' . $packageId);
                     }
 
                     $season = Season::where('start_date', '<=', $date)
@@ -311,7 +345,8 @@ class TravelCalculatorController extends Controller
                     }
 
                     if (!$seasonType) {
-                        throw new \Exception('Season type not found for ' . $date->format('Y-m-d'));
+                        throw new \Exception('An expected error occurred. Please contact admin. Season type not found for ' . $date->format('Y-m-d'));
+                        Log::error('Season type not found for ' . $date->format('Y-m-d') . ' for package ' . $packageId);
                     }
 
                     $packageConfig = PackageConfiguration::where([
@@ -466,12 +501,20 @@ class TravelCalculatorController extends Controller
                 'total' => $sum('total'),
             ]);
         } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), 'the selected dates and room type combination are not available') && $isFromBot) {
+                // suggest alternative dates
+                $suggestedDates = $this->getSuggestedDates($packageId, $startDate);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The selected dates and room type combination are not available. Below are some alternative dates that you can try.',
+                    'suggested_dates' => $suggestedDates
+                ], 400);
+            }
+
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage(),
-                'breakdown' => null,
-                'total' => 0
-            ], 500);
+                'message' => $e->getMessage()
+            ], 400);
         }
     }
 }

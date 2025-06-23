@@ -25,6 +25,7 @@ use App\Http\Controllers\BotApiController;
 use App\Http\Controllers\DateBlockerController;
 use App\Http\Controllers\SenangPayController;
 use App\Models\Transaction;
+use App\Models\Package;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -219,6 +220,8 @@ Route::prefix('bot-api')->group(function () {
     Route::post('/fetch-room-types', [BotApiController::class, 'fetchRoomTypesByPackageName']);
     Route::post('/fetch-quotation', [BotApiController::class, 'fetchQuotation']);
     Route::get('/docs', function () {
-        return view('api-docs', ['baseUrl' => url('/'), 'botPrefix' => 'bot-api']);
+        $firstPackage = Package::first();
+        $metadata = ['baseUrl' => url('/'), 'botPrefix' => 'bot-api', 'firstPackageName' => $firstPackage->name, 'packageRoomsIds' => $firstPackage->loadRoomTypes->pluck('id')];
+        return view('api-docs', $metadata);
     })->name('bot-api.docs');
 });

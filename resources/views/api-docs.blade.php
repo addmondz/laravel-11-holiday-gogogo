@@ -76,7 +76,7 @@
                         <a href="#fetch-room-types" class="nav-link">API 1 - Fetch Room Types</a>
                         <a href="#fetch-quotation" class="nav-link">API 2 - Fetch Quotation</a>
                         <a href="#error-responses" class="nav-link">Error Responses</a>
-                        <a href="#notes" class="nav-link hidden">Important Notes</a>
+                        <a href="#notes" class="nav-link">Important Notes</a>
                     </nav>
                 </div>
             </div>
@@ -98,10 +98,30 @@
 
                         <div class="endpoint-body">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Request Body</h3>
-                            <div class="code-block">
-                                <pre><code class="language-json">{
-    "package_name": "Langkawi Island Resort"
+                            <div class="relative">
+                                <button onclick="copyToClipboard('request-body-1')" class="absolute top-2 right-2 bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors">
+                                    Copy
+                                </button>
+                                <div class="code-block">
+                                    <pre><code id="request-body-1" class="language-json">{
+    "package_name": "{{ $firstPackageName }}"
 }</code></pre>
+                                </div>
+                            </div>
+
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6">cURL Example</h3>
+                            <div class="relative">
+                                <button onclick="copyToClipboard('curl-1')" class="absolute top-2 right-2 bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors">
+                                    Copy
+                                </button>
+                                <div class="code-block">
+                                    <pre><code id="curl-1" class="language-bash">curl -X POST "{{ $baseUrl }}/{{ $botPrefix }}/fetch-room-types" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "package_name": "{{ $firstPackageName }}"
+  }'</code></pre>
+                                </div>
                             </div>
 
                             <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6">Validation Rules</h3>
@@ -119,8 +139,8 @@
     "data": {
         "package": {
             "id": 1,
-            "uuid": "25JIBG51603",
-            "booking_page_url": "https://example.com/quotation/25JIBG51603",
+            "uid": "25JIBG51603",
+            "booking_page_url": "https://example.com/calculator/quotation/25JIBG51603",
             "images": [
                 "https://example.com/images/package1.jpg",
                 "https://example.com/images/package2.jpg"
@@ -194,7 +214,7 @@
                                                 <td class="py-2 px-3 text-gray-700">Internal package ID</td>
                                             </tr>
                                             <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">uuid</td>
+                                                <td class="py-2 px-3 font-mono text-gray-800">uid</td>
                                                 <td class="py-2 px-3 text-gray-600">string</td>
                                                 <td class="py-2 px-3 text-gray-700">Unique identifier (UUID)</td>
                                             </tr>
@@ -308,43 +328,6 @@
                                 </div>
                             </div>
 
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6">Error Responses</h3>
-                            <div class="space-y-4">
-                                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                                    <h4 class="font-semibold text-red-800 mb-2">Validation Error (400)</h4>
-                                    <div class="code-block">
-                                        <pre><code class="language-json">{
-    "success": false,
-    "message": "Validation failed",
-    "errors": {
-        "package_id": ["The package id field is required."]
-    }
-}</code></pre>
-                                    </div>
-                                </div>
-
-                                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                                    <h4 class="font-semibold text-red-800 mb-2">Package Not Found (404)</h4>
-                                    <div class="code-block">
-                                        <pre><code class="language-json">{
-    "success": false,
-    "message": "Package not found"
-}</code></pre>
-                                    </div>
-                                </div>
-
-                                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                                    <h4 class="font-semibold text-red-800 mb-2">Server Error (500)</h4>
-                                    <div class="code-block">
-                                        <pre><code class="language-json">{
-    "success": false,
-    "message": "Server error",
-    "error": "Database connection failed"
-}</code></pre>
-                                    </div>
-                                </div>
-                            </div>
-
                             <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6">Important Notes</h3>
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                 <ul class="space-y-2 text-sm text-blue-700">
@@ -388,9 +371,13 @@
 
                         <div class="endpoint-body">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Request Body</h3>
-                            <div class="code-block">
-                                <pre><code class="language-json">{
-    "package_id": 1,
+                            <div class="relative">
+                                <button onclick="copyToClipboard('request-body-2')" class="absolute top-2 right-2 bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors">
+                                    Copy
+                                </button>
+                                <div class="code-block">
+                                    <pre><code id="request-body-2" class="language-json">{
+    "package_id": {{ $packageRoomsIds[0] }},
     "travel_date_start": "2025-07-15",
     "rooms": [
         {
@@ -401,6 +388,45 @@
         }
     ]
 }</code></pre>
+                                </div>
+                            </div>
+
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6">cURL Example</h3>
+                            <div class="relative">
+                                <button onclick="copyToClipboard('curl-2')" class="absolute top-2 right-2 bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors">
+                                    Copy
+                                </button>
+                                <div class="code-block">
+                                    <pre><code id="curl-2" class="language-bash">curl -X POST "{{ $baseUrl }}/{{ $botPrefix }}/fetch-quotation" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "package_id": {{ $packageRoomsIds[0] }},
+    "travel_date_start": "2025-07-15",
+    "rooms": [
+        {
+            "room_type_id": 1,
+            "adults": 1,
+            "children": 1,
+            "infants": 0
+        }
+    ]
+  }'</code></pre>
+                                </div>
+                            </div>
+
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6">Validation Rules</h3>
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-yellow-800 mb-2">Required Fields</h4>
+                                <ul class="space-y-1 text-sm text-yellow-700">
+                                    <li><strong>package_id:</strong> Required integer, must exist in packages table</li>
+                                    <li><strong>travel_date_start:</strong> Required date, must be after today</li>
+                                    <li><strong>rooms:</strong> Required array with at least 1 room</li>
+                                    <li><strong>rooms[].room_type_id:</strong> Required integer, must exist in room_types table</li>
+                                    <li><strong>rooms[].adults:</strong> Required integer, minimum 1, maximum 4</li>
+                                    <li><strong>rooms[].children:</strong> Required integer, minimum 0, maximum 4</li>
+                                    <li><strong>rooms[].infants:</strong> Required integer, minimum 0, maximum 4</li>
+                                </ul>
                             </div>
 
                             <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6">Response</h3>
@@ -497,341 +523,19 @@
             "total": 2604.1
         },
         "grand_total": 9559.36
-    },
-    "total": 9559.36
+    }
 }</code></pre>
                             </div>
 
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6">Response Fields</h3>
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-sm border border-gray-300 rounded-lg">
-                                        <thead>
-                                            <tr class="border-b border-gray-200">
-                                                <th class="text-left py-2 px-3 font-semibold text-gray-900">Field</th>
-                                                <th class="text-left py-2 px-3 font-semibold text-gray-900">Type</th>
-                                                <th class="text-left py-2 px-3 font-semibold text-gray-900">Description</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-gray-200">
-                                            <!-- Quotation Information -->
-                                            <tr class="bg-blue-50">
-                                                <td colspan="3" class="py-2 px-3 font-semibold text-blue-900">Quotation Information</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">currency</td>
-                                                <td class="py-2 px-3 text-gray-600">string</td>
-                                                <td class="py-2 px-3 text-gray-700">Currency code (MYR)</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">nights</td>
-                                                <td class="py-2 px-3 text-gray-600">array</td>
-                                                <td class="py-2 px-3 text-gray-700">Array of nights</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms</td>
-                                                <td class="py-2 px-3 text-gray-600">array</td>
-                                                <td class="py-2 px-3 text-gray-700">Array of rooms</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Summary information</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">total</td>
-                                                <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total cost for all nights</td>
-                                            </tr>
-                                            
-                                            <!-- Room Information -->
-                                            <tr class="bg-green-50">
-                                                <td colspan="3" class="py-2 px-3 font-semibold text-green-900">Room Information</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].room_type_name</td>
-                                                <td class="py-2 px-3 text-gray-600">string</td>
-                                                <td class="py-2 px-3 text-gray-700">Room type name</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].room_type</td>
-                                                <td class="py-2 px-3 text-gray-600">integer</td>
-                                                <td class="py-2 px-3 text-gray-700">Room type identifier</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].adults</td>
-                                                <td class="py-2 px-3 text-gray-600">integer</td>
-                                                <td class="py-2 px-3 text-gray-700">Number of adults</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].children</td>
-                                                <td class="py-2 px-3 text-gray-600">integer</td>
-                                                <td class="py-2 px-3 text-gray-700">Number of children</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].infants</td>
-                                                <td class="py-2 px-3 text-gray-600">integer</td>
-                                                <td class="py-2 px-3 text-gray-700">Number of infants</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights</td>
-                                                <td class="py-2 px-3 text-gray-600">array</td>
-                                                <td class="py-2 px-3 text-gray-700">Array of nights</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Room summary</td>
-                                            </tr>
-                                            
-                                            <!-- Nights Information -->
-                                            <tr class="bg-purple-50">
-                                                <td colspan="3" class="py-2 px-3 font-semibold text-purple-900">Nights Information</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].date</td>
-                                                <td class="py-2 px-3 text-gray-600">string</td>
-                                                <td class="py-2 px-3 text-gray-700">Date of the night</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].season</td>
-                                                <td class="py-2 px-3 text-gray-600">string</td>
-                                                <td class="py-2 px-3 text-gray-700">Season of the night</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].season_type</td>
-                                                <td class="py-2 px-3 text-gray-600">string</td>
-                                                <td class="py-2 px-3 text-gray-700">Season type of the night</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].date_type</td>
-                                                <td class="py-2 px-3 text-gray-600">string</td>
-                                                <td class="py-2 px-3 text-gray-700">Date type of the night</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].is_weekend</td>
-                                                <td class="py-2 px-3 text-gray-600">boolean</td>
-                                                <td class="py-2 px-3 text-gray-700">Whether the night is a weekend</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].base_charge</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge breakdown</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].base_charge.adult</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge for adults</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].base_charge.child</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge for children</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].base_charge.infant</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge for infants</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].base_charge.total</td>
-                                                <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total base charge for the night</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].surcharge</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge breakdown</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].surcharge.adult</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge for adults</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].surcharge.child</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge for children</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].surcharge.infant</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge for infants</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].surcharge.total</td>
-                                                <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total surcharge for the night</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].nights[].total</td>
-                                                <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total cost for the night</td>
-                                            </tr>
-                                            
-                                            <!-- Room Summary -->
-                                            <tr class="bg-purple-50">
-                                                <td colspan="3" class="py-2 px-3 font-semibold text-purple-900">Room Summary</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Room summary</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary.base_charges</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge breakdown</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary.base_charges.adult</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge for adults</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary.base_charges.child</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge for children</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary.base_charges.infant</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge for infants</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary.base_charges.total</td>
-                                                <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total base charge for the room</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary.surcharges</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge breakdown</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary.surcharges.adult</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge for adults</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary.surcharges.child</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge for children</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary.surcharges.infant</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge for infants</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary.surcharges.total</td>
-                                                <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total surcharge for the room</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">rooms[].summary.total</td>
-                                                <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total cost for the room</td>
-                                            </tr>
-                                            
-                                            <!-- Summary Information -->
-                                            <tr class="bg-purple-50">
-                                                <td colspan="3" class="py-2 px-3 font-semibold text-purple-900">Summary Information</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Summary information</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.total_nights</td>
-                                                <td class="py-2 px-3 text-gray-600">integer</td>
-                                                <td class="py-2 px-3 text-gray-700">Total number of nights</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.base_charges</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge breakdown</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.base_charges.adult</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge for adults</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.base_charges.child</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge for children</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.base_charges.infant</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Base charge for infants</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.base_charges.total</td>
-                                                <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total base charge for all nights</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.surcharges</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge breakdown</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.surcharges.adult</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge for adults</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.surcharges.child</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge for children</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.surcharges.infant</td>
-                                                <td class="py-2 px-3 text-gray-600">object</td>
-                                                <td class="py-2 px-3 text-gray-700">Surcharge for infants</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.surcharges.total</td>
-                                                <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total surcharge for all nights</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">summary.grand_total</td>
-                                                <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total cost for all nights</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-100">
-                                                <td class="py-2 px-3 font-mono text-gray-800">grand_total</td>
-                                                <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total cost for all rooms</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6">Validation Rules</h3>
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                <h4 class="font-semibold text-yellow-800 mb-2">Required Fields</h4>
-                                <ul class="space-y-1 text-sm text-yellow-700">
-                                    <li><strong>package_id:</strong> Required integer, must exist in packages table</li>
-                                    <li><strong>travel_date_start:</strong> Required date, must be after today</li>
-                                    <li><strong>rooms:</strong> Required array, minimum 1 room</li>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6 hidden">Important Notes</h3>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <ul class="space-y-2 text-sm text-blue-700">
+                                    <li><strong>Package Duration:</strong> The end date is automatically calculated based on the package's minimum days requirement.</li>
+                                    <li><strong>Pricing Structure:</strong> Prices include base charges and surcharges for different guest types (adults, children, infants).</li>
+                                    <li><strong>Season & Date Types:</strong> Pricing varies based on seasons (Peak/Off-Peak) and date types (Weekday/Weekend).</li>
+                                    <li><strong>Date Blockers:</strong> If selected dates are blocked, the API will suggest alternative dates.</li>
+                                    <li><strong>Currency:</strong> All prices are in Malaysian Ringgit (MYR).</li>
                                 </ul>
-                                <h4 class="font-semibold text-yellow-800 mb-2 mt-4">Room Array Fields</h4>
-                                <ul class="space-y-1 text-sm text-yellow-700">
-                                    <li><strong>rooms[].room_type_id:</strong> Required integer, must exist in room_types table</li>
-                                    <li><strong>rooms[].adults:</strong> Required integer, minimum 1</li>
-                                    <li><strong>rooms[].children:</strong> Optional integer, minimum 0</li>
-                                    <li><strong>rooms[].infants:</strong> Optional integer, minimum 0</li>
-                                </ul>
-                                <div class="mt-3 p-3 bg-yellow-100 rounded">
-                                    <p class="text-yellow-800 text-sm"><strong>Note:</strong> Total passenger counts are automatically calculated from the sum of all rooms.</p>
-                                    <p class="text-yellow-800 text-sm mt-1"><strong>Response Note:</strong> This endpoint returns a comprehensive response with detailed nightly breakdowns, making it ideal for chatbot integration that needs to explain pricing to users.</p>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -842,64 +546,53 @@
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Error Responses</h2>
 
                     <div class="space-y-6">
-                        <div class="endpoint-card">
-                            <div class="endpoint-header">
-                                <h3 class="text-lg font-semibold text-gray-900">Validation Error (400)</h3>
-                            </div>
-                            <div class="endpoint-body">
-                                <div class="code-block">
-                                    <pre><code class="language-json">{
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-red-800 mb-2">Validation Error (400)</h4>
+                            <div class="code-block">
+                                <pre><code class="language-json">{
     "success": false,
     "message": "Validation failed",
     "errors": {
-        "package_id": ["The package id field is required."]
+        "package_name": ["The package name field is required."],
+        "travel_date_start": ["The travel date start must be a date after today."]
     }
 }</code></pre>
-                                </div>
                             </div>
                         </div>
 
-                        <div class="endpoint-card">
-                            <div class="endpoint-header">
-                                <h3 class="text-lg font-semibold text-gray-900">Package Not Found (404)</h3>
-                            </div>
-                            <div class="endpoint-body">
-                                <div class="code-block">
-                                    <pre><code class="language-json">{
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-red-800 mb-2">Package Not Found (404)</h4>
+                            <div class="code-block">
+                                <pre><code class="language-json">{
     "success": false,
     "message": "Package not found"
 }</code></pre>
-                                </div>
                             </div>
                         </div>
 
-                        <div class="endpoint-card">
-                            <div class="endpoint-header">
-                                <h3 class="text-lg font-semibold text-gray-900">Date Not Available (400)</h3>
-                            </div>
-                            <div class="endpoint-body">
-                                <div class="code-block">
-                                    <pre><code class="language-json">{
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-red-800 mb-2">Date Blocked (400)</h4>
+                            <div class="code-block">
+                                <pre><code class="language-json">{
     "success": false,
-    "message": "Selected date is not available",
-    "suggested_dates": ["2024-01-18", "2024-01-19", "2024-01-26"]
+    "message": "The selected dates and room type combination are not available. Below are some alternative dates that you can try.",
+    "suggested_dates": [
+        "2025-07-16",
+        "2025-07-17",
+        "2025-07-18"
+    ]
 }</code></pre>
-                                </div>
                             </div>
                         </div>
 
-                        <div class="endpoint-card">
-                            <div class="endpoint-header">
-                                <h3 class="text-lg font-semibold text-gray-900">Server Error (500)</h3>
-                            </div>
-                            <div class="endpoint-body">
-                                <div class="code-block">
-                                    <pre><code class="language-json">{
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-red-800 mb-2">Server Error (500)</h4>
+                            <div class="code-block">
+                                <pre><code class="language-json">{
     "success": false,
     "message": "Server error",
     "error": "Database connection failed"
 }</code></pre>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -958,6 +651,14 @@
                                     <p class="text-gray-600">The system automatically determines the appropriate season and date type based on the travel date.</p>
                                 </div>
                             </div>
+
+                            <div class="flex items-start gap-3">
+                                <div class="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">JSON Responses Only</h3>
+                                    <p class="text-gray-600">All bot API endpoints are configured to return JSON responses only with proper Content-Type headers.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -965,65 +666,69 @@
         </div>
 
         <!-- Footer -->
-        <footer class="mt-16 text-center text-gray-500 border-t border-gray-200 pt-8 hidden">
+        <footer class="mt-16 text-center text-gray-500 border-t border-gray-200 pt-8">
             <p>&copy; 2024 Bot API Documentation. Built with Laravel and Tailwind CSS.</p>
         </footer>
     </div>
 
     <script>
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+        // Copy to clipboard functionality
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            // Create a temporary textarea to copy the text
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                // Show success feedback
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('bg-green-600');
+                button.classList.remove('bg-gray-800', 'hover:bg-gray-700');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('bg-green-600');
+                    button.classList.add('bg-gray-800', 'hover:bg-gray-700');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+            
+            document.body.removeChild(textarea);
+        }
 
-        // Active navigation highlighting
-        const sections = document.querySelectorAll('section[id]');
-        const navLinks = document.querySelectorAll('.nav-link');
+        // Highlight active navigation link
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section[id]');
 
-        window.addEventListener('scroll', () => {
-            let current = '';
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                const sectionHeight = section.clientHeight;
-                if (scrollY >= (sectionTop - 200)) {
-                    current = section.getAttribute('id');
-                }
-            });
-
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${current}`) {
-                    link.classList.add('active');
-                }
-            });
-        });
-
-        // Copy code functionality
-        document.querySelectorAll('.code-block').forEach(block => {
-            const copyButton = document.createElement('button');
-            copyButton.textContent = 'Copy';
-            copyButton.className = 'absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 transition-colors';
-            copyButton.onclick = () => {
-                const code = block.querySelector('code').textContent;
-                navigator.clipboard.writeText(code).then(() => {
-                    copyButton.textContent = 'Copied!';
-                    setTimeout(() => {
-                        copyButton.textContent = 'Copy';
-                    }, 2000);
+            function highlightActiveLink() {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (window.pageYOffset >= sectionTop - 200) {
+                        current = section.getAttribute('id');
+                    }
                 });
-            };
 
-            block.style.position = 'relative';
-            block.appendChild(copyButton);
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', highlightActiveLink);
+            highlightActiveLink();
         });
     </script>
 </body>
