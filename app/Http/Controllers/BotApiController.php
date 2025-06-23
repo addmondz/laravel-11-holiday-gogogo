@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\AppConstants;
+use App\Http\Controllers\Api\TravelCalculatorController;
 use App\Models\Package;
 use App\Models\PackageConfiguration;
 use App\Models\DateBlocker;
@@ -11,7 +12,11 @@ use App\Models\DateType;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Validator;
+use App\Models\DateTypeRange;
+use App\Models\Season;
+use App\Models\RoomType;
 
 class BotApiController extends Controller
 {
@@ -54,20 +59,36 @@ class BotApiController extends Controller
                 'data' => [
                     'package' => [
                         'id' => $package->id,
+                        'uid' => $package->uuid,
+                        'booking_page_url' => route('quotation.with-hash', $package->uuid),
+                        'images' => collect($package->images)->map(function ($image) {
+                            return url('/images') . '/' . $image;
+                        })->values(),
+                        'package_id' => $package->package_id,
                         'name' => $package->name,
                         'description' => $package->description,
                         'location' => $package->location,
                         'package_nights' => $package->package_min_days,
-                        'child_max_age_desc' => $package->child_max_age_desc,
-                        'infant_max_age_desc' => $package->infant_max_age_desc,
+                        'package_start_date' => $package->package_start_date,
+                        'package_end_date' => $package->package_end_date,
+                        'child_max_age_desc' => $package->child_max_age_desc ?? '',
+                        'infant_max_age_desc' => $package->infant_max_age_desc ?? '',
                         'package_display_price' => $package->display_price_adult,
-                        'room_types' => $package->roomTypes->map(function ($roomType) {
+                        'room_types' => $package->loadRoomTypes->map(function ($roomType) {
                             return [
                                 'id' => $roomType->id,
                                 'name' => $roomType->name,
                                 'description' => $roomType->description,
                                 'max_occupancy' => $roomType->max_occupancy,
-                                'images' => $roomType->images ?? [],
+                                'images' => collect($roomType->images)->map(function ($image) {
+                                    return url('/images') . '/' . $image;
+                                })->values(),
+                                'date_blockers' => $roomType->dateBlockers->map(function ($dateBlocker) {
+                                    return [
+                                        'start_date' => $dateBlocker->start_date->format('Y-m-d'),
+                                        'end_date' => $dateBlocker->end_date->format('Y-m-d'),
+                                    ];
+                                })
                             ];
                         }),
                     ],
@@ -89,16 +110,9 @@ class BotApiController extends Controller
     {
         // Validate request
         $validator = Validator::make($request->all(), [
-            'package_name' => 'required|string|max:255',
-            'travel_date' => 'required|date|after:today',
-            'adults' => 'required|integer|min:1|max:10',
-            'children' => 'integer|min:0|max:10',
-            'infants' => 'integer|min:0|max:10',
-            'rooms' => 'required|array|min:1',
-            'rooms.*.room_type_id' => 'required|integer|exists:room_types,id',
-            'rooms.*.adults' => 'required|integer|min:1',
-            'rooms.*.children' => 'integer|min:0',
-            'rooms.*.infants' => 'integer|min:0',
+            'package_id' => 'required|integer|exists:packages,id',
+            'travel_date_start' => 'required|date|after:today',
+            'rooms' => 'required|array|min:1'
         ]);
 
         if ($validator->fails()) {
@@ -109,200 +123,16 @@ class BotApiController extends Controller
             ], 400);
         }
 
-        try {
-            $package = Package::where('name', $request->package_name)->first();
-
-            if (!$package) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Package not found'
-                ], 404);
-            }
-
-            // Check if travel date is blocked
-            $travelDate = Carbon::parse($request->travel_date);
-            $isDateBlocked = DateBlocker::where('package_id', $package->id)
-                ->where('start_date', '<=', $travelDate)
-                ->where('end_date', '>=', $travelDate)
-                ->exists();
-
-            if ($isDateBlocked) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Selected date is not available',
-                    'suggested_dates' => $this->getSuggestedDates($package->id, $travelDate)
-                ], 400);
-            }
-
-            // Calculate pricing for each room
-            $roomQuotations = [];
-            $grandTotal = 0;
-
-            foreach ($request->rooms as $room) {
-                $roomQuotation = $this->calculateRoomPrice(
-                    $package->id,
-                    $room['room_type_id'],
-                    $travelDate,
-                    $room['adults'],
-                    $room['children'] ?? 0,
-                    $room['infants'] ?? 0
-                );
-
-                $roomQuotations[] = $roomQuotation;
-                $grandTotal += $roomQuotation['total_price'];
-            }
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'package_name' => $package->name,
-                    'travel_date' => $travelDate->format('Y-m-d'),
-                    'total_pax' => [
-                        'adults' => $request->adults,
-                        'children' => $request->children ?? 0,
-                        'infants' => $request->infants ?? 0,
-                    ],
-                    'rooms' => $roomQuotations,
-                    'grand_total' => round($grandTotal, 2),
-                    'currency' => 'MYR'
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Server error',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get available dates for a room type (next 12 months excluding blockers)
-     */
-    private function getAvailableDates(int $packageId, int $roomTypeId): array
-    {
-        $startDate = Carbon::now();
-        $endDate = Carbon::now()->addMonths(12);
-
-        $blockedDates = DateBlocker::where('package_id', $packageId)
-            ->where(function ($query) use ($roomTypeId) {
-                $query->where('room_type_id', $roomTypeId)
-                    ->orWhereNull('room_type_id');
-            })
-            ->whereBetween('start_date', [$startDate, $endDate])
-            ->orWhereBetween('end_date', [$startDate, $endDate])
-            ->get();
-
-        $availableDates = [];
-        $currentDate = $startDate->copy();
-
-        while ($currentDate <= $endDate) {
-            $isBlocked = $blockedDates->contains(function ($blocker) use ($currentDate) {
-                return $currentDate->between($blocker->start_date, $blocker->end_date);
-            });
-
-            if (!$isBlocked) {
-                $availableDates[] = $currentDate->format('Y-m-d');
-            }
-
-            $currentDate->addDay();
-        }
-
-        return $availableDates;
-    }
-
-    /**
-     * Calculate room price based on configuration
-     */
-    private function calculateRoomPrice(int $packageId, int $roomTypeId, Carbon $travelDate, int $adults, int $children, int $infants): array
-    {
-        // Determine season and date type based on travel date
-        $seasonType = $this->getSeasonTypeForDate($packageId, $travelDate);
-        $dateType = $this->getDateTypeForDate($packageId, $travelDate);
-
-        // Get price configuration
-        $configuration = PackageConfiguration::where('package_id', $packageId)
-            ->where('room_type_id', $roomTypeId)
-            ->where('season_type_id', $seasonType->id)
-            ->where('date_type_id', $dateType->id)
-            ->first();
-
-        if (!$configuration || !$configuration->configuration_prices) {
+        $rooms = collect($request->rooms)->map(function ($room) {
             return [
-                'room_type_id' => $roomTypeId,
-                'base_price' => 0,
-                'surcharge' => 0,
-                'total_price' => 0,
-                'error' => 'No pricing configuration found'
+                'room_type' => $room['room_type_id'],
+                'adults' => $room['adults'],
+                'children' => $room['children'],
+                'infants' => $room['infants'],
             ];
-        }
+        })->toArray();
 
-        $prices = json_decode($configuration->configuration_prices, true);
-        $keyPrefix = "{$adults}_a_{$children}_c_{$infants}_i";
-
-        $basePrice = $prices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_a"] ?? 0;
-        $childBasePrice = $prices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_c"] ?? 0;
-        $infantBasePrice = $prices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_i"] ?? 0;
-
-        $surcharge = $prices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_a"] ?? 0;
-        $childSurcharge = $prices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_c"] ?? 0;
-        $infantSurcharge = $prices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_i"] ?? 0;
-
-        $totalBasePrice = ($basePrice * $adults) + ($childBasePrice * $children) + ($infantBasePrice * $infants);
-        $totalSurcharge = ($surcharge * $adults) + ($childSurcharge * $children) + ($infantSurcharge * $infants);
-        $totalPrice = $totalBasePrice + $totalSurcharge;
-
-        return [
-            'room_type_id' => $roomTypeId,
-            'room_type_name' => $configuration->roomType->name,
-            'season_type' => $seasonType->name,
-            'date_type' => $dateType->name,
-            'pricing_breakdown' => [
-                'base_price' => [
-                    'adults' => $basePrice * $adults,
-                    'children' => $childBasePrice * $children,
-                    'infants' => $infantBasePrice * $infants,
-                    'total' => $totalBasePrice
-                ],
-                'surcharge' => [
-                    'adults' => $surcharge * $adults,
-                    'children' => $childSurcharge * $children,
-                    'infants' => $infantSurcharge * $infants,
-                    'total' => $totalSurcharge
-                ]
-            ],
-            'total_price' => round($totalPrice, 2)
-        ];
-    }
-
-    /**
-     * Get season type for a specific date
-     */
-    private function getSeasonTypeForDate(int $packageId, Carbon $date): SeasonType
-    {
-        // This is a simplified implementation - you might need to adjust based on your season logic
-        $season = SeasonType::whereHas('seasons', function ($query) use ($packageId, $date) {
-            $query->where('package_id', $packageId)
-                ->where('start_date', '<=', $date)
-                ->where('end_date', '>=', $date);
-        })->first();
-
-        return $season ?? SeasonType::first(); // Fallback to first season type
-    }
-
-    /**
-     * Get date type for a specific date
-     */
-    private function getDateTypeForDate(int $packageId, Carbon $date): DateType
-    {
-        // This is a simplified implementation - you might need to adjust based on your date type logic
-        $dateType = DateType::whereHas('dateTypeRanges', function ($query) use ($packageId, $date) {
-            $query->where('package_id', $packageId)
-                ->where('start_date', '<=', $date)
-                ->where('end_date', '>=', $date);
-        })->first();
-
-        return $dateType ?? DateType::first(); // Fallback to first date type
+        return app(TravelCalculatorController::class)->calculatePriceByParams($request->package_id, $rooms, $request->travel_date_start, null);
     }
 
     /**
@@ -338,6 +168,6 @@ class BotApiController extends Controller
             }
         }
 
-        return array_slice(array_unique($suggestions), 0, 5); // Return max 5 suggestions
+        return array_slice($suggestions, 0, 5); // Return max 5 suggestions
     }
 }

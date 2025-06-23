@@ -182,7 +182,6 @@ class TravelCalculatorController extends Controller
                 'is_weekend' => $isWeekend,
                 'duration' => $duration
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -242,16 +241,22 @@ class TravelCalculatorController extends Controller
             'end_date' => 'required|date|after:start_date',
         ]);
 
+        return $this->calculatePriceByParams($validated['package_id'], $validated['rooms'], $validated['start_date'], $validated['end_date']);
+    }
+
+    public function calculatePriceByParams($packageId, $rooms, $startDate, $endDate = null)
+    {
         try {
-            $startDate = Carbon::parse($validated['start_date']);
-            $endDate = Carbon::parse($validated['end_date']);
-            $packageId = $validated['package_id'];
+            $startDate = Carbon::parse($startDate);
+            $endDate = $endDate 
+                ? Carbon::parse($endDate) 
+                : (clone $startDate)->addDays(Package::find($packageId)->package_min_days);
 
             // Check date blockers for each room
-            foreach ($validated['rooms'] as $room) {
+            foreach ($rooms as $room) {
                 $dateBlockers = DateBlocker::where('package_id', $packageId)
-                    ->where('start_date', '<=', $validated['end_date'])
-                    ->where('end_date', '>=', $validated['start_date'])
+                    ->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate)
                     ->where('room_type_id', $room['room_type'])
                     ->get();
 
@@ -273,7 +278,7 @@ class TravelCalculatorController extends Controller
             $roomBreakdowns = [];
 
             // Calculate prices for each room
-            foreach ($validated['rooms'] as $roomIndex => $room) {
+            foreach ($rooms as $room) {
                 $roomTypeId = $room['room_type'];
                 $adults = $room['adults'];
                 $children = $room['children'];
@@ -434,7 +439,7 @@ class TravelCalculatorController extends Controller
                 'nights' => $allNights,
                 'rooms' => $roomBreakdowns,
                 'summary' => [
-                    'total_nights' => count($allNights) / count($validated['rooms']), // Average nights per room
+                    'total_nights' => count($allNights) / count($rooms), // Average nights per room
                     'base_charges' => [
                         'adult' => [
                             'total' => $sum('base_charge.adult.total')
@@ -463,7 +468,6 @@ class TravelCalculatorController extends Controller
                 ],
                 'total' => $sum('total'),
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

@@ -33,4 +33,9 @@ class RoomType extends Model
     {
         return $this->belongsTo(Package::class);
     }
+
+    public function dateBlockers(): HasMany
+    {
+        return $this->hasMany(DateBlocker::class);
+    }
 }

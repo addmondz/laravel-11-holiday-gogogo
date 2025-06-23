@@ -33,6 +33,7 @@ class PackageController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     // ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('uuid', 'like', "%{$search}%")
                     ->orWhere('location', 'like', "%{$search}%");
             });
         }
