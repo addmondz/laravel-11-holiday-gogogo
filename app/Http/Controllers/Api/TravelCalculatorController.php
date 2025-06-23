@@ -314,6 +314,12 @@ class TravelCalculatorController extends Controller
                 $children = $room['children'];
                 $infants = $room['infants'];
                 $roomNights = [];
+                $roomType = RoomType::find($roomTypeId);
+                $totalGuests = $adults + $children + $infants;
+
+                if ($totalGuests > $roomType->max_occupancy) {
+                    throw new \Exception('The selected room type id `' . $roomTypeId . '` and name `' . $roomType->name . '` has a maximum capacity of `' . $roomType->max_occupancy . '` guests. Please select a different room type.');
+                }
 
                 for ($date = $startDate->copy(); $date->lt($endDate); $date->addDay()) {
                     $dateTypeRange = DateTypeRange::where('start_date', '<=', $date)
@@ -508,6 +514,14 @@ class TravelCalculatorController extends Controller
                     'success' => false,
                     'message' => 'The selected dates and room type combination are not available. Below are some alternative dates that you can try.',
                     'suggested_dates' => $suggestedDates
+                ], 400);
+
+            } else if (str_contains($e->getMessage(), 'The selected room type id `' . $roomTypeId . '` and name `' . $roomType->name . '` has a maximum capacity of `' . $roomType->max_occupancy . '` guests. Please select a different room type.')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                    'max_occupancy' => $roomType->max_occupancy,
+                    'current_occupancy' => $totalGuests,
                 ], 400);
             }
 
