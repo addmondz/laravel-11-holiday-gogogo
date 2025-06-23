@@ -1,5 +1,6 @@
 <template>
     <div class="min-h-screen bg-gray-100">
+    <Head :title="packageData?.name ?? 'Travel Package'" />
         <!-- Header -->
         <header class="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200" style="height: 80px;">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
@@ -966,6 +967,7 @@
 </template>
 
 <script setup>
+import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
