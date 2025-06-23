@@ -112,7 +112,8 @@ class BotApiController extends Controller
         $validator = Validator::make($request->all(), [
             'package_id' => 'required|integer|exists:packages,id',
             'travel_date_start' => 'required|date|after:today',
-            'rooms' => 'required|array|min:1'
+            'rooms' => 'required|array|min:1',
+            'rooms.*.room_type_id' => 'required|integer|exists:room_types,id',
         ]);
 
         if ($validator->fails()) {
@@ -132,42 +133,16 @@ class BotApiController extends Controller
             ];
         })->toArray();
 
-        return app(TravelCalculatorController::class)->calculatePriceByParams($request->package_id, $rooms, $request->travel_date_start, null);
-    }
-
-    /**
-     * Get suggested alternative dates when selected date is blocked
-     */
-    private function getSuggestedDates(int $packageId, Carbon $blockedDate): array
-    {
-        $suggestions = [];
-
-        // Suggest dates before and after the blocked date
-        for ($i = 1; $i <= 7; $i++) {
-            $beforeDate = $blockedDate->copy()->subDays($i);
-            $afterDate = $blockedDate->copy()->addDays($i);
-
-            if ($beforeDate->isFuture()) {
-                $isBeforeBlocked = DateBlocker::where('package_id', $packageId)
-                    ->where('start_date', '<=', $beforeDate)
-                    ->where('end_date', '>=', $beforeDate)
-                    ->doesntExist();
-
-                if ($isBeforeBlocked) {
-                    $suggestions[] = $beforeDate->format('Y-m-d');
-                }
-            }
-
-            $isAfterBlocked = DateBlocker::where('package_id', $packageId)
-                ->where('start_date', '<=', $afterDate)
-                ->where('end_date', '>=', $afterDate)
-                ->doesntExist();
-
-            if ($isAfterBlocked) {
-                $suggestions[] = $afterDate->format('Y-m-d');
-            }
+        $package = Package::find($request->package_id);
+        $endDate = Carbon::parse($request->travel_date_start)->addDays($package->package_min_days);
+        
+        try {
+            return app(TravelCalculatorController::class)->calculatePriceByParams($request->package_id, $rooms, $request->travel_date_start, $endDate);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
         }
-
-        return array_slice($suggestions, 0, 5); // Return max 5 suggestions
     }
 }

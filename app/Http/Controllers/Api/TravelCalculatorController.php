@@ -244,13 +244,10 @@ class TravelCalculatorController extends Controller
         return $this->calculatePriceByParams($validated['package_id'], $validated['rooms'], $validated['start_date'], $validated['end_date']);
     }
 
-    public function calculatePriceByParams($packageId, $rooms, $startDate, $endDate = null)
+    public function calculatePriceByParams($packageId, $rooms, $startDate, $endDate)
     {
         try {
             $startDate = Carbon::parse($startDate);
-            $endDate = $endDate 
-                ? Carbon::parse($endDate) 
-                : (clone $startDate)->addDays(Package::find($packageId)->package_min_days);
 
             // Check date blockers for each room
             foreach ($rooms as $room) {
