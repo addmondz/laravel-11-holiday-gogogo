@@ -57,6 +57,7 @@ class BookingController extends Controller
                     'booking_name' => $request->booking_name,
                     'phone_number' => $request->phone_number,
                     'booking_ic' => $request->booking_ic,
+                    'booking_email' => $request->booking_email,
                     'start_date' => $request->start_date,
                     'end_date' => $request->end_date,
                     'total_price' => $request->total_price,

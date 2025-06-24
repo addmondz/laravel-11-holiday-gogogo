@@ -60,7 +60,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">{{ dateType.ranges.length }} ranges</div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" :class="{ 'hidden': ['Weekend', 'Weekday'].includes(dateType.name) }">
                                             <Link
                                                 :href="route('date-types.edit', $page.props.package_id ? {
                                                     dateType: dateType.id,

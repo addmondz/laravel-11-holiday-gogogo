@@ -60,7 +60,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">{{ seasonType.seasons.length }} seasons</div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" :class="{ 'hidden': seasonType.name === 'Default' }">
                                             <Link
                                                 :href="route('season-types.edit', seasonType.id)"
                                                 class="text-indigo-600 hover:text-indigo-900 mr-3"

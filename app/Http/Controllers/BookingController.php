@@ -19,6 +19,7 @@ class BookingController extends Controller
                 $q->where('booking_name', 'like', "%{$search}%")
                     ->orWhere('phone_number', 'like', "%{$search}%")
                     ->orWhere('booking_ic', 'like', "%{$search}%")
+                    ->orWhere('booking_email', 'like', "%{$search}%")
                     ->orWhere('uuid', 'like', "%{$search}%");
             });
         }
@@ -61,7 +62,8 @@ class BookingController extends Controller
             'booking_name' => 'required|string|max:255',
             'phone_number' => 'required|string|max:20',
             'booking_ic' => 'required|string|max:50',
-            'special_remarks' => 'nullable|string'
+            'special_remarks' => 'nullable|string',
+            'booking_email' => 'required|email|max:255'
         ]);
 
         try {

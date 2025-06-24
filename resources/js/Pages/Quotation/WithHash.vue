@@ -693,6 +693,25 @@
                                 />
                                 <p v-if="bookingValidationErrors.booking_name" class="mt-1 text-sm text-red-600">
                                     {{ bookingValidationErrors.booking_name }}
+                                </p>    
+                            </div>
+
+                            <!-- Booking Email -->
+                            <div>
+                                <label for="booking_email" class="block text-sm font-medium text-gray-700">Email</label>
+                                <input
+                                    type="email"
+                                    id="booking_email"
+                                    v-model="bookingForm.booking_email"
+                                    :class="[
+                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                        bookingValidationErrors.booking_email ? 'border-red-500' : 'border-gray-300'
+                                    ]"
+                                    placeholder="e.g., john.doe@example.com"
+                                    required
+                                />
+                                <p v-if="bookingValidationErrors.booking_email" class="mt-1 text-sm text-red-600">
+                                    {{ bookingValidationErrors.booking_email }}
                                 </p>
                             </div>
 
@@ -809,7 +828,8 @@
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                                         <h4 class="text-sm text-gray-500 mb-3">BOOKING NAME</h4>
                                         <p class="text-lg text-gray-900">{{ bookingSuccess.booking_name }}</p>
-                                            <p class="text-sm text-gray-600">Phone: {{bookingSuccess.phone_number}}</p>
+                                        <p class="text-sm text-gray-600">Phone: {{bookingSuccess.phone_number}}</p>
+                                        <p class="text-sm text-gray-600">Email: {{bookingSuccess.booking_email}}</p>
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                                         <h4 class="text-sm font-medium text-gray-500 mb-3">ROOMS</h4>
@@ -1114,14 +1134,16 @@ const bookingForm = ref({
     booking_name: '',
     phone_number: '',
     booking_ic: '',
-    special_remarks: ''
+    special_remarks: '',
+    booking_email: ''
 });
 
 // Add booking form validation errors
 const bookingValidationErrors = ref({
     booking_name: '',
     phone_number: '',
-    booking_ic: ''
+    booking_ic: '',
+    booking_email: ''
 });
 
 const isSubmitting = ref(false);
@@ -1467,7 +1489,8 @@ const validateBookingForm = () => {
     bookingValidationErrors.value = {
         booking_name: '',
         phone_number: '',
-        booking_ic: ''
+        booking_ic: '',
+        booking_email: ''
     };
 
     // Validate booking name
@@ -1515,6 +1538,7 @@ const submitBooking = async () => {
             booking_name: bookingForm.value.booking_name,
             phone_number: bookingForm.value.phone_number,
             booking_ic: bookingForm.value.booking_ic,
+            booking_email: bookingForm.value.booking_email,
             start_date: form.start_date,
             end_date: form.end_date,
             total_price: priceBreakdown.value.total,

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('booking_name');
             $table->string('phone_number');
             $table->string('booking_ic');
+            $table->string('booking_email');
             $table->string('payment_status')->default('pending'); // pending, paid, failed
             $table->date('start_date');
             $table->date('end_date');

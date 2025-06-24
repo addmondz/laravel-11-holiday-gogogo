@@ -10,7 +10,8 @@ class SeasonTypeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = SeasonType::whereNot('name', 'Default');
+        // $query = SeasonType::whereNot('name', 'Default');
+        $query = SeasonType::query();
 
         // Search functionality
         if ($request->has('search')) {

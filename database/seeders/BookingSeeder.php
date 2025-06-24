@@ -118,6 +118,7 @@ class BookingSeeder extends Seeder
                     'booking_name' => $names[$i % count($names)],
                     'phone_number' => $phoneNumbers[$i % count($phoneNumbers)],
                     'booking_ic' => $icNumbers[$i % count($icNumbers)],
+                    'booking_email' => fake()->email(),
                     'start_date' => $startDate,
                     'end_date' => $endDate,
                     'adults' => 0, // Will be updated after rooms are created
