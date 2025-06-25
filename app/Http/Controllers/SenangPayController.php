@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\ApprovalStatus;
 use App\Models\Booking;
 use App\Models\Transaction;
 use App\Models\SenangPayApiLog;
@@ -67,7 +68,7 @@ class SenangPayController extends Controller
         try {
             $booking = Booking::findOrFail($bookingId);
 
-            if ($booking->payment_status === 'paid') {
+            if ($booking->status >= ApprovalStatus::PAYMENT_COMPLETED) {
                 return response()->json(['success' => false, 'message' => 'Booking is already paid'], 400);
             }
 
@@ -213,7 +214,7 @@ class SenangPayController extends Controller
 
                 // Update booking if successful
                 if ($isSuccess && $transaction->booking) {
-                    $transaction->booking->update(['payment_status' => 'paid']);
+                    $transaction->booking->update(['status' => ApprovalStatus::PAYMENT_COMPLETED]);
                 }
             }
 

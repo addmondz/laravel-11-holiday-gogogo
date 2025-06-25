@@ -18,7 +18,7 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 cursor-pointer hover:border-indigo-500" @click="triggerSearch('all')">
                                 <div class="p-4">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0">
@@ -36,7 +36,7 @@
                                 </div>
                             </div>
 
-                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 cursor-pointer hover:border-indigo-500" @click="triggerSearch('completed')">
                                 <div class="p-4">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0">
@@ -54,7 +54,7 @@
                                 </div>
                             </div>
 
-                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 cursor-pointer hover:border-indigo-500" @click="triggerSearch('failed')">
                                 <div class="p-4">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0">
@@ -72,7 +72,7 @@
                                 </div>
                             </div>
 
-                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 cursor-pointer hover:border-indigo-500" @click="triggerSearch('pending')">
                                 <div class="p-4">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0">
@@ -418,8 +418,6 @@ const selectedTransaction = ref(null);
 const filters = ref({
     search: props.filters.search || '',
     status: props.filters.status || 'all',
-    date_from: props.filters.date_from || '',
-    date_to: props.filters.date_to || ''
 });
 
 const debouncedSearch = debounce((value) => {
@@ -428,8 +426,6 @@ const debouncedSearch = debounce((value) => {
         { 
             search: value.target.value,
             status: filters.value.status,
-            date_from: filters.value.date_from,
-            date_to: filters.value.date_to
         },
         { preserveState: true, preserveScroll: true }
     );
@@ -441,8 +437,6 @@ const applyFilters = () => {
         { 
             search: filters.value.search,
             status: filters.value.status,
-            date_from: filters.value.date_from,
-            date_to: filters.value.date_to
         },
         { preserveState: true, preserveScroll: true }
     );
@@ -452,8 +446,6 @@ const clearFilters = () => {
     filters.value = {
         search: '',
         status: 'all',
-        date_from: '',
-        date_to: ''
     };
     router.get(
         route('payments.index'),
@@ -510,5 +502,15 @@ const formatDate = (date) => {
 const viewTransactionDetails = (transaction) => {
     selectedTransaction.value = transaction;
     showTransactionModal.value = true;
+};
+
+const triggerSearch = (status) => {
+    filters.value.status = status;
+    applyFilters();
+    router.get(
+        route('payments.index'),
+        { status: status },
+        { preserveState: true, preserveScroll: true }
+    );
 };
 </script> 

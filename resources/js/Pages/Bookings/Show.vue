@@ -26,29 +26,24 @@
                                     <div 
                                         :class="[
                                             'w-12 h-12 rounded-full flex items-center justify-center',
-                                            getPaymentStatusColor(booking.payment_status).bg
+                                            getPaymentStatusColor(booking.status).bg
                                         ]"
                                     >
                                         <svg 
-                                            :class="['w-6 h-6', getPaymentStatusColor(booking.payment_status).icon]"
+                                            :class="['w-6 h-6', getPaymentStatusColor(booking.status).icon]"
                                             fill="none" 
                                             stroke="currentColor" 
                                             viewBox="0 0 24 24"
                                         >
+                                            <!-- A tick icon -->
                                             <path
-                                                v-if="booking.payment_status === 'paid'"
+                                                v-if="[2,4].includes(booking.status)"
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
                                                 stroke-width="2"
                                                 d="M5 13l4 4L19 7"
                                             />
-                                            <path
-                                                v-else-if="booking.payment_status === 'failed'"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M6 18L18 6M6 6l12 12"
-                                            />
+                                                <!-- a loading icon -->
                                             <path
                                                 v-else
                                                 stroke-linecap="round"
@@ -60,9 +55,9 @@
                                     </div>
                                 </div>
                                 <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-600">Payment Status</p>
+                                    <p class="text-sm font-medium text-gray-600">Booking Status</p>
                                     <p class="text-lg font-semibold text-gray-900">
-                                        {{ formatPaymentStatus(booking.payment_status) }}
+                                        {{ formatPaymentStatus(booking.status) }}
                                     </p>
                                 </div>
                             </div>
@@ -207,10 +202,10 @@
                     </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8" v-if="booking.transactions && booking.transactions.length > 0">
                     <div class="p-6 text-gray-900">
                         <!-- Transaction History -->
-                        <div v-if="booking.transactions && booking.transactions.length > 0">
+                        <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Transaction History</h3>
                             <div class="overflow-x-auto">
                                 <table class="min-w-full divide-y divide-gray-200">
@@ -285,20 +280,30 @@ const breadcrumbs = computed(() => [
 
 const getPaymentStatusColor = (status) => {
     switch (status) {
-        case 'paid':
-            return {
-                bg: 'bg-green-100',
-                icon: 'text-green-600'
-            };
-        case 'failed':
-            return {
-                bg: 'bg-red-100',
-                icon: 'text-red-600'
-            };
-        case 'pending':
+        case 0:
             return {
                 bg: 'bg-yellow-100',
                 icon: 'text-yellow-600'
+            };
+        case 1:
+            return {            
+                bg: 'bg-green-100',
+                icon: 'text-green-600'
+            };
+        case 2:
+            return {
+                bg: 'bg-blue-100',
+                icon: 'text-blue-600'   
+            };
+        case 3:
+            return {
+                bg: 'bg-red-100',
+                icon: 'text-red-600'
+            };      
+        case 4:
+            return {
+                bg: 'bg-white',
+                icon: 'text-slate-600'
             };
         default:
             return {
@@ -310,14 +315,18 @@ const getPaymentStatusColor = (status) => {
 
 const formatPaymentStatus = (status) => {
     switch (status) {
-        case 'paid':
-            return 'Paid';
-        case 'pending':
+        case 0:
             return 'Pending Payment';
-        case 'failed':
-            return 'Payment Failed';
+        case 1:
+            return 'Payment Completed';
+        case 2:
+            return 'Booking Confirmed';
+        case 3: 
+            return 'Booking Rejected';
+        case 4: 
+            return 'Refunded';
         default:
-            return 'Unpaid';
+            return '';  
     }
 };
 

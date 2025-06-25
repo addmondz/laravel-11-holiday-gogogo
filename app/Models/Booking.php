@@ -21,7 +21,7 @@ class Booking extends Model
         'infants',
         'total_price',
         'special_remarks',
-        'payment_status',
+        'status',
         'uuid'
     ];
 

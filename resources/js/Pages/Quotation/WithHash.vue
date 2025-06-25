@@ -900,7 +900,7 @@
                             </div>
 
                             <!-- Pay Now Button -->
-                            <div v-if="bookingSuccess.payment_status !== 'paid'" class="flex justify-center pt-4">
+                            <div v-if="bookingSuccess.status !== 1" class="flex justify-center pt-4">
                                 <div class="text-center">
                                     <!-- Payment Failed Status -->
                                     <div v-if="paymentStatus === 'failed'" class="mb-6">

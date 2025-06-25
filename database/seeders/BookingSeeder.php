@@ -2,11 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Constants\ApprovalStatus;
 use Illuminate\Database\Seeder;
 use App\Models\Booking;
 use App\Models\BookingRoom;
 use App\Models\Package;
 use App\Models\RoomType;
+use App\Models\SenangPayApiLog;
+use App\Models\Transaction;
 use App\Services\GenerateBookingUid;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -127,8 +130,31 @@ class BookingSeeder extends Seeder
                     'total_price' => 0, // Will be updated after rooms are created
                     'special_remarks' => $remarks[$i % count($remarks)],
                     'uuid' => (new GenerateBookingUid())->execute(),
-                    'payment_status' => rand(0, 1) ? 'pending' : 'paid'
+                    'status' => array_rand(ApprovalStatus::ALL_STATUS)
                 ]);
+
+                if ($booking->status >= ApprovalStatus::PAYMENT_COMPLETED) {
+                    $senangPayApiLog = SenangPayApiLog::create([
+                        'log_type' => 'payment_response',
+                        'status_id' => 1,
+                        'order_id' => $booking->id,
+                        'transaction_id' => $booking->id,
+                        'msg' => 'Payment completed',
+                        'hash' => 'hash',
+                        'raw_payload' => [],
+                        'is_processed' => true,
+                    ]);
+
+                    // create payment transaction
+                    $transaction = Transaction::create([
+                        'booking_id' => $booking->id,
+                        'amount' => $booking->total_price,
+                        'status' => 'completed',
+                        'payment_method' => 'senangpay',
+                        'order_id' => $booking->id,
+                        'senang_pay_api_log_id' => $senangPayApiLog->id,
+                    ]);
+                }
 
                 // Create rooms for this booking
                 for ($j = 0; $j < $numberOfRooms; $j++) {

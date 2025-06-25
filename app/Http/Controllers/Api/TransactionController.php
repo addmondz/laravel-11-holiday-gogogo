@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Constants\ApprovalStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Transaction;
@@ -19,7 +20,7 @@ class TransactionController extends Controller
             ]);
 
             $booking = Booking::find($validated['booking_id']);
-            if ($booking->payment_status === 'paid') {
+            if ($booking->status >= ApprovalStatus::PAYMENT_COMPLETED) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Booking already paid'

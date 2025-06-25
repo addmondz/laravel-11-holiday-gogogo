@@ -16,8 +16,8 @@
 
                         <!-- Search and Filters -->
                         <div class="mb-6">
-                            <div class="flex justify-between items-center">
-                                <div class="flex-1">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div class="md:col-span-2">
                                     <input
                                         type="text"
                                         v-model="search"
@@ -25,6 +25,28 @@
                                         class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         @input="debouncedSearch"
                                     />
+                                </div>
+                                <div>
+                                    <select
+                                        v-model="filters.status"
+                                        @change="applyFilters"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        <option value="all">All Bookings</option>
+                                        <option value="0">Pending Payment</option>
+                                        <option value="1">Payment Completed</option>
+                                        <option value="2">Booking Confirmed</option>
+                                        <option value="3">Booking Rejected</option>
+                                        <option value="4">Refunded</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <button
+                                        @click="clearFilters"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    >
+                                        Clear Filters
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -53,7 +75,7 @@
                                             Total Price
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Payment Status
+                                            Status
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Actions
@@ -106,12 +128,15 @@
                                             <span 
                                                 :class="[
                                                     'px-4 py-1 text-xs font-semibold rounded-full block min-w-[50px] text-center',
-                                                    booking.payment_status === 'paid' ? 'bg-green-100 text-green-800' :
-                                                    booking.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                    'bg-red-100 text-red-800'
+                                                    booking.status == 0 ? 'bg-yellow-100 text-yellow-800' :
+                                                    booking.status == 1 ? 'bg-green-100 text-green-800' :
+                                                    booking.status == 2 ? 'bg-blue-100 text-blue-800' :
+                                                    booking.status == 3 ? 'bg-red-100 text-red-800' :
+                                                    booking.status == 4 ? 'bg-slate-400 text-white' :
+                                                    'bg-red-100 text-red-800'   
                                                 ]"
                                             >
-                                                {{ booking.payment_status ? booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1) : 'Unpaid' }}
+                                                {{ convertStatus(booking.status) }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -133,12 +158,12 @@
                                                     class="ml-4"
                                                     :class="[
                                                         'ml-4',
-                                                        booking.payment_status == 'paid' ? 'text-blue-600 hover:text-blue-900' :
-                                                        booking.payment_status == 'pending' ? 'text-green-600 hover:text-green-900' :
+                                                        booking.status != 0 ? 'text-blue-600 hover:text-blue-900' :
+                                                        booking.status == 0 ? 'text-green-600 hover:text-green-900' :
                                                         'text-red-600 hover:text-red-900'
                                                     ]"
                                                 >
-                                                    {{ booking.payment_status === 'paid' ? 'View Payment' : 'Pay Now' }}
+                                                    {{ booking.status == 0 ? 'Pay Now' : 'View Payment' }}
                                                 </a>
                                             </div>
                                         </td>
@@ -173,10 +198,39 @@ import moment from 'moment';
 
 const props = defineProps({
     bookings: Object,
-    filters: Object
+    filters: Object,
+    summary: Object
+});
+
+const filters = ref({
+    search: props.filters.search || '',
+    status: route().params.status || 'all',
 });
 
 const search = ref(props.filters.search);
+
+const clearFilters = () => {
+    filters.value = {
+        search: '',
+        status: 'all',
+    };
+    router.get(
+        route('bookings.index'),
+        {},
+        { preserveState: true, preserveScroll: true }
+    );
+};
+
+const applyFilters = () => {
+    router.get(
+        route('bookings.index'),
+        { 
+            search: filters.value.search,
+            status: filters.value.status,
+        },
+        { preserveState: true, preserveScroll: true }
+    );
+};
 
 const debouncedSearch = debounce((value) => {
     router.get(
@@ -191,5 +245,22 @@ const formatNumber = (number) => {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     }).format(number);
+};
+
+const convertStatus = (status) => {
+    switch (status) {
+        case 0:
+            return 'Pending Payment';
+        case 1:
+            return 'Payment Completed';
+        case 2:
+            return 'Booking Confirmed';
+        case 3: 
+            return 'Booking Rejected';
+        case 4:
+            return 'Refunded';
+        default:
+            return 'Unknown';
+    }
 };
 </script>

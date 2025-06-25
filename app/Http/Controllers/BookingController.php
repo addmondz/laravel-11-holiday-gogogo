@@ -24,6 +24,11 @@ class BookingController extends Controller
             });
         }
 
+        if ($request->has('status') && $request->status != 'all') {
+            $status = $request->status;
+            $query->where('status', $status);
+        }
+
         // Sort functionality
         $sortField = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');
@@ -32,9 +37,22 @@ class BookingController extends Controller
         // Pagination
         $bookings = $query->paginate(10)->withQueryString();
 
+        $summary = [
+            // 'total'         => $bookings->total(),
+            // 'completed'     => $bookings->where('status', 'completed')->count(),
+            // 'pending'       => $bookings->where('status', 'pending')->count(),
+            // 'failed'        => $bookings->where('status', 'failed')->count()
+            'total'         => 0,
+            'completed'     => 0,
+            'pending'       => 0,
+            'failed'        => 0,
+
+        ];
+
         return Inertia::render('Bookings/Index', [
             'bookings' => $bookings,
-            'filters' => $request->only(['search', 'sort', 'direction'])
+            'filters' => $request->only(['search', 'sort', 'direction']),
+            'summary' => $summary
         ]);
     }
 
