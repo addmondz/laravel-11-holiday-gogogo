@@ -69,9 +69,6 @@
                                             Dates
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Guests
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Total Price
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -96,6 +93,15 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">{{ booking.uuid }}</div>
+                                            <div class="text-sm text-gray-500">
+                                                {{ booking.adults }} Adult{{ booking.adults > 1 ? 's' : '' }}
+                                                <span v-if="booking.children > 0">
+                                                    , {{ booking.children }} Child{{ booking.children > 1 ? 'ren' : '' }}
+                                                </span>
+                                                <span v-if="booking.infants > 0">
+                                                    , {{ booking.infants }} Infant{{ booking.infants > 1 ? 's' : '' }}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">{{ booking.package.name }}</div>
@@ -106,17 +112,6 @@
                                             </div>
                                             <div class="text-sm text-gray-500">
                                                 {{ Math.ceil((new Date(booking.end_date) - new Date(booking.start_date)) / (1000 * 60 * 60 * 24)) }} nights
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">
-                                                {{ booking.adults }} Adult{{ booking.adults > 1 ? 's' : '' }}
-                                                <span v-if="booking.children > 0">
-                                                    , {{ booking.children }} Child{{ booking.children > 1 ? 'ren' : '' }}
-                                                </span>
-                                                <span v-if="booking.infants > 0">
-                                                    , {{ booking.infants }} Infant{{ booking.infants > 1 ? 's' : '' }}
-                                                </span>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">

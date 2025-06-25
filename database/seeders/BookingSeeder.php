@@ -94,26 +94,26 @@ class BookingSeeder extends Seeder
             $package = $packages->random();
             // Get room types that belong to this package
             $packageRoomTypes = RoomType::where('package_id', $package->id)->get();
-            
+
             if ($packageRoomTypes->isEmpty()) {
                 $this->command->warn("No room types found for package {$package->name}. Skipping...");
                 continue;
             }
-            
+
             // Generate random dates within the next 6 months
             $startDate = Carbon::now()->addDays(rand(1, 30)); // Reduced to 30 days for testing
             $endDate = $startDate->copy()->addDays($package->package_max_days);
-            
+
             // Calculate total price (simplified calculation)
             $nights = $startDate->diffInDays($endDate);
-            
+
             // Randomly decide number of rooms (1-3)
             $numberOfRooms = rand(1, 3);
             $totalAdults = 0;
             $totalChildren = 0;
             $totalInfants = 0;
             $totalPrice = 0;
-            
+
             try {
                 // Create the booking
                 $booking = Booking::create([
@@ -133,29 +133,6 @@ class BookingSeeder extends Seeder
                     'status' => array_rand(ApprovalStatus::ALL_STATUS)
                 ]);
 
-                if ($booking->status >= ApprovalStatus::PAYMENT_COMPLETED) {
-                    $senangPayApiLog = SenangPayApiLog::create([
-                        'log_type' => 'payment_response',
-                        'status_id' => 1,
-                        'order_id' => $booking->id,
-                        'transaction_id' => $booking->id,
-                        'msg' => 'Payment completed',
-                        'hash' => 'hash',
-                        'raw_payload' => [],
-                        'is_processed' => true,
-                    ]);
-
-                    // create payment transaction
-                    $transaction = Transaction::create([
-                        'booking_id' => $booking->id,
-                        'amount' => $booking->total_price,
-                        'status' => 'completed',
-                        'payment_method' => 'senangpay',
-                        'order_id' => $booking->id,
-                        'senang_pay_api_log_id' => $senangPayApiLog->id,
-                    ]);
-                }
-
                 // Create rooms for this booking
                 for ($j = 0; $j < $numberOfRooms; $j++) {
                     $roomType = $packageRoomTypes->random();
@@ -163,11 +140,11 @@ class BookingSeeder extends Seeder
                     $adults = rand(1, $max);
                     $children = rand(0, min(2, $max - $adults));
                     $infants = rand(0, min(2, $max - $adults - $children));
-                    
+
                     // Calculate room price
                     $basePrice = $package->display_price_adult ?? 100.00;
                     $roomPrice = ($basePrice * $nights * $adults) + ($basePrice * 0.7 * $nights * $children) + ($basePrice * 0.3 * $nights * $infants);
-                    
+
                     // Create booking room
                     BookingRoom::create([
                         'booking_id' => $booking->id,
@@ -176,14 +153,14 @@ class BookingSeeder extends Seeder
                         'children' => $children,
                         'infants' => $infants
                     ]);
-                    
+
                     // Update totals
                     $totalAdults += $adults;
                     $totalChildren += $children;
                     $totalInfants += $infants;
                     $totalPrice += $roomPrice;
                 }
-                
+
                 // Update booking with totals
                 $booking->update([
                     'adults' => $totalAdults,
@@ -192,6 +169,33 @@ class BookingSeeder extends Seeder
                     'total_price' => round($totalPrice, 2)
                 ]);
 
+                if ($booking->status >= ApprovalStatus::PAYMENT_COMPLETED) {
+                    $transactionId = Str::uuid();
+                    $senangPayApiLog = SenangPayApiLog::create([
+                        'log_type' => 'payment_response',
+                        'status_id' => 1,
+                        'order_id' => $booking->id,
+                        'transaction_id' => $transactionId,
+                        'msg' => 'Payment completed',
+                        'hash' => 'hash',
+                        'raw_payload' => [],
+                        'is_processed' => true,
+                    ]);
+
+                    $statusOptions = ['completed', 'failed', 'pending'];
+
+                    // create payment transaction
+                    $transaction = Transaction::create([
+                        'booking_id' => $booking->id,
+                        'amount' => $booking->total_price,
+                        'status' => $statusOptions[array_rand($statusOptions)],
+                        'payment_method' => 'senangpay',
+                        'order_id' => $booking->id,
+                        'senang_pay_api_log_id' => $senangPayApiLog->id,
+                        'transaction_id' => $transactionId,
+                        'amount' => $booking->total_price,
+                    ]);
+                }
             } catch (\Exception $e) {
                 $this->command->error("Failed to create booking: " . $e->getMessage());
                 continue;
@@ -200,4 +204,4 @@ class BookingSeeder extends Seeder
 
         $this->command->info('Bookings seeded successfully!');
     }
-} 
+}
