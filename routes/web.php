@@ -45,8 +45,6 @@ Route::prefix('quotation')->group(function () {
         Route::post('/fetch-package-by-uuid', [TravelCalculatorController::class, 'fetchPackageByUuid'])->name('api.fetch-package-by-uuid');
         Route::post('/package-calculate-price', [TravelCalculatorController::class, 'packageCalculatePrice'])->name('api.package-calculate-price');
         Route::post('/bookings', [ApiBookingController::class, 'store'])->name('api.bookings.store');
-        Route::post('/transactions', [TransactionController::class, 'store'])->name('api.transactions.store');
-        Route::get('/payment-history', [TransactionController::class, 'getPaymentHistory'])->name('api.payment-history');
     });
 
     Route::get('/fetch/{uuid}', function ($uuid, Request $request) {
