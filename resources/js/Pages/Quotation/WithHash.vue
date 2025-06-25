@@ -787,8 +787,34 @@
                     <!-- Booking Success State -->
                     <div v-else class="bg-white rounded-xl border overflow-hidden">
                         <!-- Success Header -->
-                        <div v-if="bookingSuccess.payment_status === 'paid'" 
-                         class="relative bg-gradient-to-r slower from-green-400 via-green-500 to-green-600 bg-[length:200%] bg-[position:0%_50%] animate-gradient-x px-6 py-8 rounded-2xl shadow-xl hover:shadow-[0_0_25px_#34d399] transform transition-transform duration-100 hover:scale-105 text-white mx-8 mt-5">
+                        <div v-if="bookingSuccess.status == 0" class="relative px-6 py-8">
+                           <div class="text-center mb-6 bg-indigo-50 rounded-lg p-4">
+                                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white mb-4">
+                                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Booking Created!</h3>
+                                <p class="text-gray-600">Your booking has been submitted.</p>
+                                <p class="text-gray-600">Please proceed to make payment to secure your reservation.</p>
+                            </div>
+                        </div>
+                        <div v-else-if="bookingSuccess.status == 1" class="relative bg-gradient-to-r slower from-green-400 via-green-500 to-green-600 bg-[length:200%] bg-[position:0%_50%] animate-gradient-x px-6 py-8 rounded-2xl shadow-xl hover:shadow-[0_0_25px_#34d399] transform transition-transform duration-100 hover:scale-105 text-white mx-8 mt-5">
+                            <div class="absolute inset-0 bg-black opacity-10"></div>
+                            <div class="relative text-center">
+                                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4">
+                                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="space-y-2">
+                                    <h2 class="text-3xl font-bold text-white mb-2">Payment Completed!</h2>
+                                    <p class="text-white/90 text-lg">Your booking is now under review.</p>
+                                    <p class="text-white/80 text-sm">Booking details will be sent to your email once your booking has been approved.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else-if="bookingSuccess.status == 2" class="relative bg-gradient-to-r slower from-green-400 via-green-500 to-green-600 bg-[length:200%] bg-[position:0%_50%] animate-gradient-x px-6 py-8 rounded-2xl shadow-xl hover:shadow-[0_0_25px_#34d399] transform transition-transform duration-100 hover:scale-105 text-white mx-8 mt-5">
                             <div class="absolute inset-0 bg-black opacity-10"></div>
                             <div class="relative text-center">
                                 <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4">
@@ -797,25 +823,33 @@
                                     </svg>
                                 </div>
                                 <div class="space-y-2">
-                                    <h2 class="text-3xl font-bold text-white mb-2">Payment Completed!</h2>
-                                    <p class="text-white/90 text-lg">Your booking has been confirmed and payment received.</p>
+                                    <h2 class="text-3xl font-bold text-white mb-2">Booking Confirmed!</h2>
+                                    <p class="text-white/90 text-lg">Your booking has been confirmed.</p>
                                     <p class="text-white/80 text-sm">Booking details will be sent to your email shortly.</p>
                                 </div>
                             </div>
                         </div>
-                        <div v-else class="relative px-6 py-8">
-                           <div class="text-center mb-6 bg-indigo-50 rounded-lg p-4">
-                                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white mb-4">
-                                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                    </svg>
+                        <div v-else-if="bookingSuccess.status == 3" class="relative bg-red-500 px-6 py-8 rounded-2xl shadow-xl transform transition-transform duration-100 text-white mx-8 mt-5">
+                            <div class="absolute inset-0 bg-black opacity-10"></div>
+                            <div class="relative text-center">
+                                <div class="space-y-2">
+                                    <h2 class="text-3xl font-bold text-white mb-2">Booking Rejected!</h2>
+                                    <p class="text-white/90 text-lg">Your booking has been rejected.</p>
+                                    <p class="text-white/80 text-sm">Please contact us if you have any questions.</p>
                                 </div>
-                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Booking Successful!</h3>
-                                <p class="text-gray-600">Your booking has been submitted successfully.</p>
-                                <p class="text-gray-600">Please proceed to make payment to confirm your reservation.</p>
                             </div>
                         </div>
-
+                        <!-- change the background color to refunded color -->
+                        <div v-else-if="bookingSuccess.status == 4" class="relative bg-sky-500 px-6 py-8 rounded-2xl shadow-xl transform transition-transform duration-100 text-white mx-8 mt-5">
+                            <div class="absolute inset-0 bg-black opacity-10"></div>
+                            <div class="relative text-center">
+                                <div class="space-y-2">
+                                    <h2 class="text-3xl font-bold text-white mb-2">Booking Refunded!</h2>
+                                    <p class="text-white/90 text-lg">Your booking has been refunded.</p>
+                                    <p class="text-white/80 text-sm">Please contact us if you have any questions.</p>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Booking Summary -->
                         <div class="p-6 space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -900,7 +934,7 @@
                             </div>
 
                             <!-- Pay Now Button -->
-                            <div v-if="bookingSuccess.status !== 1" class="flex justify-center pt-4">
+                            <div v-if="bookingSuccess.status == 0" class="flex justify-center pt-4">
                                 <div class="text-center">
                                     <!-- Payment Failed Status -->
                                     <div v-if="paymentStatus === 'failed'" class="mb-6">
