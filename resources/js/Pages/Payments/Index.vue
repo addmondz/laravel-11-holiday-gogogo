@@ -10,13 +10,13 @@
 
         <div class="pb-12 pt-6">
             <div class="max-w-9xl mx-auto sm:px-6 lg:px-8">
-                <!-- Summary Cards -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-lg font-medium">Payment History</h3>
                         </div>
 
+                        <!-- Summary Cards -->
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 cursor-pointer hover:border-indigo-500" @click="triggerSearch('all')">
                                 <div class="p-4">

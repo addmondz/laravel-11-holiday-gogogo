@@ -14,6 +14,123 @@
                             <h3 class="text-lg font-medium">All Bookings</h3>
                         </div>
 
+                        <!-- Summary Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-6">
+                            <!-- Total Transactions -->
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 cursor-pointer hover:border-indigo-500 transition-colors duration-200" @click="triggerSearch('all')">
+                                <div class="p-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-500">Total Transactions</p>
+                                            <p class="text-lg font-semibold text-gray-900">{{ summary.total ?? 0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pending Payment -->
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 cursor-pointer hover:border-amber-500 transition-colors duration-200" @click="triggerSearch('0')">
+                                <div class="p-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-500">Pending Payment</p>
+                                            <p class="text-lg font-semibold text-gray-900">{{ summary.pending ?? 0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Completed -->
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 cursor-pointer hover:border-emerald-500 transition-colors duration-200" @click="triggerSearch('1')">
+                                <div class="p-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-500">Payment Completed</p>
+                                            <p class="text-lg font-semibold text-gray-900">{{ summary.completed ?? 0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Booking Confirmed -->
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 cursor-pointer hover:border-blue-500 transition-colors duration-200" @click="triggerSearch('2')">
+                                <div class="p-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-500">Booking Confirmed</p>
+                                            <p class="text-lg font-semibold text-gray-900">{{ summary.confirmed ?? 0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Booking Rejected -->
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 cursor-pointer hover:border-red-500 transition-colors duration-200" @click="triggerSearch('3')">
+                                <div class="p-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-500">Booking Rejected</p>
+                                            <p class="text-lg font-semibold text-gray-900">{{ summary.rejected ?? 0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Refunded -->
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 cursor-pointer hover:border-slate-500 transition-colors duration-200" @click="triggerSearch('4')">
+                                <div class="p-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-500">Refunded</p>
+                                            <p class="text-lg font-semibold text-gray-900">{{ summary.refunded ?? 0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Search and Filters -->
                         <div class="mb-6">
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -256,6 +373,25 @@ const convertStatus = (status) => {
             return 'Refunded';
         default:
             return 'Unknown';
+    }
+};
+
+const triggerSearch = (status) => {
+    if (status === 'all') {
+        router.get(
+            route('bookings.index'),
+            { search: filters.value.search },
+            { preserveState: true, preserveScroll: true }
+        );
+    } else {
+        router.get(
+            route('bookings.index'),
+            { 
+                search: filters.value.search,
+                status: status,
+            },
+            { preserveState: true, preserveScroll: true }
+        );
     }
 };
 </script>
