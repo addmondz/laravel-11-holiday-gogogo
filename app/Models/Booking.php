@@ -22,13 +22,19 @@ class Booking extends Model
         'total_price',
         'special_remarks',
         'status',
-        'uuid'
+        'uuid',
+        
+        'approval_by',
+        'approval_date',
+        'approval_status'
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'total_price' => 'decimal:2'
+        'total_price' => 'decimal:2',
+        'approval_date' => 'datetime',
+        'approval_by' => 'integer'
     ];
 
     public function package(): BelongsTo
@@ -51,5 +57,8 @@ class Booking extends Model
         return $this->hasMany(BookingRoom::class);
     }
 
-
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approval_by');
+    }
 }

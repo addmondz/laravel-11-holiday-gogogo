@@ -103,7 +103,7 @@ class BookingController extends Controller
 
     public function show(Booking $booking)
     {
-        $booking->load(['package', 'rooms', 'transactions', 'rooms.roomType']);
+        $booking->load(['package', 'rooms', 'transactions', 'rooms.roomType', 'approver']);
 
         return Inertia::render('Bookings/Show', [
             'booking' => $booking
@@ -141,6 +141,50 @@ class BookingController extends Controller
                 ->with('success', 'Booking updated successfully.');
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to update booking: ' . $e->getMessage());
+        }
+    }
+
+    public function approve(Request $request, Booking $booking)
+    {
+        try {
+            $booking->update([
+                'approval_status' => 'approved',
+                'approval_by' => $request->user()->id,
+                'approval_date' => now(),
+                'status' => 2 // Booking Confirmed
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking approved successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to approve booking: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function reject(Request $request, Booking $booking)
+    {
+        try {
+            $booking->update([
+                'approval_status' => 'rejected',
+                'approval_by' => $request->user()->id,
+                'approval_date' => now(),
+                'status' => 3 // Booking Rejected
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking rejected successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to reject booking: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

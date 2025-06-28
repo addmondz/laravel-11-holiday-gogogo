@@ -20,45 +20,94 @@
                         <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-6" />
 
                         <!-- Payment Status -->
-                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <div 
-                                        :class="[
-                                            'w-12 h-12 rounded-full flex items-center justify-center',
-                                            getPaymentStatusColor(booking.status).bg
-                                        ]"
-                                    >
-                                        <svg 
-                                            :class="['w-6 h-6', getPaymentStatusColor(booking.status).icon]"
-                                            fill="none" 
-                                            stroke="currentColor" 
-                                            viewBox="0 0 24 24"
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div 
+                                            :class="[
+                                                'w-12 h-12 rounded-full flex items-center justify-center',
+                                                getPaymentStatusColor(booking.status).bg
+                                            ]"
                                         >
-                                            <!-- A tick icon -->
-                                            <path
-                                                v-if="[2,4].includes(booking.status)"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M5 13l4 4L19 7"
-                                            />
+                                            <svg 
+                                                :class="['w-6 h-6', getPaymentStatusColor(booking.status).icon]"
+                                                fill="none" 
+                                                stroke="currentColor" 
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <!-- A tick icon -->
+                                                <path
+                                                    v-if="[2,4].includes(booking.status)"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M5 13l4 4L19 7"
+                                                />
                                                 <!-- a loading icon -->
-                                            <path
-                                                v-else
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
+                                                <path
+                                                    v-else
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-600">Booking Status</p>
+                                        <p class="text-lg font-semibold text-gray-900">
+                                            {{ formatPaymentStatus(booking.status) }}
+                                        </p>
+                                        <div v-if="booking.approval_status && booking.approval_status !== 'pending'" class="mt-1">
+                                            <p class="text-xs text-gray-500">
+                                                {{ booking.approval_status === 'approved' ? 'Approved' : 'Rejected' }} by 
+                                                <span class="font-medium">{{ booking.approver?.name || 'Admin' }}</span>
+                                                <span v-if="booking.approval_date" class="ml-1">
+                                                    on {{ formatDate(booking.approval_date) }}
+                                                </span>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-600">Booking Status</p>
-                                    <p class="text-lg font-semibold text-gray-900">
+                                
+                                <!-- Approval Actions -->
+                                <div v-if="booking.status === 1" class="flex items-center gap-3">
+                                    <button 
+                                        @click="confirmApprove"
+                                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                                    >
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Approve Booking
+                                    </button>
+                                    <button 
+                                        @click="confirmReject"
+                                        class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+                                    >
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Reject Booking
+                                    </button>
+                                </div>
+                                
+                                <!-- Status Badge for other statuses -->
+                                <div v-else class="flex items-center">
+                                    <span 
+                                        :class="[
+                                            'px-4 py-2 text-sm font-semibold rounded-full',
+                                            booking.status == 0 ? 'bg-yellow-100 text-yellow-800' :
+                                            booking.status == 2 ? 'bg-green-100 text-green-800' :
+                                            booking.status == 3 ? 'bg-red-100 text-red-800' :
+                                            booking.status == 4 ? 'bg-slate-100 text-slate-800' :
+                                            'bg-gray-100 text-gray-800'
+                                        ]"
+                                    >
                                         {{ formatPaymentStatus(booking.status) }}
-                                    </p>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -257,10 +306,12 @@
 </template>
 
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
 import { computed } from 'vue';
+import Swal from 'sweetalert2';
+import moment from 'moment';
 
 const props = defineProps({
     booking: Object
@@ -271,6 +322,10 @@ const formatNumber = (number) => {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     }).format(number);
+};
+
+const formatDate = (date) => {
+    return moment(date).format('DD MMM YYYY, h:mm A');
 };
 
 const breadcrumbs = computed(() => [
@@ -333,5 +388,111 @@ const formatPaymentStatus = (status) => {
 const copyLinkToClipboard = (link) => {
     navigator.clipboard.writeText(link);
     alert('Link copied to clipboard');
+};
+
+const confirmApprove = () => {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Are you sure you want to approve this booking?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, approve it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            approveBooking();
+        }
+    });
+};
+
+const confirmReject = () => {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Are you sure you want to reject this booking?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, reject it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            rejectBooking();
+        }
+    });
+};
+
+const approveBooking = async () => {
+    try {
+        const response = await fetch(route('bookings.approve', props.booking.id), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            Swal.fire(
+                'Approved!',
+                'Booking has been approved successfully.',
+                'success'
+            ).then(() => {
+                router.reload();
+            });
+        } else {
+            Swal.fire(
+                'Error!',
+                data.message || 'Failed to approve booking.',
+                'error'
+            );
+        }
+    } catch (error) {
+        Swal.fire(
+            'Error!',
+            'An error occurred while approving the booking.',
+            'error'
+        );
+    }
+};
+
+const rejectBooking = async () => {
+    try {
+        const response = await fetch(route('bookings.reject', props.booking.id), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            Swal.fire(
+                'Rejected!',
+                'Booking has been rejected successfully.',
+                'success'
+            ).then(() => {
+                router.reload();
+            });
+        } else {
+            Swal.fire(
+                'Error!',
+                data.message || 'Failed to reject booking.',
+                'error'
+            );
+        }
+    } catch (error) {
+        Swal.fire(
+            'Error!',
+            'An error occurred while rejecting the booking.',
+            'error'
+        );
+    }
 };
 </script>

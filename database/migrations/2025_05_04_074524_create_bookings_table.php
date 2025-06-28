@@ -28,6 +28,10 @@ return new class extends Migration
             $table->integer('infants');
             $table->decimal('total_price', 10, 2);
             $table->text('special_remarks')->nullable();
+
+            $table->string('approval_by')->nullable();
+            $table->string('approval_date')->nullable();
+            $table->string('approval_status')->nullable();
             $table->timestamps();
         });
     }

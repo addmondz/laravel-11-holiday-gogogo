@@ -150,6 +150,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'update' => 'bookings.update'
     ]);
 
+    // Booking approval routes
+    Route::post('/bookings/{booking}/approve', [BookingController::class, 'approve'])->name('bookings.approve');
+    Route::post('/bookings/{booking}/reject', [BookingController::class, 'reject'])->name('bookings.reject');
+
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
 
     Route::resource('users', UserController::class)->names([
