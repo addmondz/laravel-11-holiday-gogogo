@@ -789,9 +789,10 @@
                         <!-- Success Header -->
                         <div v-if="bookingSuccess.status == 0" class="relative px-6 py-8">
                            <div class="text-center mb-6 bg-indigo-50 rounded-lg p-4">
-                                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white mb-4">
-                                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                <!-- show a loading icon -->
+                                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white backdrop-blur-sm mb-4">
+                                    <svg class="w-10 h-10 text-indigo-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 </div>
                                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Booking Created!</h3>
@@ -799,12 +800,13 @@
                                 <p class="text-gray-600">Please proceed to make payment to secure your reservation.</p>
                             </div>
                         </div>
-                        <div v-else-if="bookingSuccess.status == 1" class="relative bg-gradient-to-r slower from-green-400 via-green-500 to-green-600 bg-[length:200%] bg-[position:0%_50%] animate-gradient-x px-6 py-8 rounded-2xl shadow-xl hover:shadow-[0_0_25px_#34d399] transform transition-transform duration-100 hover:scale-105 text-white mx-8 mt-5">
+                        <div v-else-if="bookingSuccess.status == 1" class="relative bg-green-400 bg-[length:200%] bg-[position:0%_50%] animate-gradient-x px-6 py-8 rounded-2xl shadow-xl transform transition-transform duration-100 text-white mx-8 mt-5">
                             <div class="absolute inset-0 bg-black opacity-10"></div>
                             <div class="relative text-center">
+                                <!-- show success icon -->
                                 <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4">
                                     <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
                                     </svg>
                                 </div>
                                 <div class="space-y-2">
@@ -989,19 +991,19 @@
                                     <div v-else>
                                         <button
                                             @click="proceedToPayment"
-                                            class="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                            class="w-full md:w-auto px-8 py-3 bg-indigo-600 text-white rounded-md text-lg font-semibold shadow-md hover:bg-indigo-700 hover:shadow-lg hover:scale-[1.02] transition-transform duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                             :disabled="isProcessingPayment"
                                         >
-                                            <span v-if="isProcessingPayment" class="flex items-center">
+                                            <span v-if="isProcessingPayment" class="flex items-center justify-center">
                                                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0..." />
                                                 </svg>
                                                 Initializing Payment...
                                             </span>
-                                            <span v-else class="flex items-center">
+                                            <span v-else class="flex items-center justify-center">
                                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                                 </svg>
                                                 Pay Now
                                             </span>
