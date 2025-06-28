@@ -50,7 +50,7 @@ class PaymentController extends Controller
         );
 
         // Sort functionality
-        $sortField = $request->get('sort', 'created_at');
+        $sortField = $request->get('sort', 'id');
         $sortDirection = $request->get('direction', 'desc');
         $query->orderBy($sortField, $sortDirection);
 

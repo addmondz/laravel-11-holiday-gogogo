@@ -24,9 +24,28 @@ class BookingController extends Controller
             });
         }
 
+        // Status filtering
         if ($request->has('status') && $request->status != 'all') {
             $status = $request->status;
             $query->where('status', $status);
+        }
+
+        // Date range filtering - Find bookings for specific travel dates
+        if ($request->filled('dateFrom') && $request->filled('dateTo')) {
+            $dateFrom = $request->dateFrom;
+            $dateTo = $request->dateTo;
+            
+            // Find bookings where travel dates overlap with the specified range
+            $query->where(function ($q) use ($dateFrom, $dateTo) {
+                $q->where('start_date', '<=', $dateTo)
+                  ->where('end_date', '>=', $dateFrom);
+            });
+        } elseif ($request->filled('dateFrom')) {
+            // If only start date is provided, find bookings that end after or on the start date
+            $query->where('end_date', '>=', $request->dateFrom);
+        } elseif ($request->filled('dateTo')) {
+            // If only end date is provided, find bookings that start before or on the end date
+            $query->where('start_date', '<=', $request->dateTo);
         }
 
         // Sort functionality
@@ -37,21 +56,47 @@ class BookingController extends Controller
         // Pagination
         $bookings = $query->paginate(10)->withQueryString();
 
-        $summary = [
-            // 'total'         => $bookings->total(),
-            // 'completed'     => $bookings->where('status', 'completed')->count(),
-            // 'pending'       => $bookings->where('status', 'pending')->count(),
-            // 'failed'        => $bookings->where('status', 'failed')->count()
-            'total'         => 0,
-            'completed'     => 0,
-            'pending'       => 0,
-            'failed'        => 0,
+        // Calculate summary statistics based on filtered results
+        $filteredQuery = Booking::with(['package', 'roomType']);
 
+        // Apply the same filters to summary calculation
+        if ($request->has('search')) {
+            $search = $request->search;
+            $filteredQuery->where(function ($q) use ($search) {
+                $q->where('booking_name', 'like', "%{$search}%")
+                    ->orWhere('phone_number', 'like', "%{$search}%")
+                    ->orWhere('booking_ic', 'like', "%{$search}%")
+                    ->orWhere('booking_email', 'like', "%{$search}%")
+                    ->orWhere('uuid', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('dateFrom') && $request->filled('dateTo')) {
+            $dateFrom = $request->dateFrom;
+            $dateTo = $request->dateTo;
+            
+            $filteredQuery->where(function ($q) use ($dateFrom, $dateTo) {
+                $q->where('start_date', '<=', $dateTo)
+                  ->where('end_date', '>=', $dateFrom);
+            });
+        } elseif ($request->filled('dateFrom')) {
+            $filteredQuery->where('end_date', '>=', $request->dateFrom);
+        } elseif ($request->filled('dateTo')) {
+            $filteredQuery->where('start_date', '<=', $request->dateTo);
+        }
+
+        $summary = [
+            'total' => $filteredQuery->count(),
+            'pending' => (clone $filteredQuery)->where('status', 0)->count(),
+            'completed' => (clone $filteredQuery)->where('status', 1)->count(),
+            'confirmed' => (clone $filteredQuery)->where('status', 2)->count(),
+            'rejected' => (clone $filteredQuery)->where('status', 3)->count(),
+            'refunded' => (clone $filteredQuery)->where('status', 4)->count(),
         ];
 
         return Inertia::render('Bookings/Index', [
             'bookings' => $bookings,
-            'filters' => $request->only(['search', 'sort', 'direction']),
+            'filters' => $request->only(['search', 'status', 'sort', 'direction', 'dateFrom', 'dateTo']),
             'summary' => $summary
         ]);
     }

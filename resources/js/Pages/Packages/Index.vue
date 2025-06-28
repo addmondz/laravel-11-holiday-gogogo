@@ -22,16 +22,57 @@
 
                         <!-- Search and Filters -->
                         <div class="mb-6">
-                            <div class="flex gap-4">
-                                <div class="flex-1">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-white rounded-lg shadow-sm">
+                                <!-- Search -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Search Packages</label>
                                     <input
                                         type="text"
                                         v-model="search"
                                         placeholder="Search packages..."
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        @input="debouncedSearch"
+                                        class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                                     />
                                 </div>
+
+                                <!-- Date Range Filter (spans 2 cols on large screen) -->
+                                <div class="md:col-span-1 lg:col-span-2 space-y-2">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+                                            <input
+                                                type="date"
+                                                v-model="dateFrom"
+                                                class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+                                            <input
+                                                type="date"
+                                                v-model="dateTo"
+                                                class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-600">
+                                        💡 <strong class="font-semibold text-gray-800">Date Filter:</strong> Find packages available during your travel dates. Leave empty to see all packages.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 flex justify-start items-center gap-2">
+                                <button
+                                    @click="updateFilters"
+                                    class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                >
+                                    Search
+                                </button>
+                                <button
+                                    @click="clearFilters"
+                                    class="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                    Clear Filters
+                                </button>
                             </div>
                         </div>
 
@@ -54,12 +95,13 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Package ID</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     <tr v-if="packages.data.length === 0">
-                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                                             No packages found
                                         </td>
                                     </tr>
@@ -75,6 +117,14 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">RM {{ formatNumber(pkg.display_price_adult) }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">
+                                                {{ formatDate(pkg.package_start_date) }} - {{ formatDate(pkg.package_end_date) }}
+                                            </div>
+                                            <div class="text-sm text-gray-500">
+                                                {{ calculateDays(pkg.package_start_date, pkg.package_end_date) }} days
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <Link
@@ -130,7 +180,7 @@ import { Head } from '@inertiajs/vue3';
 import Swal from 'sweetalert2';
 import Pagination from '@/Components/Pagination.vue';
 import { ref, watch } from 'vue';
-import debounce from 'lodash/debounce';
+import moment from 'moment';
 
 const props = defineProps({
     packages: Object,
@@ -141,10 +191,8 @@ const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || '');
 const sortField = ref(props.filters.sort || 'created_at');
 const sortDirection = ref(props.filters.direction || 'desc');
-
-const debouncedSearch = debounce(() => {
-    updateFilters();
-}, 1000);
+const dateFrom = ref(props.filters.dateFrom || '');
+const dateTo = ref(props.filters.dateTo || '');
 
 const updateFilters = () => {
     router.get(
@@ -153,7 +201,9 @@ const updateFilters = () => {
             search: search.value,
             status: status.value,
             sort: sortField.value,
-            direction: sortDirection.value
+            direction: sortDirection.value,
+            dateFrom: dateFrom.value,
+            dateTo: dateTo.value
         },
         {
             preserveState: true,
@@ -216,6 +266,22 @@ const formatNumber = (number) => {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
+};
+
+const clearFilters = () => {
+    router.get(
+        route('packages.index'),
+        {},
+        { preserveState: false, preserveScroll: false }
+    );
+};
+
+const formatDate = (date) => {
+    return moment(date).format('DD MMM YYYY');
+};
+
+const calculateDays = (startDate, endDate) => {
+    return moment(endDate).diff(moment(startDate), 'days') + 1;
 };
 </script>
 

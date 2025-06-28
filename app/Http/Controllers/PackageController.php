@@ -38,6 +38,27 @@ class PackageController extends Controller
             });
         }
 
+        // Date range filtering - Find packages available within the given date range
+        if ($request->filled('dateFrom') && $request->filled('dateTo')) {
+            $dateFrom = $request->dateFrom;
+            $dateTo = $request->dateTo;
+            
+            // Find packages that are available during the specified date range
+            // A package is available if:
+            // 1. Package start date is before or equal to the user's end date AND
+            // 2. Package end date is after or equal to the user's start date
+            $query->where(function ($q) use ($dateFrom, $dateTo) {
+                $q->where('package_start_date', '<=', $dateTo)
+                  ->where('package_end_date', '>=', $dateFrom);
+            });
+        } elseif ($request->filled('dateFrom')) {
+            // If only start date is provided, find packages that end after or on the start date
+            $query->where('package_end_date', '>=', $request->dateFrom);
+        } elseif ($request->filled('dateTo')) {
+            // If only end date is provided, find packages that start before or on the end date
+            $query->where('package_start_date', '<=', $request->dateTo);
+        }
+
         // Sort functionality
         $sortField = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');
@@ -50,7 +71,7 @@ class PackageController extends Controller
 
         return Inertia::render('Packages/Index', [
             'packages' => $packages,
-            'filters' => $request->only(['search', 'status', 'sort', 'direction'])
+            'filters' => $request->only(['search', 'status', 'sort', 'direction', 'dateFrom', 'dateTo'])
         ]);
     }
 

@@ -133,23 +133,26 @@
                         
                         <!-- Search and Filters -->
                         <div class="mb-6">
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div class="md:col-span-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-white rounded-lg shadow-sm p-6">
+                                <!-- Search -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Search Bookings</label>
                                     <input
                                         type="text"
                                         v-model="search"
-                                        placeholder="Search bookings..."
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        @input="debouncedSearch"
+                                        placeholder="Search by name, email, phone, ID..."
+                                        class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                                     />
                                 </div>
+
+                                <!-- Status Filter -->
                                 <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                                     <select
                                         v-model="filters.status"
-                                        @change="applyFilters"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                                     >
-                                        <option value="all">All Bookings</option>
+                                        <option value="all">All Status</option>
                                         <option value="0">Pending Payment</option>
                                         <option value="1">Payment Completed</option>
                                         <option value="2">Booking Confirmed</option>
@@ -157,14 +160,46 @@
                                         <option value="4">Refunded</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <button
-                                        @click="clearFilters"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                    >
-                                        Clear Filters
-                                    </button>
+
+                                <!-- Date Range Filter -->
+                                <div class="md:col-span-1 lg:col-span-2 space-y-2">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Travel Date From</label>
+                                            <input
+                                                type="date"
+                                                v-model="dateFrom"
+                                                class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Travel Date To</label>
+                                            <input
+                                                type="date"
+                                                v-model="dateTo"
+                                                class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-600">
+                                        💡 <strong class="font-semibold text-gray-800">Date Filter:</strong> Find bookings for specific travel dates. Leave empty to see all bookings.
+                                    </p>
                                 </div>
+                            </div>
+
+                            <div class="mt-4 flex justify-start items-center gap-2">
+                                <button
+                                    @click="updateFilters"
+                                    class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                >
+                                    Search
+                                </button>
+                                <button
+                                    @click="clearFilters"
+                                    class="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                    Clear Filters
+                                </button>
                             </div>
                         </div>
 
@@ -305,7 +340,6 @@ import { ref, watch } from 'vue';
 import { Link, router, Head } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
-import debounce from 'lodash/debounce';
 import moment from 'moment';
 
 const props = defineProps({
@@ -316,41 +350,35 @@ const props = defineProps({
 
 const filters = ref({
     search: props.filters.search || '',
-    status: route().params.status || 'all',
+    status: props.filters.status || 'all',
+    dateFrom: props.filters.dateFrom || '',
+    dateTo: props.filters.dateTo || '',
 });
 
-const search = ref(props.filters.search);
+const search = ref(props.filters.search || '');
+const dateFrom = ref(props.filters.dateFrom || '');
+const dateTo = ref(props.filters.dateTo || '');
 
 const clearFilters = () => {
-    filters.value = {
-        search: '',
-        status: 'all',
-    };
     router.get(
         route('bookings.index'),
         {},
-        { preserveState: true, preserveScroll: true }
+        { preserveState: false, preserveScroll: false }
     );
 };
 
-const applyFilters = () => {
+const updateFilters = () => {
     router.get(
         route('bookings.index'),
         { 
-            search: filters.value.search,
+            search: search.value,
             status: filters.value.status,
+            dateFrom: dateFrom.value,
+            dateTo: dateTo.value,
         },
         { preserveState: true, preserveScroll: true }
     );
 };
-
-const debouncedSearch = debounce((value) => {
-    router.get(
-        route('bookings.index'),
-        { search: value.target.value },
-        { preserveState: true, preserveScroll: true }
-    );
-}, 1000);
 
 const formatNumber = (number) => {
     return new Intl.NumberFormat('en-US', {
@@ -378,12 +406,14 @@ const convertStatus = (status) => {
 
 const triggerSearch = (status) => {
     if (status === 'all') {
+        filters.value.status = 'all';
         router.get(
             route('bookings.index'),
             { search: filters.value.search },
             { preserveState: true, preserveScroll: true }
         );
     } else {
+        filters.value.status = status;
         router.get(
             route('bookings.index'),
             { 
