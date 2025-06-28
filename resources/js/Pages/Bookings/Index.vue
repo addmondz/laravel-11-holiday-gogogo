@@ -134,6 +134,31 @@
                         <!-- Search and Filters -->
                         <div class="mb-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-white rounded-lg shadow-sm p-6">
+                                <!-- Date Range Filter -->
+                                <div class="md:col-span-1 lg:col-span-2 space-y-2">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Travel Date From</label>
+                                            <input
+                                                type="date"
+                                                v-model="dateFrom"
+                                                class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Travel Date To</label>
+                                            <input
+                                                type="date"
+                                                v-model="dateTo"
+                                                class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-600">
+                                        💡 <strong class="font-semibold text-gray-800">Date Filter:</strong> Find bookings for specific travel dates. Leave empty to see all bookings.
+                                    </p>
+                                </div>
+
                                 <!-- Search -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Search Bookings</label>
@@ -159,31 +184,6 @@
                                         <option value="3">Booking Rejected</option>
                                         <option value="4">Refunded</option>
                                     </select>
-                                </div>
-
-                                <!-- Date Range Filter -->
-                                <div class="md:col-span-1 lg:col-span-2 space-y-2">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Travel Date From</label>
-                                            <input
-                                                type="date"
-                                                v-model="dateFrom"
-                                                class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Travel Date To</label>
-                                            <input
-                                                type="date"
-                                                v-model="dateTo"
-                                                class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                    <p class="text-sm text-gray-600">
-                                        💡 <strong class="font-semibold text-gray-800">Date Filter:</strong> Find bookings for specific travel dates. Leave empty to see all bookings.
-                                    </p>
                                 </div>
                             </div>
 

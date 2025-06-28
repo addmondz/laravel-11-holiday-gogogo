@@ -22,18 +22,7 @@
 
                         <!-- Search and Filters -->
                         <div class="mb-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-white rounded-lg shadow-sm">
-                                <!-- Search -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Search Packages</label>
-                                    <input
-                                        type="text"
-                                        v-model="search"
-                                        placeholder="Search packages..."
-                                        class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                    />
-                                </div>
-
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-white rounded-lg shadow-sm pb-4">
                                 <!-- Date Range Filter (spans 2 cols on large screen) -->
                                 <div class="md:col-span-1 lg:col-span-2 space-y-2">
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -57,6 +46,17 @@
                                     <p class="text-sm text-gray-600">
                                         💡 <strong class="font-semibold text-gray-800">Date Filter:</strong> Find packages available during your travel dates. Leave empty to see all packages.
                                     </p>
+                                </div>
+
+                                <!-- Search -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Search Packages</label>
+                                    <input
+                                        type="text"
+                                        v-model="search"
+                                        placeholder="Search packages..."
+                                        class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                    />
                                 </div>
                             </div>
 
