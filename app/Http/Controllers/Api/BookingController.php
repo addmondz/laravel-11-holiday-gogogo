@@ -8,7 +8,6 @@ use App\Services\GenerateBookingUid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class BookingController extends Controller
 {
@@ -62,7 +61,7 @@ class BookingController extends Controller
                     'end_date' => $request->end_date,
                     'total_price' => $request->total_price,
                     'special_remarks' => $request->special_remarks,
-                    'status' => 'pending',
+                    // 'status' => 'pending',
                     'adults' => $totalAdults,
                     'children' => $totalChildren,
                     'infants' => $totalInfants,
@@ -81,10 +80,12 @@ class BookingController extends Controller
 
                 DB::commit();
 
+                $booking = Booking::with('rooms.roomType')->find($booking->id);
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Booking created successfully',
-                    'booking' => $booking->load('rooms.roomType')
+                    'booking' => $booking
                 ]);
 
             } catch (\Exception $e) {
