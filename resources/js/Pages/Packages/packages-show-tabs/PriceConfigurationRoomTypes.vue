@@ -92,21 +92,6 @@
                                 >
                                     Edit All Prices
                                 </button>
-                                <template v-else>
-                                    <button
-                                        @click="closePriceForm"
-                                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        @click="submitPrices"
-                                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
-                                        :disabled="priceForm.processing"
-                                    >
-                                        {{ isEditMode ? 'Update All Prices' : 'Create Prices' }}
-                                    </button>
-                                </template>
                             </div>
                         </div>
                         <table class="min-w-full divide-y divide-gray-200">
@@ -212,6 +197,24 @@
                 <!-- Edit View -->
                 <template v-else>
                     <form @submit.prevent="submitPrices">
+                        <!-- Save/Cancel Buttons -->
+                        <div class="flex justify-end space-x-2 mb-6">
+                            <button
+                                type="button"
+                                @click="closePriceForm"
+                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
+                                :disabled="priceForm.processing"
+                            >
+                                {{ priceForm.processing ? 'Saving...' : 'Save All Prices' }}
+                            </button>
+                        </div>
+                        
                         <div class="space-y-8">
                             <!-- Base Charge Table -->
                             <div class="overflow-x-auto">
