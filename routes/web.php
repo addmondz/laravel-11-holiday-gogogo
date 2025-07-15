@@ -141,6 +141,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('store', 'store')->name('configuration-prices.store');
         Route::post('/fetch-prices-room-types', 'fetchPricesRoomTypes')->name('configuration-prices.fetchPricesRoomTypes');
         Route::put('/update-room-type-prices', 'updateRoomTypePrices')->name('configuration-prices.updateRoomTypePrices');
+        Route::post('/create-price-configuration', 'createPriceConfiguration')->name('configuration-prices.createPriceConfiguration');
     });
 
     Route::resource('bookings', BookingController::class)->names([

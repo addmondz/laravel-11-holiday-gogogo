@@ -76,7 +76,7 @@
                 
                 <!-- show a button to add a new price configuration -->
                 <button
-                    @click="openPriceForm('add')"
+                    @click="createPriceConfigurationWithApi"
                     class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm block text-center mt-4 mx-auto"
                 >
                     Create Configuration
@@ -734,6 +734,38 @@ const applySurchargePricesToAll = () => {
             child_price: firstPrice.child_price,
             infant_price: firstPrice.infant_price
         }));
+    });
+};
+
+const createPriceConfigurationWithApi = () => {
+    axios.post(route('configuration-prices.createPriceConfiguration'), {
+        package_id: props.packageId,
+        season_type_id: selectedSeason.value,
+        date_type_id: selectedDateType.value,
+        room_type_id: selectedRoomType.value
+    })
+    .then(response => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Price configuration created successfully',
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#4F46E5'
+        });
+
+        fetchPrices();
+    })
+    .catch(error => {
+        console.error('Error creating price configuration:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to create price configuration',
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#4F46E5'
+        });
     });
 };
 </script>
