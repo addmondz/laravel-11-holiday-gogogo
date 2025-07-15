@@ -673,6 +673,7 @@ const closeBulkAddSeasonModal = () => {
             end_date: ''
         }
     ];
+    handlePageChange(1);
 };
 
 const submitBulkSeasons = async () => {
