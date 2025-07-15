@@ -156,24 +156,40 @@
                 <form @submit.prevent="updateSeasonType">
                     <div class="space-y-4">
                         <div>
-                            <label for="edit_name" class="block text-sm font-medium text-gray-700">Name</label>
+                            <label for="edit_season_type_id" class="block text-sm font-medium text-gray-700">Season Type</label>
+                            <select
+                                id="edit_season_type_id"
+                                v-model="editSeasonTypeForm.season_type_id"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                            >
+                                <option value="">Select a season type</option>
+                                <option v-for="seasonType in seasonTypes" :key="seasonType.id" :value="seasonType.id">
+                                    {{ seasonType.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="edit_start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
                             <input
-                                type="text"
-                                id="edit_name"
-                                v-model="editSeasonTypeForm.name"
+                                type="date"
+                                id="edit_start_date"
+                                v-model="editSeasonTypeForm.start_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label for="edit_description" class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea
-                                id="edit_description"
-                                v-model="editSeasonTypeForm.description"
+                            <label for="edit_end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                            <input
+                                type="date"
+                                id="edit_end_date"
+                                v-model="editSeasonTypeForm.end_date"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                rows="3"
-                            ></textarea>
+                                required
+                            />
                         </div>
                     </div>
 
@@ -431,9 +447,11 @@ const seasonTypeForm = useForm({
 
 const editSeasonTypeForm = useForm({
     id: null,
-    name: '',
-    description: '',
+    season_id: '',
+    start_date: '',
+    end_date: '',
     package_id: props.package.id,
+    season_type_id: '',
     return_to_package: true
 });
 
@@ -518,8 +536,9 @@ const submitSeasonType = () => {
 const editSeasonType = (seasonType) => {
     editSeasonTypeForm.reset();
     editSeasonTypeForm.id = seasonType.id;
-    editSeasonTypeForm.name = seasonType.name || '';
-    editSeasonTypeForm.description = seasonType.description || '';
+    editSeasonTypeForm.season_type_id = seasonType.season_type_id;
+    editSeasonTypeForm.start_date = moment(seasonType.start_date).format('YYYY-MM-DD');
+    editSeasonTypeForm.end_date = moment(seasonType.end_date).format('YYYY-MM-DD');
     editSeasonTypeForm.package_id = parseInt(props.package.id);
     editSeasonTypeForm.return_to_package = true;
     showEditSeasonTypeModal.value = true;
@@ -532,12 +551,7 @@ const closeEditSeasonTypeModal = () => {
 };
 
 const updateSeasonType = () => {
-    if (!editSeasonTypeForm.name?.trim()) {
-        seasonTypeWarning.value = 'Season type name is required';
-        return;
-    }
-
-    editSeasonTypeForm.put(route('season-types.update', editSeasonTypeForm.id), {
+    editSeasonTypeForm.put(route('seasons.update', editSeasonTypeForm.id), {
         preserveScroll: true,
         onSuccess: () => {
             showEditSeasonTypeModal.value = false;
@@ -550,12 +564,15 @@ const updateSeasonType = () => {
             handlePageChange(1);
         },
         onError: (errors) => {
-            if (errors.name) {
-                seasonTypeWarning.value = errors.name;
-            } else if (errors.description) {
-                seasonTypeWarning.value = errors.description;
-            } else if (errors.package_id) {
-                seasonTypeWarning.value = errors.package_id;
+            console.log(errors);
+            if (errors.season_type_id) {
+                seasonTypeWarning.value = errors.season_type_id;
+            } else if (errors.start_date) {
+                seasonTypeWarning.value = errors.start_date;
+            } else if (errors.end_date) {
+                seasonTypeWarning.value = errors.end_date;
+            } else if (errors.date_range) {
+                seasonTypeWarning.value = errors.date_range;
             } else {
                 seasonTypeWarning.value = 'Failed to update season type. Please try again.';
             }
