@@ -576,8 +576,8 @@ const deleteSeasonType = (id) => {
         showCloseButton: true
     }).then((result) => {
         if (result.isConfirmed) {
-            router.delete(route('season-types.destroy', id), {
-                data: { return_to_package: true },
+            router.delete(route('seasons.destroy', id), {
+                data: { return_to_package: true, package_id: props.package.id },
                 preserveState: true,
                 preserveScroll: true,
                 onSuccess: () => {

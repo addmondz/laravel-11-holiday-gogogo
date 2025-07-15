@@ -591,7 +591,7 @@ const deleteDateTypeRange = (id) => {
     }).then((result) => {
         if (result.isConfirmed) {
             router.delete(route('date-type-ranges.destroy', id), {
-                data: { return_to_package: true },
+                data: { return_to_package: true, package_id: props.package.id },
                 preserveState: true,
                 preserveScroll: true,
                 onSuccess: () => {
