@@ -75,6 +75,133 @@ class SeasonController extends Controller
         return back()->with('success', 'Season created successfully.');
     }
 
+    public function storeBulk(Request $request)
+    {
+        $results = [
+            'success' => [],
+            'errors' => [],
+            'validation_errors' => []
+        ];
+
+        // Manual validation to collect all errors
+        $validationErrors = [];
+        
+        if (!$request->has('seasons') || !is_array($request->seasons) || empty($request->seasons)) {
+            $validationErrors[] = 'At least one season is required';
+        }
+        
+        if (!$request->has('package_id') || !$request->package_id) {
+            $validationErrors[] = 'Package ID is required';
+        }
+
+        // Validate each season individually
+        if ($request->has('seasons') && is_array($request->seasons)) {
+            foreach ($request->seasons as $index => $seasonData) {
+                $seasonErrors = [];
+                
+                // Validate season type
+                if (empty($seasonData['season_type_id'])) {
+                    $seasonErrors[] = 'Season type is required';
+                } elseif (!SeasonType::find($seasonData['season_type_id'])) {
+                    $seasonErrors[] = 'Selected season type does not exist';
+                }
+                
+                // Validate start date
+                if (empty($seasonData['start_date'])) {
+                    $seasonErrors[] = 'Start date is required';
+                } elseif (!strtotime($seasonData['start_date'])) {
+                    $seasonErrors[] = 'Start date must be a valid date';
+                }
+                
+                // Validate end date
+                if (empty($seasonData['end_date'])) {
+                    $seasonErrors[] = 'End date is required';
+                } elseif (!strtotime($seasonData['end_date'])) {
+                    $seasonErrors[] = 'End date must be a valid date';
+                }
+                
+                // Validate date range
+                if (!empty($seasonData['start_date']) && !empty($seasonData['end_date']) && 
+                    strtotime($seasonData['start_date']) && strtotime($seasonData['end_date'])) {
+                    if (strtotime($seasonData['end_date']) <= strtotime($seasonData['start_date'])) {
+                        $seasonErrors[] = 'End date must be after start date';
+                    }
+                }
+                
+                if (!empty($seasonErrors)) {
+                    $results['validation_errors'][] = [
+                        'index' => $index,
+                        'data' => $seasonData,
+                        'errors' => $seasonErrors
+                    ];
+                }
+            }
+        }
+
+        // If there are validation errors, return them but still with 200 status
+        if (!empty($validationErrors) || !empty($results['validation_errors'])) {
+            $results['errors'] = array_merge($validationErrors, $results['validation_errors']);
+            return response()->json($results, 200);
+        }
+
+        // Process seasons if validation passes
+        foreach ($request->seasons as $index => $seasonData) {
+            try {
+                // Check for overlapping dates
+                if (Season::hasOverlappingDates($seasonData['start_date'], $seasonData['end_date'], $request->package_id)) {
+                    $existingSeason = Season::where('package_id', $request->package_id)
+                        ->where('start_date', '<=', $seasonData['end_date'])
+                        ->where('end_date', '>=', $seasonData['start_date'])
+                        ->first();
+
+                    $results['errors'][] = [
+                        'index' => $index,
+                        'data' => $seasonData,
+                        'message' => 'This date range overlaps with an existing season for this package in the date range of ' . 
+                                   Carbon::parse($existingSeason->start_date)->format('d-m-Y') . ' to ' . 
+                                   Carbon::parse($existingSeason->end_date)->format('d-m-Y')
+                    ];
+                    continue;
+                }
+
+                // Create the season
+                $season = Season::create([
+                    'season_type_id' => $seasonData['season_type_id'],
+                    'start_date' => $seasonData['start_date'],
+                    'end_date' => $seasonData['end_date'],
+                    'package_id' => $request->package_id
+                ]);
+
+                // Create price configurations
+                $seasonType = SeasonType::find($seasonData['season_type_id']);
+                $this->priceConfigurationService->createPriceConfigurationsService(
+                    Package::find($request->package_id), 
+                    [], 
+                    [$seasonType], 
+                    [], 
+                    false
+                );
+
+                $results['success'][] = [
+                    'index' => $index,
+                    'data' => $seasonData,
+                    'season_id' => $season->id,
+                    'message' => 'Season created successfully'
+                ];
+
+            } catch (\Exception $e) {
+                $results['errors'][] = [
+                    'index' => $index,
+                    'data' => $seasonData,
+                    'message' => 'Failed to create season: ' . $e->getMessage()
+                ];
+            }
+        }
+
+        // Always return 200 status, even with errors
+        return response()->json($results, 200);
+    }
+
     public function show(Season $season)
     {
         return Inertia::render('Seasons/Show', [

@@ -146,8 +146,6 @@ const breadcrumbs = computed(() => [
     { title: props.pkg.name }
 ]);
 
-const currentTab = ref('details');
-
 const currentTabComponent = computed(() => {
     switch (currentTab.value) {
         case 'details':
@@ -166,4 +164,12 @@ const currentTabComponent = computed(() => {
             return PackageDetails;
     }
 });
+
+const getParamFromUrl = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('tab');
+};
+
+// const currentTab = ref('details');
+const currentTab = ref(getParamFromUrl() || 'details');
 </script>

@@ -99,6 +99,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'update' => 'seasons.update',
         'destroy' => 'seasons.destroy'
     ]);
+    Route::post('/seasons/store-bulk', [SeasonController::class, 'storeBulk'])->name('seasons.store-bulk');
 
     Route::resource('date-types', DateTypeController::class)->names([
         'index' => 'date-types.index',
@@ -124,6 +125,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'update' => 'date-type-ranges.update',
         'destroy' => 'date-type-ranges.destroy'
     ]);
+    Route::post('/date-type-ranges/store-bulk', [DateTypeRangeController::class, 'storeBulk'])->name('date-type-ranges.store-bulk');
 
     Route::resource('package-configurations', PackageConfigurationController::class)->names([
         'index' => 'package-configurations.index',

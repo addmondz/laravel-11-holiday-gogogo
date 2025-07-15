@@ -4,9 +4,16 @@
             <h3 class="text-md font-medium text-gray-900">Date Types Ranges</h3>
             <button
                 @click="showAddDateTypeRangeModal = true"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs hidden"
             >
                 Add Date Type Range
+            </button>
+            <!-- bulk add season -->
+                <button
+                    @click="showBulkAddDateTypeRangeModal = true"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
+                >
+                    Add Date Type Ranges
             </button>
         </div>
 
@@ -201,6 +208,158 @@
                 </form>
             </div>
         </Modal>
+
+        <!-- Bulk Add Date Type Ranges Modal -->
+        <Modal :show="showBulkAddDateTypeRangeModal" @close="closeBulkAddDateTypeRangeModal">
+            <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-medium text-gray-900">Add Date Type Ranges</h2>
+                <button
+                    type="button"
+                    @click="addBulkDateTypeRange"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs"
+                >
+                    + Add Row
+                </button>
+            </div>
+                
+                <!-- Results Summary -->
+                <div v-if="bulkResults" class="mb-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-md font-medium text-gray-900 mb-3">Results Summary</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div v-if="bulkResults.success.length > 0" class="bg-green-50 border border-green-200 rounded-md p-3">
+                                <div class="flex items-center">
+                                    <svg class="h-5 w-5 text-green-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="text-sm font-medium text-green-800">
+                                        {{ bulkResults.success.length }} date type ranges created successfully
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div v-if="bulkResults.errors.length > 0" class="bg-red-50 border border-red-200 rounded-md p-3">
+                                <div class="flex items-center">
+                                    <svg class="h-5 w-5 text-red-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="text-sm font-medium text-red-800">
+                                        {{ bulkResults.errors.length }} date type ranges failed to create
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form @submit.prevent="submitBulkDateTypeRanges">
+                    <div class="space-y-4">
+                        <!-- Date Type Range Rows -->
+                        <div v-for="(dateTypeRange, index) in bulkDateTypeRanges" :key="index" class="border rounded-lg p-4" :class="getBulkRowClass(index)">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-md font-medium text-gray-900 invisible">Date Type Range {{ index + 1 }}</h3>
+                                <div class="flex space-x-2">
+                                    <button
+                                        type="button"
+                                        @click="removeBulkDateTypeRange(index)"
+                                        class="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 text-sm"
+                                        :disabled="bulkDateTypeRanges.length === 1"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Error Display -->
+                            <div v-if="getBulkRowError(index)" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-red-800">{{ getBulkRowError(index) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Success Display -->
+                            <div v-if="getBulkRowSuccess(index)" class="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-green-800">{{ getBulkRowSuccess(index) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label :for="`bulk_date_type_id_${index}`" class="block text-sm font-medium text-gray-700">Date Type</label>
+                                    <select
+                                        :id="`bulk_date_type_id_${index}`"
+                                        v-model="dateTypeRange.date_type_id"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        required
+                                    >
+                                        <option value="">Select a date type</option>
+                                        <option v-for="dateType in dateTypes" :key="dateType.id" :value="dateType.id">
+                                            {{ dateType.name }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label :for="`bulk_start_date_${index}`" class="block text-sm font-medium text-gray-700">Start Date</label>
+                                    <input
+                                        type="date"
+                                        :id="`bulk_start_date_${index}`"
+                                        v-model="dateTypeRange.start_date"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label :for="`bulk_end_date_${index}`" class="block text-sm font-medium text-gray-700">End Date</label>
+                                    <input
+                                        type="date"
+                                        :id="`bulk_end_date_${index}`"
+                                        v-model="dateTypeRange.end_date"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button
+                            type="button"
+                            @click="closeBulkAddDateTypeRangeModal"
+                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
+                            :disabled="isBulkSubmitting"
+                        >
+                            {{ isBulkSubmitting ? 'Creating Date Type Ranges...' : 'Create' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -235,6 +394,17 @@ const showAddDateTypeRangeModal = ref(false);
 const showEditDateTypeRangeModal = ref(false);
 const addDateTypeRangeErrors = ref('');
 const dateTypeRangeWarning = ref('');
+
+const bulkResults = ref(null);
+const isBulkSubmitting = ref(false);
+const showBulkAddDateTypeRangeModal = ref(false);
+const bulkDateTypeRanges = ref([
+    {
+        date_type_id: '',
+        start_date: '',
+        end_date: ''
+    }
+]);
 
 const dateTypeRangesPagination = computed(() => ({
     links: dateTypeRangesData.value.links,
@@ -324,8 +494,8 @@ const submitDateTypeRange = () => {
                 title: 'Success',
                 text: 'Date type range created successfully'
             });
-            // handlePageChange(1);
-            router.get(route('packages.show', props.package.id));
+            handlePageChange(1);
+            // router.get(route('packages.show', props.package.id));
         },
         onError: (errors) => {
             if (errors.date_type_id) {
@@ -438,5 +608,131 @@ const deleteDateTypeRange = (id) => {
             });
         }
     });
+};
+
+// Bulk operations
+const addBulkDateTypeRange = () => {
+    bulkDateTypeRanges.value.push({
+        date_type_id: '',
+        start_date: '',
+        end_date: ''
+    });
+};
+
+const removeBulkDateTypeRange = (index) => {
+    if (bulkDateTypeRanges.value.length > 1) {
+        bulkDateTypeRanges.value.splice(index, 1);
+    }
+};
+
+const getBulkRowClass = (index) => {
+    if (bulkResults.value) {
+        const hasError = bulkResults.value.errors.some(error => error.index === index);
+        const hasSuccess = bulkResults.value.success.some(success => success.index === index);
+        
+        if (hasError) return 'border-red-200 bg-red-50';
+        if (hasSuccess) return 'border-green-200 bg-green-50';
+    }
+    return 'border-gray-200';
+};
+
+const getBulkRowError = (index) => {
+    if (!bulkResults.value) return null;
+    
+    // Check for validation errors first
+    const validationError = bulkResults.value.validation_errors?.find(error => error.index === index);
+    if (validationError) {
+        return validationError.errors.join(', ');
+    }
+    
+    // Check for other errors
+    const error = bulkResults.value.errors.find(error => error.index === index);
+    if (error) {
+        return error.message || error;
+    }
+    
+    return null;
+};
+
+const getBulkRowSuccess = (index) => {
+    if (!bulkResults.value) return null;
+    const success = bulkResults.value.success.find(success => success.index === index);
+    return success ? success.message : null;
+};
+
+const closeBulkAddDateTypeRangeModal = () => {
+    showBulkAddDateTypeRangeModal.value = false;
+    bulkResults.value = null;
+    bulkDateTypeRanges.value = [
+        {
+            date_type_id: '',
+            start_date: '',
+            end_date: ''
+        }
+    ];
+    handlePageChange(1);
+};
+
+const partialSuccess = (successCount, errorCount) => {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Partial Success',
+        text: `${successCount} date type ranges created successfully, ${errorCount} failed. Please check the results below.`,
+        confirmButtonText: 'OK'
+    });
+};
+
+const submitBulkDateTypeRanges = async () => {
+    isBulkSubmitting.value = true;
+    bulkResults.value = null;
+
+    try {
+        const response = await axios.post(route('date-type-ranges.store-bulk'), {
+            package_id: props.package.id,
+            dateTypeRanges: bulkDateTypeRanges.value
+        });
+
+        bulkResults.value = response.data;
+
+        // Show summary alert
+        const successCount = bulkResults.value.success.length;
+        const errorCount = bulkResults.value.errors.length;
+
+        if (errorCount === 0) {
+            closeBulkAddDateTypeRangeModal();
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: `${successCount} date type ranges were added successfully!`,
+                confirmButtonText: 'OK'
+            });
+        } else if (successCount === 0) {
+            // All failed, keep modal open to show errors
+        } else {
+            // partialSuccess(successCount, errorCount);
+        }
+
+    } catch (error) {
+        console.error('Error creating date type ranges:', error);
+        
+        let errorMessage = 'Failed to create date type ranges';
+        if (error.response?.data?.message) {
+            errorMessage = error.response.data.message;
+        } else if (error.response?.data?.errors) {
+            errorMessage = Object.values(error.response.data.errors).flat().join(', ');
+        }
+
+        // showBulkAddDateTypeRangeModal.value = false;
+        // Swal.fire({
+        //     icon: 'error',
+        //     title: 'Error',
+        //     text: errorMessage,
+        //     confirmButtonText: 'OK'
+        // }).then(() => {
+        //     showBulkAddDateTypeRangeModal.value = true;
+        // });
+    } finally {
+        isBulkSubmitting.value = false;
+    }
 };
 </script> 
