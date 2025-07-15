@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\ApprovalStatus;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -88,9 +89,9 @@ class BookingController extends Controller
         $summary = [
             'total' => $filteredQuery->count(),
             'pending' => (clone $filteredQuery)->where('status', 0)->count(),
-            'completed' => (clone $filteredQuery)->where('status', 1)->count(),
-            'confirmed' => (clone $filteredQuery)->where('status', 2)->count(),
-            'rejected' => (clone $filteredQuery)->where('status', 3)->count(),
+            'approved' => (clone $filteredQuery)->where('status', 1)->count(),
+            'rejected' => (clone $filteredQuery)->where('status', 2)->count(),
+            'payment_completed' => (clone $filteredQuery)->where('status', 3)->count(),
             'refunded' => (clone $filteredQuery)->where('status', 4)->count(),
         ];
 
@@ -151,7 +152,7 @@ class BookingController extends Controller
                 'approval_status' => 'approved',
                 'approval_by' => $request->user()->id,
                 'approval_date' => now(),
-                'status' => 2 // Booking Confirmed
+                'status' => ApprovalStatus::APPROVED
             ]);
 
             return response()->json([
@@ -173,7 +174,7 @@ class BookingController extends Controller
                 'approval_status' => 'rejected',
                 'approval_by' => $request->user()->id,
                 'approval_date' => now(),
-                'status' => 3 // Booking Rejected
+                'status' => ApprovalStatus::REJECTED
             ]);
 
             return response()->json([

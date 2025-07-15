@@ -36,57 +36,70 @@
         </div>
 
         <!-- Package Found State -->
-        <div v-else class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8" style="padding-top: 80px; padding-bottom: 50px;">
-            <!-- Image Carousel -->
-            <div class="mb-8">
-                <div class="relative">
-                    <div class="overflow-hidden rounded-lg shadow-lg">
-                        <div class="relative mt-10" style="height: 500px;">
+        <div v-else class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8" style="padding-top: 100px; padding-bottom: 50px;">
+            <!-- Package Header with Images and Details -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+                <div class="flex flex-col lg:flex-row">
+                    <!-- Left Side - Images -->
+                    <div class="lg:w-1/3 p-6">
+                        <div class="relative">
                             <template v-if="packageData.images && packageData.images.length > 0">
-                                <img
-                                    v-for="(image, index) in packageData.images"
-                                    :key="'package-image-' + index"
-                                    :src="getImageUrl(image)"
-                                    :class="[
-                                        'absolute inset-0 w-full h-full object-cover transition-opacity duration-500 h-[500px]',
-                                        currentImageIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                                    ]"
-                                    :alt="packageData?.name || 'Package Image'"
-                                />
-                                <!-- Navigation Buttons -->
-                                <button
-                                    @click="previousImage"
-                                    class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 z-20"
-                                    aria-label="Previous image"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
-                                <button
-                                    @click="nextImage"
-                                    class="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                                <!-- Image Indicators -->
-                                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+                                <!-- Main Image -->
+                                <div class="relative mb-4" style="height: 300px;">
+                                    <img
+                                        v-for="(image, index) in packageData.images"
+                                        :key="'package-image-' + index"
+                                        :src="getImageUrl(image)"
+                                        :class="[
+                                            'absolute inset-0 w-full h-full object-cover transition-opacity duration-500 rounded-lg',
+                                            currentImageIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                                        ]"
+                                        :alt="packageData?.name || 'Package Image'"
+                                    />
+                                    <!-- Navigation Buttons -->
+                                    <button
+                                        v-if="packageData.images.length > 1"
+                                        @click="previousImage"
+                                        class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-1 z-20"
+                                        aria-label="Previous image"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        v-if="packageData.images.length > 1"
+                                        @click="nextImage"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white rounded-full p-1 shadow-lg"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                
+                                <!-- Thumbnail Navigation -->
+                                <div v-if="packageData.images.length > 1" class="flex space-x-2 overflow-x-auto">
                                     <button
                                         v-for="(image, index) in packageData.images"
                                         :key="index"
                                         @click="currentImageIndex = index"
                                         :class="[
-                                            'w-3 h-3 rounded-full transition-colors duration-200',
-                                            currentImageIndex === index ? 'bg-white' : 'bg-white/50 hover:bg-white/75'
+                                            'flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200',
+                                            currentImageIndex === index ? 'border-indigo-500' : 'border-gray-200 hover:border-indigo-300'
                                         ]"
                                         :aria-label="`Go to image ${index + 1}`"
-                                    />
+                                    >
+                                        <img
+                                            :src="getImageUrl(image)"
+                                            :alt="`Thumbnail ${index + 1}`"
+                                            class="w-full h-full object-cover"
+                                        />
+                                    </button>
                                 </div>
                             </template>
                             <template v-else>
-                                <div class="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+                                <div class="h-64 flex items-center justify-center bg-gray-100 rounded-lg">
                                     <div class="text-center">
                                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -98,45 +111,74 @@
                             </template>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Package Details -->
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-4 flex items-center">
-                    <span class="inline-flex items-center px-4 py-2 rounded-md text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white mr-2 mb-1 sm:mb-0">
-                        {{ computedPromoPeriod }} Promo
-                    </span>
-                    {{ packageData.name }}
-                </h1>
-                <p class="text-gray-600 mb-6">{{ packageData.description }}</p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900 mb-2">Location</h2>
-                        <p class="text-gray-600">{{ packageData.location }}</p>
+                    <!-- Right Side - Package Details -->
+                    <div class="lg:w-2/3 p-6">
+                        <div class="h-full flex flex-col">
+                            <!-- Package Title and Promo Badge -->
+                            <div class="mb-4">
+                                <h1 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white mr-3">
+                                        {{ computedPromoPeriod }} Promo
+                                    </span>
+                                    {{ packageData.name }}
+                                </h1>
+                                <p class="text-gray-600 text-md">{{ packageData.description }}</p>
+                            </div>
+
+                            <!-- Package Information Grid -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                                        <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Location
+                                    </h2>
+                                    <p class="text-gray-700">{{ packageData.location }}</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                                        <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Duration
+                                    </h2>
+                                    <p class="text-gray-700">{{ packageData.package_max_days +1 }} Days {{ packageData.package_max_days }} {{packageData.package_max_days > 1 ? 'Nights' : 'Night'}}</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                        </svg>
+                                        Package Price
+                                    </h2>
+                                    <p class="text-2xl font-bold text-indigo-600">MYR {{ formatNumber(packageData.display_price_adult) }}</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                                        <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        Valid Period
+                                    </h2>
+                                    <p class="text-gray-700">{{ moment(packageData.package_start_date).format('DD MMM YYYY') }} - {{ moment(packageData.package_end_date).format('DD MMM YYYY') }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Terms and Conditions -->
+                            <div class="mt-auto">
+                                <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                                    <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Terms and Conditions
+                                </h2>
+                                <p class="text-gray-600 text-sm">{{ packageData.terms_and_conditions }}</p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900 mb-2">Duration</h2>
-                        <p class="text-gray-600">{{ packageData.package_max_days +1 }} Days {{ packageData.package_max_days }} {{packageData.package_max_days > 1 ? 'Nights' : 'Night'}}</p>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900 mb-2">Package Prices</h2>
-                        <p class="text-gray-600">MYR {{ formatNumber(packageData.display_price_adult) }}</p>
-                        <!-- <p class="text-gray-600">Adult: MYR {{ formatNumber(packageData.display_price_adult) }}</p> -->
-                        <!-- <p class="text-gray-600">Child: MYR {{ formatNumber(packageData.display_price_child) }}</p> -->
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900 mb-2">Package Start Date</h2>
-                        <p class="text-gray-600">{{ moment(packageData.package_start_date).format('DD MMM YYYY') }}</p>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900 mb-2">Package End Date</h2>
-                        <p class="text-gray-600">{{ moment(packageData.package_end_date).format('DD MMM YYYY') }}</p>
-                    </div>
-                </div>
-                <div class="mt-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-2">Terms and Conditions</h2>
-                    <p class="text-gray-600">{{ packageData.terms_and_conditions }}</p>
                 </div>
             </div>
 
@@ -797,7 +839,7 @@
                                 </div>
                                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Booking Created!</h3>
                                 <p class="text-gray-600">Your booking has been submitted.</p>
-                                <p class="text-gray-600">Please proceed to make payment to secure your reservation.</p>
+                                <p class="text-gray-600">Once the booking is approved, you will receive an email with the booking details.</p>
                             </div>
                         </div>
                         <div v-else-if="bookingSuccess.status == 1" class="relative bg-green-400 bg-[length:200%] bg-[position:0%_50%] animate-gradient-x px-6 py-8 rounded-2xl shadow-xl transform transition-transform duration-100 text-white mx-8 mt-5">
@@ -810,30 +852,21 @@
                                     </svg>
                                 </div>
                                 <div class="space-y-2">
-                                    <h2 class="text-3xl font-bold text-white mb-2">Payment Completed!</h2>
-                                    <p class="text-white/90 text-lg">Your booking is now under review.</p>
-                                    <p class="text-white/80 text-sm">Booking details will be sent to your email once your booking has been approved.</p>
+                                    <h2 class="text-3xl font-bold text-white mb-2">Booking Approved!</h2>
+                                    <p class="text-white/90 text-lg">Your booking has been approved.</p>
+                                    <p class="text-white/80 text-md font-bold">Please proceed to make payment to secure your reservation.</p>
                                 </div>
                             </div>
                         </div>
-                        <div v-else-if="bookingSuccess.status == 2" class="relative bg-gradient-to-r slower from-green-400 via-green-500 to-green-600 bg-[length:200%] bg-[position:0%_50%] animate-gradient-x px-6 py-8 rounded-2xl shadow-xl hover:shadow-[0_0_25px_#34d399] transform transition-transform duration-100 hover:scale-105 text-white mx-8 mt-5">
+                        <div v-else-if="bookingSuccess.status == 2" class="relative bg-red-500 px-6 py-8 rounded-2xl shadow-xl transform transition-transform duration-100 text-white mx-8 mt-5">
                             <div class="absolute inset-0 bg-black opacity-10"></div>
                             <div class="relative text-center">
+                                <!-- show rejected svg -->
                                 <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4">
                                     <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                                     </svg>
                                 </div>
-                                <div class="space-y-2">
-                                    <h2 class="text-3xl font-bold text-white mb-2">Booking Confirmed!</h2>
-                                    <p class="text-white/90 text-lg">Your booking has been confirmed.</p>
-                                    <p class="text-white/80 text-sm">Booking details will be sent to your email shortly.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else-if="bookingSuccess.status == 3" class="relative bg-red-500 px-6 py-8 rounded-2xl shadow-xl transform transition-transform duration-100 text-white mx-8 mt-5">
-                            <div class="absolute inset-0 bg-black opacity-10"></div>
-                            <div class="relative text-center">
                                 <div class="space-y-2">
                                     <h2 class="text-3xl font-bold text-white mb-2">Booking Rejected!</h2>
                                     <p class="text-white/90 text-lg">Your booking has been rejected.</p>
@@ -841,10 +874,31 @@
                                 </div>
                             </div>
                         </div>
+                        <div v-else-if="bookingSuccess.status == 3" class="relative bg-green-400 bg-[length:200%] bg-[position:0%_50%] animate-gradient-x px-6 py-8 rounded-2xl shadow-xl transform transition-transform duration-100 text-white mx-8 mt-5">
+                            <div class="absolute inset-0 bg-black opacity-10"></div>
+                            <div class="relative text-center">
+                                <!-- show success icon -->
+                                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4">
+                                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <div class="space-y-2">
+                                    <h2 class="text-3xl font-bold text-white mb-2">Payment Completed!</h2>
+                                    <p class="text-white/90 text-lg">Your payment has been completed.</p>
+                                    <p class="text-white/80 text-sm">Your booking is now confirmed and ready.</p>
+                                </div>
+                            </div>
+                        </div>
                         <!-- change the background color to refunded color -->
                         <div v-else-if="bookingSuccess.status == 4" class="relative bg-sky-500 px-6 py-8 rounded-2xl shadow-xl transform transition-transform duration-100 text-white mx-8 mt-5">
                             <div class="absolute inset-0 bg-black opacity-10"></div>
                             <div class="relative text-center">
+                                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4">
+                                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                    </svg>
+                                </div>
                                 <div class="space-y-2">
                                     <h2 class="text-3xl font-bold text-white mb-2">Booking Refunded!</h2>
                                     <p class="text-white/90 text-lg">Your booking has been refunded.</p>
@@ -936,7 +990,7 @@
                             </div>
 
                             <!-- Pay Now Button -->
-                            <div v-if="bookingSuccess.status == 0" class="flex justify-center pt-4">
+                            <div v-if="bookingSuccess.status == 1" class="flex justify-center pt-4">
                                 <div class="text-center">
                                     <!-- Payment Failed Status -->
                                     <div v-if="paymentStatus === 'failed'" class="mb-6">

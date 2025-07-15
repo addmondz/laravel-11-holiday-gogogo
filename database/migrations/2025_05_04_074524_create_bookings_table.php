@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('phone_number');
             $table->string('booking_ic');
             $table->string('booking_email');
-            $table->integer('status')->default(ApprovalStatus::PENDING_PAYMENT); // ApprovalStatus
+            $table->integer('status')->default(ApprovalStatus::PENDING_APPROVAL); // ApprovalStatus
             $table->date('start_date');
             $table->date('end_date');
             $table->integer('adults');

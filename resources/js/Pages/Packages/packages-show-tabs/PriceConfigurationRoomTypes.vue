@@ -71,8 +71,16 @@
                 <LoadingComponent />
             </div>
 
-            <div v-else-if="!showPriceMatrix" class="text-center py-8 text-gray-500">
+            <div v-else-if="!showPriceMatrix" class="text-center text-gray-500">
                 No price configurations found for the selected filters.
+                
+                <!-- show a button to add a new price configuration -->
+                <button
+                    @click="openPriceForm('add')"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm block text-center mt-4 mx-auto"
+                >
+                    Create Configuration
+                </button>
             </div>
 
             <div v-else class="space-y-8">
