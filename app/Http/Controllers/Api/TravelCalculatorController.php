@@ -20,6 +20,12 @@ use Illuminate\Support\Facades\Validator;
 
 class TravelCalculatorController extends Controller
 {
+    public $enabledDefaultSeasonAndDateType;
+    public function __construct()
+    {
+        $this->enabledDefaultSeasonAndDateType = env('ENABLED_DEFAULT_SEASON_AND_DATE_TYPE', false);
+    }
+
     public function calculate(Request $request)
     {
         try {
@@ -327,16 +333,21 @@ class TravelCalculatorController extends Controller
                         ->where('package_id', $packageId)
                         ->first();
 
-                    if (!$dateTypeRange) {
+                    if ($dateTypeRange) {
+                        $dateType = $dateTypeRange->dateType;
+                    } else if ($this->enabledDefaultSeasonAndDateType) {
                         $fallbackType = $date->isWeekend() ? 'weekend' : 'weekday';
                         $dateType = DateType::where('name', 'LIKE', "%$fallbackType%")->first();
-                    } else {
-                        $dateType = $dateTypeRange->dateType;
-                    }
 
-                    if (!$dateType) {
-                        throw new \Exception('An expected error occurred. Please contact admin. Date type not found for ' . $date->format('Y-m-d'));
-                        Log::error('Date type not found for ' . $date->format('Y-m-d') . ' for package ' . $packageId);
+                        if (!$dateType) {
+                            Log::error('Default Date type not found for ' . $date->format('Y-m-d') . ' for package ' . $packageId);
+                            throw new \Exception('An expected error occurred. Please contact admin. Date type not found for ' . $date->format('Y-m-d'));
+                        }
+                    } else {
+                        // throw new \Exception('An expected error occurred. Please contact admin. Date type not found for ' . $date->format('Y-m-d'));
+                        // Log::error('Date type not found for ' . $date->format('Y-m-d') . ' for package ' . $packageId);
+                        Log::error("invalid date type range for " . $date->format('Y-m-d') . " for package " . $packageId);
+                        throw new \Exception("The selected dates and room type combination are not available. Please contact us for more information.");
                     }
 
                     $season = Season::where('start_date', '<=', $date)
@@ -344,15 +355,19 @@ class TravelCalculatorController extends Controller
                         ->where('package_id', $packageId)
                         ->first();
 
-                    if (!$season) {
-                        $seasonType = SeasonType::where('name', 'Default')->first();
-                    } else {
+                    if ($season) {
                         $seasonType = $season->type;
-                    }
+                    } else if ($this->enabledDefaultSeasonAndDateType) {
+                        $seasonType = SeasonType::where('name', 'Default')->first();
 
-                    if (!$seasonType) {
-                        throw new \Exception('An expected error occurred. Please contact admin. Season type not found for ' . $date->format('Y-m-d'));
-                        Log::error('Season type not found for ' . $date->format('Y-m-d') . ' for package ' . $packageId);
+                        if (!$seasonType) {
+                            Log::error('Default Season type not found for ' . $date->format('Y-m-d') . ' for package ' . $packageId);
+                            throw new \Exception("season type not found for " . $date->format('Y-m-d') . " for package " . $packageId);
+                        }
+                    } else {
+                        // throw new \Exception('An expected error occurred. Please contact admin. Season type not found for ' . $date->format('Y-m-d'));
+                        // Log::error('Season type not found for ' . $date->format('Y-m-d') . ' for package ' . $packageId);
+                        throw new \Exception("The selected dates and room type combination are not available. Please contact us for more information.");
                     }
 
                     $packageConfig = PackageConfiguration::where([
@@ -425,6 +440,7 @@ class TravelCalculatorController extends Controller
                     'room_type' => $roomTypeId,
                     'adults' => $adults,
                     'children' => $children,
+                    'infants' => $infants,
                     'nights' => $roomNights,
                     'summary' => [
                         'base_charges' => [
@@ -471,13 +487,113 @@ class TravelCalculatorController extends Controller
             // Calculate overall summary
             $sum = fn($key) => array_sum(array_map(fn($night) => floatval(data_get($night, $key)), $allNights));
 
+            // Calculate guest breakdown - individual guest pricing for all types
+            $guestBreakdown = [];
+            $totalAdults = 0;
+            $totalChildren = 0;
+            $totalInfants = 0;
+            
+            foreach ($roomBreakdowns as $roomIndex => $room) {
+                $adults = $room['adults'];
+                $children = $room['children'];
+                $infants = $room['infants'];
+                $totalAdults += $adults;
+                $totalChildren += $children;
+                $totalInfants += $infants;
+                
+                // Add adults
+                for ($adultIndex = 1; $adultIndex <= $adults; $adultIndex++) {
+                    $adultKey = "adult_{$roomIndex}_{$adultIndex}";
+                    
+                    // Calculate per-adult pricing for this room
+                    $adultBaseChargePerNight = $room['nights'][0]['base_charge']['adult']['price'] ?? 0;
+                    $adultSurchargePerNight = $room['nights'][0]['surcharge']['adult']['price'] ?? 0;
+                    $nightsCount = count($room['nights']);
+                    
+                    $guestBreakdown[$adultKey] = [
+                        'room_number' => $roomIndex + 1,
+                        'room_type_name' => $room['room_type_name'],
+                        'guest_type' => 'adult',
+                        'guest_number' => $adultIndex,
+                        'nights' => $nightsCount,
+                        'base_charge' => [
+                            'price_per_night' => $adultBaseChargePerNight,
+                            'total' => $adultBaseChargePerNight * $nightsCount
+                        ],
+                        'surcharge' => [
+                            'price_per_night' => $adultSurchargePerNight,
+                            'total' => $adultSurchargePerNight * $nightsCount
+                        ],
+                        'total' => ($adultBaseChargePerNight + $adultSurchargePerNight) * $nightsCount
+                    ];
+                }
+                
+                // Add children
+                for ($childIndex = 1; $childIndex <= $children; $childIndex++) {
+                    $childKey = "child_{$roomIndex}_{$childIndex}";
+                    
+                    // Calculate per-child pricing for this room
+                    $childBaseChargePerNight = $room['nights'][0]['base_charge']['child']['price'] ?? 0;
+                    $childSurchargePerNight = $room['nights'][0]['surcharge']['child']['price'] ?? 0;
+                    $nightsCount = count($room['nights']);
+                    
+                    $guestBreakdown[$childKey] = [
+                        'room_number' => $roomIndex + 1,
+                        'room_type_name' => $room['room_type_name'],
+                        'guest_type' => 'child',
+                        'guest_number' => $childIndex,
+                        'nights' => $nightsCount,
+                        'base_charge' => [
+                            'price_per_night' => $childBaseChargePerNight,
+                            'total' => $childBaseChargePerNight * $nightsCount
+                        ],
+                        'surcharge' => [
+                            'price_per_night' => $childSurchargePerNight,
+                            'total' => $childSurchargePerNight * $nightsCount
+                        ],
+                        'total' => ($childBaseChargePerNight + $childSurchargePerNight) * $nightsCount
+                    ];
+                }
+                
+                // Add infants
+                for ($infantIndex = 1; $infantIndex <= $infants; $infantIndex++) {
+                    $infantKey = "infant_{$roomIndex}_{$infantIndex}";
+                    
+                    // Calculate per-infant pricing for this room
+                    $infantBaseChargePerNight = $room['nights'][0]['base_charge']['infant']['price'] ?? 0;
+                    $infantSurchargePerNight = $room['nights'][0]['surcharge']['infant']['price'] ?? 0;
+                    $nightsCount = count($room['nights']);
+                    
+                    $guestBreakdown[$infantKey] = [
+                        'room_number' => $roomIndex + 1,
+                        'room_type_name' => $room['room_type_name'],
+                        'guest_type' => 'infant',
+                        'guest_number' => $infantIndex,
+                        'nights' => $nightsCount,
+                        'base_charge' => [
+                            'price_per_night' => $infantBaseChargePerNight,
+                            'total' => $infantBaseChargePerNight * $nightsCount
+                        ],
+                        'surcharge' => [
+                            'price_per_night' => $infantSurchargePerNight,
+                            'total' => $infantSurchargePerNight * $nightsCount
+                        ],
+                        'total' => ($infantBaseChargePerNight + $infantSurchargePerNight) * $nightsCount
+                    ];
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'currency' => 'MYR',
                 'nights' => $allNights,
                 'rooms' => $roomBreakdowns,
+                'guest_breakdown' => $guestBreakdown,
                 'summary' => [
                     'total_nights' => count($allNights) / count($rooms), // Average nights per room
+                    'total_adults' => $totalAdults,
+                    'total_children' => $totalChildren,
+                    'total_infants' => $totalInfants,
                     'base_charges' => [
                         'adult' => [
                             'total' => $sum('base_charge.adult.total')
@@ -515,7 +631,6 @@ class TravelCalculatorController extends Controller
                     'message' => 'The selected dates and room type combination are not available. Below are some alternative dates that you can try.',
                     'suggested_dates' => $suggestedDates
                 ], 400);
-
             } else if (str_contains($e->getMessage(), 'The selected room type id `' . $roomTypeId . '` and name `' . $roomType->name . '` has a maximum capacity of `' . $roomType->max_occupancy . '` guests. Please select a different room type.')) {
                 return response()->json([
                     'success' => false,

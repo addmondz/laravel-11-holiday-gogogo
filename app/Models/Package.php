@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Package extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasFactory;
 
     protected $fillable = [
         'name',
@@ -77,12 +78,9 @@ class Package extends Model
      */
     public function uniqueSeasonTypes(): Collection
     {
-        $seasonTypeIds = $this->configurations()
-            ->select('season_type_id')
-            ->distinct()
-            ->pluck('season_type_id');
+        $season_type_id = Season::where('package_id', $this->id)->get()->pluck('season_type_id')->unique();
 
-        return SeasonType::whereIn('id', $seasonTypeIds)->get();
+        return SeasonType::whereIn('id', $season_type_id)->get();
     }
 
     /**
@@ -90,12 +88,9 @@ class Package extends Model
      */
     public function uniqueDateTypes(): Collection
     {
-        $dateTypeIds = $this->configurations()
-            ->select('date_type_id')
-            ->distinct()
-            ->pluck('date_type_id');
+        $date_type_id = DateTypeRange::where('package_id', $this->id)->get()->pluck('date_type_id')->unique();
 
-        return DateType::whereIn('id', $dateTypeIds)->get();
+        return DateType::whereIn('id', $date_type_id)->get();
     }
 
     public function getUniqueSeasonTypesAttribute()

@@ -34,6 +34,11 @@ class CreatePriceConfigurationsService
             $dateTypes = $package->uniqueDateTypes();
         }
 
+        Log::info('Creating price configurations for package: ' . $package->id);
+        Log::info('Room types: ' . json_encode($roomTypes->toArray()));
+        Log::info('Season types: ' . json_encode($seasonTypes->toArray()));
+        Log::info('Date types: ' . json_encode($dateTypes->toArray()));
+
         try {
             DB::beginTransaction();
 
@@ -79,9 +84,9 @@ class CreatePriceConfigurationsService
             $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_i"] = $faker->randomFloat(2, 0, 100);
 
             // Surcharge prices
-            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 50, 1000);
-            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 25, 500);
-            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_i"] = $faker->randomFloat(2, 0, 100);
+            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 50, 100);
+            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 25, 50);
+            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_i"] = $faker->randomFloat(2, 0, 10);
         }
 
         return $configurationPrices;

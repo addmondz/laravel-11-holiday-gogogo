@@ -23,6 +23,12 @@ use Illuminate\Validation\ValidationException;
 
 class PackageController extends Controller
 {
+    public $enabledDefaultSeasonAndDateType;
+    public function __construct()
+    {
+        $this->enabledDefaultSeasonAndDateType = env('ENABLED_DEFAULT_SEASON_AND_DATE_TYPE', false);
+    }
+
     public function index(Request $request)
     {
         $query = Package::query();
@@ -42,14 +48,14 @@ class PackageController extends Controller
         if ($request->filled('dateFrom') && $request->filled('dateTo')) {
             $dateFrom = $request->dateFrom;
             $dateTo = $request->dateTo;
-            
+
             // Find packages that are available during the specified date range
             // A package is available if:
             // 1. Package start date is before or equal to the user's end date AND
             // 2. Package end date is after or equal to the user's start date
             $query->where(function ($q) use ($dateFrom, $dateTo) {
                 $q->where('package_start_date', '<=', $dateTo)
-                  ->where('package_end_date', '>=', $dateFrom);
+                    ->where('package_end_date', '>=', $dateFrom);
             });
         } elseif ($request->filled('dateFrom')) {
             // If only start date is provided, find packages that end after or on the start date
@@ -99,11 +105,11 @@ class PackageController extends Controller
                 'child_max_age_desc' => 'nullable|string',
                 'infant_max_age_desc' => 'nullable|string',
                 'display_price_adult' => 'required|numeric|min:0',
-                'display_price_child' => 'required|numeric|min:0',
-                'display_price_infant' => 'required|numeric|min:0',
-                'adult_surcharge' => 'required|numeric|min:0',
-                'child_surcharge' => 'required|numeric|min:0',
-                'infant_surcharge' => 'required|numeric|min:0',
+                'display_price_child' => 'numeric|min:0',
+                'display_price_infant' => 'numeric|min:0',
+                'adult_surcharge' => 'numeric|min:0',
+                'child_surcharge' => 'numeric|min:0',
+                'infant_surcharge' => 'numeric|min:0',
                 'package_days' => 'required|integer|min:1',
                 'terms_and_conditions' => 'nullable|string',
                 'location' => 'required|string|max:255',
@@ -176,40 +182,6 @@ class PackageController extends Controller
                 'room_types.*.images.*.max' => 'Each image cannot exceed 10MB',
             ]);
 
-            // if ($validator->fails()) {
-            //     $errors = $validator->errors();
-
-            //     // Format image validation errors to be more user-friendly
-            //     if ($errors->has('images.*')) {
-            //         $imageErrors = collect($errors->get('images.*'))->map(function ($error, $key) {
-            //             $index = explode('.', $key)[1];
-            //             return "Package Image " . ($index + 1) . ": " . $error[0];
-            //         })->toArray();
-
-            //         $errors->forget('images.*');
-            //         foreach ($imageErrors as $error) {
-            //             $errors->add('images', $error);
-            //         }
-            //     }
-
-            //     // Format room type image validation errors
-            //     if ($errors->has('room_types.*.images.*')) {
-            //         $roomTypeImageErrors = collect($errors->get('room_types.*.images.*'))->map(function ($error, $key) {
-            //             $parts = explode('.', $key);
-            //             $roomTypeIndex = $parts[1];
-            //             $imageIndex = $parts[3];
-            //             return "Room Type " . ($roomTypeIndex + 1) . ", Image " . ($imageIndex + 1) . ": " . $error[0];
-            //         })->toArray();
-
-            //         $errors->forget('room_types.*.images.*');
-            //         foreach ($roomTypeImageErrors as $error) {
-            //             $errors->add('room_types', $error);
-            //         }
-            //     }
-
-            //     return back()->withErrors($errors)->withInput();
-            // }
-
             $v = $validator->validated();
 
             // Handle package image uploads
@@ -227,29 +199,31 @@ class PackageController extends Controller
 
             $package = Package::create($v);
 
-            $seasonTypes = SeasonType::where('name', 'Default')->get();
-            $dateTypes = DateType::whereIn('name', ['Default', 'Weekday', 'Weekend'])->get();
+            if ($this->enabledDefaultSeasonAndDateType) {
+                $seasonTypes = SeasonType::where('name', 'Default')->get();
+                $dateTypes = DateType::whereIn('name', ['Default', 'Weekday', 'Weekend'])->get();
 
-            if ($seasonTypes->isEmpty() || $dateTypes->isEmpty()) {
-                throw new \Exception('Default season/date type not found');
+                if ($seasonTypes->isEmpty() || $dateTypes->isEmpty()) {
+                    throw new \Exception('Default season/date type not found');
+                }
+
+                $start = '1970-01-01';
+                $end = '1970-01-02';
+
+                $seasonTypes->each(fn($s) => Season::create([
+                    'season_type_id' => $s->id,
+                    'start_date' => $start,
+                    'end_date' => $end,
+                    'package_id' => $package->id,
+                ]));
+
+                $dateTypes->each(fn($d) => DateTypeRange::create([
+                    'date_type_id' => $d->id,
+                    'start_date' => $start,
+                    'end_date' => $end,
+                    'package_id' => $package->id,
+                ]));
             }
-
-            $start = '1970-01-01';
-            $end = '1970-01-02';
-
-            $seasonTypes->each(fn($s) => Season::create([
-                'season_type_id' => $s->id,
-                'start_date' => $start,
-                'end_date' => $end,
-                'package_id' => $package->id,
-            ]));
-
-            $dateTypes->each(fn($d) => DateTypeRange::create([
-                'date_type_id' => $d->id,
-                'start_date' => $start,
-                'end_date' => $end,
-                'package_id' => $package->id,
-            ]));
 
             // Handle room types with their images
             $roomTypes = collect($request->room_types)->map(function ($roomTypeData, $roomTypeIndex) use ($package, $request) {
@@ -274,27 +248,29 @@ class PackageController extends Controller
             $surKey = AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE;
 
             foreach ($roomTypes as $room) {
-                foreach ($seasonTypes as $season) {
-                    foreach ($dateTypes as $date) {
-                        $prices = [];
+                if ($this->enabledDefaultSeasonAndDateType) {
+                    foreach ($seasonTypes as $season) {
+                        foreach ($dateTypes as $date) {
+                            $prices = [];
 
-                        foreach ($combinations as $c) {
-                            $k = "{$c['adults']}_a_{$c['children']}_c_{$c['infants']}_i";
-                            $prices[$baseKey]["{$k}_a"] = $v['display_price_adult'];
-                            $prices[$baseKey]["{$k}_c"] = $v['display_price_child'];
-                            $prices[$baseKey]["{$k}_i"] = $v['display_price_infant'];
-                            $prices[$surKey]["{$k}_a"] = $v['adult_surcharge'];
-                            $prices[$surKey]["{$k}_c"] = $v['child_surcharge'];
-                            $prices[$surKey]["{$k}_i"] = $v['infant_surcharge'];
+                            foreach ($combinations as $c) {
+                                $k = "{$c['adults']}_a_{$c['children']}_c_{$c['infants']}_i";
+                                $prices[$baseKey]["{$k}_a"] = $v['display_price_adult'];
+                                $prices[$baseKey]["{$k}_c"] = $v['display_price_child'];
+                                $prices[$baseKey]["{$k}_i"] = $v['display_price_infant'];
+                                $prices[$surKey]["{$k}_a"] = $v['adult_surcharge'];
+                                $prices[$surKey]["{$k}_c"] = $v['child_surcharge'];
+                                $prices[$surKey]["{$k}_i"] = $v['infant_surcharge'];
+                            }
+
+                            PackageConfiguration::create([
+                                'package_id' => $package->id,
+                                'room_type_id' => $room->id,
+                                'season_type_id' => $season->id,
+                                'date_type_id' => $date->id,
+                                'configuration_prices' => json_encode($prices),
+                            ]);
                         }
-
-                        PackageConfiguration::create([
-                            'package_id' => $package->id,
-                            'room_type_id' => $room->id,
-                            'season_type_id' => $season->id,
-                            'date_type_id' => $date->id,
-                            'configuration_prices' => json_encode($prices),
-                        ]);
                     }
                 }
             }
@@ -434,7 +410,7 @@ class PackageController extends Controller
                     'max:10240', // 10MB max per image
                 ],
                 'display_price_adult' => 'nullable|numeric|min:0',
-                'display_price_child' => 'nullable|numeric|min:0',
+                'display_price_child' => 'nullable|min:0',
                 'package_min_days' => 'required|integer|min:1',
                 'package_max_days' => 'required|integer|min:1',
                 'terms_and_conditions' => 'nullable|string',

@@ -85,7 +85,8 @@
 
                                 <div class="grid grid-cols-3 gap-6">
                                     <div>
-                                        <label for="display_price_adult" class="block text-sm font-medium text-gray-700"><b class="text-[15px]">Display Price</b> / Adult Base Price</label>
+                                        <!-- <label for="display_price_adult" class="block text-sm font-medium text-gray-700"><b class="text-[15px]">Display Price</b> / Adult Base Price</label> -->
+                                        <label for="display_price_adult" class="block text-sm font-medium text-gray-700">Display Price</label>
                                         <input
                                             type="number"
                                             id="display_price_adult"
@@ -98,7 +99,7 @@
                                             {{ form.errors.display_price_adult }}
                                         </div>
                                     </div>
-                                    <div>
+                                    <!-- <div>
                                         <label for="display_price_child" class="block text-sm font-medium text-gray-700">Child Base Price</label>
                                         <input
                                             type="number"
@@ -111,8 +112,8 @@
                                         <div v-if="form.errors.display_price_child" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.display_price_child }}
                                         </div>
-                                    </div>
-                                    <div>
+                                    </div> -->
+                                    <!-- <div>
                                         <label for="display_price_infant" class="block text-sm font-medium text-gray-700">Infant Base Price</label>
                                         <input
                                             type="number"
@@ -125,8 +126,8 @@
                                         <div v-if="form.errors.display_price_infant" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.display_price_infant }}
                                         </div>
-                                    </div>
-                                    <div>
+                                    </div> -->
+                                    <!-- <div>
                                         <label for="adult_surcharge" class="block text-sm font-medium text-gray-700">Adult Surcharge</label>
                                         <input
                                             type="number"
@@ -139,8 +140,8 @@
                                         <div v-if="form.errors.adult_surcharge" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.adult_surcharge }}
                                         </div>
-                                    </div>
-                                    <div>
+                                    </div> -->
+                                    <!-- <div>
                                         <label for="child_surcharge" class="block text-sm font-medium text-gray-700">Child Surcharge</label>
                                         <input
                                             type="number"
@@ -153,9 +154,8 @@
                                         <div v-if="form.errors.child_surcharge" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.child_surcharge }}
                                         </div>
-                                    </div>
-
-                                    <div>
+                                    </div> -->
+                                    <!-- <div>
                                         <label for="infant_surcharge" class="block text-sm font-medium text-gray-700">Default Infant Surcharge</label>
                                         <input
                                             type="number"
@@ -168,7 +168,7 @@
                                         <div v-if="form.errors.infant_surcharge" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.infant_surcharge }}
                                         </div>
-                                    </div>
+                                    </div> -->
                                 </div>
                                 <div class="grid grid-cols-2 gap-6">
                                     <div>
@@ -437,11 +437,11 @@ const form = useForm({
     description: '',
     images: [],
     display_price_adult: null,
-    display_price_child: null,
-    display_price_infant: null,
-    adult_surcharge: null,
-    child_surcharge: null,
-    infant_surcharge: null,
+    display_price_child: 0,
+    display_price_infant: 0,
+    adult_surcharge: 0,
+    child_surcharge: 0,
+    infant_surcharge: 0,
     infant_max_age_desc: '',
     child_max_age_desc: '',
     package_days: 2,
