@@ -35,9 +35,9 @@ class CreatePriceConfigurationsService
         }
 
         Log::info('Creating price configurations for package: ' . $package->id);
-        Log::info('Room types: ' . json_encode($roomTypes->toArray()));
-        Log::info('Season types: ' . json_encode($seasonTypes->toArray()));
-        Log::info('Date types: ' . json_encode($dateTypes->toArray()));
+        Log::info('Room types: ' . json_encode(is_array($roomTypes) ? $roomTypes : $roomTypes->toArray()));
+        Log::info('Season types: ' . json_encode(is_array($seasonTypes) ? $seasonTypes : $seasonTypes->toArray()));
+        Log::info('Date types: ' . json_encode(is_array($dateTypes) ? $dateTypes : $dateTypes->toArray()));
 
         try {
             DB::beginTransaction();
@@ -56,6 +56,8 @@ class CreatePriceConfigurationsService
                             'room_type_id' => $roomType->id,
                             'configuration_prices' => $generateRandomPrices ? json_encode($this->generateRandomPrices()) : NULL,
                         ]);
+                        
+                        $createdConfigurations[] = $configuration;
                     }
                 }
             }
