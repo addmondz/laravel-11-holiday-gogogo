@@ -70,19 +70,19 @@ class CustomDummySeeder extends Seeder
             'package_id' => $pkg->id,
         ]);
 
-        $earlyBirdSeason = Season::create([
-            'season_type_id' => $earlyBirdSeasonType->id,
-            'start_date' => '2025-03-07',
-            'end_date' => '2025-03-27',
-            'package_id' => $pkg->id,
-        ]);
+        // $earlyBirdSeason = Season::create([
+        //     'season_type_id' => $earlyBirdSeasonType->id,
+        //     'start_date' => '2025-03-07',
+        //     'end_date' => '2025-03-27',
+        //     'package_id' => $pkg->id,
+        // ]);
 
-        $peakSeason = Season::create([
-            'season_type_id' => $peakSeasonType->id,
-            'start_date' => '2024-03-28',
-            'end_date' => '2025-09-30',
-            'package_id' => $pkg->id,
-        ]);
+        // $peakSeason = Season::create([
+        //     'season_type_id' => $peakSeasonType->id,
+        //     'start_date' => '2024-03-28',
+        //     'end_date' => '2025-04-30',
+        //     'package_id' => $pkg->id,
+        // ]);
 
 
         $weekday = DateType::where('name', 'Weekday')->first();
