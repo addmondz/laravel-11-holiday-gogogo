@@ -30,10 +30,12 @@ class Package extends Model
         'images',
         'child_max_age_desc',
         'infant_max_age_desc',
+        'weekend_days',
     ];
 
     protected $casts = [
-        'images' => 'array'
+        'images' => 'array',
+        'weekend_days' => 'array'
     ];
 
     public function addOns(): HasMany

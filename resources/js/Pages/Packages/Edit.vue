@@ -70,6 +70,28 @@
                                         </div>
                                     </div>
 
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Weekend Days</label>
+                                        <div class="grid grid-cols-7 gap-2">
+                                            <div v-for="(day, index) in weekDays" :key="index" class="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    :id="'day-' + index"
+                                                    :value="index"
+                                                    v-model.number="form.weekend_days"
+                                                    class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                                />
+                                                <label :for="'day-' + index" class="ml-2 text-sm text-gray-700">
+                                                    {{ day }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">Select which days are considered weekends for pricing purposes.</p>
+                                        <div v-if="form.errors.weekend_days" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.weekend_days }}
+                                        </div>
+                                    </div>
+            
                                     <!-- <div>
                                         <label for="display_price_child" class="block text-sm font-medium text-gray-700">Display Price (Child)</label>
                                         <input
@@ -226,6 +248,8 @@ const breadcrumbs = computed(() => [
     { title: 'Edit Package', },
 ]);
 
+const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 const form = useForm({
     name: props.package.name,
     description: props.package.description,
@@ -238,6 +262,7 @@ const form = useForm({
     location: props.package.location,
     package_start_date: props.package.package_start_date,
     package_end_date: props.package.package_end_date,
+    weekend_days: props.package.weekend_days || [0, 6], // Default to Saturday and Sunday
 });
 
 const handleImagesUpload = (event) => {
@@ -344,8 +369,12 @@ const submit = () => {
                 });
             }
         } else {
-            // Handle all other form fields
-            formData.append(key, form[key]);
+            // JSON-encode arrays like weekend_days
+            if (Array.isArray(form[key])) {
+                formData.append(key, JSON.stringify(form[key]));
+            } else {
+                formData.append(key, form[key]);
+            }
         }
     });
 

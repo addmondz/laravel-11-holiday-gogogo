@@ -26,175 +26,175 @@ class TravelCalculatorController extends Controller
         $this->enabledDefaultSeasonAndDateType = env('ENABLED_DEFAULT_SEASON_AND_DATE_TYPE', false);
     }
 
-    public function calculate(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'package_id' => 'required|exists:packages,id',
-                'rooms' => 'required|array|min:1',
-                'rooms.*.room_type' => 'required|exists:room_types,id',
-                'rooms.*.adults' => 'required|integer|min:1|max:4',
-                'rooms.*.children' => 'required|integer|min:0|max:4',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after:start_date',
-            ]);
+    // public function calculate(Request $request)
+    // {
+    //     try {
+    //         $validator = Validator::make($request->all(), [
+    //             'package_id' => 'required|exists:packages,id',
+    //             'rooms' => 'required|array|min:1',
+    //             'rooms.*.room_type' => 'required|exists:room_types,id',
+    //             'rooms.*.adults' => 'required|integer|min:1|max:4',
+    //             'rooms.*.children' => 'required|integer|min:0|max:4',
+    //             'start_date' => 'required|date',
+    //             'end_date' => 'required|date|after:start_date',
+    //         ]);
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
+    //         if ($validator->fails()) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Validation failed',
+    //                 'errors' => $validator->errors()
+    //             ], 422);
+    //         }
 
-            $package = Package::with(['roomTypes', 'seasons', 'dateTypeRanges'])->findOrFail($request->package_id);
-            $startDate = Carbon::parse($request->start_date);
-            $endDate = Carbon::parse($request->end_date);
-            $duration = $startDate->diffInDays($endDate);
+    //         $package = Package::with(['roomTypes', 'seasons', 'dateTypeRanges'])->findOrFail($request->package_id);
+    //         $startDate = Carbon::parse($request->start_date);
+    //         $endDate = Carbon::parse($request->end_date);
+    //         $duration = $startDate->diffInDays($endDate);
 
-            // Validate duration against package max days
-            if ($duration > $package->package_max_days) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "Duration cannot exceed {$package->package_max_days} days"
-                ], 422);
-            }
+    //         // Validate duration against package max days
+    //         if ($duration > $package->package_max_days) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => "Duration cannot exceed {$package->package_max_days} days"
+    //             ], 422);
+    //         }
 
-            // Validate package date range
-            $packageStartDate = Carbon::parse($package->package_start_date);
-            $packageEndDate = Carbon::parse($package->package_end_date);
-            if ($startDate < $packageStartDate || $endDate > $packageEndDate) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "Booking dates must be within package date range ({$packageStartDate->format('d M Y')} to {$packageEndDate->format('d M Y')})"
-                ], 422);
-            }
+    //         // Validate package date range
+    //         $packageStartDate = Carbon::parse($package->package_start_date);
+    //         $packageEndDate = Carbon::parse($package->package_end_date);
+    //         if ($startDate < $packageStartDate || $endDate > $packageEndDate) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => "Booking dates must be within package date range ({$packageStartDate->format('d M Y')} to {$packageEndDate->format('d M Y')})"
+    //             ], 422);
+    //         }
 
-            // Determine season and date type
-            $season = $package->seasons->first(function ($season) use ($startDate) {
-                return $startDate->between($season->season_start_date, $season->season_end_date);
-            });
+    //         // Determine season and date type
+    //         $season = $package->seasons->first(function ($season) use ($startDate) {
+    //             return $startDate->between($season->season_start_date, $season->season_end_date);
+    //         });
 
-            $dateTypeRange = $package->dateTypeRanges->first(function ($range) use ($startDate) {
-                return $startDate->between($range->date_type_start_date, $range->date_type_end_date);
-            });
+    //         $dateTypeRange = $package->dateTypeRanges->first(function ($range) use ($startDate) {
+    //             return $startDate->between($range->date_type_start_date, $range->date_type_end_date);
+    //         });
 
-            $isWeekend = $startDate->isWeekend();
+    //         $isWeekend = $startDate->isWeekend();
 
-            // Calculate base charges for each room
-            $totalBaseCharge = 0;
-            $roomBreakdowns = [];
-            $nightlyBreakdown = [];
+    //         // Calculate base charges for each room
+    //         $totalBaseCharge = 0;
+    //         $roomBreakdowns = [];
+    //         $nightlyBreakdown = [];
 
-            foreach ($request->rooms as $room) {
-                $roomType = $package->roomTypes->firstWhere('id', $room['room_type']);
-                if (!$roomType) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Invalid room type selected"
-                    ], 422);
-                }
+    //         foreach ($request->rooms as $room) {
+    //             $roomType = $package->roomTypes->firstWhere('id', $room['room_type']);
+    //             if (!$roomType) {
+    //                 return response()->json([
+    //                     'success' => false,
+    //                     'message' => "Invalid room type selected"
+    //                 ], 422);
+    //             }
 
-                // Validate total guests per room
-                if ($room['adults'] + $room['children'] > 4) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Maximum 4 guests per room"
-                    ], 422);
-                }
+    //             // Validate total guests per room
+    //             if ($room['adults'] + $room['children'] > 4) {
+    //                 return response()->json([
+    //                     'success' => false,
+    //                     'message' => "Maximum 4 guests per room"
+    //                 ], 422);
+    //             }
 
-                // Get price configuration for this room type and guest combination
-                $priceConfig = $roomType->priceConfigurations()
-                    ->where('adults', $room['adults'])
-                    ->where('children', $room['children'])
-                    ->first();
+    //             // Get price configuration for this room type and guest combination
+    //             $priceConfig = $roomType->priceConfigurations()
+    //                 ->where('adults', $room['adults'])
+    //                 ->where('children', $room['children'])
+    //                 ->first();
 
-                if (!$priceConfig) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "No price configuration found for {$roomType->name} with {$room['adults']} adults and {$room['children']} children"
-                    ], 422);
-                }
+    //             if (!$priceConfig) {
+    //                 return response()->json([
+    //                     'success' => false,
+    //                     'message' => "No price configuration found for {$roomType->name} with {$room['adults']} adults and {$room['children']} children"
+    //                 ], 422);
+    //             }
 
-                $baseCharge = $priceConfig->base_charge;
-                $surcharge = 0;
+    //             $baseCharge = $priceConfig->base_charge;
+    //             $surcharge = 0;
 
-                // Apply season surcharge if applicable
-                if ($season) {
-                    $surcharge += $baseCharge * ($season->season_surcharge_percentage / 100);
-                }
+    //             // Apply season surcharge if applicable
+    //             if ($season) {
+    //                 $surcharge += $baseCharge * ($season->season_surcharge_percentage / 100);
+    //             }
 
-                // Apply date type surcharge if applicable
-                if ($dateTypeRange) {
-                    $surcharge += $baseCharge * ($dateTypeRange->date_type_surcharge_percentage / 100);
-                }
+    //             // Apply date type surcharge if applicable
+    //             if ($dateTypeRange) {
+    //                 $surcharge += $baseCharge * ($dateTypeRange->date_type_surcharge_percentage / 100);
+    //             }
 
-                // Apply weekend surcharge if applicable
-                if ($isWeekend) {
-                    $surcharge += $baseCharge * ($package->weekend_surcharge_percentage / 100);
-                }
+    //             // Apply weekend surcharge if applicable
+    //             if ($isWeekend) {
+    //                 $surcharge += $baseCharge * ($package->weekend_surcharge_percentage / 100);
+    //             }
 
-                $roomTotal = $baseCharge + $surcharge;
-                $totalBaseCharge += $roomTotal;
+    //             $roomTotal = $baseCharge + $surcharge;
+    //             $totalBaseCharge += $roomTotal;
 
-                // Add to room breakdowns
-                $roomBreakdowns[] = [
-                    'room_type' => $roomType->name,
-                    'adults' => $room['adults'],
-                    'children' => $room['children'],
-                    'base_charge' => $baseCharge,
-                    'surcharge' => $surcharge,
-                    'total' => $roomTotal
-                ];
+    //             // Add to room breakdowns
+    //             $roomBreakdowns[] = [
+    //                 'room_type' => $roomType->name,
+    //                 'adults' => $room['adults'],
+    //                 'children' => $room['children'],
+    //                 'base_charge' => $baseCharge,
+    //                 'surcharge' => $surcharge,
+    //                 'total' => $roomTotal
+    //             ];
 
-                // Add to nightly breakdown
-                $nightlyBreakdown[] = [
-                    'room_type' => $roomType->name,
-                    'adults' => $room['adults'],
-                    'children' => $room['children'],
-                    'base_charge' => $baseCharge,
-                    'surcharge' => $surcharge,
-                    'total' => $roomTotal
-                ];
-            }
+    //             // Add to nightly breakdown
+    //             $nightlyBreakdown[] = [
+    //                 'room_type' => $roomType->name,
+    //                 'adults' => $room['adults'],
+    //                 'children' => $room['children'],
+    //                 'base_charge' => $baseCharge,
+    //                 'surcharge' => $surcharge,
+    //                 'total' => $roomTotal
+    //             ];
+    //         }
 
-            // Calculate add-ons if any
-            $addOns = [];
-            $addOnTotal = 0;
-            if ($request->has('add_on_ids')) {
-                $addOns = PackageAddOn::whereIn('id', $request->add_on_ids)->get();
-                $addOnTotal = $addOns->sum('price') * $duration;
-            }
+    //         // Calculate add-ons if any
+    //         $addOns = [];
+    //         $addOnTotal = 0;
+    //         if ($request->has('add_on_ids')) {
+    //             $addOns = PackageAddOn::whereIn('id', $request->add_on_ids)->get();
+    //             $addOnTotal = $addOns->sum('price') * $duration;
+    //         }
 
-            $grandTotal = $totalBaseCharge + $addOnTotal;
+    //         $grandTotal = $totalBaseCharge + $addOnTotal;
 
-            return response()->json([
-                'success' => true,
-                'total' => $grandTotal,
-                'breakdown' => [
-                    'rooms' => $roomBreakdowns,
-                    'nightly_breakdown' => $nightlyBreakdown,
-                    'add_ons' => $addOns->map(function ($addOn) use ($duration) {
-                        return [
-                            'name' => $addOn->name,
-                            'price' => $addOn->price,
-                            'total' => $addOn->price * $duration
-                        ];
-                    }),
-                    'add_on_total' => $addOnTotal
-                ],
-                'season_type' => $season ? $season->season_name : null,
-                'date_type' => $dateTypeRange ? $dateTypeRange->date_type_name : null,
-                'is_weekend' => $isWeekend,
-                'duration' => $duration
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'success' => true,
+    //             'total' => $grandTotal,
+    //             'breakdown' => [
+    //                 'rooms' => $roomBreakdowns,
+    //                 'nightly_breakdown' => $nightlyBreakdown,
+    //                 'add_ons' => $addOns->map(function ($addOn) use ($duration) {
+    //                     return [
+    //                         'name' => $addOn->name,
+    //                         'price' => $addOn->price,
+    //                         'total' => $addOn->price * $duration
+    //                     ];
+    //                 }),
+    //                 'add_on_total' => $addOnTotal
+    //             ],
+    //             'season_type' => $season ? $season->season_name : null,
+    //             'date_type' => $dateTypeRange ? $dateTypeRange->date_type_name : null,
+    //             'is_weekend' => $isWeekend,
+    //             'duration' => $duration
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     public function getResources(Request $request)
     {
@@ -285,6 +285,7 @@ class TravelCalculatorController extends Controller
 
     public function calculatePriceByParams($packageId, $rooms, $startDate, $endDate, $isFromBot = false)
     {
+        $package = Package::find($packageId);
         try {
             $startDate = Carbon::parse($startDate);
 
@@ -335,19 +336,27 @@ class TravelCalculatorController extends Controller
 
                     if ($dateTypeRange) {
                         $dateType = $dateTypeRange->dateType;
-                    } else if ($this->enabledDefaultSeasonAndDateType) {
+                    } else {
+
                         $fallbackType = $date->isWeekend() ? 'weekend' : 'weekday';
+
+                        if (!empty($package->weekend_days)) {
+                            $weekendDays = is_array($package->weekend_days) ? $package->weekend_days : json_decode($package->weekend_days, true);
+                            $dayOfWeek = $date->dayOfWeek; // 0 (Sunday) to 6 (Saturday)
+
+                            if (in_array($dayOfWeek, $weekendDays)) {
+                                $fallbackType = 'weekend';
+                            } else {
+                                $fallbackType = 'weekday';
+                            }
+                        }
+
                         $dateType = DateType::where('name', 'LIKE', "%$fallbackType%")->first();
 
                         if (!$dateType) {
-                            Log::error('Default Date type not found for ' . $date->format('Y-m-d') . ' for package ' . $packageId);
-                            throw new \Exception('An expected error occurred. Please contact admin. Date type not found for ' . $date->format('Y-m-d'));
+                            Log::error("Default Date type not found for {$date->format('Y-m-d')} for package {$packageId}");
+                            throw new \Exception("Date type not found for {$date->format('Y-m-d')}");
                         }
-                    } else {
-                        // throw new \Exception('An expected error occurred. Please contact admin. Date type not found for ' . $date->format('Y-m-d'));
-                        // Log::error('Date type not found for ' . $date->format('Y-m-d') . ' for package ' . $packageId);
-                        Log::error("invalid date type range for " . $date->format('Y-m-d') . " for package " . $packageId);
-                        throw new \Exception("The selected dates and room type combination are not available. Please contact us for more information.");
                     }
 
                     $season = Season::where('start_date', '<=', $date)
@@ -492,7 +501,7 @@ class TravelCalculatorController extends Controller
             $totalAdults = 0;
             $totalChildren = 0;
             $totalInfants = 0;
-            
+
             foreach ($roomBreakdowns as $roomIndex => $room) {
                 $adults = $room['adults'];
                 $children = $room['children'];
@@ -500,16 +509,16 @@ class TravelCalculatorController extends Controller
                 $totalAdults += $adults;
                 $totalChildren += $children;
                 $totalInfants += $infants;
-                
+
                 // Add adults
                 for ($adultIndex = 1; $adultIndex <= $adults; $adultIndex++) {
                     $adultKey = "adult_{$roomIndex}_{$adultIndex}";
-                    
+
                     // Calculate per-adult pricing for this room
                     $adultBaseChargePerNight = $room['nights'][0]['base_charge']['adult']['price'] ?? 0;
                     $adultSurchargePerNight = $room['nights'][0]['surcharge']['adult']['price'] ?? 0;
                     $nightsCount = count($room['nights']);
-                    
+
                     $guestBreakdown[$adultKey] = [
                         'room_number' => $roomIndex + 1,
                         'room_type_name' => $room['room_type_name'],
@@ -527,16 +536,16 @@ class TravelCalculatorController extends Controller
                         'total' => ($adultBaseChargePerNight + $adultSurchargePerNight) * $nightsCount
                     ];
                 }
-                
+
                 // Add children
                 for ($childIndex = 1; $childIndex <= $children; $childIndex++) {
                     $childKey = "child_{$roomIndex}_{$childIndex}";
-                    
+
                     // Calculate per-child pricing for this room
                     $childBaseChargePerNight = $room['nights'][0]['base_charge']['child']['price'] ?? 0;
                     $childSurchargePerNight = $room['nights'][0]['surcharge']['child']['price'] ?? 0;
                     $nightsCount = count($room['nights']);
-                    
+
                     $guestBreakdown[$childKey] = [
                         'room_number' => $roomIndex + 1,
                         'room_type_name' => $room['room_type_name'],
@@ -554,16 +563,16 @@ class TravelCalculatorController extends Controller
                         'total' => ($childBaseChargePerNight + $childSurchargePerNight) * $nightsCount
                     ];
                 }
-                
+
                 // Add infants
                 for ($infantIndex = 1; $infantIndex <= $infants; $infantIndex++) {
                     $infantKey = "infant_{$roomIndex}_{$infantIndex}";
-                    
+
                     // Calculate per-infant pricing for this room
                     $infantBaseChargePerNight = $room['nights'][0]['base_charge']['infant']['price'] ?? 0;
                     $infantSurchargePerNight = $room['nights'][0]['surcharge']['infant']['price'] ?? 0;
                     $nightsCount = count($room['nights']);
-                    
+
                     $guestBreakdown[$infantKey] = [
                         'room_number' => $roomIndex + 1,
                         'room_type_name' => $room['room_type_name'],

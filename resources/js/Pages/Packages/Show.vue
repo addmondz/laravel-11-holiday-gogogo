@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import PackageDetails from './packages-show-tabs/PackageDetails.vue';
@@ -172,4 +172,14 @@ const getParamFromUrl = () => {
 
 // const currentTab = ref('details');
 const currentTab = ref(getParamFromUrl() || 'details');
+
+watch(currentTab, (newVal, oldVal) => {
+
+    // force refresh the page when switching to price-configuration
+    if (newVal == 'price-configuration' && oldVal != 'price-configuration') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', 'price-configuration');
+        window.location.href = url.toString();
+    }
+});
 </script>

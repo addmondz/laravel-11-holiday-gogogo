@@ -85,6 +85,7 @@ class DummySeeder extends Seeder
                 'package_start_date' => '2025-01-01',
                 'package_end_date' => '2025-12-31',
                 'uuid' => (new GeneratePackageUid())->execute($packageName),
+                'weekend_days' => [0, 6],
             ]);
 
             $weekday = DateType::where('name', 'Weekday')->first();
@@ -201,10 +202,11 @@ class DummySeeder extends Seeder
                 'end_date' => $oneMonthLater,
                 'package_id' => $pkg->id
             ]);
+            $defaultDateType = DateType::whereNotIn('name', ['weekday', 'weekend'])->get()->random();
 
             // register date type range
             DateTypeRange::create([
-                'date_type_id' => DateType::first()->id,
+                'date_type_id' => $defaultDateType->id,
                 'start_date' => $oneMonthAgo,
                 'end_date' => $oneMonthLater,
                 'package_id' => $pkg->id

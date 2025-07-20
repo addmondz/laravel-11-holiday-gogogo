@@ -115,6 +115,8 @@ class PackageController extends Controller
                 'location' => 'required|string|max:255',
                 'package_start_date' => 'required|date',
                 'package_end_date' => 'required|date|after:package_start_date',
+                'weekend_days' => 'nullable|array',
+                'weekend_days.*' => 'integer|min:0|max:6',
                 'room_types' => 'required|array|min:1',
                 'room_types.*.name' => 'required|string|max:255',
                 'room_types.*.max_occupancy' => 'required|integer|min:1',
@@ -166,6 +168,10 @@ class PackageController extends Controller
                 'package_end_date.required' => 'End date is required',
                 'package_end_date.date' => 'Invalid end date format',
                 'package_end_date.after' => 'End date must be after start date',
+                'weekend_days.array' => 'Weekend days must be provided as a list',
+                'weekend_days.*.integer' => 'Weekend day must be a whole number',
+                'weekend_days.*.min' => 'Weekend day must be between 0 and 6',
+                'weekend_days.*.max' => 'Weekend day must be between 0 and 6',
                 'room_types.required' => 'At least one room type is required',
                 'room_types.array' => 'Room types must be provided as a list',
                 'room_types.min' => 'At least one room type is required',
@@ -196,6 +202,7 @@ class PackageController extends Controller
             $v['uuid'] = (new GeneratePackageUid())->execute($v['name']);
             $v['package_min_days'] = $v['package_days'];
             $v['package_max_days'] = $v['package_days'];
+            $v['weekend_days'] = $v['weekend_days'] ?? [0, 6]; // Default to Saturday and Sunday
 
             $package = Package::create($v);
 
@@ -395,6 +402,15 @@ class PackageController extends Controller
 
     public function update(Request $request, Package $package)
     {
+        $weekendDays = json_decode($request->weekend_days, true);
+        if (is_array($weekendDays)) {
+            sort($weekendDays);
+        }
+
+        $request->merge([
+            'weekend_days' => $weekendDays
+        ]);
+
         DB::beginTransaction();
 
         try {
@@ -417,6 +433,8 @@ class PackageController extends Controller
                 'location' => 'nullable|string|max:255',
                 'package_start_date' => 'required|date',
                 'package_end_date' => 'nullable|date|after:package_start_date',
+                'weekend_days' => 'nullable|array',
+                'weekend_days.*' => 'integer|min:0|max:6',
                 'delete_images' => 'nullable|array',
                 'delete_images.*' => 'string'
             ], [
@@ -437,7 +455,11 @@ class PackageController extends Controller
                 'package_start_date.required' => 'Start date is required',
                 'package_start_date.date' => 'Invalid start date format',
                 'package_end_date.date' => 'Invalid end date format',
-                'package_end_date.after' => 'End date must be after start date'
+                'package_end_date.after' => 'End date must be after start date',
+                'weekend_days.array' => 'Weekend days must be provided as a list',
+                'weekend_days.*.integer' => 'Weekend day must be a whole number',
+                'weekend_days.*.min' => 'Weekend day must be between 0 and 6',
+                'weekend_days.*.max' => 'Weekend day must be between 0 and 6'
             ]);
 
             if ($validator->fails()) {
@@ -575,6 +597,8 @@ class PackageController extends Controller
                 'location' => 'nullable|string|max:255',
                 'package_start_date' => 'required|date',
                 'package_end_date' => 'nullable|date|after:package_start_date',
+                'weekend_days' => 'nullable|array',
+                'weekend_days.*' => 'integer|min:0|max:6',
                 'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240', // 10MB max
                 'room_types' => 'required|array|min:1',
                 'room_types.*.name' => 'required|string|max:255',
@@ -595,6 +619,10 @@ class PackageController extends Controller
                 'package_start_date.date' => 'Invalid start date format',
                 'package_end_date.date' => 'Invalid end date format',
                 'package_end_date.after' => 'End date must be after start date',
+                'weekend_days.array' => 'Weekend days must be provided as a list',
+                'weekend_days.*.integer' => 'Weekend day must be a whole number',
+                'weekend_days.*.min' => 'Weekend day must be between 0 and 6',
+                'weekend_days.*.max' => 'Weekend day must be between 0 and 6',
                 'images.*.image' => 'The file must be an image (JPG, PNG, or GIF)',
                 'images.*.mimes' => 'Only JPG, PNG, and GIF images are allowed',
                 'images.*.max' => 'Each image cannot exceed 10MB',
@@ -611,6 +639,7 @@ class PackageController extends Controller
             // Create new package with validated data
             $newPackage = new Package($validated);
             $newPackage->uuid = (new GeneratePackageUid())->execute($newPackage->name);
+            $newPackage->weekend_days = $validated['weekend_days'] ?? [0, 6]; // Default to Saturday and Sunday
 
             // Handle image uploads and copying
             $images = [];

@@ -34,11 +34,6 @@ class CreatePriceConfigurationsService
             $dateTypes = $package->uniqueDateTypes();
         }
 
-        Log::info('Creating price configurations for package: ' . $package->id);
-        Log::info('Room types: ' . json_encode(is_array($roomTypes) ? $roomTypes : $roomTypes->toArray()));
-        Log::info('Season types: ' . json_encode(is_array($seasonTypes) ? $seasonTypes : $seasonTypes->toArray()));
-        Log::info('Date types: ' . json_encode(is_array($dateTypes) ? $dateTypes : $dateTypes->toArray()));
-
         try {
             DB::beginTransaction();
 

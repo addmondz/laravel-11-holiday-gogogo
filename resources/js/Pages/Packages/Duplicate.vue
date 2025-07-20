@@ -129,6 +129,28 @@
                                 </div>
 
                                 <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Weekend Days</label>
+                                    <div class="grid grid-cols-7 gap-2">
+                                        <div v-for="(day, index) in weekDays" :key="index" class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                :id="'day-' + index"
+                                                :value="index"
+                                                v-model="form.weekend_days"
+                                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                            />
+                                            <label :for="'day-' + index" class="ml-2 text-sm text-gray-700">
+                                                {{ day }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500">Select which days are considered weekends for pricing purposes.</p>
+                                    <div v-if="form.errors.weekend_days" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.weekend_days }}
+                                    </div>
+                                </div>
+
+                                <div>
                                     <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">Terms and Conditions</label>
                                     <textarea
                                         id="terms_and_conditions"
@@ -317,6 +339,7 @@ const form = useForm({
     display_price_child: props.package.display_price_child,
     package_min_days: props.package.package_min_days,
     package_max_days: props.package.package_max_days,
+    weekend_days: props.package.weekend_days || [0, 6], // Default to Saturday and Sunday
     terms_and_conditions: props.package.terms_and_conditions,
     location: props.package.location,
     package_start_date: props.package.package_start_date,
@@ -330,6 +353,7 @@ const form = useForm({
 
 const dateError = ref('');
 const router = useRouter();
+const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const addRoomType = () => {
     form.room_types.push({

@@ -105,7 +105,7 @@ class RoomTypeController extends Controller
                 $currentImages = $roomType->images ?? [];
             }
 
-            Log::info('Current images', ['images' => $currentImages]);
+            // Log::info('Current images', ['images' => $currentImages]);
 
             // Handle new image uploads
             if ($request->hasFile('images')) {

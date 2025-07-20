@@ -38,6 +38,15 @@
                         {{ package.package_max_days + 1 }} Days {{ package.package_max_days }} {{ package.package_max_days > 1 ? 'Nights' : 'Night' }}
                     </p>
                 </div>
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500">Weekend Days</h4>
+                    <p class="mt-1 text-sm text-gray-900">
+                        <span v-if="package.weekend_days && package.weekend_days.length > 0">
+                            {{ formatWeekendDays(package.weekend_days) }}
+                        </span>
+                        <span v-else class="text-gray-400">Not configured</span>
+                    </p>
+                </div>
             </div>
             <div>
                 <h4 class="text-sm font-medium text-gray-500">Terms and Conditions</h4>
@@ -117,6 +126,22 @@ const formatNumber = (number) => {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
+};
+
+const formatWeekendDays = (weekendDays) => {
+    if (!weekendDays || weekendDays.length === 0) return 'Not configured';
+    
+    const dayNames = {
+        0: 'Sunday',
+        1: 'Monday', 
+        2: 'Tuesday',
+        3: 'Wednesday',
+        4: 'Thursday',
+        5: 'Friday',
+        6: 'Saturday'
+    };
+    
+    return weekendDays.map(day => dayNames[day]).join(', ');
 };
 
 const getImageUrl = (imagePath) => {

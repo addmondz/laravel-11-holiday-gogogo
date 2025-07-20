@@ -51,6 +51,7 @@ class CustomDummySeeder extends Seeder
             'package_start_date' => '2025-07-01',
             'package_end_date' => '2025-12-31',
             'uuid' => (new GeneratePackageUid())->execute("3d2n Redang Beach Resort Snorkeling Package"),
+            'weekend_days' => [0, 6],
         ]);
 
         $yearEndSeasonType = SeasonType::create([
@@ -106,7 +107,7 @@ class CustomDummySeeder extends Seeder
         $SURWEEKDateType = DateType::create([
             'name' => 'SURWEEK',
         ]);
-        $SURWEEKs= [
+        $SURWEEKs = [
             ['2025/03/07', '2025/03/08'],
             ['2025/03/14', '2025/03/15'],
             ['2025/03/21', '2025/03/22'],
