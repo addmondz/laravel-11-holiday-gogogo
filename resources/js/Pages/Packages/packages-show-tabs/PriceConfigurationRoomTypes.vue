@@ -209,6 +209,13 @@
                         <div class="flex justify-end space-x-2 mb-6">
                             <button
                                 type="button"
+                                @click="togglePriceConfigByPaxForm"
+                                class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
+                            >
+                                Edit Price By Pax
+                            </button>
+                            <button
+                                type="button"
                                 @click="closePriceForm"
                                 class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
                             >
@@ -390,15 +397,116 @@
                 </template>
             </div>
         </div>
+
+        <Modal :show="showPriceConfigByPaxForm" @close="showPriceConfigByPaxForm = false">
+            <div class="max-w-2xl bg-white space-y-8 p-4">
+                <h3 class="text-md font-medium text-gray-900">Update Price Config by Pax</h3>
+
+                <div class="space-y-6">
+                    <!-- Pax selectors -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1" for="adult">Adult</label>
+                            <select v-model="paxPriceForm.adult" @change="updateDropdowns" class="w-full rounded-lg border-gray-300 px-3 py-2">
+                                <option v-for="a in adultOptions" :key="a" :value="a">{{ a }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1" for="child">Child</label>
+                            <select v-model="paxPriceForm.child" @change="updateDropdowns" class="w-full rounded-lg border-gray-300 px-3 py-2">
+                                <option v-for="c in childOptions" :key="c" :value="c">{{ c }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1" for="infant">Infant</label>
+                            <select v-model="paxPriceForm.infant" @change="updateDropdowns" class="w-full rounded-lg border-gray-300 px-3 py-2">
+                                <option v-for="i in infantOptions" :key="i" :value="i">{{ i }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Amounts -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1" for="adult_amount">Adult Base Charge (RM)</label>
+                            <input
+                                v-model.number="paxPriceForm.adult_base_charge"
+                                type="number"
+                                class="w-full rounded-lg border-gray-300 px-3 py-2"
+                                placeholder="e.g. 120"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1" for="child_amount">Child Base Charge (RM)</label>
+                            <input
+                                v-model.number="paxPriceForm.child_base_charge"
+                                type="number"
+                                class="w-full rounded-lg border-gray-300 px-3 py-2"
+                                placeholder="e.g. 90"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1" for="infant_amount">Infant Base Charge (RM)</label>
+                            <input
+                                v-model.number="paxPriceForm.infant_base_charge"
+                                type="number"
+                                class="w-full rounded-lg border-gray-300 px-3 py-2"
+                                placeholder="e.g. 50"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1" for="adult_surcharge">Adult Surcharge (RM)</label>
+                            <input
+                                v-model.number="paxPriceForm.adult_surcharge"
+                                type="number"
+                                class="w-full rounded-lg border-gray-300 px-3 py-2"
+                                placeholder="e.g. 120"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1" for="child_surcharge">Child Surcharge (RM)</label>
+                            <input
+                                v-model.number="paxPriceForm.child_surcharge"
+                                type="number"
+                                class="w-full rounded-lg border-gray-300 px-3 py-2"
+                                placeholder="e.g. 90"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1" for="infant_surcharge">Infant Surcharge (RM)</label>
+                            <input
+                                v-model.number="paxPriceForm.infant_surcharge"
+                                type="number"
+                                class="w-full rounded-lg border-gray-300 px-3 py-2"
+                                placeholder="e.g. 50"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-2">
+                    <button @click="togglePriceConfigByPaxForm" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs">
+                        Cancel
+                    </button>
+                    <button @click="submitPriceConfigByPax" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs">
+                        Update
+                    </button>
+                </div>
+            </div>
+        </Modal>
     </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, reactive } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
+import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
     packageId: {
@@ -455,6 +563,7 @@ const applyAllSurcharge = ref({
     child_price: '',
     infant_price: ''
 });
+const showPriceConfigByPaxForm = ref(false);
 
 // Form
 const priceForm = useForm({
@@ -555,6 +664,25 @@ const VALID_OCCUPANCY_COMBINATIONS = [
     { adults: 3, children: 1, infants: 0 },
     { adults: 4, children: 0, infants: 0 }
 ];
+
+const paxPriceForm = reactive({
+  adult: 1,
+  child: 0,
+  infant: 0,
+  adult_base_charge: 0,
+  child_base_charge: 0,
+  infant_base_charge: 0,
+  adult_surcharge: 0,
+  child_surcharge: 0,
+  infant_surcharge: 0,
+});
+
+const adultOptions = computed(() => {
+  const unique = new Set(VALID_OCCUPANCY_COMBINATIONS.map(c => c.adults))
+  return [...unique].sort((a, b) => a - b)
+})
+const childOptions = ref([])
+const infantOptions = ref([])
 
 const isValidOccupancy = (adults, children, infants, type, isEditMode = false) => {
     // Check if total occupancy exceeds 4
@@ -768,6 +896,87 @@ const createPriceConfigurationWithApi = () => {
         });
     });
 };
+
+const updateDropdowns = () => {
+  childOptions.value = [
+    ...new Set(
+      VALID_OCCUPANCY_COMBINATIONS
+        .filter(c => c.adults === paxPriceForm.adult)
+        .map(c => c.children)
+    )
+  ].sort((a, b) => a - b)
+
+  if (!childOptions.value.includes(paxPriceForm.child)) {
+    paxPriceForm.child = childOptions.value[0] ?? 0
+  }
+
+  infantOptions.value = [
+    ...new Set(
+      VALID_OCCUPANCY_COMBINATIONS
+        .filter(c => c.adults === paxPriceForm.adult && c.children === paxPriceForm.child)
+        .map(c => c.infants)
+    )
+  ].sort((a, b) => a - b)
+
+  if (!infantOptions.value.includes(paxPriceForm.infant)) {
+    paxPriceForm.infant = infantOptions.value[0] ?? 0
+  }
+}
+
+updateDropdowns()
+watch(() => paxPriceForm.adult, updateDropdowns)
+watch(() => paxPriceForm.child, updateDropdowns)
+
+const togglePriceConfigByPaxForm = () => {
+    showPriceConfigByPaxForm.value = !showPriceConfigByPaxForm.value;
+}
+
+const submitPriceConfigByPax = () => {
+    const {
+        adult,
+        child,
+        infant,
+        adult_base_charge,
+        child_base_charge,
+        infant_base_charge,
+        adult_surcharge,
+        child_surcharge,
+        infant_surcharge
+    } = paxPriceForm;
+
+    configurations.value.forEach(config => {
+        const roomTypeId = config.room_type_id;
+
+        // Update base_charge
+        const baseCharges = priceForm.prices[roomTypeId].base_charge;
+        const baseMatch = baseCharges.find(c =>
+            c.number_of_adults === adult &&
+            c.number_of_children === child &&
+            c.number_of_infants === infant
+        );
+        if (baseMatch) {
+            baseMatch.adult_price = adult_base_charge;
+            baseMatch.child_price = child_base_charge;
+            baseMatch.infant_price = infant_base_charge;
+        }
+
+        // Update sur_charge
+        const surCharges = priceForm.prices[roomTypeId].sur_charge;
+        const surMatch = surCharges.find(c =>
+            c.number_of_adults === adult &&
+            c.number_of_children === child &&
+            c.number_of_infants === infant
+        );
+        if (surMatch) {
+            surMatch.adult_price = adult_surcharge;
+            surMatch.child_price = child_surcharge;
+            surMatch.infant_price = infant_surcharge;
+        }
+    });
+
+    showPriceConfigByPaxForm.value = false;
+};
+
 </script>
 
 <style scoped>

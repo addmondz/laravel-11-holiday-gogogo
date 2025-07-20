@@ -141,6 +141,7 @@ const tabs = [
     { id: 'price-configuration', name: 'Price Configuration' },
     { id: 'date-blockers', name: 'Date Blockers' },
     { id: 'update-price-config-by-pax', name: 'Update Price Config By Pax' }
+    // { id: 'update-price-config-by-pax', name: 'Update Price Config By Pax' }
 ];
 
 const breadcrumbs = computed(() => [
