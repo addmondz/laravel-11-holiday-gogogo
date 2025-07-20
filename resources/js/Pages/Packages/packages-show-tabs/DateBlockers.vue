@@ -9,7 +9,7 @@
                 Add Date Blocker
             </button>
         </div>
-
+        
         <!-- Date Blockers Table -->
         <div class="overflow-x-auto">
             <div v-if="initialLoading" class="flex justify-center items-center h-full min-h-[400px]">
@@ -135,8 +135,8 @@
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
                                 <option value="">Select Room Type</option>
-                                <option v-for="roomType in packageUniqueRoomTypes" :value="roomType.id" :key="roomType.id">
-                                    {{ roomType.name }}
+                                <option v-for="(roomType, key) in packageUniqueRoomTypes" :value="key" :key="key">
+                                    {{ roomType }}
                                 </option>
                             </select>
                         </div>
@@ -237,6 +237,10 @@ const props = defineProps({
         required: true
     },
     package: {
+        type: Object,
+        required: true
+    },
+    packageUniqueRoomTypes: {
         type: Object,
         required: true
     }

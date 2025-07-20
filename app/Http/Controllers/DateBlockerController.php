@@ -18,13 +18,9 @@ class DateBlockerController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        if ($request->wantsJson()) {
-            return response()->json($dateBlockers);
-        }
-
-        return Inertia::render('Packages/Show', [
-            'dateBlockers' => $dateBlockers
-        ]);
+        return $request->wantsJson()
+            ? response()->json($dateBlockers)
+            : Inertia::render('Packages/Show', ['dateBlockers' => $dateBlockers]);
     }
 
     public function store(Request $request)
@@ -32,56 +28,30 @@ class DateBlockerController extends Controller
         $validated = $request->validate([
             'package_id' => 'required|exists:packages,id',
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'end_date'   => 'required|date|after_or_equal:start_date',
             'room_type_id' => 'required|exists:room_types,id',
+        ], [
+            'end_date.after_or_equal' => 'End date must be the same as or after the start date.',
         ]);
 
-        // Check for overlapping dates
         if (DateBlocker::hasOverlappingDates($validated['start_date'], $validated['end_date'], $validated['package_id'], null, $validated['room_type_id'])) {
-            $dateBlocker = DateBlocker::where('package_id', $validated['package_id'])
+            $blocker = DateBlocker::where('package_id', $validated['package_id'])
                 ->where('room_type_id', $validated['room_type_id'])
                 ->where('start_date', '<=', $validated['end_date'])
                 ->where('end_date', '>=', $validated['start_date'])
                 ->first();
 
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'message' => 'This date range overlaps with an existing date blocker for this package and room type in the date range of ' . 
-                        Carbon::parse($dateBlocker->start_date)->format('d-m-Y') . ' to ' . 
-                        Carbon::parse($dateBlocker->end_date)->format('d-m-Y') . ' for room type ' . $dateBlocker->roomType->name
-                ], 422);
-            }
-
-            return back()->withErrors([
-                'date_range' => 'This date range overlaps with an existing date blocker for this package and room type in the date range of ' . 
-                    Carbon::parse($dateBlocker->start_date)->format('d-m-Y') . ' to ' . 
-                    Carbon::parse($dateBlocker->end_date)->format('d-m-Y') . ' for room type ' . $dateBlocker->roomType->name
-            ]);
+            return $this->respondWithOverlap($request, $blocker);
         }
 
         try {
             $dateBlocker = DateBlocker::create($validated);
-            
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'message' => 'Date blocker created successfully',
-                    'dateBlocker' => $dateBlocker
-                ]);
-            }
 
-            return back()->with('success', 'Date blocker created successfully');
+            return $request->wantsJson()
+                ? response()->json(['message' => 'Date blocker created successfully', 'dateBlocker' => $dateBlocker])
+                : back()->with('success', 'Date blocker created successfully');
         } catch (\Exception $e) {
-            Log::error('Date blocker creation error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
-            ]);
-
-            if ($request->wantsJson()) {
-                return response()->json(['message' => 'Error creating date blocker: ' . $e->getMessage()], 500);
-            }
-
-            return back()->withErrors(['error' => 'Error creating date blocker: ' . $e->getMessage()]);
+            return $this->respondWithException($request, 'creating', $e, $request->all());
         }
     }
 
@@ -89,55 +59,29 @@ class DateBlockerController extends Controller
     {
         $validated = $request->validate([
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'end_date'   => 'required|date|after_or_equal:start_date',
+        ], [
+            'end_date.after_or_equal' => 'End date must be the same as or after the start date.',
         ]);
 
-        // Check for overlapping dates, excluding current date blocker
         if (DateBlocker::hasOverlappingDates($validated['start_date'], $validated['end_date'], $dateBlocker->package_id, $dateBlocker->id)) {
-            $overlappingBlocker = DateBlocker::where('package_id', $dateBlocker->package_id)
+            $blocker = DateBlocker::where('package_id', $dateBlocker->package_id)
                 ->where('id', '!=', $dateBlocker->id)
                 ->where('start_date', '<=', $validated['end_date'])
                 ->where('end_date', '>=', $validated['start_date'])
                 ->first();
 
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'message' => 'This date range overlaps with an existing date blocker for this package in the date range of ' . 
-                        Carbon::parse($overlappingBlocker->start_date)->format('d-m-Y') . ' to ' . 
-                        Carbon::parse($overlappingBlocker->end_date)->format('d-m-Y')
-                ], 422);
-            }
-
-            return back()->withErrors([
-                'date_range' => 'This date range overlaps with an existing date blocker for this package in the date range of ' . 
-                    Carbon::parse($overlappingBlocker->start_date)->format('d-m-Y') . ' to ' . 
-                    Carbon::parse($overlappingBlocker->end_date)->format('d-m-Y')
-            ]);
+            return $this->respondWithOverlap($request, $blocker);
         }
 
         try {
             $dateBlocker->update($validated);
-            
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'message' => 'Date blocker updated successfully',
-                    'dateBlocker' => $dateBlocker
-                ]);
-            }
 
-            return back()->with('success', 'Date blocker updated successfully');
+            return $request->wantsJson()
+                ? response()->json(['message' => 'Date blocker updated successfully', 'dateBlocker' => $dateBlocker])
+                : back()->with('success', 'Date blocker updated successfully');
         } catch (\Exception $e) {
-            Log::error('Date blocker update error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
-            ]);
-
-            if ($request->wantsJson()) {
-                return response()->json(['message' => 'Error updating date blocker: ' . $e->getMessage()], 500);
-            }
-
-            return back()->withErrors(['error' => 'Error updating date blocker: ' . $e->getMessage()]);
+            return $this->respondWithException($request, 'updating', $e, $request->all());
         }
     }
 
@@ -145,24 +89,40 @@ class DateBlockerController extends Controller
     {
         try {
             $dateBlocker->delete();
-            
-            if (request()->wantsJson()) {
-                return response()->json(['message' => 'Date blocker deleted successfully']);
-            }
 
-            return back()->with('success', 'Date blocker deleted successfully');
+            return request()->wantsJson()
+                ? response()->json(['message' => 'Date blocker deleted successfully'])
+                : back()->with('success', 'Date blocker deleted successfully');
         } catch (\Exception $e) {
-            Log::error('Date blocker deletion error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'date_blocker_id' => $dateBlocker->id
-            ]);
-
-            if (request()->wantsJson()) {
-                return response()->json(['message' => 'Error deleting date blocker: ' . $e->getMessage()], 500);
-            }
-
-            return back()->withErrors(['error' => 'Error deleting date blocker: ' . $e->getMessage()]);
+            return $this->respondWithException(request(), 'deleting', $e, ['date_blocker_id' => $dateBlocker->id]);
         }
     }
-} 
+
+    // 🧩 Shared Logic
+
+    private function respondWithOverlap(Request $request, DateBlocker $blocker)
+    {
+        $range = Carbon::parse($blocker->start_date)->format('d-m-Y') . ' to ' . Carbon::parse($blocker->end_date)->format('d-m-Y');
+        $room = $blocker->roomType->name ?? 'N/A';
+        $message = "This date range overlaps with an existing date blocker for this package" .
+            (isset($blocker->room_type_id) ? " and room type in the date range of $range for room type $room" : " in the date range of $range");
+
+        return $request->wantsJson()
+            ? response()->json(['message' => $message], 422)
+            : back()->withErrors(['date_range' => $message]);
+    }
+
+    private function respondWithException(Request $request, $action, \Exception $e, array $context = [])
+    {
+        Log::error("Date blocker {$action} error", array_merge([
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ], $context));
+
+        $message = "Error {$action} date blocker: " . $e->getMessage();
+
+        return $request->wantsJson()
+            ? response()->json(['message' => $message], 500)
+            : back()->withErrors(['error' => $message]);
+    }
+}
