@@ -885,20 +885,65 @@
                                 </p>
                             </div>
 
-                            <!-- Phone Number -->
+                            <!-- Phone Number with Country Code -->
                             <div>
                                 <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                                <input
-                                    type="tel"
-                                    id="phone_number"
-                                    v-model="bookingForm.phone_number"
-                                    :class="[
-                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
-                                        bookingValidationErrors.phone_number ? 'border-red-500' : 'border-gray-300'
-                                    ]"
-                                    placeholder="e.g., 60123456789"
-                                    required
-                                />
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <!-- Country Code Dropdown with Search -->
+                                    <div class="relative country-dropdown">
+                                        <button
+                                            type="button"
+                                            @click="toggleCountryDropdown"
+                                            class="h-full rounded-l-md border-r-0 border-gray-300 bg-gray-50 py-2 pl-3 pr-8 text-sm focus:border-indigo-500 focus:ring-indigo-500 flex items-center justify-between min-w-[140px]"
+                                        >
+                                            <span>{{ getSelectedCountryDisplay() }}</span>
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </button>
+                                        
+                                        <!-- Dropdown Menu -->
+                                        <div v-if="showCountryDropdown" class="absolute z-50 mt-1 w-80 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-hidden">
+                                            <!-- Search Input -->
+                                            <div class="p-3 border-b border-gray-200">
+                                                <input
+                                                    type="text"
+                                                    v-model="countrySearch"
+                                                    placeholder="Search countries..."
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    @focus="countrySearch = ''"
+                                                />
+                                            </div>
+                                            
+                                            <!-- Country List -->
+                                            <div class="max-h-48 overflow-y-auto">
+                                                <button
+                                                    v-for="country in filteredCountries"
+                                                    :key="country.code"
+                                                    type="button"
+                                                    @click="selectCountry(country.code)"
+                                                    class="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none flex items-center"
+                                                >
+                                                    <span class="mr-2">{{ country.flag }}</span>
+                                                    <span class="flex-1">{{ country.name }}</span>
+                                                    <span class="text-gray-500">{{ country.code }}</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Phone Number Input -->
+                                    <input
+                                        type="tel"
+                                        id="phone_number"
+                                        v-model="bookingForm.phone_number"
+                                        :class="[
+                                            'flex-1 rounded-r-md border-gray-300 py-2 px-3 text-sm focus:border-indigo-500 focus:ring-indigo-500',
+                                            bookingValidationErrors.phone_number ? 'border-red-500' : 'border-gray-300'
+                                        ]"
+                                        placeholder="e.g., 123456789"
+                                        required
+                                    />
+                                </div>
                                 <p v-if="bookingValidationErrors.phone_number" class="mt-1 text-sm text-red-600">
                                     {{ bookingValidationErrors.phone_number }}
                                 </p>
@@ -1351,10 +1396,245 @@ const computedPromoPeriod = computed(() => {
 const bookingForm = ref({
     booking_name: '',
     phone_number: '',
+    country_code: '+60', // Default to Malaysia
     booking_ic: '',
     special_remarks: '',
     booking_email: ''
 });
+
+// Countries data for phone number dropdown
+const countries = [
+    { code: '+60', name: 'Malaysia', flag: '🇲🇾' },
+    { code: '+65', name: 'Singapore', flag: '🇸🇬' },
+    { code: '+66', name: 'Thailand', flag: '🇹🇭' },
+    { code: '+62', name: 'Indonesia', flag: '🇮🇩' },
+    { code: '+63', name: 'Philippines', flag: '🇵🇭' },
+    { code: '+84', name: 'Vietnam', flag: '🇻🇳' },
+    { code: '+855', name: 'Cambodia', flag: '🇰🇭' },
+    { code: '+856', name: 'Laos', flag: '🇱🇦' },
+    { code: '+95', name: 'Myanmar', flag: '🇲🇲' },
+    { code: '+673', name: 'Brunei', flag: '🇧🇳' },
+    { code: '+1', name: 'USA/Canada', flag: '🇺🇸' },
+    { code: '+44', name: 'United Kingdom', flag: '🇬🇧' },
+    { code: '+61', name: 'Australia', flag: '🇦🇺' },
+    { code: '+86', name: 'China', flag: '🇨🇳' },
+    { code: '+81', name: 'Japan', flag: '🇯🇵' },
+    { code: '+82', name: 'South Korea', flag: '🇰🇷' },
+    { code: '+91', name: 'India', flag: '🇮🇳' },
+    { code: '+971', name: 'UAE', flag: '🇦🇪' },
+    { code: '+966', name: 'Saudi Arabia', flag: '🇸🇦' },
+    { code: '+852', name: 'Hong Kong', flag: '🇭🇰' },
+    { code: '+886', name: 'Taiwan', flag: '🇹🇼' },
+    { code: '+33', name: 'France', flag: '🇫🇷' },
+    { code: '+49', name: 'Germany', flag: '🇩🇪' },
+    { code: '+39', name: 'Italy', flag: '🇮🇹' },
+    { code: '+34', name: 'Spain', flag: '🇪🇸' },
+    { code: '+31', name: 'Netherlands', flag: '🇳🇱' },
+    { code: '+46', name: 'Sweden', flag: '🇸🇪' },
+    { code: '+47', name: 'Norway', flag: '🇳🇴' },
+    { code: '+45', name: 'Denmark', flag: '🇩🇰' },
+    { code: '+358', name: 'Finland', flag: '🇫🇮' },
+    { code: '+41', name: 'Switzerland', flag: '🇨🇭' },
+    { code: '+43', name: 'Austria', flag: '🇦🇹' },
+    { code: '+32', name: 'Belgium', flag: '🇧🇪' },
+    { code: '+351', name: 'Portugal', flag: '🇵🇹' },
+    { code: '+353', name: 'Ireland', flag: '🇮🇪' },
+    { code: '+48', name: 'Poland', flag: '🇵🇱' },
+    { code: '+420', name: 'Czech Republic', flag: '🇨🇿' },
+    { code: '+36', name: 'Hungary', flag: '🇭🇺' },
+    { code: '+30', name: 'Greece', flag: '🇬🇷' },
+    { code: '+90', name: 'Turkey', flag: '🇹🇷' },
+    { code: '+7', name: 'Russia', flag: '🇷🇺' },
+    { code: '+380', name: 'Ukraine', flag: '🇺🇦' },
+    { code: '+55', name: 'Brazil', flag: '🇧🇷' },
+    { code: '+54', name: 'Argentina', flag: '🇦🇷' },
+    { code: '+56', name: 'Chile', flag: '🇨🇱' },
+    { code: '+57', name: 'Colombia', flag: '🇨🇴' },
+    { code: '+52', name: 'Mexico', flag: '🇲🇽' },
+    { code: '+51', name: 'Peru', flag: '🇵🇪' },
+    { code: '+58', name: 'Venezuela', flag: '🇻🇪' },
+    { code: '+593', name: 'Ecuador', flag: '🇪🇨' },
+    { code: '+595', name: 'Paraguay', flag: '🇵🇾' },
+    { code: '+598', name: 'Uruguay', flag: '🇺🇾' },
+    { code: '+591', name: 'Bolivia', flag: '🇧🇴' },
+    { code: '+27', name: 'South Africa', flag: '🇿🇦' },
+    { code: '+234', name: 'Nigeria', flag: '🇳🇬' },
+    { code: '+254', name: 'Kenya', flag: '🇰🇪' },
+    { code: '+20', name: 'Egypt', flag: '🇪🇬' },
+    { code: '+212', name: 'Morocco', flag: '🇲🇦' },
+    { code: '+216', name: 'Tunisia', flag: '🇹🇳' },
+    { code: '+213', name: 'Algeria', flag: '🇩🇿' },
+    { code: '+233', name: 'Ghana', flag: '🇬🇭' },
+    { code: '+225', name: 'Ivory Coast', flag: '🇨🇮' },
+    { code: '+221', name: 'Senegal', flag: '🇸🇳' },
+    { code: '+237', name: 'Cameroon', flag: '🇨🇲' },
+    { code: '+236', name: 'Central African Republic', flag: '🇨🇫' },
+    { code: '+235', name: 'Chad', flag: '🇹🇩' },
+    { code: '+242', name: 'Congo', flag: '🇨🇬' },
+    { code: '+243', name: 'DR Congo', flag: '🇨🇩' },
+    { code: '+241', name: 'Gabon', flag: '🇬🇦' },
+    { code: '+240', name: 'Equatorial Guinea', flag: '🇬🇶' },
+    { code: '+239', name: 'São Tomé and Príncipe', flag: '🇸🇹' },
+    { code: '+238', name: 'Cape Verde', flag: '🇨🇻' },
+    { code: '+245', name: 'Guinea-Bissau', flag: '🇬🇼' },
+    { code: '+246', name: 'British Indian Ocean Territory', flag: '🇮🇴' },
+    { code: '+247', name: 'Ascension Island', flag: '🇦🇨' },
+    { code: '+248', name: 'Seychelles', flag: '🇸🇨' },
+    { code: '+249', name: 'Sudan', flag: '🇸🇩' },
+    { code: '+250', name: 'Rwanda', flag: '🇷🇼' },
+    { code: '+251', name: 'Ethiopia', flag: '🇪🇹' },
+    { code: '+252', name: 'Somalia', flag: '🇸🇴' },
+    { code: '+253', name: 'Djibouti', flag: '🇩🇯' },
+    { code: '+255', name: 'Tanzania', flag: '🇹🇿' },
+    { code: '+256', name: 'Uganda', flag: '🇺🇬' },
+    { code: '+257', name: 'Burundi', flag: '🇧🇮' },
+    { code: '+258', name: 'Mozambique', flag: '🇲🇿' },
+    { code: '+260', name: 'Zambia', flag: '🇿🇲' },
+    { code: '+261', name: 'Madagascar', flag: '🇲🇬' },
+    { code: '+262', name: 'Réunion', flag: '🇷🇪' },
+    { code: '+263', name: 'Zimbabwe', flag: '🇿🇼' },
+    { code: '+264', name: 'Namibia', flag: '🇳🇦' },
+    { code: '+265', name: 'Malawi', flag: '🇲🇼' },
+    { code: '+266', name: 'Lesotho', flag: '🇱🇸' },
+    { code: '+267', name: 'Botswana', flag: '🇧🇼' },
+    { code: '+268', name: 'Eswatini', flag: '🇸🇿' },
+    { code: '+269', name: 'Comoros', flag: '🇰🇲' },
+    { code: '+290', name: 'Saint Helena', flag: '🇸🇭' },
+    { code: '+291', name: 'Eritrea', flag: '🇪🇷' },
+    { code: '+297', name: 'Aruba', flag: '🇦🇼' },
+    { code: '+298', name: 'Faroe Islands', flag: '🇫🇴' },
+    { code: '+299', name: 'Greenland', flag: '🇬🇱' },
+    { code: '+350', name: 'Gibraltar', flag: '🇬🇮' },
+    { code: '+352', name: 'Luxembourg', flag: '🇱🇺' },
+    { code: '+354', name: 'Iceland', flag: '🇮🇸' },
+    { code: '+355', name: 'Albania', flag: '🇦🇱' },
+    { code: '+356', name: 'Malta', flag: '🇲🇹' },
+    { code: '+357', name: 'Cyprus', flag: '🇨🇾' },
+    { code: '+359', name: 'Bulgaria', flag: '🇧🇬' },
+    { code: '+370', name: 'Lithuania', flag: '🇱🇹' },
+    { code: '+371', name: 'Latvia', flag: '🇱🇻' },
+    { code: '+372', name: 'Estonia', flag: '🇪🇪' },
+    { code: '+373', name: 'Moldova', flag: '🇲🇩' },
+    { code: '+374', name: 'Armenia', flag: '🇦🇲' },
+    { code: '+375', name: 'Belarus', flag: '🇧🇾' },
+    { code: '+376', name: 'Andorra', flag: '🇦🇩' },
+    { code: '+377', name: 'Monaco', flag: '🇲🇨' },
+    { code: '+378', name: 'San Marino', flag: '🇸🇲' },
+    { code: '+379', name: 'Vatican City', flag: '🇻🇦' },
+    { code: '+381', name: 'Serbia', flag: '🇷🇸' },
+    { code: '+382', name: 'Montenegro', flag: '🇲🇪' },
+    { code: '+383', name: 'Kosovo', flag: '🇽🇰' },
+    { code: '+385', name: 'Croatia', flag: '🇭🇷' },
+    { code: '+386', name: 'Slovenia', flag: '🇸🇮' },
+    { code: '+387', name: 'Bosnia and Herzegovina', flag: '🇧🇦' },
+    { code: '+389', name: 'North Macedonia', flag: '🇲🇰' },
+    { code: '+421', name: 'Slovakia', flag: '🇸🇰' },
+    { code: '+423', name: 'Liechtenstein', flag: '🇱🇮' },
+    { code: '+500', name: 'Falkland Islands', flag: '🇫🇰' },
+    { code: '+501', name: 'Belize', flag: '🇧🇿' },
+    { code: '+502', name: 'Guatemala', flag: '🇬🇹' },
+    { code: '+503', name: 'El Salvador', flag: '🇸🇻' },
+    { code: '+504', name: 'Honduras', flag: '🇭🇳' },
+    { code: '+505', name: 'Nicaragua', flag: '🇳🇮' },
+    { code: '+506', name: 'Costa Rica', flag: '🇨🇷' },
+    { code: '+507', name: 'Panama', flag: '🇵🇦' },
+    { code: '+508', name: 'Saint Pierre and Miquelon', flag: '🇵🇲' },
+    { code: '+509', name: 'Haiti', flag: '🇭🇹' },
+    { code: '+590', name: 'Guadeloupe', flag: '🇬🇵' },
+    { code: '+592', name: 'Guyana', flag: '🇬🇾' },
+    { code: '+594', name: 'French Guiana', flag: '🇬🇫' },
+    { code: '+596', name: 'Martinique', flag: '🇲🇶' },
+    { code: '+597', name: 'Suriname', flag: '🇸🇷' },
+    { code: '+599', name: 'Netherlands Antilles', flag: '🇧🇶' },
+    { code: '+670', name: 'East Timor', flag: '🇹🇱' },
+    { code: '+672', name: 'Antarctica', flag: '🇦🇶' },
+    { code: '+674', name: 'Nauru', flag: '🇳🇷' },
+    { code: '+675', name: 'Papua New Guinea', flag: '🇵🇬' },
+    { code: '+676', name: 'Tonga', flag: '🇹🇴' },
+    { code: '+677', name: 'Solomon Islands', flag: '🇸🇧' },
+    { code: '+678', name: 'Vanuatu', flag: '🇻🇺' },
+    { code: '+679', name: 'Fiji', flag: '🇫🇯' },
+    { code: '+680', name: 'Palau', flag: '🇵🇼' },
+    { code: '+681', name: 'Wallis and Futuna', flag: '🇼🇫' },
+    { code: '+682', name: 'Cook Islands', flag: '🇨🇰' },
+    { code: '+683', name: 'Niue', flag: '🇳🇺' },
+    { code: '+685', name: 'Samoa', flag: '🇼🇸' },
+    { code: '+686', name: 'Kiribati', flag: '🇰🇮' },
+    { code: '+687', name: 'New Caledonia', flag: '🇳🇨' },
+    { code: '+688', name: 'Tuvalu', flag: '🇹🇻' },
+    { code: '+689', name: 'French Polynesia', flag: '🇵🇫' },
+    { code: '+690', name: 'Tokelau', flag: '🇹🇰' },
+    { code: '+691', name: 'Micronesia', flag: '🇫🇲' },
+    { code: '+692', name: 'Marshall Islands', flag: '🇲🇭' },
+    { code: '+850', name: 'North Korea', flag: '🇰🇵' },
+    { code: '+853', name: 'Macau', flag: '🇲🇴' },
+    { code: '+880', name: 'Bangladesh', flag: '🇧🇩' },
+    { code: '+960', name: 'Maldives', flag: '🇲🇻' },
+    { code: '+961', name: 'Lebanon', flag: '🇱🇧' },
+    { code: '+962', name: 'Jordan', flag: '🇯🇴' },
+    { code: '+963', name: 'Syria', flag: '🇸🇾' },
+    { code: '+964', name: 'Iraq', flag: '🇮🇶' },
+    { code: '+965', name: 'Kuwait', flag: '🇰🇼' },
+    { code: '+967', name: 'Yemen', flag: '🇾🇪' },
+    { code: '+968', name: 'Oman', flag: '🇴🇲' },
+    { code: '+970', name: 'Palestine', flag: '🇵🇸' },
+    { code: '+972', name: 'Israel', flag: '🇮🇱' },
+    { code: '+973', name: 'Bahrain', flag: '🇧🇭' },
+    { code: '+974', name: 'Qatar', flag: '🇶🇦' },
+    { code: '+975', name: 'Bhutan', flag: '🇧🇹' },
+    { code: '+976', name: 'Mongolia', flag: '🇲🇳' },
+    { code: '+977', name: 'Nepal', flag: '🇳🇵' },
+    { code: '+992', name: 'Tajikistan', flag: '🇹🇯' },
+    { code: '+993', name: 'Turkmenistan', flag: '🇹🇲' },
+    { code: '+994', name: 'Azerbaijan', flag: '🇦🇿' },
+    { code: '+995', name: 'Georgia', flag: '🇬🇪' },
+    { code: '+996', name: 'Kyrgyzstan', flag: '🇰🇬' },
+    { code: '+998', name: 'Uzbekistan', flag: '🇺🇿' }
+];
+
+// Dropdown state
+const showCountryDropdown = ref(false);
+const countrySearch = ref('');
+
+// Computed property for filtered countries
+const filteredCountries = computed(() => {
+    if (!countrySearch.value) {
+        return countries;
+    }
+    const search = countrySearch.value.toLowerCase();
+    return countries.filter(country => 
+        country.name.toLowerCase().includes(search) ||
+        country.code.includes(search) ||
+        country.flag.includes(search)
+    );
+});
+
+// Methods for dropdown functionality
+const toggleCountryDropdown = () => {
+    showCountryDropdown.value = !showCountryDropdown.value;
+    if (showCountryDropdown.value) {
+        countrySearch.value = '';
+    }
+};
+
+const selectCountry = (code) => {
+    bookingForm.value.country_code = code;
+    showCountryDropdown.value = false;
+    countrySearch.value = '';
+};
+
+const getSelectedCountryDisplay = () => {
+    const selectedCountry = countries.find(country => country.code === bookingForm.value.country_code);
+    return selectedCountry ? `${selectedCountry.flag} ${selectedCountry.code}` : '+60';
+};
+
+// Close dropdown when clicking outside
+const closeDropdownOnOutsideClick = (event) => {
+    if (showCountryDropdown.value && !event.target.closest('.country-dropdown')) {
+        showCountryDropdown.value = false;
+        countrySearch.value = '';
+    }
+};
 
 // Add booking form validation errors
 const bookingValidationErrors = ref({
@@ -1375,6 +1655,9 @@ onMounted(() => {
     autoRotationInterval = setInterval(() => {
         nextImage();
     }, 5000);
+    
+    // Add click outside listener for country dropdown
+    document.addEventListener('click', closeDropdownOnOutsideClick);
 });
 
 // Clean up interval on component unmount
@@ -1382,6 +1665,9 @@ onUnmounted(() => {
     if (autoRotationInterval) {
         clearInterval(autoRotationInterval);
     }
+    
+    // Remove click outside listener
+    document.removeEventListener('click', closeDropdownOnOutsideClick);
 });
 
 // Remove the startAutoRotation function and its call
@@ -1717,15 +2003,14 @@ const validateBookingForm = () => {
         isValid = false;
     }
 
-    // Validate phone number (Malaysian format)
-    // const phoneRegex = /^(?:\+?60|0)[1-9]\d{8,9}$/;
-    // if (!bookingForm.value.phone_number.trim()) {
-    //     bookingValidationErrors.value.phone_number = 'Phone number is required';
-    //     isValid = false;
-    // } else if (!phoneRegex.test(bookingForm.value.phone_number.trim())) {
-    //     bookingValidationErrors.value.phone_number = 'Please enter a valid Malaysian phone number';
-    //     isValid = false;
-    // }
+    // Validate phone number
+    if (!bookingForm.value.phone_number.trim()) {
+        bookingValidationErrors.value.phone_number = 'Phone number is required';
+        isValid = false;
+    } else if (bookingForm.value.phone_number.trim().length < 7) {
+        bookingValidationErrors.value.phone_number = 'Please enter a valid phone number (at least 7 digits)';
+        isValid = false;
+    }
 
     // // Validate IC/Passport
     // const icRegex = /^[A-Z0-9]{6,12}$/;
@@ -1754,7 +2039,7 @@ const submitBooking = async () => {
                 infants: room.infants || 0
             })),
             booking_name: bookingForm.value.booking_name,
-            phone_number: bookingForm.value.phone_number,
+            phone_number: bookingForm.value.country_code + bookingForm.value.phone_number,
             booking_ic: bookingForm.value.booking_ic,
             booking_email: bookingForm.value.booking_email,
             start_date: form.start_date,
