@@ -7,6 +7,9 @@ use App\Models\Season;
 use App\Models\DateTypeRange;
 use App\Models\PackageConfiguration;
 use App\Models\ConfigurationPrice;
+use App\Models\DateType;
+use App\Models\RoomType;
+use App\Models\SeasonType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -359,5 +362,92 @@ class ConfigurationPriceController extends Controller
             ]);
             return response()->json(['message' => 'Error updating configuration prices: ' . $e->getMessage()], 500);
         }
+    }
+
+
+    public function updatePriceConfigurationByPax(Request $request)
+    {
+        $validated = $request->validate([
+            'package_id'           => 'required|exists:packages,id',
+            'adult'                => 'required|integer|min:0',
+            'child'                => 'required|integer|min:0',
+            'infant'               => 'required|integer|min:0',
+            'adult_base_charge'    => 'required|numeric|min:0',
+            'child_base_charge'    => 'required|numeric|min:0',
+            'infant_base_charge'   => 'required|numeric|min:0',
+            'adult_surcharge'      => 'required|numeric|min:0',
+            'child_surcharge'      => 'required|numeric|min:0',
+            'infant_surcharge'     => 'required|numeric|min:0',
+        ]);
+
+        $roomTypes = RoomType::where('package_id', $validated['package_id'])->get();
+
+        $season_type_ids = Season::where('package_id', $validated['package_id'])->distinct('season_type_id')->pluck('season_type_id');
+        $seasonTypes = SeasonType::whereIn('id', $season_type_ids)->get();
+
+        $date_type_ids = DateTypeRange::where('package_id', $validated['package_id'])->distinct('date_type_id')->pluck('date_type_id');
+        $dateTypes = DateType::whereIn('id', $date_type_ids)->get();
+
+        $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
+        $baseKey = AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE;
+        $surKey = AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE;
+
+        foreach ($roomTypes as $room) {
+            foreach ($seasonTypes as $season) {
+                foreach ($dateTypes as $date) {
+                    $exists = PackageConfiguration::where([
+                        'package_id' => $validated['package_id'],
+                        'room_type_id' => $room->id,
+                        'season_type_id' => $season->id,
+                        'date_type_id' => $date->id,
+                    ])->first();
+
+                    if (!$exists) {
+                        $prices = [];
+
+                        foreach ($combinations as $c) {
+                            $k = "{$c['adults']}_a_{$c['children']}_c_{$c['infants']}_i";
+                            $prices[$baseKey]["{$k}_a"] = 0;
+                            $prices[$baseKey]["{$k}_c"] = 0;
+                            $prices[$baseKey]["{$k}_i"] = 0;
+                            $prices[$surKey]["{$k}_a"] = 0;
+                            $prices[$surKey]["{$k}_c"] = 0;
+                            $prices[$surKey]["{$k}_i"] = 0;
+                        }
+
+                        $new = PackageConfiguration::create([
+                            'package_id' => $validated['package_id'],
+                            'room_type_id' => $room->id,
+                            'season_type_id' => $season->id,
+                            'date_type_id' => $date->id,
+                            'configuration_prices' => json_encode($prices),
+                        ]);
+
+                        $newlyCreatedConfigs[] = $new;
+                    }
+                }
+            }
+        }
+
+        $adultKey = "{$validated['adult']}_a_{$validated['child']}_c_{$validated['infant']}_i_a";
+        $childKey = "{$validated['adult']}_a_{$validated['child']}_c_{$validated['infant']}_i_c";
+        $infantKey = "{$validated['adult']}_a_{$validated['child']}_c_{$validated['infant']}_i_i";
+
+        $packageConfigurations = PackageConfiguration::where('package_id', $validated['package_id'])->get();
+
+        foreach ($packageConfigurations as $packageConfiguration) {
+            $price = json_decode($packageConfiguration->configuration_prices, true);
+            $price['b'][$adultKey] = $validated['adult_base_charge'];
+            $price['b'][$childKey] = $validated['child_base_charge'];
+            $price['b'][$infantKey] = $validated['infant_base_charge'];
+            $price['s'][$adultKey] = $validated['adult_surcharge'];
+            $price['s'][$childKey] = $validated['child_surcharge'];
+            $price['s'][$infantKey] = $validated['infant_surcharge'];
+            $packageConfiguration->configuration_prices = json_encode($price);
+            $packageConfiguration->save();
+        }
+
+        // You can now use $validated safely
+        return response()->json(['message' => 'Configuration prices updated successfully.']);
     }
 }

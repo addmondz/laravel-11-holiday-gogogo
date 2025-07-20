@@ -79,6 +79,7 @@ import SeasonTypes from './packages-show-tabs/SeasonTypes.vue';
 import DateTypesRanges from './packages-show-tabs/DateTypesRanges.vue';
 import PriceConfigurationRoomTypes from './packages-show-tabs/PriceConfigurationRoomTypes.vue';
 import DateBlockers from './packages-show-tabs/DateBlockers.vue';
+import UpdatePriceConfigByPax from './packages-show-tabs/UpdatePriceConfigByPax.vue';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
 
 const props = defineProps({
@@ -138,7 +139,8 @@ const tabs = [
     { id: 'season-types', name: 'Season Types' },
     { id: 'date-types-ranges', name: 'Date Types Ranges' },
     { id: 'price-configuration', name: 'Price Configuration' },
-    { id: 'date-blockers', name: 'Date Blockers' }
+    { id: 'date-blockers', name: 'Date Blockers' },
+    { id: 'update-price-config-by-pax', name: 'Update Price Config By Pax' }
 ];
 
 const breadcrumbs = computed(() => [
@@ -160,6 +162,8 @@ const currentTabComponent = computed(() => {
             return PriceConfigurationRoomTypes;
         case 'date-blockers':
             return DateBlockers;
+        case 'update-price-config-by-pax':
+            return UpdatePriceConfigByPax;
         default:
             return PackageDetails;
     }
@@ -174,6 +178,7 @@ const getParamFromUrl = () => {
 const currentTab = ref(getParamFromUrl() || 'details');
 
 watch(currentTab, (newVal, oldVal) => {
+    console.log('newVal', newVal);
 
     // force refresh the page when switching to price-configuration
     if (newVal == 'price-configuration' && oldVal != 'price-configuration') {
