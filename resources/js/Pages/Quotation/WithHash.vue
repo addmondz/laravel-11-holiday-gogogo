@@ -565,8 +565,7 @@
 
                         <!-- Nightly Breakdown -->
                         <div v-if="priceBreakdown?.nights" class="mt-6">
-                            <!-- <div class="hidden"> -->
-                            <div class="">
+                            <div class="hidden">
                                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Price Breakdown by Rooms</h3>
                                 <!-- Room Breakdown -->
                                 <div v-for="(room, roomIndex) in priceBreakdown.rooms" :key="roomIndex" class="mb-6">
