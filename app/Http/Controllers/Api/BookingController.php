@@ -25,7 +25,7 @@ class BookingController extends Controller
                 'end_date' => 'required|date|after:start_date',
                 'booking_name' => 'required|string|max:255',
                 'phone_number' => 'required|string|max:20',
-                'booking_ic' => 'required|string|max:20',
+                'booking_ic' => 'string|max:20|nullable',
                 'total_price' => 'required|numeric|min:0',
                 'special_remarks' => 'nullable|string'
             ]);

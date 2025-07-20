@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('uuid')->nullable();
             $table->string('booking_name');
             $table->string('phone_number');
-            $table->string('booking_ic');
+            $table->string('booking_ic')->nullable();
             $table->string('booking_email');
             $table->integer('status')->default(ApprovalStatus::PENDING_APPROVAL); // ApprovalStatus
             $table->date('start_date');

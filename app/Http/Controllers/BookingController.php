@@ -125,7 +125,7 @@ class BookingController extends Controller
         $validated = $request->validate([
             'booking_name' => 'required|string|max:255',
             'phone_number' => 'required|string|max:20',
-            'booking_ic' => 'required|string|max:50',
+            'booking_ic' => 'string|max:50',
             'special_remarks' => 'nullable|string',
             'booking_email' => 'required|email|max:255'
         ]);

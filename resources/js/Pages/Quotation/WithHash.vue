@@ -949,9 +949,9 @@
                                 </p>
                             </div>
 
-                            <!-- Booking IC -->
+                            <!-- Tin Number -->
                             <div>
-                                <label for="booking_ic" class="block text-sm font-medium text-gray-700">IC/Passport Number</label>
+                                <label for="booking_ic" class="block text-sm font-medium text-gray-700">Tin Number (Optional)</label>
                                 <input
                                     type="text"
                                     id="booking_ic"
@@ -961,7 +961,6 @@
                                         bookingValidationErrors.booking_ic ? 'border-red-500' : 'border-gray-300'
                                     ]"
                                     placeholder="e.g., 123456-78-9012 or A12345678"
-                                    required
                                 />
                                 <p v-if="bookingValidationErrors.booking_ic" class="mt-1 text-sm text-red-600">
                                     {{ bookingValidationErrors.booking_ic }}
