@@ -10,29 +10,26 @@ class SeasonTypeController extends Controller
 {
     public function index(Request $request)
     {
-        // $query = SeasonType::whereNot('name', 'Default');
         $query = SeasonType::query();
 
-        // Search functionality
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where('name', 'like', "%{$search}%");
+        // Search
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // Sort functionality
+        // Sorting
         $sortField = $request->get('sort', 'created_at');
-        // $sortDirection = $request->get('direction', 'desc');
         $sortDirection = $request->get('direction', 'asc');
         $query->orderBy($sortField, $sortDirection);
 
-        // Pagination
+        // Pagination with eager load
         $seasonTypes = $query->with('seasons')
             ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('SeasonTypes/Index', [
             'seasonTypes' => $seasonTypes,
-            'filters' => $request->only(['search', 'sort', 'direction'])
+            'filters' => $request->only(['search', 'sort', 'direction']),
         ]);
     }
 
@@ -44,7 +41,7 @@ class SeasonTypeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:season_types',
+            'name' => 'required|string|max:255|unique:season_types,name',
         ]);
 
         SeasonType::create($validated);
@@ -56,14 +53,14 @@ class SeasonTypeController extends Controller
     public function show(SeasonType $seasonType)
     {
         return Inertia::render('SeasonTypes/Show', [
-            'seasonType' => $seasonType->load('seasons')
+            'seasonType' => $seasonType->load('seasons'),
         ]);
     }
 
     public function edit(SeasonType $seasonType)
     {
         return Inertia::render('SeasonTypes/Edit', [
-            'seasonType' => $seasonType
+            'seasonType' => $seasonType,
         ]);
     }
 
