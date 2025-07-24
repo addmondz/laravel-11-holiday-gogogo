@@ -32,17 +32,19 @@ class DummySeeder extends Seeder
     }
     public function run(): void
     {
-        for ($i = 0; $i < $this->dummyOtherPackagesCount; $i++) {
-            SeasonType::create(['name' => 'Test Season ' . $i]);
-        }
+        if ($this->enabledDefaultSeasonAndDateType) {
+            for ($i = 0; $i < $this->dummyOtherPackagesCount; $i++) {
+                SeasonType::create(['name' => 'Test Season ' . $i]);
+            }
 
-        for ($i = 0; $i <= $this->dummyOtherPackagesCount; $i++) {
-            User::create([
-                'name' => 'Test User ' . $i,
-                'email' => 'testuser' . $i . '@test.com',
-                'email_verified_at' => now(),
-                'password' => Hash::make('12345678'),
-            ]);
+            for ($i = 0; $i <= $this->dummyOtherPackagesCount; $i++) {
+                User::create([
+                    'name' => 'Test User ' . $i,
+                    'email' => 'testuser' . $i . '@test.com',
+                    'email_verified_at' => now(),
+                    'password' => Hash::make('12345678'),
+                ]);
+            }
         }
 
         $faker = Faker::create();
@@ -218,8 +220,10 @@ class DummySeeder extends Seeder
             dump('completed ' . $pkg->id);
         }
 
-        $this->call([
-            BookingSeeder::class,
-        ]);
+        if ($this->enabledDefaultSeasonAndDateType) {
+            $this->call([
+                BookingSeeder::class,
+            ]);
+        }
     }
 }

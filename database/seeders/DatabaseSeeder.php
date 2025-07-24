@@ -86,8 +86,11 @@ class DatabaseSeeder extends Seeder
         // 🔒 DATE TYPES
         $roomsur60 = DateType::create(['name' => 'Roomsur 60']);
         $roomsur30 = DateType::create(['name' => 'Roomsur 30']);
-        for ($i = 0; $i < $dummyOtherPackagesCount; $i++) {
-            DateType::create(['name' => 'Test Date Type ' . $i]);
+
+        if ($this->enabledDefaultSeasonAndDateType) {
+            for ($i = 0; $i < $dummyOtherPackagesCount; $i++) {
+                DateType::create(['name' => 'Test Date Type ' . $i]);
+            }
         }
 
         $this->call([
