@@ -140,7 +140,6 @@ const tabs = [
     { id: 'date-types-ranges', name: 'Date Types Ranges' },
     { id: 'price-configuration', name: 'Price Configuration' },
     { id: 'date-blockers', name: 'Date Blockers' },
-    { id: 'update-price-config-by-pax', name: 'Update Price Config By Pax' }
     // { id: 'update-price-config-by-pax', name: 'Update Price Config By Pax' }
 ];
 
