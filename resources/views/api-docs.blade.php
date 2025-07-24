@@ -93,7 +93,7 @@
                                 <span class="method-badge method-post">POST</span>
                                 <code class="text-lg font-mono">{{ $baseUrl }}/{{ $botPrefix }}/fetch-room-types</code>
                             </div>
-                            <p class="text-gray-600 mt-2">Get available room types, package information, and date blockers for a specific package.</p>
+                            <p class="text-gray-600 mt-2">Get available room types, package information, date blockers, and available booking start dates for a specific package and travel month/year.</p>
                         </div>
 
                         <div class="endpoint-body">
@@ -103,8 +103,14 @@
                                     Copy
                                 </button>
                                 <div class="code-block">
+                                    <?php
+                                    $currentMonth = (int) date('m'); // e.g. 7 instead of '07'
+                                    $currentYear = date('Y');
+                                    ?>
                                     <pre><code id="request-body-1" class="language-json">{
-    "package_name": "{{ $firstPackageName }}"
+    "package_name": "{{ $firstPackageName }}",
+    "travel_month": "{{ $currentMonth }}",
+    "travel_year": "{{ $currentYear }}"
 }</code></pre>
                                 </div>
                             </div>
@@ -119,7 +125,9 @@
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   -d '{
-    "package_name": "{{ $firstPackageName }}"
+    "package_name": "{{ $firstPackageName }}",
+    "travel_month": "{{ $currentMonth }}",
+    "travel_year": "{{ $currentYear }}"
   }'</code></pre>
                                 </div>
                             </div>
@@ -129,6 +137,8 @@
                                 <h4 class="font-semibold text-yellow-800 mb-2">Required Fields</h4>
                                 <ul class="space-y-1 text-sm text-yellow-700">
                                     <li><strong>package_name:</strong> Required string, maximum 255 characters</li>
+                                    <li><strong>travel_month:</strong> Required string, maximum 255 characters (1-12)</li>
+                                    <li><strong>travel_year:</strong> Required string, maximum 255 characters (e.g., "2025")</li>
                                 </ul>
                             </div>
 
@@ -174,6 +184,13 @@
                             "start_date": "2024-02-15",
                             "end_date": "2024-02-20"
                         }
+                    ],
+                    "available_booking_start_dates": [
+                        "2025-07-01",
+                        "2025-07-02",
+                        "2025-07-03",
+                        "2025-07-04",
+                        "2025-07-05"
                     ]
                 },
                 {
@@ -184,7 +201,12 @@
                     "images": [
                         "https://example.com/images/suite-room1.jpg"
                     ],
-                    "date_blockers": []
+                    "date_blockers": [],
+                    "available_booking_start_dates": [
+                        "2025-07-01",
+                        "2025-07-02",
+                        "2025-07-03"
+                    ]
                 }
             ]
         }
@@ -323,6 +345,11 @@
                                                 <td class="py-2 px-3 text-gray-600">string</td>
                                                 <td class="py-2 px-3 text-gray-700">End date of blocked period (YYYY-MM-DD)</td>
                                             </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">room_types[].available_booking_start_dates</td>
+                                                <td class="py-2 px-3 text-gray-600">array</td>
+                                                <td class="py-2 px-3 text-gray-700">Array of available booking start dates for the specified month/year (YYYY-MM-DD)</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -332,6 +359,8 @@
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                 <ul class="space-y-2 text-sm text-blue-700">
                                     <li><strong>Package Name Matching:</strong> The package name must match exactly (case-sensitive) with the package name in the database.</li>
+                                    <li><strong>Travel Month/Year:</strong> The API calculates available booking dates based on the specified travel month and year, considering package seasons and date blockers.</li>
+                                    <li><strong>Booking Start Dates:</strong> Returns available booking start dates for the specified month that are after today and within package seasons, excluding blocked dates.</li>
                                     <li><strong>Image URLs:</strong> All image URLs are automatically prefixed with the base URL and `/images/` path.</li>
                                     <li><strong>Date Blockers:</strong> Date blockers are specific to each room type and indicate periods when the room type is not available.</li>
                                     <li><strong>Booking URL:</strong> The booking_page_url provides a direct link to the quotation page for the specific package.</li>
@@ -343,13 +372,13 @@
                             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                                 <h4 class="font-semibold text-green-800 mb-2">Typical Usage Flow</h4>
                                 <ol class="space-y-2 text-sm text-green-700 list-decimal list-inside">
-                                    <li><strong>Step 1:</strong> Use this endpoint to get available room types and package information</li>
-                                    <li><strong>Step 2:</strong> Present room options to the user and collect their preferences</li>
+                                    <li><strong>Step 1:</strong> Use this endpoint to get available room types, package information, and available booking dates for a specific month</li>
+                                    <li><strong>Step 2:</strong> Present room options and available dates to the user and collect their preferences</li>
                                     <li><strong>Step 3:</strong> Use the <code class="bg-green-100 px-1 rounded">/fetch-quotation</code> endpoint to get pricing for selected dates and room allocation</li>
                                     <li><strong>Step 4:</strong> Use the <code class="bg-green-100 px-1 rounded">booking_page_url</code> to direct users to the booking page</li>
                                 </ol>
                                 <div class="mt-3 p-3 bg-green-100 rounded">
-                                    <p class="text-green-800 text-sm"><strong>Pro Tip:</strong> The <code class="bg-green-200 px-1 rounded">room_type_id</code> values returned by this endpoint are required for the quotation endpoint.</p>
+                                    <p class="text-green-800 text-sm"><strong>Pro Tip:</strong> The <code class="bg-green-200 px-1 rounded">room_type_id</code> values and <code class="bg-green-200 px-1 rounded">available_booking_start_dates</code> returned by this endpoint can be used to guide users to available dates for the quotation endpoint.</p>
                                 </div>
                             </div>
                         </div>

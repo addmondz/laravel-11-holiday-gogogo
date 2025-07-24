@@ -25,9 +25,10 @@ class BotApiController extends Controller
      */
     public function fetchRoomTypesByPackageName(Request $request): JsonResponse
     {
-        // Validate request
         $validator = Validator::make($request->all(), [
             'package_name' => 'required|string|max:255',
+            'travel_month' => 'required|string|max:255',
+            'travel_year' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -39,13 +40,9 @@ class BotApiController extends Controller
         }
 
         try {
-
-            $package = Package::where('name', $request->package_name)->first();
-
-            // Removed invalid eager loads
-            $package = Package::with([
-                'roomTypes',
-            ])->where('name', $request->package_name)->first();
+            $package = Package::with(['roomTypes.dateBlockers', 'seasons'])
+                ->where('name', $request->package_name)
+                ->first();
 
             if (!$package) {
                 return response()->json([
@@ -54,6 +51,14 @@ class BotApiController extends Controller
                 ], 404);
             }
 
+            $travelMonth = (int) $request->travel_month;
+            $travelYear = (int) $request->travel_year;
+            $packageMinDays = $package->package_min_days;
+
+            $startOfMonth = Carbon::create($travelYear, $travelMonth, 1)->startOfMonth();
+            $endOfMonth = $startOfMonth->copy()->endOfMonth();
+            $today = Carbon::today();
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -61,9 +66,7 @@ class BotApiController extends Controller
                         'id' => $package->id,
                         'uid' => $package->uuid,
                         'booking_page_url' => route('quotation.with-hash', $package->uuid),
-                        'images' => collect($package->images)->map(function ($image) {
-                            return url('/images') . '/' . $image;
-                        })->values(),
+                        'images' => collect($package->images)->map(fn($image) => url('/images') . '/' . $image)->values(),
                         'package_id' => $package->package_id,
                         'name' => $package->name,
                         'description' => $package->description,
@@ -74,24 +77,70 @@ class BotApiController extends Controller
                         'child_max_age_desc' => $package->child_max_age_desc ?? '',
                         'infant_max_age_desc' => $package->infant_max_age_desc ?? '',
                         'package_display_price' => $package->display_price_adult,
-                        'room_types' => $package->loadRoomTypes->map(function ($roomType) {
-                            return [
-                                'id' => $roomType->id,
-                                'name' => $roomType->name,
-                                'description' => $roomType->description,
-                                'max_occupancy' => $roomType->max_occupancy,
-                                'images' => collect($roomType->images)->map(function ($image) {
-                                    return url('/images') . '/' . $image;
-                                })->values(),
-                                'date_blockers' => $roomType->dateBlockers->map(function ($dateBlocker) {
-                                    return [
-                                        'start_date' => $dateBlocker->start_date->format('Y-m-d'),
-                                        'end_date' => $dateBlocker->end_date->format('Y-m-d'),
-                                    ];
-                                })
-                            ];
-                        }),
-                    ],
+                        'room_types' => $package->roomTypes
+                            ->groupBy('id')
+                            ->map(function ($groupedRoomTypes) use ($startOfMonth, $endOfMonth, $today, $packageMinDays, $package) {
+                                $roomType = $groupedRoomTypes->first();
+
+                                // Check if current month range is blocked
+                                $travelRangeStart = $startOfMonth->copy();
+                                $travelRangeEnd = $travelRangeStart->copy()->addDays($packageMinDays - 1);
+
+                                foreach ($roomType->dateBlockers as $blocker) {
+                                    if (
+                                        $travelRangeStart->between($blocker->start_date, $blocker->end_date) ||
+                                        $travelRangeEnd->between($blocker->start_date, $blocker->end_date) ||
+                                        ($blocker->start_date->lt($travelRangeStart) && $blocker->end_date->gt($travelRangeEnd))
+                                    ) {
+                                        return null;
+                                    }
+                                }
+
+                                // Calculate available_booking_start_dates in this month & after today
+                                $bookingStartDates = [];
+                                foreach ($package->seasons as $season) {
+                                    $cursor = Carbon::parse($season->start_date)->copy();
+                                    $seasonEnd = Carbon::parse($season->end_date);
+
+                                    while ($cursor->lte($seasonEnd)) {
+                                        $cursorEnd = $cursor->copy()->addDays($packageMinDays - 1);
+
+                                        if (
+                                            $cursor->between($startOfMonth, $endOfMonth) &&
+                                            $cursor->gt($today) &&
+                                            $cursorEnd->lte($seasonEnd)
+                                        ) {
+                                            $overlapsBlocker = $roomType->dateBlockers->contains(function ($blocker) use ($cursor, $cursorEnd) {
+                                                return $cursor->between($blocker->start_date, $blocker->end_date) ||
+                                                    $cursorEnd->between($blocker->start_date, $blocker->end_date) ||
+                                                    ($blocker->start_date->lt($cursor) && $blocker->end_date->gt($cursorEnd));
+                                            });
+
+                                            if (!$overlapsBlocker) {
+                                                $bookingStartDates[] = $cursor->format('Y-m-d');
+                                            }
+                                        }
+
+                                        $cursor->addDay();
+                                    }
+                                }
+
+                                return [
+                                    'id' => $roomType->id,
+                                    'name' => $roomType->name,
+                                    'description' => $roomType->description,
+                                    'max_occupancy' => $roomType->max_occupancy,
+                                    'images' => collect($roomType->images)->map(fn($image) => url('/images') . '/' . $image)->values(),
+                                    'date_blockers' => $roomType->dateBlockers->map(fn($blocker) => [
+                                        'start_date' => $blocker->start_date->format('Y-m-d'),
+                                        'end_date' => $blocker->end_date->format('Y-m-d'),
+                                    ]),
+                                    'available_booking_start_dates' => $bookingStartDates,
+                                ];
+                            })
+                            ->filter()
+                            ->values(),
+                    ]
                 ]
             ]);
         } catch (\Exception $e) {
