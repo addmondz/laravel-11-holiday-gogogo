@@ -405,9 +405,12 @@
                                     Copy
                                 </button>
                                 <div class="code-block">
+                                    <?php
+                                    $tmrDate = date('Y-m-d', strtotime('+1 day'));
+                                    ?>
                                     <pre><code id="request-body-2" class="language-json">{
     "package_id": {{ $packageRoomsIds[0] }},
-    "travel_date_start": "2025-07-15",
+    "travel_date_start": "{{ $tmrDate }}",
     "rooms": [
         {
             "room_type_id": 1,
