@@ -20,6 +20,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class PackageController extends Controller
 {
@@ -92,7 +93,12 @@ class PackageController extends Controller
 
         try {
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255|unique:packages,name',
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('packages', 'name')->whereNull('deleted_at'),
+                ],
                 'description' => 'nullable|string',
                 'images' => 'nullable|array',
                 'images.*' => [
@@ -415,7 +421,12 @@ class PackageController extends Controller
 
         try {
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('packages', 'name')->whereNull('deleted_at'),
+                ],
                 'description' => 'nullable|string',
                 'images' => 'nullable|array',
                 'images.*' => [
@@ -465,7 +476,6 @@ class PackageController extends Controller
             if ($validator->fails()) {
                 $errors = $validator->errors();
 
-                // Format image validation errors to be more user-friendly
                 if ($errors->has('images.*')) {
                     $imageErrors = collect($errors->get('images.*'))->map(function ($error, $key) {
                         $index = explode('.', $key)[1];
@@ -478,7 +488,15 @@ class PackageController extends Controller
                     }
                 }
 
-                return back()->withErrors($errors)->withInput();
+                // 🔁 Return JSON if it's an Axios/XHR request
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'message' => 'Validation failed.',
+                        'errors' => $errors,
+                    ], 422); // ✅ This makes Vue run .catch()
+                }
+
+                return back()->withErrors($errors)->withInput(); // fallback for web
             }
 
             $validated = $validator->validated();

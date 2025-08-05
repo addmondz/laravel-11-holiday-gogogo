@@ -397,35 +397,28 @@ const submit = () => {
         });
     })
     .catch(error => {
-        console.error('Error updating package:', error);
-        
-        if (error.response?.data?.errors) {
+        form.clearErrors();
+
+        if (error.response?.status === 422 && error.response.data.errors) {
             const errors = error.response.data.errors;
-            const errorMessages = [];
-            
-            // Format validation errors
             Object.entries(errors).forEach(([field, messages]) => {
-                if (Array.isArray(messages)) {
-                    errorMessages.push(`${field}: ${messages.join(', ')}`);
-                } else {
-                    errorMessages.push(`${field}: ${messages}`);
-                }
+                const message = Array.isArray(messages) ? messages.join(', ') : messages;
+                form.setError(field, message);
             });
 
             Swal.fire({
                 title: 'Validation Error',
-                html: errorMessages.join('<br>'),
+                text: 'Please correct the highlighted errors and try again.',
                 icon: 'error',
-                confirmButtonText: 'OK'
             });
         } else {
             Swal.fire({
                 title: 'Error',
-                text: error.response?.data?.message || 'Failed to update package. Please try again.',
+                text: error.response?.data?.message || 'Something went wrong.',
                 icon: 'error',
-                confirmButtonText: 'OK'
             });
         }
     });
+
 };
 </script>
