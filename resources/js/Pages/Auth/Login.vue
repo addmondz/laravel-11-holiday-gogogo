@@ -22,6 +22,9 @@ const submit = () => {
     form.post(route('login'), {
         onFinish: () => {
             form.reset('password');
+
+            // ✅ Force full page reload to refresh session + CSRF token
+            window.location.href = route('dashboard'); // or any other route
         },
     });
 };
