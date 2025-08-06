@@ -434,7 +434,7 @@
   -H "Accept: application/json" \
   -d '{
     "package_id": {{ $packageRoomsIds[0] }},
-    "travel_date_start": "2025-07-15",
+    "travel_date_start": "{{ $tmrDate }}",
     "rooms": [
         {
             "room_type_id": 1,

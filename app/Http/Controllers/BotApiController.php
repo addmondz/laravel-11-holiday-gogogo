@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Constants\AppConstants;
 use App\Http\Controllers\Api\TravelCalculatorController;
+use App\Models\ActivityLog;
 use App\Models\Package;
 use App\Models\PackageConfiguration;
 use App\Models\DateBlocker;
@@ -32,11 +33,7 @@ class BotApiController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 400);
+            return $this->returnBotApiResponse(false, 'Validation failed', $validator->errors(), 400, $request, 'fetchRoomTypesByPackageName');
         }
 
         try {
@@ -45,10 +42,7 @@ class BotApiController extends Controller
                 ->first();
 
             if (!$package) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Package not found'
-                ], 404);
+                return $this->returnBotApiResponse(false, 'Package not found', null, 404, $request, 'fetchRoomTypesByPackageName');
             }
 
             $travelMonth = (int) $request->travel_month;
@@ -59,7 +53,7 @@ class BotApiController extends Controller
             $endOfMonth = $startOfMonth->copy()->endOfMonth();
             $today = Carbon::today();
 
-            return response()->json([
+            $spiResponse = [
                 'success' => true,
                 'data' => [
                     'package' => [
@@ -142,13 +136,11 @@ class BotApiController extends Controller
                             ->values(),
                     ]
                 ]
-            ]);
+            ];
+
+            return $this->returnBotApiResponse(true, 'Success', $spiResponse, 200, $request, 'fetchRoomTypesByPackageName');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Server error',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->returnBotApiResponse(false, 'Server error', $e->getMessage(), 500, $request, 'fetchRoomTypesByPackageName');
         }
     }
 
@@ -176,15 +168,47 @@ class BotApiController extends Controller
         $rooms = collect($request->rooms)->map(function ($room) {
             return [
                 'room_type' => $room['room_type_id'],
-                'adults' => $room['adults'],
-                'children' => $room['children'],
-                'infants' => $room['infants'],
+                'adults' => $room['adults'] ?? 0,
+                'children' => $room['children'] ?? 0,
+                'infants' => $room['infants'] ?? 0,
             ];
         })->toArray();
 
-        $package = Package::find($request->package_id);
-        $endDate = Carbon::parse($request->travel_date_start)->addDays($package->package_min_days);
+        try {
+            $package = Package::find($request->package_id);
+            $endDate = Carbon::parse($request->travel_date_start)->addDays($package->package_min_days);
 
-        return app(TravelCalculatorController::class)->calculatePriceByParams($request->package_id, $rooms, $request->travel_date_start, $endDate, true);
+            $spiResponse = app(TravelCalculatorController::class)->calculatePriceByParams(
+                $request->package_id,
+                $rooms,
+                $request->travel_date_start,
+                $endDate,
+                true
+            );
+
+            return $this->returnBotApiResponse(true, 'Success', $spiResponse, 200, $request, 'fetchQuotation');
+        } catch (\Exception $e) {
+            return $this->returnBotApiResponse(false, 'Calculation error', $e->getMessage(), 500, $request, 'fetchQuotation');
+        }
+    }
+
+    public function returnBotApiResponse($success, $message, $data = null, $statusCode = 200, $request, $apiName)
+    {
+        ActivityLog::create([
+            'user_email' => $request->user()->email ?? 'guest',
+            'action' => 'api response',
+            'subject' => $apiName,
+            'description' => $message,
+            'request_body' => json_encode($request->all(), JSON_UNESCAPED_UNICODE),
+            'api_response' => is_array($data) || is_object($data)
+                ? json_encode($data, JSON_UNESCAPED_UNICODE)
+                : $data,
+        ]);
+
+        return response()->json([
+            'success' => $success,
+            'message' => $message,
+            'data' => $data,
+        ], $statusCode);
     }
 }

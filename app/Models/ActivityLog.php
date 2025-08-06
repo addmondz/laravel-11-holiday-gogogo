@@ -17,5 +17,6 @@ class ActivityLog extends Model
         'request_body',
         'ip_address',
         'user_agent',
+        'api_response',
     ];
 }
