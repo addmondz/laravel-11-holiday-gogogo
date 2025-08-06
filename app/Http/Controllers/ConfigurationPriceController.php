@@ -466,16 +466,16 @@ class ConfigurationPriceController extends Controller
             'package_id' => 'required|exists:packages,id',
             'season_type_id' => 'required|exists:season_types,id',
             'date_type_id' => 'required|exists:date_types,id',
-            'room_type_id' => 'required|exists:room_types,id',
+            // 'room_type_id' => 'required|exists:room_types,id',
         ]);
 
-        $roomType = RoomType::find($validated['room_type_id']);
+        $roomType = isset($validated['room_type_id']) ? RoomType::find($validated['room_type_id']) : null;
         $seasonType = SeasonType::find($validated['season_type_id']);
         $dateType = DateType::find($validated['date_type_id']);
 
         $this->priceConfigurationService->createPriceConfigurationsService(
             Package::find($validated['package_id']),
-            [$roomType],
+            isset($validated['room_type_id']) ? [$roomType] : [],
             [$seasonType],
             [$dateType],
             false
