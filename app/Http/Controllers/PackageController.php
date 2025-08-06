@@ -425,7 +425,9 @@ class PackageController extends Controller
                     'required',
                     'string',
                     'max:255',
-                    Rule::unique('packages', 'name')->whereNull('deleted_at'),
+                    Rule::unique('packages', 'name')
+                        ->ignore($package->id)
+                        ->whereNull('deleted_at'),
                 ],
                 'description' => 'nullable|string',
                 'images' => 'nullable|array',
