@@ -108,6 +108,24 @@
                                 </div>
 
                                 <div>
+                                    <div>
+                                        <label for="sst_enable" class="block text-sm font-medium text-gray-700">SST Enable</label>
+                                        <input
+                                            type="checkbox"
+                                            id="sst_enable"
+                                            v-model="form.sst_enable"
+                                            class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        <span class="text-xs text-gray-500">
+                                            If enabled, the SST will be added to the display price.
+                                        </span>
+                                        <div v-if="form.errors.sst_enable" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.sst_enable }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
                                     <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">Terms and Conditions</label>
                                     <textarea
                                         id="terms_and_conditions"
@@ -263,6 +281,7 @@ const form = useForm({
     package_start_date: props.package.package_start_date,
     package_end_date: props.package.package_end_date,
     weekend_days: props.package.weekend_days || [0, 6], // Default to Saturday and Sunday
+    sst_enable: !!props.package.sst_enable,
 });
 
 const handleImagesUpload = (event) => {
@@ -372,6 +391,9 @@ const submit = () => {
             // JSON-encode arrays like weekend_days
             if (Array.isArray(form[key])) {
                 formData.append(key, JSON.stringify(form[key]));
+            } else if (typeof form[key] === 'boolean') {
+                // convert boolean to 1 or 0 for Laravel
+                formData.append(key, form[key] ? 1 : 0);
             } else {
                 formData.append(key, form[key]);
             }

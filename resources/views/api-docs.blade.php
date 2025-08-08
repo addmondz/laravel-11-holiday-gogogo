@@ -542,6 +542,9 @@
     ],
     "summary": {
         "total_nights": 7,
+        "total_adults": 1,
+        "total_children": 1,
+        "total_infants": 0,
         "base_charges": {
             "adult": {"total": 3926.97},
             "child": {"total": 3028.29},
@@ -555,11 +558,95 @@
             "total": 2604.1
         },
         "grand_total": 9559.36
-    }
+    },
+    "total_without_sst": 9559.36,
+    "sst": 573.56,
+    "total": 10132.92
 }</code></pre>
                             </div>
 
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6 hidden">Important Notes</h3>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6">Response Fields</h3>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm border border-gray-300 rounded-lg">
+                                        <thead>
+                                            <tr class="border-b border-gray-200">
+                                                <th class="text-left py-2 px-3 font-semibold text-gray-900">Field</th>
+                                                <th class="text-left py-2 px-3 font-semibold text-gray-900">Type</th>
+                                                <th class="text-left py-2 px-3 font-semibold text-gray-900">Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            <!-- Basic Information -->
+                                            <tr class="bg-blue-50">
+                                                <td colspan="3" class="py-2 px-3 font-semibold text-blue-900">Basic Information</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">success</td>
+                                                <td class="py-2 px-3 text-gray-600">boolean</td>
+                                                <td class="py-2 px-3 text-gray-700">Indicates if the request was successful</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">currency</td>
+                                                <td class="py-2 px-3 text-gray-600">string</td>
+                                                <td class="py-2 px-3 text-gray-700">Currency code (MYR)</td>
+                                            </tr>
+                                            
+                                            <!-- SST Information -->
+                                            <tr class="bg-green-50">
+                                                <td colspan="3" class="py-2 px-3 font-semibold text-green-900">SST (Sales and Service Tax) Information</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">total_without_sst</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Total amount before SST calculation</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">sst</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">SST amount calculated based on configuration (0 if SST is disabled)</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">total</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Grand total including SST (total_without_sst + sst)</td>
+                                            </tr>
+                                            
+                                            <!-- Summary Information -->
+                                            <tr class="bg-purple-50">
+                                                <td colspan="3" class="py-2 px-3 font-semibold text-purple-900">Summary Information</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">summary.total_nights</td>
+                                                <td class="py-2 px-3 text-gray-600">integer</td>
+                                                <td class="py-2 px-3 text-gray-700">Total number of nights</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">summary.total_adults</td>
+                                                <td class="py-2 px-3 text-gray-600">integer</td>
+                                                <td class="py-2 px-3 text-gray-700">Total number of adults</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">summary.total_children</td>
+                                                <td class="py-2 px-3 text-gray-600">integer</td>
+                                                <td class="py-2 px-3 text-gray-700">Total number of children</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">summary.total_infants</td>
+                                                <td class="py-2 px-3 text-gray-600">integer</td>
+                                                <td class="py-2 px-3 text-gray-700">Total number of infants</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">summary.grand_total</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Total amount before SST (same as total_without_sst)</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 mt-6">Important Notes</h3>
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                 <ul class="space-y-2 text-sm text-blue-700">
                                     <li><strong>Package Duration:</strong> The end date is automatically calculated based on the package's minimum days requirement.</li>
@@ -567,6 +654,8 @@
                                     <li><strong>Season & Date Types:</strong> Pricing varies based on seasons (Peak/Off-Peak) and date types (Weekday/Weekend).</li>
                                     <li><strong>Date Blockers:</strong> If selected dates are blocked, the API will suggest alternative dates.</li>
                                     <li><strong>Currency:</strong> All prices are in Malaysian Ringgit (MYR).</li>
+                                    <li><strong>SST Calculation:</strong> SST (Sales and Service Tax) is automatically calculated based on the system configuration. If SST is disabled, the <code class="bg-blue-100 px-1 rounded">sst</code> field will be 0.</li>
+                                    <li><strong>Total Breakdown:</strong> The response includes <code class="bg-blue-100 px-1 rounded">total_without_sst</code> (amount before tax), <code class="bg-blue-100 px-1 rounded">sst</code> (tax amount), and <code class="bg-blue-100 px-1 rounded">total</code> (final amount including tax).</li>
                                 </ul>
                             </div>
                         </div>

@@ -96,6 +96,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CustomDummySeeder::class,
             DummySeeder::class,
+            SstConfigurationSeeder::class,
         ]);
     }
 }

@@ -449,7 +449,8 @@ class PackageController extends Controller
                 'weekend_days' => 'nullable|array',
                 'weekend_days.*' => 'integer|min:0|max:6',
                 'delete_images' => 'nullable|array',
-                'delete_images.*' => 'string'
+                'delete_images.*' => 'string',
+                'sst_enable' => 'nullable|boolean',
             ], [
                 'name.required' => 'Package name is required',
                 'name.max' => 'Package name cannot exceed 255 characters',
@@ -472,7 +473,8 @@ class PackageController extends Controller
                 'weekend_days.array' => 'Weekend days must be provided as a list',
                 'weekend_days.*.integer' => 'Weekend day must be a whole number',
                 'weekend_days.*.min' => 'Weekend day must be between 0 and 6',
-                'weekend_days.*.max' => 'Weekend day must be between 0 and 6'
+                'weekend_days.*.max' => 'Weekend day must be between 0 and 6',
+                'sst_enable.boolean' => 'SST enable must be a boolean value'
             ]);
 
             if ($validator->fails()) {

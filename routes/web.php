@@ -21,6 +21,7 @@ use App\Http\Controllers\PaymentSimulationController;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\AppSettingController;
 use App\Http\Controllers\BotApiController;
 use App\Http\Controllers\DateBlockerController;
 use App\Http\Controllers\SenangPayController;
@@ -174,6 +175,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/', 'store')->name('date-blockers.store');
         Route::put('/{dateBlocker}', 'update')->name('date-blockers.update');
         Route::delete('/{dateBlocker}', 'destroy')->name('date-blockers.destroy');
+    });
+
+    // settings routes
+    Route::resource('settings', AppSettingController::class)->names([
+        'index' => 'settings.index',
+        'edit' => 'settings.edit',
+        'update' => 'settings.update',
+    ]);
+
+    // SST Configuration routes
+    Route::prefix('settings')->controller(AppSettingController::class)->group(function () {
+        Route::get('/sst-configuration', 'getSstConfiguration')->name('settings.sst-configuration.get');
+        Route::post('/sst-configuration', 'updateSstConfiguration')->name('settings.sst-configuration.update');
     });
 });
 

@@ -47,6 +47,12 @@
                         <span v-else class="text-gray-400">Not configured</span>
                     </p>
                 </div>
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500">SST Enable</h4>
+                    <p class="mt-1 text-sm text-gray-900">
+                        {{ package.sst_enable ? 'Yes' : 'No' }}
+                    </p>
+                </div>
             </div>
             <div>
                 <h4 class="text-sm font-medium text-gray-500">Terms and Conditions</h4>

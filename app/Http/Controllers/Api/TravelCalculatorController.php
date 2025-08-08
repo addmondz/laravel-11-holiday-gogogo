@@ -13,6 +13,7 @@ use App\Models\PackageConfiguration;
 use App\Models\RoomType;
 use App\Models\Season;
 use App\Models\SeasonType;
+use App\Services\SstCalculationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Carbon\CarbonPeriod;
@@ -21,9 +22,12 @@ use Illuminate\Support\Facades\Validator;
 class TravelCalculatorController extends Controller
 {
     public $enabledDefaultSeasonAndDateType;
-    public function __construct()
+    protected SstCalculationService $sstCalculationService;
+
+    public function __construct(SstCalculationService $sstCalculationService)
     {
         $this->enabledDefaultSeasonAndDateType = env('ENABLED_DEFAULT_SEASON_AND_DATE_TYPE', false);
+        $this->sstCalculationService = $sstCalculationService;
     }
 
     // public function calculate(Request $request)
@@ -592,6 +596,14 @@ class TravelCalculatorController extends Controller
                 }
             }
 
+            $sst = 0;
+            if ($package->sst_enable) {
+                $sst = $this->sstCalculationService->calculateSst($sum('total'));
+            }
+
+            $totalWithoutSst = $sum('total');
+            $total = $totalWithoutSst + $sst;
+
             return response()->json([
                 'success' => true,
                 'currency' => 'MYR',
@@ -629,7 +641,9 @@ class TravelCalculatorController extends Controller
                     ],
                     'grand_total' => $sum('total'),
                 ],
-                'total' => $sum('total'),
+                'total' => $total,
+                'total_without_sst' => $totalWithoutSst,
+                'sst' => $sst,
             ]);
         } catch (\Exception $e) {
             if (str_contains($e->getMessage(), 'the selected dates and room type combination are not available') && $isFromBot) {

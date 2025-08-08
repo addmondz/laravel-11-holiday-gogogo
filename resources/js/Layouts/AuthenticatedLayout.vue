@@ -139,6 +139,9 @@ const toggleSidebar = () => {
                                 <NavLink :href="route('date-types.index')" :active="route().current('date-types.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
                                     Date Types
                                 </NavLink>
+                                <NavLink :href="route('settings.index')" :active="route().current('settings.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                    Settings
+                                </NavLink>
                             </div>
                         </div>
                     </nav>

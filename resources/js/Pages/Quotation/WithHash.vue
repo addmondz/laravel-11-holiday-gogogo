@@ -817,12 +817,23 @@
                                     <div class="hidden">
                                         <p class="text-sm text-gray-500">Total Nights</p>
                                         <p class="text-lg font-medium text-gray-900">{{ bookingSummary.duration }}</p>
-                                    </div> -->
-                                    <div class="text-right">
-                                        <p class="text-sm text-gray-500">Grand Total</p>
-                                        <p class="text-lg font-medium text-indigo-600">MYR {{ formatNumber(priceBreakdown.total) }}</p>
                                     </div>
-                                <!-- </div> -->
+                                </div> -->
+                                <div class="bg-gray-50 p-4 rounded-md shadow-sm w-full max-w-xs ml-auto">
+                                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                        <span>Total (Excl. SST)</span>
+                                        <span>MYR {{ formatNumber(priceBreakdown.total_without_sst) }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm text-gray-600 mb-3">
+                                        <span>SST</span>
+                                        <span>MYR {{ formatNumber(priceBreakdown.sst) }}</span>
+                                    </div>
+                                    <hr class="border-gray-200 mb-3">
+                                    <div class="flex justify-between text-base font-semibold text-indigo-700">
+                                        <span>Grand Total</span>
+                                        <span>MYR {{ formatNumber(priceBreakdown.total) }}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

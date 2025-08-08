@@ -31,6 +31,7 @@ class Package extends Model
         'child_max_age_desc',
         'infant_max_age_desc',
         'weekend_days',
+        'sst_enable',
     ];
 
     protected $casts = [
