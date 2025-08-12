@@ -117,7 +117,7 @@
                                             class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         />
                                         <span class="text-xs text-gray-500">
-                                            If enabled, the SST will be added to the display price.
+                                            If enabled, the SST will be added to the total price.
                                         </span>
                                         <div v-if="form.errors.sst_enable" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.sst_enable }}
