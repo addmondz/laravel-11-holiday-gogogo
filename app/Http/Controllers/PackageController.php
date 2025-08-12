@@ -735,10 +735,12 @@ class PackageController extends Controller
             return redirect()->route('packages.show', $newPackage->id)
                 ->with('success', 'Package duplicated successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
+            
             DB::rollBack();
-            // Return validation errors to the frontend
-            Log::error('Package duplication validation error: ' . $e->getMessage());
-            return back()->withErrors($e->errors())->withInput();
+            // Log::error('Package duplication validation error:', ['errors' => $e->errors()]);
+            return back()
+                ->withErrors($e->errors()) // passes errors to session
+                ->withInput();             // keeps old form input
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Package duplication failed: ' . $e->getMessage());

@@ -12,6 +12,17 @@
                     <div class="p-6 text-gray-900">
                         <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-9" />
                         <form @submit.prevent="submit">
+
+                            <!-- Normal red validation errors -->
+                            <div v-if="Object.keys(form.errors).length > 0 && !form.errors.general" 
+                                class="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
+                                <ul class="list-disc pl-5 text-sm text-red-700 space-y-1">
+                                    <li v-for="(error, key) in form.errors" :key="key" v-if="key !== 'general'">
+                                        {{ error }}
+                                    </li>
+                                </ul>
+                            </div>
+
                             <div class="grid grid-cols-1 gap-6">
                                 <div>
                                     <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
