@@ -49,7 +49,7 @@
                                 </div>
 
                                 <!-- Search -->
-                                <div>
+                                <div @keyup.enter="updateFilters">
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Search Packages</label>
                                     <input
                                         type="text"
