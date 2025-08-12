@@ -315,7 +315,7 @@ class PackageController extends Controller
             ->whereHas('type', function ($query) use ($defaultSeasonTypeId) {
                 $query->where('id', '!=', $defaultSeasonTypeId);
             })
-            ->latest()
+            ->orderBy('start_date', 'desc') // Order by start_date descending
             ->paginate(10);
 
         $defaultTypeRange = DateType::whereIn('name', ['Default', 'Weekday', 'Weekend'])->pluck('id');
@@ -324,7 +324,7 @@ class PackageController extends Controller
             ->whereHas('dateType', function ($query) use ($defaultTypeRange) {
                 $query->whereNotIn('id', $defaultTypeRange);
             })
-            ->latest()
+            ->orderBy('start_date', 'desc') // Order by start_date descending
             ->paginate(10);
 
         $seasonTypes = SeasonType::whereNot('name', 'Default')->get()->toArray();
@@ -381,7 +381,7 @@ class PackageController extends Controller
         $seasons = Season::with('type')
             ->where('package_id', $package->id)
             ->where('season_type_id', '!=', $defaultSeasonTypeId)
-            ->latest()
+            ->orderBy('start_date', 'desc') // Order by start_date descending
             ->paginate(10, ['*'], 'page');
 
         return response()->json($seasons);
@@ -393,7 +393,7 @@ class PackageController extends Controller
         $dateTypeRanges = DateTypeRange::with('dateType')
             ->where('package_id', $package->id)
             ->whereNotIn('date_type_id', $defaultDateTypeId)
-            ->latest()
+            ->orderBy('start_date', 'desc') // Order by start_date descending
             ->paginate(10, ['*'], 'page');
 
         return response()->json($dateTypeRanges);

@@ -14,7 +14,7 @@ class DateBlockerController extends Controller
     {
         $dateBlockers = DateBlocker::with('roomType')
             ->where('package_id', $request->package_id)
-            ->latest()
+            ->orderBy('start_date', 'desc') // Order by start_date descending
             ->paginate(10)
             ->withQueryString();
 
