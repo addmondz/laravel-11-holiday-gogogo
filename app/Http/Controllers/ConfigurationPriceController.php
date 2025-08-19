@@ -269,6 +269,7 @@ class ConfigurationPriceController extends Controller
      */
     public function fetchPricesRoomTypes(Request $request)
     {
+        // Log::info('fetchPricesRoomTypes', $request->all());
         $request->validate([
             'package_id' => 'required|exists:packages,id',
             'season_type_id' => 'required|exists:season_types,id',
@@ -285,7 +286,10 @@ class ConfigurationPriceController extends Controller
             $query->where('room_type_id', $request->room_type_id);
         }
 
+        $this->ensureOnlyOnePriceConfiguration($query, $request->all());
+
         $configurations = $query->get();
+        // Log::info('configurations:' . json_encode($configurations, JSON_PRETTY_PRINT));
 
         // If no configurations exist, return empty array
         if ($configurations->isEmpty()) {
@@ -482,5 +486,30 @@ class ConfigurationPriceController extends Controller
         );
 
         return response()->json(['message' => 'Configuration prices created successfully.']);
+    }
+
+    public function ensureOnlyOnePriceConfiguration($query, $requestParam): bool
+    {
+        // Newest first by created_at, then id (tiebreaker)
+        $ids = (clone $query)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->pluck('id');
+
+        if ($ids->count() <= 1) return false; // nothing to clean
+
+        // Everything except the most recent, as a values-only array
+        $deletedIds = $ids->slice(1)->values()->all();
+
+        // Delete those
+        (clone $query)->whereKey($deletedIds)->delete();
+
+        // Logs: deleted ids as body-only array (no keys)
+        Log::info('Cleaned duplicate price configurations; kept most recent id='. $ids->first());
+        Log::info('Deleted ids Length: ' . count($deletedIds));
+        Log::info('Deleted ids: ' . json_encode($deletedIds));
+        Log::info('requestParam: ' . json_encode($requestParam));
+
+        return true;
     }
 }
