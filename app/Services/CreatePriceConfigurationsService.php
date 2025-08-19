@@ -44,14 +44,28 @@ class CreatePriceConfigurationsService
                 foreach ($seasonTypes as $seasonType) {
                     foreach ($dateTypes as $dateType) {
                         // Create the package configuration
-                        $configuration = PackageConfiguration::create([
-                            'package_id' => $package->id,
-                            'season_type_id' => $seasonType->id,
-                            'date_type_id' => $dateType->id,
-                            'room_type_id' => $roomType->id,
-                            'configuration_prices' => $generateRandomPrices ? json_encode($this->generateRandomPrices()) : NULL,
-                        ]);
-                        
+
+                        $configuration = PackageConfiguration::where('package_id', $package->id)
+                            ->where('season_type_id', $seasonType->id)
+                            ->where('date_type_id', $dateType->id)
+                            ->where('room_type_id', $roomType->id)
+                            ->first();
+
+                        if (!$configuration) {
+                            $configuration = PackageConfiguration::create([
+                                'package_id' => $package->id,
+                                'season_type_id' => $seasonType->id,
+                                'date_type_id' => $dateType->id,
+                                'room_type_id' => $roomType->id,
+                                'configuration_prices' => $generateRandomPrices ? json_encode($this->generateRandomPrices()) : NULL,
+                            ]);
+
+                            // Log::info('configuration created: ' . json_encode($configuration, JSON_PRETTY_PRINT));
+                        }
+                        else {
+                            // Log::info('configuration already exists: ' . json_encode($configuration, JSON_PRETTY_PRINT));
+                        }
+
                         $createdConfigurations[] = $configuration;
                     }
                 }
