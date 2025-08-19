@@ -194,7 +194,7 @@ watch(currentTab, (newVal, oldVal) => {
             const url = new URL(window.location.href);
             url.searchParams.set('tab', 'price-configuration');
             window.location.href = url.toString();
-        }, 500);
+        }, 100);
     }
 });
 </script>
