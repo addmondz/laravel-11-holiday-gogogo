@@ -190,11 +190,9 @@ watch(currentTab, (newVal, oldVal) => {
     // force refresh the page when switching to price-configuration
     if (newVal == 'price-configuration' && oldVal != 'price-configuration') {
         isTabLoading.value = true;
-        // setTimeout(() => {
-            const url = new URL(window.location.href);
-            url.searchParams.set('tab', 'price-configuration');
-            window.location.href = url.toString();
-        // }, 100);
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', 'price-configuration');
+        window.location.href = url.toString();
     }
 });
 </script>
