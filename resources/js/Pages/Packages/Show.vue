@@ -13,42 +13,42 @@
                     <div class="p-6 text-gray-900">
                         <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-6" />
 
+                        <div class="mb-6">
+                            <div class="sm:hidden">
+                                <select
+                                    v-model="currentTab"
+                                    class="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                                >
+                                    <option v-for="tab in tabs" :key="tab.id" :value="tab.id">
+                                        {{ tab.name }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="hidden sm:block">
+                                <div class="border-b border-gray-200">
+                                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                                        <button
+                                            v-for="tab in tabs"
+                                            :key="tab.id"
+                                            @click="currentTab = tab.id"
+                                            :class="[
+                                                currentTab === tab.id
+                                                    ? 'border-indigo-500 text-indigo-600'
+                                                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                                                'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
+                                            ]"
+                                        >
+                                            {{ tab.name }}
+                                        </button>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="flex justify-center min-h-96 flex items-center justify-center" v-if="isTabLoading">
                             <LoadingComponent />
                         </div>
                         <div v-else>
-                            <div class="mb-6">
-                                <div class="sm:hidden">
-                                    <select
-                                        v-model="currentTab"
-                                        class="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                                    >
-                                        <option v-for="tab in tabs" :key="tab.id" :value="tab.id">
-                                            {{ tab.name }}
-                                        </option>
-                                    </select>
-                                </div>
-                                <div class="hidden sm:block">
-                                    <div class="border-b border-gray-200">
-                                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                                            <button
-                                                v-for="tab in tabs"
-                                                :key="tab.id"
-                                                @click="currentTab = tab.id"
-                                                :class="[
-                                                    currentTab === tab.id
-                                                        ? 'border-indigo-500 text-indigo-600'
-                                                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                                                    'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-                                                ]"
-                                            >
-                                                {{ tab.name }}
-                                            </button>
-                                        </nav>
-                                    </div>
-                                </div>
-                            </div>
-
                             <div class="mt-6">
                                 <component
                                     :is="currentTabComponent"
@@ -190,11 +190,11 @@ watch(currentTab, (newVal, oldVal) => {
     // force refresh the page when switching to price-configuration
     if (newVal == 'price-configuration' && oldVal != 'price-configuration') {
         isTabLoading.value = true;
-        setTimeout(() => {
+        // setTimeout(() => {
             const url = new URL(window.location.href);
             url.searchParams.set('tab', 'price-configuration');
             window.location.href = url.toString();
-        }, 100);
+        // }, 100);
     }
 });
 </script>
