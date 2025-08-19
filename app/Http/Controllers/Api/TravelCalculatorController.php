@@ -391,6 +391,16 @@ class TravelCalculatorController extends Controller
                     ])->first();
 
                     if (!$packageConfig) {
+                        Log::error('Package configuration not found for ' . $date->format('Y-m-d') . ' for package ' . $packageId);
+                        Log::error(json_encode([
+                            'package_id' => $packageId,
+                            'season_type_id' => $seasonType->id,
+                            'season_type_name' => $seasonType->name,
+                            'date_type_id' => $dateType->id,
+                            'date_type_name' => $dateType->name,
+                            'room_type_id' => $roomTypeId,
+                            'room_type_name' => $roomType->name,
+                        ], JSON_PRETTY_PRINT));
                         return response()->json([
                             'success' => false,
                             'message' => "Package configuration not found for {$date->format('Y-m-d')}",
