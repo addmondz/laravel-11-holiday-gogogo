@@ -13,7 +13,9 @@
                     <div class="p-6 text-gray-900">
                         <BreadcrumbComponent :breadcrumbs="breadcrumbs" class="mb-6" />
 
-                        <LoadingComponent v-if="isTabLoading" />
+                        <div class="flex justify-center min-h-96 flex items-center justify-center" v-if="isTabLoading">
+                            <LoadingComponent />
+                        </div>
                         <div v-else>
                             <div class="mb-6">
                                 <div class="sm:hidden">
@@ -84,6 +86,7 @@ import PriceConfigurationRoomTypes from './packages-show-tabs/PriceConfiguration
 import DateBlockers from './packages-show-tabs/DateBlockers.vue';
 import UpdatePriceConfigByPax from './packages-show-tabs/UpdatePriceConfigByPax.vue';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
+import LoadingComponent from '@/Components/LoadingComponent.vue';
 
 const isTabLoading = ref(false);
 const props = defineProps({
@@ -187,9 +190,11 @@ watch(currentTab, (newVal, oldVal) => {
     // force refresh the page when switching to price-configuration
     if (newVal == 'price-configuration' && oldVal != 'price-configuration') {
         isTabLoading.value = true;
-        const url = new URL(window.location.href);
-        url.searchParams.set('tab', 'price-configuration');
-        window.location.href = url.toString();
+        setTimeout(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', 'price-configuration');
+            window.location.href = url.toString();
+        }, 500);
     }
 });
 </script>
