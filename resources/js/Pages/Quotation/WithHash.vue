@@ -565,7 +565,7 @@
 
                         <!-- Nightly Breakdown -->
                         <div v-if="priceBreakdown?.nights" class="mt-6">
-                            <div class="hidden">
+                            <div class="nightly-breakdown hidden">
                                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Price Breakdown by Rooms</h3>
                                 <!-- Room Breakdown -->
                                 <div v-for="(room, roomIndex) in priceBreakdown.rooms" :key="roomIndex" class="mb-6">
@@ -791,8 +791,8 @@
 
                             <!-- Overall Summary -->
                             <div class="mt-6 bg-gray-50 rounded-lg p-4">
-                                <!-- <div class="grid grid-cols-2 md:grid-cols-4 gap-4"> -->
-                                    <!-- <div class="hidden">
+                                <!-- <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div class="hidden">
                                         <p class="text-sm text-gray-500">Total Base Charge</p>
                                         <div class="text-lg font-medium text-gray-900">
                                             MYR {{ formatNumber(priceBreakdown.summary.base_charges.total) }}

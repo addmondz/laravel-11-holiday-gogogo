@@ -91,7 +91,12 @@
                     <!-- Base Charge Table -->
                     <div class="overflow-x-auto">
                         <div class="flex justify-between items-center">
-                            <h4 class="text-lg font-bold text-gray-700 mb-2">Base Charge</h4>
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-700 mb-2">Base Charge</h4>
+                                <small class="text-gray-500 mb-4 block">
+                                    Note: Base Charges are lump sum (not per night). Season and Date Type follow the first night’s rate.
+                                </small>
+                            </div>
                             <div class="space-x-2 mb-4">
                                 <button
                                     v-if="!isEditMode"
@@ -234,7 +239,12 @@
                             <!-- Base Charge Table -->
                             <div class="overflow-x-auto">
                                 <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-lg font-bold text-gray-900">Base Charges</h3>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900">Base Charges</h3>
+                                        <small class="text-gray-500 block mt-2 mb-2">
+                                            Note: Base Charges are lump sum (not per night). Season and Date Type follow the first night's rate.
+                                        </small>
+                                    </div>
                                     <div class="flex flex-1 gap-2 items-center justify-end mr-4">
                                         <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Adult Price"  v-model="applyAllBasePrice.adult_price" />
                                         <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Child Price"  v-model="applyAllBasePrice.child_price" /> 
