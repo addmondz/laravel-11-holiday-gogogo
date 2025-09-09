@@ -175,7 +175,7 @@
                                     </svg>
                                     Terms and Conditions
                                 </h2>
-                                <p class="text-gray-600 text-sm">{{ packageData.terms_and_conditions }}</p>
+                                <p class="text-gray-600 text-sm" v-html="linkify(packageData.terms_and_conditions)"></p>
                             </div>
                         </div>
                     </div>
@@ -1304,6 +1304,12 @@ onMounted(() => {
         refreshBookingData();
     }
 });
+
+const linkify = (text) => {
+  if (!text) return "";
+  const urlPattern = /(https?:\/\/[^\s]+)/g;
+  return text.replace(urlPattern, '<a href="$1" target="_blank" class="text-blue-600 underline">$1</a>');
+}
 
 // Function to retry payment
 const retryPayment = async () => {

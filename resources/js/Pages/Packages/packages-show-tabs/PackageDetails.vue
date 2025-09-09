@@ -56,7 +56,7 @@
             </div>
             <div>
                 <h4 class="text-sm font-medium text-gray-500">Terms and Conditions</h4>
-                <p class="mt-1 text-sm text-gray-900">{{ package.terms_and_conditions }}</p>
+                <p class="mt-1 text-sm text-gray-900" v-html="linkify(package.terms_and_conditions)"></p>
             </div>
             <div class="grid grid-cols-2 gap-6">
                 <div>
@@ -125,6 +125,12 @@ const props = defineProps({
         required: true
     }
 });
+
+const linkify = (text) => {
+  if (!text) return "";
+  const urlPattern = /(https?:\/\/[^\s]+)/g;
+  return text.replace(urlPattern, '<a href="$1" target="_blank" class="text-blue-600 underline">$1</a>');
+}
 
 const formatNumber = (number) => {
     if (!number) return '0.00';
