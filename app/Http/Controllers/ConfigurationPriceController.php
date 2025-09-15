@@ -288,6 +288,8 @@ class ConfigurationPriceController extends Controller
 
         $roomTypeIds = RoomType::where('package_id', $request->package_id)->pluck('id');
 
+        $this->ensureItHasAllCombinations($query, $request->all(), $roomTypeIds);
+
         $this->ensureOnlyOnePriceConfiguration($query, $request->all(), $roomTypeIds);
 
         $configurations = $query->get();
@@ -494,11 +496,7 @@ class ConfigurationPriceController extends Controller
     public function ensureOnlyOnePriceConfiguration($query, $requestParam, $roomTypeIds)
     {
         $cloneQuery = $query->clone();
-        // Log::info('cloneQuery: ' . json_encode($cloneQuery->get(), JSON_PRETTY_PRINT));
-        // Log::info('count cloneQuery: ' . $cloneQuery->get()->count());
         $request_room_type_id = $requestParam['room_type_id'] ?? null;
-        // Log::info('roomTypeIds: ' . json_encode($roomTypeIds, JSON_PRETTY_PRINT));
-
         $configToDisplay = $request_room_type_id ? 1 : $roomTypeIds->count();
 
         if ($cloneQuery->get()->count() > $configToDisplay) {
@@ -557,5 +555,81 @@ class ConfigurationPriceController extends Controller
         }
 
         Log::info('initializePriceConfigurationsCleaning END');
+    }
+
+
+    public function ensureItHasAllCombinations($query, $requestParam, $roomTypeIds)
+    {
+        // Clone the query with the PHP operator (not a method)
+        $cloneQuery = clone $query;
+
+        // Get optional room_type_id from request/array
+        $requestRoomTypeId = is_array($requestParam)
+            ? ($requestParam['room_type_id'] ?? null)
+            : $requestParam->input('room_type_id');
+
+        // Target set: either the single requested id, or all provided ids
+        $targetIds = $requestRoomTypeId
+            ? collect([(int) $requestRoomTypeId])
+            : $roomTypeIds->map(fn($id) => (int) $id)->unique()->values();
+
+        $configToDisplay = $targetIds->count();
+
+        // Fetch existing room_type_id values from the same (cloned) scope
+        $existing = (clone $cloneQuery)
+            ->get(['room_type_id'])
+            ->pluck('room_type_id')
+            ->map(fn($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        // Compute what’s missing (value-based, not key-based)
+        $missing = $targetIds->diff($existing)->values();
+
+        // Structured logs
+        Log::info(
+            'ensureItHasAllCombinationsCheck ' . PHP_EOL .
+            json_encode([
+                'expected_count'         => $configToDisplay,
+                'existing_count'         => $existing->count(),
+                'target_ids'             => $targetIds->all(),
+                'existing_room_type_ids' => $existing->all(),
+                'missing_room_type_ids'  => $missing->all(),
+            ], JSON_PRETTY_PRINT)
+        );
+
+        if ($missing->isEmpty()) {
+            Log::info('All combinations present.');
+            return;
+        }
+
+        $packageId = $requestParam['package_id'] ?? null;
+        $seasonTypeId = $requestParam['season_type_id'] ?? null;
+        $dateTypeId = $requestParam['date_type_id'] ?? null;
+
+        Log::info(
+            'Need to create missing combinations' . PHP_EOL .
+            json_encode([
+                'count'          => $missing->count(),
+                'room_type_ids'  => $missing->all(),
+                'package_id'     => $packageId,
+                'season_type_id' => $seasonTypeId,
+                'date_type_id'   => $dateTypeId,
+            ], JSON_PRETTY_PRINT)
+        );
+        
+       $roomTypes = RoomType::whereIn('id', $missing->all())->get();
+       $seasonType = SeasonType::find($seasonTypeId);
+       $dateType = DateType::find($dateTypeId);
+
+       $this->priceConfigurationService->createPriceConfigurationsService(
+            Package::find($packageId),
+            $roomTypes,
+            [$seasonType],
+            [$dateType],
+            false
+        );
+
+        Log::info('Missing combinations created successfully.');
     }
 }
