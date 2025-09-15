@@ -151,18 +151,45 @@ class CreatePriceConfigurationsService
         ];
     }
 
+    // function generatePaxCombinations(int $pax): array
+    // {
+    //     if ($pax < 1) return [];
+
+    //     $combinations = [];
+
+    //     for ($a = 1; $a <= $pax; $a++) {
+    //         for ($c = 0; $c <= $pax - $a; $c++) {
+    //             $i = $pax - $a - $c; // remaining infants
+    //             $combinations[] = sprintf('%d_a_%d_c_%d_i', $a, $c, $i);
+    //         }
+    //     }
+
+    //     return $combinations;
+    // }
+
     function generatePaxCombinations(int $pax): array
     {
         if ($pax < 1) return [];
 
         $combinations = [];
 
-        for ($a = 1; $a <= $pax; $a++) {
-            for ($c = 0; $c <= $pax - $a; $c++) {
-                $i = $pax - $a - $c; // remaining infants
-                $combinations[] = sprintf('%d_a_%d_c_%d_i', $a, $c, $i);
+        // Total party size from 1 up to $pax
+        for ($total = 1; $total <= $pax; $total++) {
+            for ($a = 1; $a <= $total; $a++) {           // Adults first
+                for ($c = 0; $c <= $total - $a; $c++) {  // Then children
+                    $i = $total - $a - $c;               // Infants fill the rest
+                    $combinations[] = sprintf('%d_a_%d_c_%d_i', $a, $c, $i);
+                }
             }
         }
+
+        // Ensure consistent ordering: Adults → Children → Infants
+        usort($combinations, function ($x, $y) {
+            [$a1, $c1, $i1] = sscanf($x, "%d_a_%d_c_%d_i");
+            [$a2, $c2, $i2] = sscanf($y, "%d_a_%d_c_%d_i");
+
+            return [$a1, $c1, $i1] <=> [$a2, $c2, $i2];
+        });
 
         return $combinations;
     }
