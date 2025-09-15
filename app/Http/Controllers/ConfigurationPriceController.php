@@ -587,16 +587,16 @@ class ConfigurationPriceController extends Controller
         $missing = $targetIds->diff($existing)->values();
 
         // Structured logs
-        Log::info(
-            'ensureItHasAllCombinationsCheck ' . PHP_EOL .
-            json_encode([
-                'expected_count'         => $configToDisplay,
-                'existing_count'         => $existing->count(),
-                'target_ids'             => $targetIds->all(),
-                'existing_room_type_ids' => $existing->all(),
-                'missing_room_type_ids'  => $missing->all(),
-            ], JSON_PRETTY_PRINT)
-        );
+        // Log::info(
+        //     'ensureItHasAllCombinationsCheck ' . PHP_EOL .
+        //     json_encode([
+        //         'expected_count'         => $configToDisplay,
+        //         'existing_count'         => $existing->count(),
+        //         'target_ids'             => $targetIds->all(),
+        //         'existing_room_type_ids' => $existing->all(),
+        //         'missing_room_type_ids'  => $missing->all(),
+        //     ], JSON_PRETTY_PRINT)
+        // );
 
         if ($missing->isEmpty()) {
             Log::info('All combinations present.');
