@@ -167,7 +167,7 @@
                             />
                             <button
                               type="button"
-                              class="flex items-center justify-center px-3 border-l border-gray-300 text-gray-500 hover:text-indigo-600 hover:bg-gray-50 rounded-r-md"
+                              class="flex items-center justify-center px-2 border-l border-gray-300 text-gray-500 hover:text-indigo-600 hover:bg-gray-50 rounded-r-md"
                               title="Copy this pax type's value across this row"
                               @click="copyPriceTypeToSameRow(room, comboKey, slotKey)"
                             >
@@ -506,4 +506,17 @@ const saveAll = () => {
 .fade-leave-to {
   opacity: 0;
 }
+
+/* Hide number input arrows in Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide number input arrows in Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 </style>
