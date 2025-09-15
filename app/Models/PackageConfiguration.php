@@ -20,6 +20,10 @@ class PackageConfiguration extends Model
         'configuration_prices',
     ];
 
+    protected $casts = [
+        'configuration_prices' => 'array', // or 'json'
+    ];
+
     public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);

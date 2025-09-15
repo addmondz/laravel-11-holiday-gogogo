@@ -565,7 +565,8 @@
 
                         <!-- Nightly Breakdown -->
                         <div v-if="priceBreakdown?.nights" class="mt-6">
-                            <div class="nightly-breakdown hidden">
+                            <div class="nightly-breakdown"> <!-- Extra HIDDEN SUMMARY DETAILS -->
+                            <!-- <div class="nightly-breakdown hidden"> --> <!-- Extra HIDDEN SUMMARY DETAILS -->
                                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Price Breakdown by Rooms</h3>
                                 <!-- Room Breakdown -->
                                 <div v-for="(room, roomIndex) in priceBreakdown.rooms" :key="roomIndex" class="mb-6">
@@ -677,7 +678,6 @@
                                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
                                                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Nights</th>
-                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base Rate/Night</th>
                                                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base Total</th>
                                                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surcharge/Night</th>
                                                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surcharge Total</th>
@@ -704,9 +704,6 @@
                                                         {{ guest.nights }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
-                                                        MYR {{ formatNumber(guest.base_charge.price_per_night) }}
-                                                    </td>
-                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
                                                         MYR {{ formatNumber(guest.base_charge.total) }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
@@ -724,9 +721,6 @@
                                                 <tr v-if="priceBreakdown.summary.total_adults > 0" class="bg-indigo-50">
                                                     <td colspan="5" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900">
                                                         Total Adults ({{ priceBreakdown.summary.total_adults }})
-                                                    </td>
-                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-indigo-900 text-right">
-                                                        -
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900 text-right">
                                                         MYR {{ formatNumber(priceBreakdown.summary.base_charges.adult.total) }}

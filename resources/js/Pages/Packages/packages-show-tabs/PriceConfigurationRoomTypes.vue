@@ -1,942 +1,509 @@
 <template>
-    <div class="space-y-6">
-        <!-- Filters -->
-        <div class="bg-white shadow rounded-lg p-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <label for="season" class="block text-sm font-medium text-gray-700">Season</label>
-                    <select
-                        id="season"
-                        v-model="selectedSeason"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    >
-                        <option value="">Select Season</option>
-                        <option v-for="season in assignedSeasonTypes" :key="season.id" :value="season.id">
-                            {{ season.name }}
-                        </option>
-                    </select>
-                </div>
-
-                <div>
-                    <label for="dateType" class="block text-sm font-medium text-gray-700">Date Type</label>
-                    <select
-                        id="dateType"
-                        v-model="selectedDateType"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    >
-                        <option value="">Select Date Type</option>
-                        <option v-for="type in assignedDateTypes" :key="type.id" :value="type.id">
-                            {{ type.name }}
-                        </option>
-                    </select>
-                </div>
-
-                <div>
-                    <label for="roomType" class="block text-sm font-medium text-gray-700">Room Type (Optional)</label>
-                    <select
-                        id="roomType"
-                        v-model="selectedRoomType"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    >
-                        <option value="">All Room Types</option>
-                        <option v-for="(name, id) in packageUniqueRoomTypes" :key="id" :value="id">
-                            {{ name }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Search Button -->
-            <div class="mt-6 flex space-x-2">
-                <button
-                    @click="fetchPrices"
-                    :disabled="!canSearch || isPriceLoading"
-                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <span v-if="isPriceLoading">Loading...</span>
-                    <span v-else>Search Prices</span>
-                </button>
-                <button
-                    @click="resetSearch"
-                    class="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
-                >
-                    Reset
-                </button>
-            </div>
+  <div class="space-y-6">
+    <!-- Filters -->
+    <div class="bg-white shadow rounded-lg p-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Season</label>
+          <select
+            v-model="selectedSeason"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          >
+            <option value="">Select Season</option>
+            <option v-for="s in assignedSeasonTypes" :key="s.id" :value="s.id">
+              {{ s.name }}
+            </option>
+          </select>
         </div>
 
-        <!-- Results -->
-        <div v-if="searched" class="bg-white shadow rounded-lg p-6">
-            <div v-if="isPriceLoading" class="flex justify-center items-center h-full min-h-[400px]">
-                <LoadingComponent />
-            </div>
-
-            <div v-else-if="!showPriceMatrix" class="text-center text-gray-500">
-                No price configurations found for the selected filters.
-                
-                <!-- show a button to add a new price configuration -->
-                <button
-                    @click="createPriceConfigurationWithApi"
-                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm block text-center mt-4 mx-auto"
-                >
-                    Create Configuration
-                </button>
-            </div>
-
-            <div v-else class="space-y-8">
-                <!-- Price Matrix for all Room Types -->
-
-                <!-- Display View -->
-                <template v-if="!isEditMode">
-                    <!-- Base Charge Table -->
-                    <div class="overflow-x-auto">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-700 mb-2">Base Charge</h4>
-                                <small class="text-gray-500 mb-4 block">
-                                    Note: Base Charges are lump sum (not per night). Season and Date Type follow the first night’s rate.
-                                </small>
-                            </div>
-                            <div class="space-x-2 mb-4">
-                                <button
-                                    v-if="!isEditMode"
-                                    @click="openPriceForm('edit')"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
-                                >
-                                    Edit All Prices
-                                </button>
-                            </div>
-                        </div>
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <template v-for="config in configurations" :key="config.id">
-                                    <tr class="bg-gray-100">
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
-                                    </tr>
-                                    <template v-for="combination in VALID_OCCUPANCY_COMBINATIONS" :key="`${config.id}-${combination.adults}-${combination.children}-${combination.infants}`">
-                                        <tr v-if="isValidOccupancy(combination.adults, combination.children, combination.infants, 'adult')" class="hover:bg-gray-50">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {{ config.room_type.name }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ combination.adults }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ combination.children }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ combination.infants }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ getPrice(config, combination.adults, combination.children, 'base_charge', 'adult', combination.infants) }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                <span v-if="combination.children === 0"> - </span>
-                                                <span v-else>
-                                                    {{ getPrice(config, combination.adults, combination.children, 'base_charge', 'child', combination.infants) }}
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                <span v-if="combination.infants === 0"> - </span>
-                                                <span v-else>
-                                                    {{ getPrice(config, combination.adults, combination.children, 'base_charge', 'infant', combination.infants) }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </template>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Surcharge Table -->
-                    <div class="overflow-x-auto mt-8">
-                        <h4 class="text-lg font-bold text-gray-700 mb-2">Surcharge</h4>
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <template v-for="config in configurations" :key="config.id">
-                                    <tr class="bg-gray-100">
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
-                                    </tr>
-                                    <template v-for="combination in VALID_OCCUPANCY_COMBINATIONS" :key="`${config.id}-${combination.adults}-${combination.children}-${combination.infants}`">
-                                        <tr v-if="isValidOccupancy(combination.adults, combination.children, combination.infants, 'adult')" class="hover:bg-gray-50">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {{ config.room_type.name }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ combination.adults }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ combination.children }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ combination.infants }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {{ getPrice(config, combination.adults, combination.children, 'sur_charge', 'adult', combination.infants) }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                <span v-if="combination.children === 0"> - </span>
-                                                <span v-else>
-                                                    {{ getPrice(config, combination.adults, combination.children, 'sur_charge', 'child', combination.infants) }}
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                <span v-if="combination.infants === 0"> - </span>
-                                                <span v-else>
-                                                    {{ getPrice(config, combination.adults, combination.children, 'sur_charge', 'infant', combination.infants) }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </template>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-                </template>
-
-                <!-- Edit View -->
-                <template v-else>
-                    <form @submit.prevent="submitPrices">
-                        <!-- Save/Cancel Buttons -->
-                        <div class="flex justify-end space-x-2 mb-6">
-                            <button
-                                type="button"
-                                @click="togglePriceConfigByPaxForm"
-                                class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
-                            >
-                                Edit Price By Pax
-                            </button>
-                            <button
-                                type="button"
-                                @click="closePriceForm"
-                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
-                                :disabled="priceForm.processing"
-                            >
-                                {{ priceForm.processing ? 'Saving...' : 'Save All Prices' }}
-                            </button>
-                        </div>
-                        
-                        <div class="space-y-8">
-                            <!-- Base Charge Table -->
-                            <div class="overflow-x-auto">
-                                <div class="flex justify-between items-center mb-4">
-                                    <div>
-                                        <h3 class="text-lg font-bold text-gray-900">Base Charges</h3>
-                                        <small class="text-gray-500 block mt-2 mb-2">
-                                            Note: Base Charges are lump sum (not per night). Season and Date Type follow the first night's rate.
-                                        </small>
-                                    </div>
-                                    <div class="flex flex-1 gap-2 items-center justify-end mr-4">
-                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Adult Price"  v-model="applyAllBasePrice.adult_price" />
-                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Child Price"  v-model="applyAllBasePrice.child_price" /> 
-                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Infant Price"  v-model="applyAllBasePrice.infant_price" />
-                                    </div>
-                                    <button  
-                                        type="button"
-                                        @click="applyBasePricesToAll"
-                                        class="px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors duration-200 border border-yellow-300 hover:border-yellow-400"
-                                    >
-                                        Apply Prices To All
-                                    </button>
-                                </div>
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        <template v-for="config in configurations" :key="config.id">
-                                            <tr class="bg-gray-100">
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
-                                            </tr>
-                                            <template v-for="combination in VALID_OCCUPANCY_COMBINATIONS" :key="`${config.id}-${combination.adults}-${combination.children}-${combination.infants}`">
-                                                <tr v-if="isValidOccupancy(combination.adults, combination.children, combination.infants, 'adult', true)">
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {{ config.room_type.name }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                        {{ combination.adults }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                        {{ combination.children }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                        {{ combination.infants }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        <input
-                                                            type="number"
-                                                            v-model="priceForm.prices[config.room_type_id].base_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'base_charge')].adult_price"
-                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                                            placeholder="Adult Price"
-                                                            step="0.01"
-                                                        />
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      
-                                                        <span v-if="combination.children === 0"> - </span>
-                                                        <input
-                                                            v-else
-                                                            type="number"
-                                                            v-model="priceForm.prices[config.room_type_id].base_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'base_charge')].child_price"
-                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                                            placeholder="Child Price"
-                                                            step="0.01"
-                                                        />
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        <span v-if="combination.infants === 0"> - </span>
-                                                        <input
-                                                            v-else
-                                                            type="number"
-                                                            v-model="priceForm.prices[config.room_type_id].base_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'base_charge')].infant_price"
-                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                                            placeholder="Infant Price"
-                                                            step="0.01"
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            </template>
-                                        </template>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Surcharge Table -->
-                            <div class="overflow-x-auto">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-lg font-bold text-gray-900">Surcharges</h3>
-                                    <div class="flex flex-1 gap-2 items-center justify-end mr-4">
-                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Adult Price"  v-model="applyAllSurcharge.adult_price" />
-                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Child Price"  v-model="applyAllSurcharge.child_price" /> 
-                                        <input type="number" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm max-w-40" placeholder="Infant Price"  v-model="applyAllSurcharge.infant_price" />
-                                    </div>
-                                    <button 
-                                        type="button"
-                                        @click="applySurchargePricesToAll"
-                                        class="px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors duration-200 border border-yellow-300 hover:border-yellow-400"
-                                    >
-                                        Apply Prices To All
-                                    </button>
-                                </div>
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        <template v-for="config in configurations" :key="config.id">
-                                            <tr class="bg-gray-100">
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Adult Price</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Child Price</th>
-                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Infant Price</th>
-                                            </tr>
-                                            <template v-for="combination in VALID_OCCUPANCY_COMBINATIONS" :key="`${config.id}-${combination.adults}-${combination.children}-${combination.infants}`">
-                                                <tr v-if="isValidOccupancy(combination.adults, combination.children, combination.infants, 'adult', true)">
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {{ config.room_type.name }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                        {{ combination.adults }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                        {{ combination.children }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                        {{ combination.infants }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        <input
-                                                            type="number"
-                                                            v-model="priceForm.prices[config.room_type_id].sur_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'sur_charge')].adult_price"
-                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                                            placeholder="Adult Price"
-                                                            step="0.01"
-                                                        />
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        <span v-if="combination.children === 0"> - </span>
-                                                        <input
-                                                            v-else
-                                                            type="number"
-                                                            v-model="priceForm.prices[config.room_type_id].sur_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'sur_charge')].child_price"
-                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                                            placeholder="Child Price"
-                                                            step="0.01"
-                                                        />
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        <span v-if="combination.infants === 0"> - </span>
-                                                        <input
-                                                            type="number"
-                                                            v-model="priceForm.prices[config.room_type_id].sur_charge[getPriceIndex(combination.adults, combination.children, combination.infants, 'sur_charge')].infant_price"
-                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                                            placeholder="Infant Price"
-                                                            step="0.01"
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            </template>
-                                        </template>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </form>
-                </template>
-            </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Date Type</label>
+          <select
+            v-model="selectedDateType"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          >
+            <option value="">Select Date Type</option>
+            <option v-for="t in assignedDateTypes" :key="t.id" :value="t.id">
+              {{ t.name }}
+            </option>
+          </select>
         </div>
 
-        <Modal :show="showPriceConfigByPaxForm" @close="showPriceConfigByPaxForm = false">
-            <div class="max-w-2xl bg-white space-y-8 p-4">
-                <h3 class="text-md font-medium text-gray-900">Update Price Config by Pax</h3>
+        <div>
+          <label class="block text-sm font-medium text-gray-700"
+            >Room Type (Optional)</label
+          >
+          <select
+            v-model="selectedRoomType"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          >
+            <option value="">All Room Types</option>
+            <option v-for="(name, id) in packageUniqueRoomTypes" :key="id" :value="id">
+              {{ name }}
+            </option>
+          </select>
+        </div>
+      </div>
 
-                <div class="space-y-6">
-                    <!-- Selector to choose pax type -->
-                    <div>
-                        <label class="block text-sm text-gray-600 mb-1">Select Pax Type</label>
-                        <select v-model="selectedPaxType" class="w-full rounded-lg border-gray-300 px-3 py-2">
-                            <option value="adult">Adult</option>
-                            <option value="child">Child</option>
-                            <option value="infant">Infant</option>
-                        </select>
-                    </div>
-
-                    <!-- Select pax count -->
-                    <div>
-                        <label class="block text-sm text-gray-600 mb-1">Number of Pax</label>
-                        <select v-model="paxPriceForm[selectedPaxType]" class="w-full rounded-lg border-gray-300 px-3 py-2">
-                            <option v-for="n in paxRange[selectedPaxType]" :key="n" :value="n">{{ n }}</option>
-                        </select>
-                    </div>
-
-                    <!-- Amounts -->
-                    <div>
-                        <div>
-                            <label class="block text-sm text-gray-600 mb-1">Base Charge (RM)</label>
-                            <input
-                                v-model.number="paxPriceForm[selectedPaxType + '_base_charge']"
-                                type="number"
-                                class="w-full rounded-lg border-gray-300 px-3 py-2"
-                                placeholder="e.g. 120"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <div>
-                            <label class="block text-sm text-gray-600 mb-1">Surcharge (RM)</label>
-                            <input
-                                v-model.number="paxPriceForm[selectedPaxType + '_surcharge']"
-                                type="number"
-                                class="w-full rounded-lg border-gray-300 px-3 py-2"
-                                placeholder="e.g. 50"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="flex justify-end space-x-2">
-                    <button @click="togglePriceConfigByPaxForm" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs">
-                        Cancel
-                    </button>
-                    <button @click="submitPriceConfigByPax" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs">
-                        Update
-                    </button>
-                </div>
-            </div>
-        </Modal>
+      <div class="mt-6 flex gap-2">
+        <button
+          @click="fetchPrices"
+          :disabled="!canSearch || isPriceLoading"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span v-if="isPriceLoading">Loading...</span>
+          <span v-else>Search Prices</span>
+        </button>
+        <button
+          @click="resetSearch"
+          class="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
+        >
+          Reset
+        </button>
+      </div>
     </div>
+
+    <!-- Results -->
+    <div v-if="searched" class="bg-white shadow rounded-lg p-6">
+      <div v-if="isPriceLoading" class="flex items-center justify-center min-h-[300px]">
+        <LoadingComponent />
+      </div>
+
+      <div v-else-if="!compactRooms.length" class="text-center text-gray-500">
+        No price configurations found for the selected filters.
+      </div>
+
+      <div v-else class="space-y-10">
+        <!-- Action Bar -->
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-semibold">Price Matrix</h2>
+            <p class="text-xs text-gray-500">
+              Base charge applies to each slot (Adult&nbsp;1, Adult&nbsp;2, Child&nbsp;1,
+              …). Surcharge applies per person (Adult / Child / Infant).
+            </p>
+          </div>
+          <div class="space-x-2">
+            <button
+              v-if="!isEditMode"
+              @click="isEditMode = true"
+              class="px-5 py-2 rounded bg-indigo-600 text-white text-sm"
+            >
+              Edit All Prices
+            </button>
+            <template v-else>
+              <button
+                @click="cancelEdit"
+                class="px-3 py-2 rounded bg-gray-100 text-gray-700 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                @click="saveAll"
+                class="px-3 py-2 rounded bg-indigo-600 text-white text-sm"
+                :disabled="saveLoading"
+              >
+                <span v-if="saveLoading">Saving...</span>
+                <span v-else class="px-3 py-2">Save</span>
+              </button>
+            </template>
+          </div>
+        </div>
+
+        <!-- PER ROOM -->
+        <div
+          v-for="room in compactRooms"
+          :key="room.room_type_id"
+          class="space-y-8"
+          :data-package-config-id="room.id"
+        >
+          <div class="flex items-center justify-between">
+            <h3 class="font-medium text-gray-900">
+              {{ room.room_type_name }} ( {{ room.room_type_capacity }} pax )
+            </h3>
+          </div>
+
+          <!-- BASE TABLE -->
+          <section style="margin-top: 10px">
+            <div class="overflow-x-auto border rounded-lg">
+              <table class="min-w-full text-sm">
+                <thead class="bg-gray-200">
+                  <tr>
+                    <th
+                      class="px-4 py-2 text-left"
+                      :colspan="orderedSlotKeys(room.base).length"
+                    >
+                      Base Charge
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="([comboKey, slots], idx) in comboEntries(room.base)"
+                    :key="comboKey"
+                    :class="idx % 2 ? 'bg-white' : 'bg-gray-50'"
+                  >
+                    <td
+                      class="px-4 py-2 align-middle whitespace-nowrap font-medium text-gray-800"
+                    >
+                      {{ comboVerbose(comboKey) }}
+                    </td>
+                    <td
+                      class="px-4 py-2"
+                      v-for="slotKey in orderedSlotKeys(slots)"
+                      :key="slotKey"
+                    >
+                      <div class="flex flex-col items-start justify-start w-32">
+                        <span class="text-xs text-gray-600">{{
+                          slotLabel(slotKey)
+                        }}</span>
+                        <template v-if="isEditMode">
+                          <div class="flex items-center rounded-md shadow-sm border border-gray-300 focus-within:ring-2 focus-within:ring-indigo-500">
+                            <input
+                              type="number"
+                              step="0.01"
+                              class="w-full rounded-l-md border-none focus:ring-0 px-3 py-2"
+                              v-model.number="room.base[comboKey][slotKey]"
+                            />
+                            <button
+                              type="button"
+                              class="flex items-center justify-center px-3 border-l border-gray-300 text-gray-500 hover:text-indigo-600 hover:bg-gray-50 rounded-r-md"
+                              title="Copy this pax type's value across this row"
+                              @click="copyPriceTypeToSameRow(room, comboKey, slotKey)"
+                            >
+                              <CopyOutlined class="h-5 w-5" />
+                            </button>
+                          </div>
+                        </template>
+                        <template v-else>
+                          <span class="mt-1 font-medium"
+                            >MYR {{ format(room.base[comboKey][slotKey]) }}</span
+                          >
+                        </template>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- SURCH TABLE (aligned like Base) -->
+          <section
+            v-if="room.surch && Object.keys(room.surch || {}).length"
+            style="margin-top: 15px"
+          >
+            <div class="overflow-x-auto border rounded-lg">
+              <table class="min-w-full text-sm">
+                <thead class="bg-gray-200">
+                  <tr>
+                    <th class="px-4 py-2 text-left">Surcharge</th>
+                    <th v-for="k in ['a', 'c', 'i']" :key="k" class="px-4 py-2 text-left">
+                      {{ surchargeLabel(k) }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="([comboKey, slots], idx) in comboEntries(room.surch)"
+                    :key="comboKey"
+                    :class="idx % 2 ? 'bg-white' : 'bg-gray-50'"
+                  >
+                    <td class="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">
+                      {{ comboVerbose(comboKey) }}
+                    </td>
+
+                    <!-- Adult / Child / Infant columns -->
+                    <td v-for="k in ['a', 'c', 'i']" :key="k" class="px-4 py-2">
+                      <template v-if="slots[k] !== undefined">
+                        <template v-if="isEditMode">
+                          <input
+                            type="number"
+                            step="0.01"
+                            class="w-24 rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                            v-model.number="room.surch[comboKey][k]"
+                          />
+                        </template>
+                        <template v-else> MYR {{ format(slots[k]) }} </template>
+                      </template>
+                      <!-- if key missing, leave blank to keep column alignment -->
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, reactive } from 'vue';
-import { useForm } from '@inertiajs/vue3';
-import axios from 'axios';
-import Swal from 'sweetalert2';
-import LoadingComponent from '@/Components/LoadingComponent.vue';
-import Modal from '@/Components/Modal.vue';
+import { ref, computed } from "vue";
+import axios from "axios";
+import Swal from "sweetalert2";
+import LoadingComponent from "@/Components/LoadingComponent.vue";
+import { CopyOutlined } from "@ant-design/icons-vue";
 
 const props = defineProps({
-    packageId: {
-        type: Number,
-        required: true
-    },
-    seasonTypes: {
-        type: Array,
-        required: true
-    },
-    dateTypes: {
-        type: Array,
-        required: true
-    },
-    packageUniqueRoomTypes: {
-        type: Object,
-        required: true
-    },
-    allSeasonTypes: {
-        type: Array,
-        required: true
-    },
-    allDateTypes: {
-        type: Array,
-        required: true
-    },
-    assignedSeasonTypes: {
-        type: Array,
-        required: true
-    },
-    assignedDateTypes: {
-        type: Array,
-        required: true
-    }
+  packageId: { type: Number, required: true },
+  seasonTypes: { type: Array, required: true },
+  dateTypes: { type: Array, required: true },
+  packageUniqueRoomTypes: { type: Object, required: true },
+  allSeasonTypes: { type: Array, required: true },
+  allDateTypes: { type: Array, required: true },
+  assignedSeasonTypes: { type: Array, required: true },
+  assignedDateTypes: { type: Array, required: true },
 });
 
-// State
-const selectedSeason = ref('');
-const selectedDateType = ref('');
-const selectedRoomType = ref('');
-const searched = ref(false);
-const showPriceMatrix = ref(false);
-const configurations = ref([]);
+// filters / state
+const selectedSeason = ref("");
+const selectedDateType = ref("");
+const selectedRoomType = ref("");
 const isPriceLoading = ref(false);
-const showPriceForm = ref(false);
+const searched = ref(false);
 const isEditMode = ref(false);
-const applyAllBasePrice = ref({
-    adult_price: '',
-    child_price: '',
-    infant_price: ''
-});
-const applyAllSurcharge = ref({
-    adult_price: '',
-    child_price: '',
-    infant_price: ''
-});
-const showPriceConfigByPaxForm = ref(false);
+const saveLoading = ref(false);
 
-// Form
-const priceForm = useForm({
-    package_id: props.packageId,
-    season_type_id: '',
-    date_type_id: '',
-    prices: {} // Will store as { room_type_id: { base_charge: [], sur_charge: [] } }
-});
+// compact rooms for UI: [{ room_type_id, id (package_config_id), base: {...}, surch: {...} }]
+const compactRooms = ref([]);
 
-// Computed
-const canSearch = computed(() => {
-    return selectedSeason.value && selectedDateType.value;
-});
+// room names map (built from API; falls back to props.packageUniqueRoomTypes)
+const roomNamesMap = ref({});
 
-const hasSurcharges = computed(() => {
-    return configurations.value.some(config => 
-        config.prices.some(price => price.type === 'sur_charge')
-    );
-});
+// computed helpers
+const canSearch = computed(() => !!selectedSeason.value && !!selectedDateType.value);
+const format = (n) => Number(n ?? 0).toFixed(2);
 
-// Methods
+// Generic object->entries helper
+const entriesOf = (obj) => Object.entries(obj ?? {});
+
+// ---- Combo helpers ---------------------------------------------------------
+const comboPattern = /^(\d+)_a_(\d+)_c_(\d+)_i$/;
+const parseCombo = (key) => {
+  const m = key?.match?.(comboPattern);
+  if (!m) return null;
+  return { a: +m[1], c: +m[2], i: +m[3] };
+};
+const comboVerbose = (key) => {
+  const p = parseCombo(key);
+  if (!p) return key || "";
+  const plural = (n, s, p2) => `${n} ${n === 1 ? s : p2 || s + "s"}`;
+  return `${plural(p.a, "Adult")} + ${plural(p.c, "Child", "Children")} + ${plural(
+    p.i,
+    "Infant"
+  )}`;
+};
+const sortComboKeys = (keys) => {
+  return [...keys].sort((k1, k2) => {
+    const p1 = parseCombo(k1) || { a: 0, c: 0, i: 0 };
+    const p2 = parseCombo(k2) || { a: 0, c: 0, i: 0 };
+    if (p1.a !== p2.a) return p2.a - p1.a;
+    if (p1.c !== p2.c) return p2.c - p1.c;
+    return p2.i - p1.i;
+  });
+};
+const comboEntries = (obj) => {
+  const keys = Object.keys(obj || {});
+  const ordered = sortComboKeys(keys);
+  return ordered.map((k) => [k, obj[k]]);
+};
+
+// ---- Base slot helpers -----------------------------------------------------
+const isPlainSurchargeKey = (k) => k === "a" || k === "c" || k === "i";
+const orderedSlotKeys = (obj) => {
+  const keys = Object.keys(obj ?? {});
+  const order = (k) => {
+    const prefix = k[0]; // a/c/i
+    const hasNum = !isPlainSurchargeKey(k);
+    const num = hasNum ? parseInt(k.slice(1), 10) || 0 : -1;
+    return ({ a: 1, c: 2, i: 3 }[prefix] || 9) * 100 + num;
+  };
+  return keys.sort((x, y) => order(x) - order(y));
+};
+const slotLabel = (key) => {
+  if (!key) return "";
+  const prefix = key[0];
+  const num = key.slice(1);
+  if (prefix === "a") return `Adult ${num}`;
+  if (prefix === "c") return `Child ${num}`;
+  if (prefix === "i") return `Infant ${num}`;
+  return key;
+};
+
+const copyPriceTypeToSameRow = (room, comboKey, slotKey) => {
+  if (!room || !comboKey || !slotKey) return;
+
+  const row = room.base?.[comboKey];
+  if (!row) return;
+
+  const value = row[slotKey];
+  if (value === undefined || value === null || value === "") return;
+
+  // pax type prefix: 'a' | 'c' | 'i'
+  const prefix = String(slotKey)[0];
+
+  let affected = 0;
+  Object.keys(row).forEach((k) => {
+    if (k.startsWith(prefix)) {
+      row[k] = Number(value); // normalize to number
+      affected++;
+    }
+  });
+
+  // tiny toast to confirm
+  try {
+    Swal.fire({
+      toast: true,
+      timer: 1200,
+      showConfirmButton: false,
+      icon: "success",
+      title: `Copied to ${affected} ${prefix === 'a' ? 'Adult' : prefix === 'c' ? 'Child' : 'Infant'} slot(s)`,
+    });
+  } catch (_) {
+    // Swal might not be available in some contexts; ignore
+  }
+};
+
+// ---- Display helpers -------------------------------------------------------
+const displayRoomName = (id) =>
+  roomNamesMap.value[id] || props.packageUniqueRoomTypes?.[id] || `Room Type #${id}`;
+
+const surchargeLabel = (k) =>
+  k === "a" ? "Adult (per pax)" : k === "c" ? "Child (per pax)" : "Infant (per pax)";
+
+// ---- Fetch & transform -----------------------------------------------------
 const fetchPrices = () => {
-    isPriceLoading.value = true;
-    axios.post(route('configuration-prices.fetchPricesRoomTypes'), {
-        package_id: props.packageId,
-        season_type_id: selectedSeason.value,
-        date_type_id: selectedDateType.value,
-        room_type_id: selectedRoomType.value || undefined
+  isPriceLoading.value = true;
+  searched.value = true;
+  isEditMode.value = false;
+
+  axios
+    .post(route("configuration-prices.fetchPricesRoomTypes"), {
+      package_id: props.packageId,
+      season_type_id: selectedSeason.value,
+      date_type_id: selectedDateType.value,
+      room_type_id: selectedRoomType.value || undefined,
     })
-    .then(response => {
-        if (response.data && response.data.length > 0) {
-            configurations.value = response.data;
-            searched.value = true;
-            showPriceMatrix.value = true;
-        } else {
-            searched.value = true;
-            showPriceMatrix.value = false;
+    .then((res) => {
+      let rows = res?.data;
+
+      // Support controller returning a raw JSON string during testing.
+      if (typeof rows === "string") {
+        const sanitized = rows.replace(/,\s*(?=[}\]])/g, "");
+        try {
+          rows = JSON.parse(sanitized);
+        } catch (e) {
+          console.error("Failed to parse API string after sanitizing:", e);
+          rows = [];
         }
+      }
+
+      rows = Array.isArray(rows) ? rows : [];
+
+      // Build room names map from response
+      roomNamesMap.value = rows.reduce((acc, row) => {
+        const id = row?.room_type_id ?? row?.room_type?.id;
+        const nm = row?.room_type?.name;
+        if (id && nm) acc[id] = nm;
+        return acc;
+      }, {});
+
+      // Each row has prices[0] containing { base, surch }
+      compactRooms.value = rows.map((row) => {
+        const p0 = Array.isArray(row?.prices) && row.prices.length ? row.prices[0] : null;
+        return {
+          room_type_id: row?.room_type_id ?? row?.room_type?.id ?? 0,
+          room_type_capacity: row?.room_type_capacity ?? 0,
+          room_type_name: row?.room_type_name ?? '',
+          id: row?.id ?? 0, // <-- package configuration id captured here
+          base: p0?.base ?? {},
+          surch: p0?.surch ?? {},
+        };
+      });
     })
-    .catch(error => {
-        console.error('Error fetching prices:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Failed to fetch price configurations',
-            showConfirmButton: true,
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#4F46E5'
-        });
+    .catch((err) => {
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to fetch price configurations",
+      });
+      compactRooms.value = [];
     })
     .finally(() => {
-        isPriceLoading.value = false;
+      isPriceLoading.value = false;
     });
 };
 
-const getPrice = (config, adults, children, type, personType, infants = 0) => {
-    const price = config.prices.find(p =>
-        p.number_of_adults === adults &&
-        p.number_of_children === children &&
-        p.number_of_infants === infants &&
-        p.type === type
-    );
-    return price ? `MYR ${price[personType + '_price']}` : '-';
-};
-
+// ---- Reset / Edit / Save ---------------------------------------------------
 const resetSearch = () => {
-    selectedSeason.value = '';
-    selectedDateType.value = '';
-    selectedRoomType.value = '';
-    searched.value = false;
-    showPriceMatrix.value = false;
-    showPriceForm.value = false;
-    isEditMode.value = false;
-    configurations.value = [];
-    priceForm.reset();
+  selectedSeason.value = "";
+  selectedDateType.value = "";
+  selectedRoomType.value = "";
+  compactRooms.value = [];
+  roomNamesMap.value = {};
+  searched.value = false;
+  isEditMode.value = false;
 };
 
-const VALID_OCCUPANCY_COMBINATIONS = [
-    { adults: 1, children: 0, infants: 0 },
-    { adults: 1, children: 0, infants: 1 },
-    { adults: 1, children: 0, infants: 2 },
-    { adults: 1, children: 0, infants: 3 },
-    { adults: 1, children: 1, infants: 0 },
-    { adults: 1, children: 1, infants: 1 },
-    { adults: 1, children: 1, infants: 2 },
-    { adults: 1, children: 2, infants: 0 },
-    { adults: 1, children: 2, infants: 1 },
-    { adults: 1, children: 3, infants: 0 },
-    { adults: 2, children: 0, infants: 0 },
-    { adults: 2, children: 0, infants: 1 },
-    { adults: 2, children: 0, infants: 2 },
-    { adults: 2, children: 1, infants: 0 },
-    { adults: 2, children: 1, infants: 1 },
-    { adults: 2, children: 2, infants: 0 },
-    { adults: 2, children: 0, infants: 2 },
-    { adults: 3, children: 0, infants: 0 },
-    { adults: 3, children: 0, infants: 1 },
-    { adults: 3, children: 1, infants: 0 },
-    { adults: 4, children: 0, infants: 0 }
-];
-
-const adultOptions = computed(() => {
-  const unique = new Set(VALID_OCCUPANCY_COMBINATIONS.map(c => c.adults))
-  return [...unique].sort((a, b) => a - b)
-})
-const childOptions = ref([])
-const infantOptions = ref([])
-
-const isValidOccupancy = (adults, children, infants, type, isEditMode = false) => {
-    // Check if total occupancy exceeds 4
-    if (adults + children + infants > 4) return false;
-
-    const isValidCombo = VALID_OCCUPANCY_COMBINATIONS.some(
-        combo => combo.adults === adults && combo.children === children && combo.infants === infants
-    );
-
-    if (adults === 1 && children === 0 && infants === 0 && isEditMode) return true;
-    if (!isValidCombo) return false;
-    if (type === 'child' && children === 0) return false;
-    if (type === 'infant' && infants === 0) return false;
-
-    return true;
+const cancelEdit = () => {
+  isEditMode.value = false;
+  fetchPrices();
 };
 
-const getPriceIndex = (adults, children, infants, type) => {
-    return VALID_OCCUPANCY_COMBINATIONS.findIndex(
-        combo => combo.adults === adults && combo.children === children && combo.infants === infants
-    );
-};
+const saveAll = () => {
+  saveLoading.value = true;
 
-const openPriceForm = (mode) => {
-    isEditMode.value = mode === 'edit';
-    
-    // Reset form
-    priceForm.reset();
-    priceForm.package_id = props.packageId;
-    priceForm.season_type_id = selectedSeason.value;
-    priceForm.date_type_id = selectedDateType.value;
+  // Map each room into the exact shape the API expects, including the config id.
+  const roomsPayload = compactRooms.value.map((r) => ({
+    package_configuration_id: Number(r.id) || null, // <-- INCLUDED HERE
+    room_type_id: Number(r.room_type_id) || null,
+    base: r.base ?? {},
+    surch: r.surch ?? {},
+  }));
 
-    // Initialize price structure for each room type
-    configurations.value.forEach(config => {
-        const roomTypeId = config.room_type_id;
-        
-        // Initialize the room type structure with all valid combinations
-        priceForm.prices[roomTypeId] = {
-            base_charge: VALID_OCCUPANCY_COMBINATIONS.map(combo => ({
-                number_of_adults: combo.adults,
-                number_of_children: combo.children,
-                number_of_infants: combo.infants,
-                adult_price: '',
-                child_price: '',
-                infant_price: ''
-            })),
-            sur_charge: VALID_OCCUPANCY_COMBINATIONS.map(combo => ({
-                number_of_adults: combo.adults,
-                number_of_children: combo.children,
-                number_of_infants: combo.infants,
-                adult_price: '',
-                child_price: '',
-                infant_price: ''
-            }))
-        };
+  const payload = {
+    package_id: props.packageId,
+    season_type_id: selectedSeason.value,
+    date_type_id: selectedDateType.value,
+    rooms: roomsPayload,
+  };
 
-        // If editing, populate form with existing prices for this room type
-        if (isEditMode.value) {
-            config.prices.forEach(price => {
-                const index = getPriceIndex(price.number_of_adults, price.number_of_children, price.number_of_infants, price.type);
-                if (index !== -1) {
-                    const type = price.type === 'base_charge' ? 'base_charge' : 'sur_charge';
-                    priceForm.prices[roomTypeId][type][index] = {
-                        number_of_adults: price.number_of_adults,
-                        number_of_children: price.number_of_children,
-                        number_of_infants: price.number_of_infants,
-                        adult_price: price.adult_price,
-                        child_price: price.child_price,
-                        infant_price: price.infant_price || '' // Handle cases where infant_price might be null
-                    };
-                }
-            });
-        }
-    });
-};
-
-const closePriceForm = () => {
-    isEditMode.value = false;
-    priceForm.reset();
-};
-
-const submitPrices = () => {
-    // Prepare data for all room types in a single object
-    const allPrices = {};
-    configurations.value.forEach(config => {
-        const roomTypeId = config.room_type_id;
-        allPrices[roomTypeId] = {
-            base_charge: priceForm.prices[roomTypeId].base_charge.map(price => ({
-                number_of_adults: price.number_of_adults,
-                number_of_children: price.number_of_children,
-                number_of_infants: price.number_of_infants,
-                adult_price: price.adult_price,
-                child_price: price.child_price,
-                infant_price: price.infant_price || 0
-            })),
-            sur_charge: priceForm.prices[roomTypeId].sur_charge.map(price => ({
-                number_of_adults: price.number_of_adults,
-                number_of_children: price.number_of_children,
-                number_of_infants: price.number_of_infants,
-                adult_price: price.adult_price,
-                child_price: price.child_price,
-                infant_price: price.infant_price || 0
-            }))
-        };
-    });
-
-    const data = {
-        package_id: props.packageId,
-        season_type_id: selectedSeason.value,
-        date_type_id: selectedDateType.value,
-        prices: allPrices
-    };
-
-    // Make a single API call with all room types' data
-    const request = isEditMode.value
-        ? axios.put(route('configuration-prices.updateRoomTypePrices', configurations.value[0].id), data)
-        : axios.post(route('configuration-prices.store'), data);
-
-    request
-        .then(() => {
-            closePriceForm();
-            fetchPrices();
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: `Prices ${isEditMode.value ? 'updated' : 'created'} successfully for all room types`,
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#4F46E5'
-            });
-        })
-        .catch(error => {
-            console.error(`Error ${isEditMode.value ? 'updating' : 'creating'} prices:`, error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.response?.data?.message || `Failed to ${isEditMode.value ? 'update' : 'create'} prices`,
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#4F46E5'
-            });
-        });
-};
-
-const applyBasePricesToAll = () => {
-    if (!configurations.value.length) return;
-    
-    const firstPrice = applyAllBasePrice.value;
-    if (!firstPrice) return;
-
-    configurations.value.forEach(config => {
-        const roomTypeId = config.room_type_id;
-        priceForm.prices[roomTypeId].base_charge = VALID_OCCUPANCY_COMBINATIONS.map(combo => ({
-            number_of_adults: combo.adults,
-            number_of_children: combo.children,
-            number_of_infants: combo.infants,
-            adult_price: firstPrice.adult_price,
-            child_price: firstPrice.child_price,
-            infant_price: firstPrice.infant_price
-        }));
-    });
-};
-
-const applySurchargePricesToAll = () => {
-    if (!configurations.value.length) return;
-    
-    const firstPrice = applyAllSurcharge.value;
-    if (!firstPrice) return;
-
-    configurations.value.forEach(config => {
-        const roomTypeId = config.room_type_id;
-        priceForm.prices[roomTypeId].sur_charge = VALID_OCCUPANCY_COMBINATIONS.map(combo => ({
-            number_of_adults: combo.adults,
-            number_of_children: combo.children,
-            number_of_infants: combo.infants,
-            adult_price: firstPrice.adult_price,
-            child_price: firstPrice.child_price,
-            infant_price: firstPrice.infant_price
-        }));
-    });
-};
-
-const createPriceConfigurationWithApi = () => {
-    axios.post(route('configuration-prices.createPriceConfiguration'), {
-        package_id: props.packageId,
-        season_type_id: selectedSeason.value,
-        date_type_id: selectedDateType.value,
-        room_type_id: selectedRoomType.value
+  axios
+    .put(route("configuration-prices.updateRoomTypePrices"), payload)
+    .then(() => {
+      isEditMode.value = false;
+      Swal.fire({
+        icon: "success",
+        title: "Saved",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+      fetchPrices();
     })
-    .then(response => {
-        Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: 'Price configuration created successfully',
-            showConfirmButton: true,
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#4F46E5'
-        });
-
-        fetchPrices();
+    .catch((err) => {
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.response?.data?.message || "Failed to save",
+      });
     })
-    .catch(error => {
-        console.error('Error creating price configuration:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Failed to create price configuration',
-            showConfirmButton: true,
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#4F46E5'
-        });
+    .finally(() => {
+      saveLoading.value = false;
     });
 };
-
-const togglePriceConfigByPaxForm = () => {
-    showPriceConfigByPaxForm.value = !showPriceConfigByPaxForm.value;
-}
-
-const selectedPaxType = ref('adult');
-const paxPriceForm = reactive({
-  adult: 1,
-  child: 1,
-  infant: 1,
-  adult_base_charge: null,
-  child_base_charge: null,
-  infant_base_charge: null,
-  adult_surcharge: null,
-  child_surcharge: null,
-  infant_surcharge: null,
-});
-const paxRange = {
-  adult: 4,
-  child: 3,
-  infant: 3,
-};
-
-const submitPriceConfigByPax = () => {
-    const {
-        adult,
-        child,
-        infant,
-        adult_base_charge,
-        child_base_charge,
-        infant_base_charge,
-        adult_surcharge,
-        child_surcharge,
-        infant_surcharge
-    } = paxPriceForm;
-
-    const paxCount = paxPriceForm[selectedPaxType.value]; // number of pax
-    const basePrice = paxPriceForm[`${selectedPaxType.value}_base_charge`];
-    const surPrice = paxPriceForm[`${selectedPaxType.value}_surcharge`];
-
-    configurations.value.forEach(config => {
-        const roomTypeId = config.room_type_id;
-
-        if (basePrice !== null) {
-            priceForm.prices[roomTypeId].base_charge.forEach(item => {
-                console.log(selectedPaxType.value, paxCount);
-                if (selectedPaxType.value === 'adult' && item.number_of_adults === paxCount) {
-                    item.adult_price = basePrice
-                } else if (selectedPaxType.value === 'child' && item.number_of_children === paxCount) {
-                    item.child_price = basePrice;
-                } else if (selectedPaxType.value === 'infant' && item.number_of_infants === paxCount) {
-                    item.infant_price = basePrice;
-                }
-            });
-        }
-
-        if (surPrice !== null) {
-            priceForm.prices[roomTypeId].sur_charge.forEach(item => {
-                if (selectedPaxType.value === 'adult' && item.number_of_adults === paxCount) {
-                    item.adult_price = surPrice;
-                } else if (selectedPaxType.value === 'child' && item.number_of_children === paxCount) {
-                    item.child_price = surPrice;
-                } else if (selectedPaxType.value === 'infant' && item.number_of_infants === paxCount) {
-                    item.infant_price = infant_surcharge;
-                }
-            });
-        }
-    });
-
-    showPriceConfigByPaxForm.value = false;
-};
-
 </script>
 
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease;
 }
-
 .fade-enter-from,
 .fade-leave-to {
-    opacity: 0;
+  opacity: 0;
 }
 </style>

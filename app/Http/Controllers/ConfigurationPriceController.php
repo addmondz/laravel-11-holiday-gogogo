@@ -301,72 +301,53 @@ class ConfigurationPriceController extends Controller
         }
 
         $response = $configurations->map(function ($config) {
-            $rawPrices = json_decode($config->configuration_prices, true);
-            $structuredPrices = [];
-
-            // Process base charge and surcharge prices
-            foreach (['b' => 'base_charge', 's' => 'sur_charge'] as $jsonKey => $type) {
-                if (!isset($rawPrices[$jsonKey])) continue;
-
-                foreach ($rawPrices[$jsonKey] as $code => $price) {
-                    // Example code: "1_a_0_c_1_i_a" (1 adult, 0 children, 1 infant, adult price)
-                    preg_match('/(\d+)_a_(\d+)_c_(\d+)_i_([aci])/', $code, $matches);
-                    if (!$matches) continue;
-
-                    [$full, $adults, $children, $infants, $personType] = $matches;
-                    $key = "{$adults}_{$children}_{$infants}_{$type}";
-
-                    if (!isset($structuredPrices[$key])) {
-                        $structuredPrices[$key] = [
-                            'type' => $type,
-                            'number_of_adults' => (int) $adults,
-                            'number_of_children' => (int) $children,
-                            'number_of_infants' => (int) $infants,
-                            'adult_price' => null,
-                            'child_price' => null,
-                            'infant_price' => null,
-                        ];
-                    }
-
-                    if ($personType === 'a') {
-                        $structuredPrices[$key]['adult_price'] = number_format($price, 2, '.', '');
-                    } elseif ($personType === 'c') {
-                        $structuredPrices[$key]['child_price'] = number_format($price, 2, '.', '');
-                    } elseif ($personType === 'i') {
-                        $structuredPrices[$key]['infant_price'] = number_format($price, 2, '.', '');
-                    }
+            $prices = $config->configuration_prices;
+        
+            if (is_string($prices)) {
+                $decoded = json_decode($prices, true);
+                // handle double-encoding if it happens elsewhere
+                if (is_string($decoded)) {
+                    $decoded = json_decode($decoded, true);
                 }
+                $prices = $decoded;
             }
-
+        
             return [
-                'id' => $config->id,
-                'package_id' => $config->package_id,
-                'season_type_id' => $config->season_type_id,
-                'date_type_id' => $config->date_type_id,
-                'room_type_id' => $config->room_type_id,
-                'room_type' => $config->roomType,
-                'prices' => array_values($structuredPrices),
-                'created_at' => $config->created_at,
-                'updated_at' => $config->updated_at,
+                'id'                    => $config->id,
+                'package_id'            => $config->package_id,
+                'season_type_id'        => $config->season_type_id,
+                'date_type_id'          => $config->date_type_id,
+                'room_type_id'          => $config->room_type_id,
+                'prices'                => $prices,
+                'room_type_name'        => $config->roomType->name,
+                'room_type_capacity'    => $config->roomType->max_occupancy,
             ];
         });
-
+        
         return response()->json($response);
     }
 
     public function updateRoomTypePrices(Request $request)
     {
         $validated = $request->validate([
-            'package_id' => 'required|exists:packages,id',
-            'season_type_id' => 'required|exists:season_types,id',
-            'date_type_id' => 'required|exists:date_types,id',
-            'prices' => 'required|array',
+            'rooms.*.package_configuration_id' => 'required',
+            'rooms.*.base' => 'required|array',
+            'rooms.*.surch' => 'required|array',
         ]);
 
         try {
             DB::beginTransaction();
-            foreach ($validated['prices'] as $room_type_id => $prices) {
-                $this->handlePriceConfigurationNew($prices, $validated['package_id'], $validated['season_type_id'], $validated['date_type_id'], $room_type_id);
+            foreach ($validated['rooms'] as $room) {
+                $packageConfiguration = PackageConfiguration::find($room['package_configuration_id']);
+                $pricesArray = [
+                    [
+                        'base' => $room['base'],
+                        'surch' => $room['surch'],
+                    ]
+                ];
+                // $packageConfiguration->configuration_prices = json_encode($pricesArray);
+                $packageConfiguration->configuration_prices = $pricesArray;
+                $packageConfiguration->save();
             }
             DB::commit();
             return response()->json(['message' => 'Configuration prices updated successfully.']);
@@ -380,7 +361,6 @@ class ConfigurationPriceController extends Controller
             return response()->json(['message' => 'Error updating configuration prices: ' . $e->getMessage()], 500);
         }
     }
-
 
     public function updatePriceConfigurationByPax(Request $request)
     {
@@ -599,7 +579,7 @@ class ConfigurationPriceController extends Controller
         // );
 
         if ($missing->isEmpty()) {
-            Log::info('All combinations present.');
+            // Log::info('All combinations present.');
             return;
         }
 
@@ -609,20 +589,20 @@ class ConfigurationPriceController extends Controller
 
         Log::info(
             'Need to create missing combinations' . PHP_EOL .
-            json_encode([
-                'count'          => $missing->count(),
-                'room_type_ids'  => $missing->all(),
-                'package_id'     => $packageId,
-                'season_type_id' => $seasonTypeId,
-                'date_type_id'   => $dateTypeId,
-            ], JSON_PRETTY_PRINT)
+                json_encode([
+                    'count'          => $missing->count(),
+                    'room_type_ids'  => $missing->all(),
+                    'package_id'     => $packageId,
+                    'season_type_id' => $seasonTypeId,
+                    'date_type_id'   => $dateTypeId,
+                ], JSON_PRETTY_PRINT)
         );
-        
-       $roomTypes = RoomType::whereIn('id', $missing->all())->get();
-       $seasonType = SeasonType::find($seasonTypeId);
-       $dateType = DateType::find($dateTypeId);
 
-       $this->priceConfigurationService->createPriceConfigurationsService(
+        $roomTypes = RoomType::whereIn('id', $missing->all())->get();
+        $seasonType = SeasonType::find($seasonTypeId);
+        $dateType = DateType::find($dateTypeId);
+
+        $this->priceConfigurationService->createPriceConfigurationsService(
             Package::find($packageId),
             $roomTypes,
             [$seasonType],
@@ -631,5 +611,120 @@ class ConfigurationPriceController extends Controller
         );
 
         Log::info('Missing combinations created successfully.');
+    }
+
+    public function fetchPricesRoomTypesTest(Request $request)
+    {
+        $json = '[
+    {
+        "id": 53,
+        "package_id": 3,
+        "season_type_id": 1,
+        "date_type_id": 1,
+        "room_type_id": 9,
+        "room_type": {
+            "id": 9,
+            "name": "Deluxe Room",
+            "package_id": 3,
+            "description": "Spacious room with modern amenities",
+            "max_occupancy": 2,
+            "images": [
+                "room-types\/test1.jpg",
+                "room-types\/test2.png",
+                "room-types\/test3.jpg"
+            ],
+            "created_at": "2025-07-23T21:51:04.000000Z",
+            "updated_at": "2025-07-23T21:51:04.000000Z",
+            "deleted_at": null
+        },
+        "prices": [
+            {
+                "base": {
+                  "6_a_0_c_0_i": { "a1": 100.00, "a2": 95.00, "a3": 90.00, "a4": 85.00, "a5": 80.00, "a6": 75.00 },
+                  "5_a_0_c_0_i": { "a1": 100.00, "a2": 95.00, "a3": 90.00, "a4": 85.00 , "a5": 80.00 },
+                  "4_a_0_c_0_i": { "a1": 100.00, "a2": 95.00, "a3": 90.00, "a4": 85.00 },
+                  "3_a_1_c_0_i": { "a1": 120.00, "a2": 115.00, "a3": 110.00, "c1": 70.00 },
+                  "3_a_0_c_1_i": { "a1": 110.00, "a2": 105.00, "a3": 100.00, "i1": 40.00 },
+                  "2_a_2_c_0_i": { "a1": 130.00, "a2": 125.00, "c1": 80.00, "c2": 75.00 },
+                  "2_a_1_c_1_i": { "a1": 140.00, "a2": 135.00, "c1": 85.00, "i1": 35.00 },
+                  "2_a_0_c_2_i": { "a1": 115.00, "a2": 110.00, "i1": 30.00, "i2": 25.00 },
+                  "1_a_3_c_0_i": { "a1": 150.00, "c1": 70.00, "c2": 65.00, "c3": 60.00 },
+                  "1_a_2_c_1_i": { "a1": 125.00, "c1": 75.00, "c2": 70.00, "i1": 28.00 },
+                  "1_a_1_c_2_i": { "a1": 135.00, "c1": 80.00, "c2": 75.00, "i1": 32.00 },
+                  "1_a_0_c_3_i": { "a1": 140.00, "c1": 85.00, "c2": 80.00, "c3": 75.00 }
+                },
+                "surch": {
+                  "4_a_0_c_0_i": { "a": 10.00, "c": 9.00},
+                  "3_a_1_c_0_i": { "a": 12.00, "c": 6.00},
+                  "3_a_0_c_1_i": { "a": 11.00, "c": 8.00},
+                  "2_a_2_c_0_i": { "a": 13.00, "c": 9.00},
+                  "2_a_1_c_1_i": { "a": 14.00, "c": 2.00},
+                  "2_a_0_c_2_i": { "a": 10.00, "c": 6.00},
+                  "1_a_3_c_0_i": { "a": 15.00, "c": 7.00},
+                  "1_a_2_c_1_i": { "a": 11.00, "c": 7.00},
+                  "1_a_1_c_2_i": { "a": 13.00, "c": 8.00},
+                  "1_a_0_c_3_i": { "a": 12.00, "c": 8.00}
+                }
+              }
+        ],
+        "created_at": "2025-07-23T21:51:04.000000Z",
+        "updated_at": "2025-07-23T21:51:04.000000Z"
+    },
+    {
+        "id": 53,
+        "package_id": 3,
+        "season_type_id": 1,
+        "date_type_id": 1,
+        "room_type_id": 10,
+        "room_type": {
+            "id": 10,
+            "name": "New New Room",
+            "package_id": 3,
+            "description": "Spacious room with modern amenities",
+            "max_occupancy": 2,
+            "images": [
+                "room-types\/test1.jpg",
+                "room-types\/test2.png",
+                "room-types\/test3.jpg"
+            ],
+            "created_at": "2025-07-23T21:51:04.000000Z",
+            "updated_at": "2025-07-23T21:51:04.000000Z",
+            "deleted_at": null
+        },
+        "prices": [
+            {
+                "base": {
+                  "4_a_0_c_0_i": { "a1": 100.00, "a2": 95.00, "a3": 90.00, "a4": 85.00 },
+                  "3_a_1_c_0_i": { "a1": 120.00, "a2": 115.00, "a3": 110.00, "c1": 70.00 },
+                  "3_a_0_c_1_i": { "a1": 110.00, "a2": 105.00, "a3": 100.00, "i1": 40.00 },
+                  "2_a_2_c_0_i": { "a1": 130.00, "a2": 125.00, "c1": 80.00, "c2": 75.00 },
+                  "2_a_1_c_1_i": { "a1": 140.00, "a2": 135.00, "c1": 85.00, "i1": 35.00 },
+                  "2_a_0_c_2_i": { "a1": 115.00, "a2": 110.00, "i1": 30.00, "i2": 25.00 },
+                  "1_a_3_c_0_i": { "a1": 150.00, "c1": 70.00, "c2": 65.00, "c3": 60.00 },
+                  "1_a_2_c_1_i": { "a1": 125.00, "c1": 75.00, "c2": 70.00, "i1": 28.00 },
+                  "1_a_1_c_2_i": { "a1": 135.00, "c1": 80.00, "c2": 75.00, "i1": 32.00 },
+                  "1_a_0_c_3_i": { "a1": 140.00, "c1": 85.00, "c2": 80.00, "c3": 75.00 }
+                },
+                "surch": {
+                  "4_a_0_c_0_i": { "a": 10.00, "c": 9.00, "i": 10.00},
+                  "3_a_1_c_0_i": { "a": 12.00, "c": 6.00, "i": 12.00},
+                  "3_a_0_c_1_i": { "a": 11.00, "c": 8.00, "i": 11.00},
+                  "2_a_2_c_0_i": { "a": 13.00, "c": 9.00, "i": 13.00},
+                  "2_a_1_c_1_i": { "a": 14.00, "c": 2.00, "i": 14.00},
+                  "2_a_0_c_2_i": { "a": 10.00, "c": 6.00, "i": 10.00},
+                  "1_a_3_c_0_i": { "a": 15.00, "c": 7.00, "i": 15.00},
+                  "1_a_2_c_1_i": { "a": 11.00, "c": 7.00, "i": 11.00},
+                  "1_a_1_c_2_i": { "a": 13.00, "c": 8.00, "i": 13.00},
+                  "1_a_0_c_3_i": { "a": 12.00, "c": 8.00, "i": 12.00}
+                }
+              }
+        ],
+        "created_at": "2025-07-23T21:51:04.000000Z",
+        "updated_at": "2025-07-23T21:51:04.000000Z"
+    }
+]';
+
+        return response($json, 200)
+            ->header('Content-Type', 'application/json');
     }
 }

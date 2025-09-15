@@ -41,6 +41,7 @@ class CreatePriceConfigurationsService
 
             // Create configurations for each combination
             foreach ($roomTypes as $roomType) {
+                $roomPax = $roomType->max_occupancy;
                 foreach ($seasonTypes as $seasonType) {
                     foreach ($dateTypes as $dateType) {
                         // Create the package configuration
@@ -57,12 +58,11 @@ class CreatePriceConfigurationsService
                                 'season_type_id' => $seasonType->id,
                                 'date_type_id' => $dateType->id,
                                 'room_type_id' => $roomType->id,
-                                'configuration_prices' => $generateRandomPrices ? json_encode($this->generateRandomPrices()) : NULL,
+                                'configuration_prices' => $this->generateRandomPrices($roomPax, $generateRandomPrices),
                             ]);
 
                             // Log::info('configuration created: ' . json_encode($configuration, JSON_PRETTY_PRINT));
-                        }
-                        else {
+                        } else {
                             // Log::info('configuration already exists: ' . json_encode($configuration, JSON_PRETTY_PRINT));
                         }
 
@@ -73,7 +73,6 @@ class CreatePriceConfigurationsService
 
             DB::commit();
             return $createdConfigurations;
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to create price configurations: ' . $e->getMessage());
@@ -81,7 +80,7 @@ class CreatePriceConfigurationsService
         }
     }
 
-    public function generateRandomPrices()
+    public function generateRandomPricesOld()
     {
         $faker = Faker::create();
         $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
@@ -102,4 +101,81 @@ class CreatePriceConfigurationsService
 
         return $configurationPrices;
     }
-} 
+
+    public function generateRandomPrices(int $pax = 4, bool $generateRandomPrices = true): array
+    {
+        $faker = Faker::create();
+
+        $base  = [];
+        $surch = [];
+
+        // ✅ Only generate for the requested pax
+        $combinations = $this->generatePaxCombinations($pax);
+
+        foreach ($combinations as $combo) {
+            $counts = $this->parsePaxCombination($combo); // ['adults'=>X,'children'=>Y,'infants'=>Z]
+            if ($counts === null) {
+                continue;
+            }
+
+            // Build per-person base prices like a1..aN, c1..cN, i1..iN
+            $entry = [];
+
+            for ($i = 1; $i <= $counts['adults']; $i++) {
+                $entry["a{$i}"] = $generateRandomPrices ? round($faker->randomFloat(2, 75, 150), 2) : 0;
+            }
+            for ($i = 1; $i <= $counts['children']; $i++) {
+                $entry["c{$i}"] = $generateRandomPrices ? round($faker->randomFloat(2, 60, 120), 2) : 0;
+            }
+            for ($i = 1; $i <= $counts['infants']; $i++) {
+                $entry["i{$i}"] = $generateRandomPrices ? round($faker->randomFloat(2, 20, 60), 2) : 0;
+            }
+
+            if (!empty($entry)) {
+                $base[$combo] = $entry;
+
+                // Flat per-type surcharge (your sample uses only 'a' and 'c')
+                $surch[$combo] = [
+                    'a' => $generateRandomPrices ? round($faker->randomFloat(2, 2, 20), 2) : 0,
+                    'c' => $generateRandomPrices ? round($faker->randomFloat(2, 2, 15), 2) : 0,
+                    'i' => $generateRandomPrices ? round($faker->randomFloat(2, 1, 10), 2) : 0,
+                ];
+            }
+        }
+
+        return [
+            [
+                'base'  => $base,
+                'surch' => $surch,
+            ],
+        ];
+    }
+
+    function generatePaxCombinations(int $pax): array
+    {
+        if ($pax < 1) return [];
+
+        $combinations = [];
+
+        for ($a = 1; $a <= $pax; $a++) {
+            for ($c = 0; $c <= $pax - $a; $c++) {
+                $i = $pax - $a - $c; // remaining infants
+                $combinations[] = sprintf('%d_a_%d_c_%d_i', $a, $c, $i);
+            }
+        }
+
+        return $combinations;
+    }
+
+    function parsePaxCombination(string $str): ?array
+    {
+        if (preg_match('/^(\d+)_a_(\d+)_c_(\d+)_i$/', $str, $m)) {
+            return [
+                'adults'   => (int) $m[1],
+                'children' => (int) $m[2],
+                'infants'  => (int) $m[3],
+            ];
+        }
+        return null;
+    }
+}

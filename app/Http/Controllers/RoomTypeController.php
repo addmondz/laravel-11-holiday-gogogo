@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Constants\AppConstants;
 use App\Models\RoomType;
 use App\Models\Package;
+use App\Models\PackageConfiguration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -146,12 +147,17 @@ class RoomTypeController extends Controller
         // Delete all associated images
         if ($roomType->images) {
             foreach ($roomType->images as $imagePath) {
+                if (in_array($imagePath, AppConstants::TESTING_IMAGES)) {
+                    continue;
+                }
                 Storage::disk('public')->delete($imagePath);
             }
         }
 
         $packageId = $roomType->package_id;
         $roomType->delete();
+
+        PackageConfiguration::where('room_type_id', $roomType->id)->delete();
 
         // If the request has a return_to_package parameter, redirect back to the package page
         if (request()->has('return_to_package')) {
