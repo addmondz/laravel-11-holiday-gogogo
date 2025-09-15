@@ -286,7 +286,9 @@ class ConfigurationPriceController extends Controller
             $query->where('room_type_id', $request->room_type_id);
         }
 
-        $this->ensureOnlyOnePriceConfiguration($query, $request->all());
+        $roomTypeIds = RoomType::where('package_id', $request->package_id)->pluck('id');
+
+        $this->ensureOnlyOnePriceConfiguration($query, $request->all(), $roomTypeIds);
 
         $configurations = $query->get();
         // Log::info('configurations:' . json_encode($configurations, JSON_PRETTY_PRINT));
@@ -488,28 +490,72 @@ class ConfigurationPriceController extends Controller
         return response()->json(['message' => 'Configuration prices created successfully.']);
     }
 
-    public function ensureOnlyOnePriceConfiguration($query, $requestParam): bool
+
+    public function ensureOnlyOnePriceConfiguration($query, $requestParam, $roomTypeIds)
     {
-        // Newest first by created_at, then id (tiebreaker)
-        $ids = (clone $query)
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->pluck('id');
+        $cloneQuery = $query->clone();
+        // Log::info('cloneQuery: ' . json_encode($cloneQuery->get(), JSON_PRETTY_PRINT));
+        // Log::info('count cloneQuery: ' . $cloneQuery->get()->count());
+        $request_room_type_id = $requestParam['room_type_id'] ?? null;
+        // Log::info('roomTypeIds: ' . json_encode($roomTypeIds, JSON_PRETTY_PRINT));
 
-        if ($ids->count() <= 1) return false; // nothing to clean
+        $configToDisplay = $request_room_type_id ? 1 : $roomTypeIds->count();
 
-        // Everything except the most recent, as a values-only array
-        $deletedIds = $ids->slice(1)->values()->all();
+        if ($cloneQuery->get()->count() > $configToDisplay) {
+            Log::info('Need cleaning');
+            $this->initializePriceConfigurationsCleaning();
+        } else {
+            // Log::info('No need cleaning');
+        }
+    }
 
-        // Delete those
-        (clone $query)->whereKey($deletedIds)->delete();
+    public function initializePriceConfigurationsCleaning()
+    {
+        Log::info('initializePriceConfigurationsCleaning START');
 
-        // Logs: deleted ids as body-only array (no keys)
-        Log::info('Cleaned duplicate price configurations; kept most recent id='. $ids->first());
-        Log::info('Deleted ids Length: ' . count($deletedIds));
-        Log::info('Deleted ids: ' . json_encode($deletedIds));
-        Log::info('requestParam: ' . json_encode($requestParam));
+        $duplicates = PackageConfiguration::select(
+            'package_id',
+            'season_type_id',
+            'date_type_id',
+            'room_type_id',
+            DB::raw('COUNT(*) as count')
+        )
+            ->groupBy('package_id', 'season_type_id', 'date_type_id', 'room_type_id')
+            ->having('count', '>', 1)
+            ->get();
 
-        return true;
+        foreach ($duplicates as $duplicate) {
+            // Find all duplicates in this group
+            $all = PackageConfiguration::where('package_id', $duplicate->package_id)
+                ->where('season_type_id', $duplicate->season_type_id)
+                ->where('date_type_id', $duplicate->date_type_id)
+                ->where('room_type_id', $duplicate->room_type_id)
+                ->orderByDesc('updated_at')
+                ->get();
+
+            if ($all->isEmpty()) {
+                continue;
+            }
+
+            // First one (latest updated) is the one to keep
+            $keep = $all->first();
+            $delete = $all->skip(1); // everything else
+
+            // Delete duplicates
+            PackageConfiguration::whereIn('id', $delete->pluck('id'))->delete();
+
+            // Logging
+            Log::info("Duplicate group found", [
+                'package_id'     => $duplicate->package_id,
+                'season_type_id' => $duplicate->season_type_id,
+                'date_type_id'   => $duplicate->date_type_id,
+                'room_type_id'   => $duplicate->room_type_id,
+                'keep_id'        => $keep->id,
+                'keep_updated_at' => $keep->updated_at,
+                'deleted_ids'    => $delete->pluck('id')->toArray(),
+            ]);
+        }
+
+        Log::info('initializePriceConfigurationsCleaning END');
     }
 }
