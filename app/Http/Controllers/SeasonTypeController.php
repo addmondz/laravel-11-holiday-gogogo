@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SeasonType;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Validation\Rule;
 
 class SeasonTypeController extends Controller
 {
@@ -41,7 +42,12 @@ class SeasonTypeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:season_types,name',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('season_types', 'name')->whereNull('deleted_at'),
+            ],
         ]);
 
         SeasonType::create($validated);
@@ -67,7 +73,12 @@ class SeasonTypeController extends Controller
     public function update(Request $request, SeasonType $seasonType)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:season_types,name,' . $seasonType->id,
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('season_types', 'name')->ignore($seasonType->id)->whereNull('deleted_at'),
+            ],
         ]);
 
         $seasonType->update($validated);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DateType;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Validation\Rule;
 
 class DateTypeController extends Controller
 {
@@ -51,7 +52,12 @@ class DateTypeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:date_types'
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('date_types', 'name')->whereNull('deleted_at'),
+            ],
         ]);
 
         DateType::create($validated);
@@ -78,7 +84,12 @@ class DateTypeController extends Controller
     public function update(Request $request, DateType $dateType)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:date_types,name,' . $dateType->id
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('date_types', 'name')->ignore($dateType->id)->whereNull('deleted_at'),
+            ],
         ]);
 
         $dateType->update($validated);
