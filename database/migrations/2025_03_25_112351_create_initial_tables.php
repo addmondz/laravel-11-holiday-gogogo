@@ -39,6 +39,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('adult_price', 10, 2)->nullable();
             $table->decimal('child_price', 10, 2)->nullable();
+            $table->decimal('infant_price', 10, 2)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -177,6 +177,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{dateBlocker}', 'destroy')->name('date-blockers.destroy');
     });
 
+    // Package Add-ons routes
+    Route::prefix('package-add-ons')->controller(\App\Http\Controllers\PackageAddOnController::class)->group(function () {
+        Route::get('/{package}', 'index')->name('package-add-ons.index');
+        Route::post('/{package}', 'store')->name('package-add-ons.store');
+        Route::put('/{packageAddOn}', 'update')->name('package-add-ons.update');
+        Route::delete('/{packageAddOn}', 'destroy')->name('package-add-ons.destroy');
+    });
+
     // settings routes
     Route::resource('settings', AppSettingController::class)->names([
         'index' => 'settings.index',

@@ -70,6 +70,7 @@
         <!-- Pagination -->
         <div class="mt-4">
             <Pagination
+                v-if="dateBlockers.data.length > 0"
                 :links="dateBlockers.links"
                 :from="dateBlockers.from"
                 :to="dateBlockers.to"

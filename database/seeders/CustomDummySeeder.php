@@ -6,6 +6,7 @@ use App\Models\DateType;
 use App\Models\DateTypeRange;
 use Illuminate\Database\Seeder;
 use App\Models\Package;
+use App\Models\PackageAddOn;
 use App\Models\Season;
 use App\Models\SeasonType;
 use App\Services\CreatePriceConfigurationsService;
@@ -36,7 +37,6 @@ class CustomDummySeeder extends Seeder
         $images = ["packages/test1.jpg", "packages/test2.jpg", "packages/test3.jpg"];
         $result = array_map(fn($p) => preg_replace('/\.jpg$/', Str::random(30) . '.jpg', $p), $images);
 
-
         $pkg = Package::create([
             'name' => "3d2n Redang Beach Resort Snorkeling Package",
             'description' => 'Redang Beach Resort is situated on one of the most beautiful stretches of beach on Redang Island – Long Beach. The resort offers direct access to powdery white sands, crystal-clear turquoise waters, and vibrant coral reefs. The resort provides a range of accommodation options to suit different preferences and budgets. Redang Island is renowned for its breathtaking snorkeling sites, and Redang Beach Resort provides easy access to some of the best snorkeling spots. The resort can arrange snorkeling trips to locations with vibrant coral reefs teeming with colorful fish and other marine creatures. The clear, warm waters offer excellent visibility, allowing snorkelers to immerse themselves in the beauty of the underwater world. Other than the snorkeling trip, a wide range of activities guests can add on or arrange on their own, such as kayaking, beach volleyball, jungle trekking, and beach soccer. Guests can also unwind and relax by the swimming pool.',
@@ -53,6 +53,17 @@ class CustomDummySeeder extends Seeder
             'uuid' => (new GeneratePackageUid())->execute("3d2n Redang Beach Resort Snorkeling Package"),
             'weekend_days' => [0, 6],
         ]);
+
+        for ($i = 0; $i < 3; $i++) {
+            PackageAddOn::create([
+                'package_id' => $pkg->id,
+                'name' => 'Add-on ' . $i,
+                'description' => 'Add-on ' . $i . ' description',
+                'adult_price' => $faker->randomFloat(2, 10, 50),
+                'child_price' => $faker->randomFloat(2, 5, 25),
+                'infant_price' => $faker->randomFloat(2, 0, 10),
+            ]);
+        }
 
         $yearEndSeasonType = SeasonType::create([
             'name' => 'Year End',

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Constants\AppConstants;
+use App\Constants\AppSettingTypes;
+use App\Models\AppSetting;
 use App\Models\Package;
 use App\Models\RoomType;
 use App\Models\Season;
@@ -350,6 +352,10 @@ class PackageController extends Controller
             $query->where('package_id', $package->id);
         })->orWhereIn('name', ['Default', 'Weekday', 'Weekend'])->get();
 
+        $isGlobalSst = AppSetting::where('type', AppSettingTypes::SST_CONFIGURATION)->first();
+        $isGlobalSstEnable = $isGlobalSst->value['status'] === 1;
+        $globalSstPercent = $isGlobalSst->value['sst_percent'];
+
         return Inertia::render('Packages/Show', [
             'pkg' => $package->setRelation('load_room_types', $roomTypes),
             'seasons' => $seasons,
@@ -362,7 +368,9 @@ class PackageController extends Controller
             'allSeasonTypes' => $allSeasonTypes,
             'allDateTypes' => $allDateTypes,
             'assignedSeasonTypes' => $assignedSeasonTypes,
-            'assignedDateTypes' => $assignedDateTypes
+            'assignedDateTypes' => $assignedDateTypes,
+            'isGlobalSstEnable' => $isGlobalSstEnable,
+            'globalSstPercent' => $globalSstPercent
         ]);
     }
 

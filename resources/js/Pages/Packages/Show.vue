@@ -64,6 +64,8 @@
                                     :allDateTypes="allDateTypes"
                                     :assignedSeasonTypes="assignedSeasonTypes"
                                     :assignedDateTypes="assignedDateTypes"
+                                    :isGlobalSstEnable="isGlobalSstEnable"
+                                    :globalSstPercent="globalSstPercent"
                                 />
                             </div>
                         </div>
@@ -87,6 +89,7 @@ import DateBlockers from './packages-show-tabs/DateBlockers.vue';
 import UpdatePriceConfigByPax from './packages-show-tabs/UpdatePriceConfigByPax.vue';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
+import PackageAddOns from './packages-show-tabs/PackageAddOns.vue';
 
 const isTabLoading = ref(false);
 const props = defineProps({
@@ -137,6 +140,14 @@ const props = defineProps({
     assignedDateTypes: {
         type: Object,
         required: true
+    },
+    isGlobalSstEnable: {
+        type: Boolean,
+        required: true
+    },
+    globalSstPercent: {
+        type: Number,
+        required: true
     }
 });
 
@@ -147,6 +158,7 @@ const tabs = [
     { id: 'date-types-ranges', name: 'Date Types Ranges' },
     { id: 'price-configuration', name: 'Price Configuration' },
     { id: 'date-blockers', name: 'Date Blockers' },
+    { id: 'package-add-ons', name: 'Package Add Ons' },
     // { id: 'update-price-config-by-pax', name: 'Update Price Config By Pax' }
 ];
 
@@ -171,6 +183,8 @@ const currentTabComponent = computed(() => {
             return DateBlockers;
         case 'update-price-config-by-pax':
             return UpdatePriceConfigByPax;
+        case 'package-add-ons':
+            return PackageAddOns;
         default:
             return PackageDetails;
     }
@@ -185,8 +199,6 @@ const getParamFromUrl = () => {
 const currentTab = ref(getParamFromUrl() || 'details');
 
 watch(currentTab, (newVal, oldVal) => {
-    console.log('newVal', newVal);
-
     // force refresh the page when switching to price-configuration
     if (newVal == 'price-configuration' && oldVal != 'price-configuration') {
         isTabLoading.value = true;

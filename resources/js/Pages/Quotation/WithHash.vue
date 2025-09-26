@@ -184,7 +184,7 @@
 
             <!-- Booking Form -->
             <div class="bg-white rounded-lg shadow-lg p-6" id="booking-form">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ currentStep === 3 ? 'Your Booking' : 'Book Your Stay' }}</h2>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ currentStep === 4 ? 'Your Booking' : 'Book Your Stay' }}</h2>
                 
                 <!-- Step Indicators -->
                 <div class="mb-8">
@@ -196,12 +196,17 @@
                         <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 2 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
                         <div class="flex items-center">
                             <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">2</div>
-                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 2 ? 'text-indigo-600' : 'text-gray-500'">Price Summary</div>
+                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 2 ? 'text-indigo-600' : 'text-gray-500'">Choose Add-ons</div>
                         </div>
                         <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
                         <div class="flex items-center">
                             <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">3</div>
-                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 3 ? 'text-indigo-600' : 'text-gray-500'">Booking Details</div>
+                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 3 ? 'text-indigo-600' : 'text-gray-500'">Price Summary</div>
+                        </div>
+                        <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 4 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <div class="flex items-center">
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">4</div>
+                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 4 ? 'text-indigo-600' : 'text-gray-500'">Booking Details</div>
                         </div>
                     </div>
                 </div>
@@ -532,8 +537,131 @@
                     </form>
                 </div>
 
-                <!-- Step 2: Price Summary -->
+                <!-- Step 2: Choose Add-ons -->
                 <div v-if="currentStep === 2">
+                    <div class="space-y-6">
+                        <div class="text-center mb-8">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">Choose Your Add-ons</h3>
+                            <p class="text-gray-600">Enhance your travel experience with these optional add-ons</p>
+                        </div>
+
+                        <!-- Add-ons Grid -->
+                        <div v-if="packageAddOns.length > 0" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div v-for="addOn in packageAddOns" :key="addOn.id" 
+                                     class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex-1">
+                                            <h4 class="text-lg font-medium text-gray-900 mb-2">{{ addOn.name }}</h4>
+                                            <p class="text-sm text-gray-600 mb-4">{{ addOn.description || 'No description available' }}</p>
+                                        </div>
+                                        <div class="ml-4">
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" 
+                                                       :value="addOn.id" 
+                                                       v-model="selectedAddOns"
+                                                       class="sr-only peer">
+                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Pricing Display -->
+                                    <div class="mb-4">
+                                        <div class="grid grid-cols-3 gap-2 text-sm">
+                                            <div v-if="addOn.adult_price" class="text-center">
+                                                <div class="text-gray-500">Adult</div>
+                                                <div class="font-medium text-gray-900">MYR {{ formatNumber(addOn.adult_price) }}</div>
+                                            </div>
+                                            <div v-if="addOn.child_price" class="text-center">
+                                                <div class="text-gray-500">Child</div>
+                                                <div class="font-medium text-gray-900">MYR {{ formatNumber(addOn.child_price) }}</div>
+                                            </div>
+                                            <div v-if="addOn.infant_price" class="text-center">
+                                                <div class="text-gray-500">Infant</div>
+                                                <div class="font-medium text-gray-900">MYR {{ formatNumber(addOn.infant_price) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Pax Input Fields -->
+                                    <div v-if="selectedAddOns.includes(addOn.id)" class="space-y-3">
+                                        <div class="text-sm font-medium text-gray-700 mb-2">Number of Guests:</div>
+                                        <div class="grid grid-cols-3 gap-3">
+                                            <div v-if="addOn.adult_price">
+                                                <label class="block text-xs text-gray-500 mb-1">Adults</label>
+                                                <input type="number" 
+                                                       :min="0" 
+                                                       :max="totalGuests"
+                                                       v-model="getAddOnPax(addOn.id).adults"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                            </div>
+                                            <div v-if="addOn.child_price">
+                                                <label class="block text-xs text-gray-500 mb-1">Children</label>
+                                                <input type="number" 
+                                                       :min="0" 
+                                                       :max="totalGuests"
+                                                       v-model="getAddOnPax(addOn.id).children"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                            </div>
+                                            <div v-if="addOn.infant_price">
+                                                <label class="block text-xs text-gray-500 mb-1">Infants</label>
+                                                <input type="number" 
+                                                       :min="0" 
+                                                       :max="totalGuests"
+                                                       v-model="getAddOnPax(addOn.id).infants"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Live Subtotal -->
+                                        <div class="mt-3 p-3 bg-indigo-50 rounded-md border border-indigo-200">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm font-medium text-indigo-700">Subtotal:</span>
+                                                <span class="text-lg font-bold text-indigo-700">
+                                                    MYR {{ formatNumber(calculateAddOnSubtotal(addOn)) }}
+                                                </span>
+                                            </div>
+                                            <div class="text-xs text-indigo-600 mt-1">
+                                                {{ getAddOnPax(addOn.id).adults }} adults × MYR {{ formatNumber(addOn.adult_price) }} + 
+                                                {{ getAddOnPax(addOn.id).children }} children × MYR {{ formatNumber(addOn.child_price) }} + 
+                                                {{ getAddOnPax(addOn.id).infants }} infants × MYR {{ formatNumber(addOn.infant_price) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- No Add-ons Available -->
+                        <div v-else class="text-center py-12">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No Add-ons Available</h3>
+                            <p class="mt-1 text-sm text-gray-500">This package doesn't have any add-ons available.</p>
+                        </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="flex justify-between mt-8">
+                            <button
+                                @click="currentStep = 1"
+                                class="px-8 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                            >
+                                Back
+                            </button>
+                            <button
+                                @click="handleStep2Submit"
+                                class="px-8 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                                Continue to Price Summary
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Price Summary -->
+                <div v-if="currentStep === 3">
                     <div class="bg-gray-50 rounded-lg p-4">
                         <!-- Booking Summary -->
                         <div v-if="bookingSummary && priceBreakdown?.summary" class="mb-6 border-b pb-4">
@@ -818,10 +946,31 @@
                                         <span>Total (Excl. SST)</span>
                                         <span>MYR {{ formatNumber(priceBreakdown.total_without_sst) }}</span>
                                     </div>
-                                    <div class="flex justify-between text-sm text-gray-600 mb-3">
+                                    <div class="flex justify-between text-sm text-gray-600 mb-1">
                                         <span>SST</span>
                                         <span>MYR {{ formatNumber(priceBreakdown.sst) }}</span>
                                     </div>
+                                    
+                                    <!-- Add-ons Breakdown -->
+                                    <div v-if="priceBreakdown.add_ons && priceBreakdown.add_ons.length > 0" class="mb-3">
+                                        <div class="text-sm font-medium text-gray-700 mb-2">Add-ons:</div>
+                                        <div v-for="addOn in priceBreakdown.add_ons" :key="addOn.id" class="text-xs text-gray-600 mb-1">
+                                            <div class="flex justify-between">
+                                                <span>{{ addOn.name }}</span>
+                                                <span>MYR {{ formatNumber(addOn.total) }}</span>
+                                            </div>
+                                            <div class="text-gray-500 ml-2">
+                                                Adults: {{ addOn.adults }} × MYR {{ formatNumber(addOn.adult_price) }} = MYR {{ formatNumber(addOn.adult_total) }}<br>
+                                                Children: {{ addOn.children }} × MYR {{ formatNumber(addOn.child_price) }} = MYR {{ formatNumber(addOn.child_total) }}<br>
+                                                Infants: {{ addOn.infants }} × MYR {{ formatNumber(addOn.infant_price) }} = MYR {{ formatNumber(addOn.infant_total) }}
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">
+                                            <span>Add-ons Total</span>
+                                            <span>MYR {{ formatNumber(priceBreakdown.add_ons_total) }}</span>
+                                        </div>
+                                    </div>
+                                    
                                     <hr class="border-gray-200 mb-3">
                                     <div class="flex justify-between text-base font-semibold text-indigo-700">
                                         <span>Grand Total</span>
@@ -833,13 +982,13 @@
 
                         <div class="flex justify-between mt-6">
                             <button
-                                @click="currentStep = 1"
+                                @click="currentStep = 2"
                                 class="px-8 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                             >
                                 Back
                             </button>
                             <button
-                                @click="currentStep = 3"
+                                @click="currentStep = 4"
                                 class="px-8 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                                 Next
@@ -848,8 +997,8 @@
                     </div>
                 </div>
 
-                <!-- Step 3: Booking Details -->
-                <div v-if="currentStep === 3">
+                <!-- Step 4: Booking Details -->
+                <div v-if="currentStep === 4">
                     <div v-if="!bookingSuccess" class="space-y-6">
                         <form @submit.prevent="submitBooking" class="space-y-6">
                             <!-- Booking Name -->
@@ -1278,7 +1427,7 @@ const props = defineProps({
 onMounted(() => {
     if (props.booking) {
         bookingSuccess.value = props.booking;
-        currentStep.value = 3;
+        currentStep.value = 4;
         setTimeout(() => {
             const bookingForm = document.getElementById('booking-form');
             if (bookingForm) {
@@ -1365,6 +1514,8 @@ const nightlyBreakdown = ref([]);
 const roomTypes = ref([]);
 const selectedRoomType = ref(null);
 const isLoading = ref(true);
+const packageAddOns = ref([]);
+const selectedAddOns = ref([]);
 const bookingSummary = ref(null);
 const dateError = ref('');
 const validationErrors = ref({
@@ -1703,6 +1854,7 @@ onMounted(async () => {
         if (response.data.success && response.data.package) {
             packageData.value = response.data.package;
             roomTypes.value = response.data.room_types;
+            packageAddOns.value = response.data.add_ons || [];
         } else {
             packageData.value = null;
         }
@@ -1892,6 +2044,39 @@ watch(() => form.rooms, (newRooms) => {
     });
 }, { deep: true });
 
+// Add-ons methods
+const getAddOnPax = (addOnId) => {
+    let addOnPax = selectedAddOns.value.find(item => item.id === addOnId);
+    if (!addOnPax) {
+        addOnPax = { id: addOnId, adults: 0, children: 0, infants: 0 };
+        selectedAddOns.value.push(addOnPax);
+    }
+    return addOnPax;
+};
+
+const getSelectedAddOnsForAPI = () => {
+    return selectedAddOns.value
+        .filter(item => {
+            const pax = getAddOnPax(item.id);
+            return pax.adults > 0 || pax.children > 0 || pax.infants > 0;
+        })
+        .map(item => ({
+            id: item.id,
+            adults: getAddOnPax(item.id).adults,
+            children: getAddOnPax(item.id).children,
+            infants: getAddOnPax(item.id).infants
+        }));
+};
+
+// Calculate individual add-on subtotal
+const calculateAddOnSubtotal = (addOn) => {
+    const pax = getAddOnPax(addOn.id);
+    const adultTotal = (pax.adults || 0) * (addOn.adult_price || 0);
+    const childTotal = (pax.children || 0) * (addOn.child_price || 0);
+    const infantTotal = (pax.infants || 0) * (addOn.infant_price || 0);
+    return adultTotal + childTotal + infantTotal;
+};
+
 const calculatePrice = async () => {
     if (!validateForm()) return;
 
@@ -1905,7 +2090,8 @@ const calculatePrice = async () => {
                 infants: room.infants
             })),
             start_date: form.start_date,
-            end_date: form.end_date
+            end_date: form.end_date,
+            add_ons: getSelectedAddOnsForAPI()
         });
 
         if (response.data.success) {
@@ -1947,7 +2133,7 @@ const calculatePrice = async () => {
                 total_infants: totalInfants
             };
 
-            currentStep.value = 2;
+            currentStep.value = 3;
         } else {
             throw new Error(response.data.message || 'Failed to calculate price');
         }
@@ -1988,6 +2174,14 @@ const handleStep1Submit = async () => {
     await calculatePrice();
     if (calculatedPrice.value !== null) {
         currentStep.value = 2;
+    }
+};
+
+const handleStep2Submit = async () => {
+    // Calculate price with current add-ons selection
+    await calculatePrice();
+    if (calculatedPrice.value !== null) {
+        currentStep.value = 3;
     }
 };
 
@@ -2055,7 +2249,8 @@ const submitBooking = async () => {
             start_date: form.start_date,
             end_date: form.end_date,
             total_price: priceBreakdown.value.total,
-            special_remarks: bookingForm.value.special_remarks.trim()
+            special_remarks: bookingForm.value.special_remarks.trim(),
+            add_ons: getSelectedAddOnsForAPI()
         });
 
         if (response.data.success) {

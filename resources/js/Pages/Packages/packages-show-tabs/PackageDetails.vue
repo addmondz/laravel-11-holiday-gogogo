@@ -48,10 +48,21 @@
                     </p>
                 </div>
                 <div>
-                    <h4 class="text-sm font-medium text-gray-500">SST Enable</h4>
-                    <p class="mt-1 text-sm text-gray-900">
-                        {{ package.sst_enable ? 'Yes' : 'No' }}
-                    </p>
+                    <div :class="{ 'opacity-50': !isGlobalSstEnable }">
+                        <h4 class="text-sm font-medium text-gray-500">
+                            SST Enable
+                        </h4>
+                        <p class="mt-1 text-sm text-gray-900">
+                            {{ package.sst_enable ? 'Yes' : 'No' }}
+                        </p>
+                    </div>
+                    <span
+                        :class="isGlobalSstEnable
+                        ? 'mt-1 px-3 py-1 inline-flex items-center rounded-full bg-green-100 text-xs font-medium text-green-700'
+                        : 'mt-1 px-3 py-1 inline-flex items-center rounded-full bg-red-100 text-xs font-medium text-red-700'"
+                    >
+                        System SST Configuration: <span class="font-bold ml-1">{{ isGlobalSstEnable ? 'Enabled' : 'Disabled' }} {{ globalSstPercent }}%</span>
+                    </span>
                 </div>
             </div>
             <div>
@@ -122,6 +133,14 @@ import Swal from 'sweetalert2';
 const props = defineProps({
     package: {
         type: Object,
+        required: true
+    },
+    isGlobalSstEnable: {
+        type: Boolean,
+        required: true
+    },
+    globalSstPercent: {
+        type: Number,
         required: true
     }
 });

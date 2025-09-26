@@ -16,7 +16,8 @@ class PackageAddOn extends Model
         'name',
         'description',
         'adult_price',
-        'child_price'
+        'child_price',
+        'infant_price',
     ];
 
     public function package(): BelongsTo

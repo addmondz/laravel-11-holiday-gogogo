@@ -15,13 +15,14 @@ use App\Services\CreatePriceConfigurationsService;
 use App\Services\GeneratePackageUid;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use App\Models\PackageAddOn;
 use Faker\Factory as Faker;
 
 class DummySeeder extends Seeder
 {
     protected CreatePriceConfigurationsService $priceConfigurationService;
     public $enabledDefaultSeasonAndDateType;
-    public $dummyPackagesCount = 2;
+    public $dummyPackagesCount = 5;
     public $dummyOtherPackagesCount = 11;
     public $enableDateBlockerDummyData = false;
 
@@ -67,7 +68,7 @@ class DummySeeder extends Seeder
             ['title' => 'City Tour', 'icon' => 'packages/city.png', 'min_days' => 4, 'max_days' => 4, 'price_range' => [200, 600]],
             ['title' => 'Island Escape', 'icon' => 'packages/island.png', 'min_days' => 6, 'max_days' => 6, 'price_range' => [800, 2000]],
         ];
-
+        
         for ($i = 0; $i < $this->dummyPackagesCount; $i++) {
             $packageType = $faker->randomElement($packageTypes);
             $location = $faker->randomElement($locations);
@@ -89,6 +90,22 @@ class DummySeeder extends Seeder
                 'uuid' => (new GeneratePackageUid())->execute($packageName),
                 'weekend_days' => [0, 6],
             ]);
+
+            $dummyPackageAddOnCount = 3;
+            if ($this->enableDateBlockerDummyData) {
+                $dummyPackageAddOnCount = $this->dummyOtherPackagesCount;
+            }
+
+            for ($packageAddOn = 0; $packageAddOn < $dummyPackageAddOnCount; $packageAddOn++) {
+                PackageAddOn::create([
+                    'package_id' => $pkg->id,
+                    'name' => 'Add-on ' . $packageAddOn,
+                    'description' => 'Add-on ' . $packageAddOn . ' description',
+                    'adult_price' => $faker->randomFloat(2, 10, 50),
+                    'child_price' => $faker->randomFloat(2, 5, 25),
+                    'infant_price' => $faker->randomFloat(2, 0, 10),
+                ]);
+            }
 
             $weekday = DateType::where('name', 'Weekday')->first();
             $weekend = DateType::where('name', 'Weekend')->first();

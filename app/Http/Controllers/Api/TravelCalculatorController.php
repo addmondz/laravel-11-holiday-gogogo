@@ -231,10 +231,14 @@ class TravelCalculatorController extends Controller
             });
         }
 
+        // Load package add-ons
+        $packageAddOns = PackageAddOn::where('package_id', $package->id)->get();
+
         return response()->json([
             'success' => true,
             'package' => $package,
             'room_types' => $package->loadRoomTypes,
+            'add_ons' => $packageAddOns,
         ]);
     }
 
@@ -249,9 +253,14 @@ class TravelCalculatorController extends Controller
             'rooms.*.infants' => 'required|integer|min:0',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
+            'add_ons' => 'nullable|array',
+            'add_ons.*.id' => 'required|exists:package_add_ons,id',
+            'add_ons.*.adults' => 'required|integer|min:0',
+            'add_ons.*.children' => 'required|integer|min:0',
+            'add_ons.*.infants' => 'required|integer|min:0',
         ]);
 
-        return $this->calculatePriceByParams($validated['package_id'], $validated['rooms'], $validated['start_date'], $validated['end_date']);
+        return $this->calculatePriceByParams($validated['package_id'], $validated['rooms'], $validated['start_date'], $validated['end_date'], false, $validated['add_ons'] ?? []);
     }
 
     public function getSuggestedDates(int $packageId, Carbon $blockedDate): array
@@ -287,7 +296,7 @@ class TravelCalculatorController extends Controller
         return array_slice($suggestions, 0, 5); // Return max 5 suggestions
     }
 
-    public function calculatePriceByParams($packageId, $rooms, $startDate, $endDate, $isFromBot = false)
+    public function calculatePriceByParams($packageId, $rooms, $startDate, $endDate, $isFromBot = false, $addOns = [])
     {
         $package = Package::find($packageId);
     
@@ -717,20 +726,65 @@ class TravelCalculatorController extends Controller
                 }
             }
     
-            $sst = 0;
-            if ($package->sst_enable) {
-                $sst = $this->sstCalculationService->calculateSst($sum('total'));
+            // Calculate add-ons
+            $addOnsBreakdown = [];
+            $addOnsTotal = 0;
+            
+            if (!empty($addOns)) {
+                foreach ($addOns as $addOnData) {
+                    $addOn = PackageAddOn::find($addOnData['id']);
+                    if ($addOn) {
+                        $adults = (int)($addOnData['adults'] ?? 0);
+                        $children = (int)($addOnData['children'] ?? 0);
+                        $infants = (int)($addOnData['infants'] ?? 0);
+                        
+                        $adultPrice = $addOn->adult_price * $adults;
+                        $childPrice = $addOn->child_price * $children;
+                        $infantPrice = $addOn->infant_price * $infants;
+                        $addOnTotal = $adultPrice + $childPrice + $infantPrice;
+                        
+                        $addOnsBreakdown[] = [
+                            'id' => $addOn->id,
+                            'name' => $addOn->name,
+                            'description' => $addOn->description,
+                            'adults' => $adults,
+                            'children' => $children,
+                            'infants' => $infants,
+                            'adult_price' => $addOn->adult_price,
+                            'child_price' => $addOn->child_price,
+                            'infant_price' => $addOn->infant_price,
+                            'adult_total' => $adultPrice,
+                            'child_total' => $childPrice,
+                            'infant_total' => $infantPrice,
+                            'total' => $addOnTotal,
+                        ];
+                        
+                        $addOnsTotal += $addOnTotal;
+                    }
+                }
             }
     
-            $totalWithoutSst = $sum('total');
-            $total = $totalWithoutSst + $sst;
+            $sst = 0;
+            $baseTotal = $sum('total');
+            $totalWithoutSst = $baseTotal + $addOnsTotal;
+            if ($package->sst_enable) {
+                $sst = $this->sstCalculationService->calculateSst($totalWithoutSst);
+            }
+
+            Log::info('sst_enable: ' . $package->sst_enable);
+            Log::info('totalWithoutSst: ' . $totalWithoutSst);
+            Log::info('sst: ' . $sst);
     
+            $total = $totalWithoutSst + $sst;
+            Log::info('total: ' . $total);
             return response()->json([
                 'success'          => true,
                 'currency'         => 'MYR',
                 'nights'           => $allNights,
                 'rooms'            => $roomBreakdowns,
                 'guest_breakdown'  => $guestBreakdown,
+                'add_ons'          => $addOnsBreakdown,
+                'add_ons_total'    => $addOnsTotal,
                 'summary' => [
                     'total_nights'   => count($allNights) / max(count($rooms), 1),
                     'total_adults'   => $totalAdults,
@@ -748,7 +802,8 @@ class TravelCalculatorController extends Controller
                         'infant' => ['total' => $sum('surcharge.infant.total')],
                         'total'  => $sum('surcharge.total'),
                     ],
-                    'grand_total' => $sum('total'),
+                    'add_ons_total' => $addOnsTotal,
+                    'grand_total' => $sum('total') + $addOnsTotal,
                 ],
                 'total'             => $total,
                 'total_without_sst' => $totalWithoutSst,
