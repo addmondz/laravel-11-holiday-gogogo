@@ -302,7 +302,7 @@ class ConfigurationPriceController extends Controller
 
         $response = $configurations->map(function ($config) {
             $prices = $config->configuration_prices;
-        
+
             if (is_string($prices)) {
                 $decoded = json_decode($prices, true);
                 // handle double-encoding if it happens elsewhere
@@ -311,7 +311,7 @@ class ConfigurationPriceController extends Controller
                 }
                 $prices = $decoded;
             }
-        
+
             return [
                 'id'                    => $config->id,
                 'package_id'            => $config->package_id,
@@ -323,7 +323,7 @@ class ConfigurationPriceController extends Controller
                 'room_type_capacity'    => $config->roomType->max_occupancy,
             ];
         });
-        
+
         return response()->json($response);
     }
 
@@ -726,5 +726,155 @@ class ConfigurationPriceController extends Controller
 
         return response($json, 200)
             ->header('Content-Type', 'application/json');
+    }
+
+    /**
+     * Duplicate price configuration to multiple room types
+     */
+    public function duplicateToMultiple(Request $request)
+    {
+        $validated = $request->validate([
+            'package_id'            => 'required|exists:packages,id',
+            // source
+            'source_season_type_id' => 'required|exists:season_types,id',
+            'source_date_type_id'   => 'required|exists:date_types,id',
+            'source_room_type_id'   => 'nullable|exists:room_types,id',
+            // target
+            'target_season_type_id' => 'required|exists:season_types,id',
+            'target_date_type_id'   => 'required|exists:date_types,id',
+            'target_room_type_id'   => 'nullable|exists:room_types,id',
+            // includes
+            'include_base_charges'  => 'boolean',
+            'include_surcharges'    => 'boolean',
+        ]);
+
+        Log::info('duplicateToMultiple payload', $validated);
+
+        if (
+            $validated['source_season_type_id'] === $validated['target_season_type_id'] &&
+            $validated['source_date_type_id']   === $validated['target_date_type_id'] &&
+            (
+                (empty($validated['source_room_type_id']) && empty($validated['target_room_type_id'])) ||
+                (!empty($validated['source_room_type_id']) && !empty($validated['target_room_type_id']) &&
+                    (int)$validated['source_room_type_id'] === (int)$validated['target_room_type_id'])
+            )
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Source and target cannot be the same',
+            ], 400);
+        }
+
+        // Get all source configs
+        $sourceQuery = PackageConfiguration::query()
+            ->where('package_id',     $validated['package_id'])
+            ->where('season_type_id', $validated['source_season_type_id'])
+            ->where('date_type_id',   $validated['source_date_type_id']);
+
+        if (!empty($validated['source_room_type_id'])) {
+            $sourceQuery->where('room_type_id', $validated['source_room_type_id']);
+        }
+
+        $sourceConfigs = $sourceQuery->get();
+
+        if ($sourceConfigs->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No source configurations found to duplicate.',
+            ], 404);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $duplicatedCount = 0;
+            $errors = [];
+
+            foreach ($sourceConfigs as $config) {
+                $fromRoomTypeId = $config->room_type_id;
+                $toSeasonTypeId = (int)$validated['target_season_type_id'];
+                $toDateTypeId   = (int)$validated['target_date_type_id'];
+                $toRoomTypeId   = !empty($validated['target_room_type_id'])
+                    ? (int)$validated['target_room_type_id']
+                    : (int)$fromRoomTypeId;
+
+                // Skip identical
+                if (
+                    $config->season_type_id === $toSeasonTypeId &&
+                    $config->date_type_id   === $toDateTypeId &&
+                    $config->room_type_id   === $toRoomTypeId
+                ) {
+                    $errors[] = "Skipping identical config (room {$fromRoomTypeId})";
+                    continue;
+                }
+
+                // Check if target already exists
+                $targetConfig = PackageConfiguration::where([
+                    'package_id'     => $validated['package_id'],
+                    'season_type_id' => $toSeasonTypeId,
+                    'date_type_id'   => $toDateTypeId,
+                    'room_type_id'   => $toRoomTypeId,
+                ])->first();
+
+                if (!$targetConfig) {
+                    // Create if missing
+                    $targetConfig = new PackageConfiguration();
+                    $targetConfig->package_id     = $validated['package_id'];
+                    $targetConfig->season_type_id = $toSeasonTypeId;
+                    $targetConfig->date_type_id   = $toDateTypeId;
+                    $targetConfig->room_type_id   = $toRoomTypeId;
+                    $targetConfig->configuration_prices = [['base' => [], 'surch' => []]];
+                    $targetConfig->save();
+                }
+
+                // Now copy base/surch the same way as before
+                $configurationPrices = $targetConfig->configuration_prices;
+
+                if (empty($configurationPrices)) {
+                    $configurationPrices = [['base' => [], 'surch' => []]];
+                }
+
+                if (!empty($validated['include_base_charges'])) {
+                    $configurationPrices[0]['base'] = $config->configuration_prices[0]['base'] ?? [];
+                }
+
+                if (!empty($validated['include_surcharges'])) {
+                    $configurationPrices[0]['surch'] = $config->configuration_prices[0]['surch'] ?? [];
+                }
+
+                $targetConfig->update([
+                    'configuration_prices' => $configurationPrices
+                ]);
+
+                $duplicatedCount++;
+            }
+
+            DB::commit();
+
+            Log::info('Duplication completed with some errors' . PHP_EOL . json_encode($errors, JSON_PRETTY_PRINT));
+
+            if (count($errors) > 0) {
+                return response()->json([
+                    'success'          => false,
+                    'message'          => 'Duplication completed with some errors',
+                    'duplicated_count' => $duplicatedCount,
+                    'errors'           => $errors,
+                ], 207);
+            }
+
+            return response()->json([
+                'success'          => true,
+                'message'          => "Successfully duplicated configuration to {$duplicatedCount} configuration(s)",
+                'duplicated_count' => $duplicatedCount,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error("Duplication failed: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to duplicate configuration: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

@@ -91,6 +91,13 @@
             >
               Edit All Prices
             </button>
+            <button
+              v-if="!isEditMode && compactRooms.length > 0"
+              @click="duplicateToMultipleBtnClick"
+              class="px-5 py-2 rounded bg-green-600 text-white text-sm hover:bg-green-700"
+            >
+              Duplicate to Multiple
+            </button>
             <template v-else>
               <button
                 @click="cancelEdit"
@@ -191,7 +198,7 @@
           <!-- SURCH TABLE (aligned like Base) -->
           <section
             v-if="room.surch && Object.keys(room.surch || {}).length"
-            style="margin-top: 15px"
+            style="margin-top: 0"
           >
             <div class="overflow-x-auto border rounded-lg">
               <table class="min-w-full text-sm">
@@ -236,6 +243,155 @@
         </div>
       </div>
     </div>
+
+    <!-- Duplicate Modal -->
+    <div v-if="showDuplicateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Duplicate Price Configuration</h3>
+            <button @click="closeDuplicateModal" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="space-y-6">
+            <!-- Source Configuration -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h4 class="text-md font-medium text-gray-900 mb-3">Source Configuration (Copy From)</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Season</label>
+                  <select v-model="duplicateForm.sourceSeason" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">Select Season</option>
+                    <option v-for="s in assignedSeasonTypes" :key="s.id" :value="s.id">
+                      {{ s.name }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Date Type</label>
+                  <select v-model="duplicateForm.sourceDateType" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">Select Date Type</option>
+                    <option v-for="t in assignedDateTypes" :key="t.id" :value="t.id">
+                      {{ t.name }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Room Type (Optional)</label>
+                  <select v-model="duplicateForm.sourceRoomType" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">All Room Types</option>
+                    <option v-for="(name, id) in packageUniqueRoomTypes" :key="id" :value="id">
+                      {{ name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Target Configuration -->
+            <div class="bg-green-50 p-4 rounded-lg">
+              <h4 class="text-md font-medium text-gray-900 mb-3">Target Configuration (Copy To)</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Season</label>
+                  <select v-model="duplicateForm.targetSeason" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">Select Season</option>
+                    <option v-for="s in assignedSeasonTypes" :key="s.id" :value="s.id">
+                      {{ s.name }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Date Type</label>
+                  <select v-model="duplicateForm.targetDateType" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">Select Date Type</option>
+                    <option v-for="t in assignedDateTypes" :key="t.id" :value="t.id">
+                      {{ t.name }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Room Type (Optional)</label>
+                  <select v-model="duplicateForm.targetRoomType" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">All Room Types</option>
+                    <option v-for="(name, id) in packageUniqueRoomTypes" :key="id" :value="id">
+                      {{ name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Target Configurations List -->
+            <div v-if="targetConfigurations.length > 0" class="bg-green-50 p-4 rounded-lg">
+              <h4 class="text-md font-medium text-gray-900 mb-3">Target Configurations to Update</h4>
+              <div class="space-y-2 max-h-48 overflow-y-auto">
+                <div v-for="config in targetConfigurations" :key="`${config.room_type_id}-${config.id}`" class="flex items-center">
+                  <input
+                    type="checkbox"
+                    :id="`target-${config.room_type_id}-${config.id}`"
+                    :value="config"
+                    v-model="duplicateForm.selectedTargetConfigs"
+                    class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  >
+                  <label :for="`target-${config.room_type_id}-${config.id}`" class="ml-2 text-sm text-gray-700">
+                    {{ config.room_type_name }} ({{ config.room_type_capacity }} pax)
+                    <span class="text-gray-500">- ID: {{ config.id }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Duplicate Options -->
+            <div class="bg-yellow-50 p-4 rounded-lg">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Duplicate Options</label>
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input
+                    type="checkbox"
+                    v-model="duplicateForm.includeBaseCharges"
+                    class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    checked
+                  >
+                  <span class="ml-2 text-sm text-gray-700">Include Base Charges</span>
+                </label>
+                <label class="flex items-center">
+                  <input
+                    type="checkbox"
+                    v-model="duplicateForm.includeSurcharges"
+                    class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    checked
+                  >
+                  <span class="ml-2 text-sm text-gray-700">Include Surcharges</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-3 pt-4">
+              <button
+                @click="closeDuplicateModal"
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                @click="executeDuplication"
+                :disabled="!canExecuteDuplication || duplicateLoading"
+                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span v-if="duplicateLoading">Duplicating...</span>
+                <span v-else>Duplicate Configuration</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -266,6 +422,36 @@ const searched = ref(false);
 const isEditMode = ref(false);
 const saveLoading = ref(false);
 
+// Duplicate functionality
+const showDuplicateModal = ref(false);
+const duplicateLoading = ref(false);
+const sourceLoading = ref(false);
+const targetLoading = ref(false);
+const sourceConfigurations = ref([]);
+const targetConfigurations = ref([]);
+const duplicateForm = ref({
+  // Source configuration
+  sourceSeason: "",
+  sourceDateType: "",
+  sourceRoomType: "",
+  selectedSourceConfig: null,
+  
+  // Target configuration
+  targetSeason: "",
+  targetDateType: "",
+  targetRoomType: "",
+  selectedTargetConfigs: [],
+  
+  // Options
+  includeBaseCharges: true,
+  includeSurcharges: true
+});
+
+const duplicateToMultipleBtnClick = () => {
+  useCurrentSearchAsSource();
+  showDuplicateModal.value = true;
+};
+
 // compact rooms for UI: [{ room_type_id, id (package_config_id), base: {...}, surch: {...} }]
 const compactRooms = ref([]);
 
@@ -275,6 +461,35 @@ const roomNamesMap = ref({});
 // computed helpers
 const canSearch = computed(() => !!selectedSeason.value && !!selectedDateType.value);
 const format = (n) => Number(n ?? 0).toFixed(2);
+
+// Duplicate functionality computed properties
+const canLoadSource = computed(() => {
+  return duplicateForm.value.sourceSeason && duplicateForm.value.sourceDateType;
+});
+
+const canLoadTarget = computed(() => {
+  return duplicateForm.value.targetSeason && duplicateForm.value.targetDateType;
+});
+
+const canUseCurrentSearch = computed(() => {
+  return selectedSeason.value && selectedDateType.value && compactRooms.value.length > 0;
+});
+
+const canExecuteDuplication = computed(() => {
+
+  if (duplicateForm.value.sourceSeason == duplicateForm.value.targetSeason 
+      && duplicateForm.value.sourceDateType == duplicateForm.value.targetDateType 
+      && duplicateForm.value.sourceRoomType == duplicateForm.value.targetRoomType) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Source and target cannot be the same",
+      });
+    return false;
+  }
+
+  return duplicateForm.value.targetSeason && duplicateForm.value.targetDateType;
+});
 
 // Generic object->entries helper
 const entriesOf = (obj) => Object.entries(obj ?? {});
@@ -494,6 +709,199 @@ const saveAll = () => {
     .finally(() => {
       saveLoading.value = false;
     });
+};
+
+// ---- Duplicate functionality methods -----------------------------------------
+const closeDuplicateModal = () => {
+  showDuplicateModal.value = false;
+  sourceConfigurations.value = [];
+  targetConfigurations.value = [];
+  duplicateForm.value = {
+    // Source configuration
+    sourceSeason: "",
+    sourceDateType: "",
+    sourceRoomType: "",
+    selectedSourceConfig: null,
+    
+    // Target configuration
+    targetSeason: "",
+    targetDateType: "",
+    targetRoomType: "",
+    selectedTargetConfigs: [],
+    
+    // Options
+    includeBaseCharges: true,
+    includeSurcharges: true
+  };
+};
+
+const loadSourceConfigurations = async () => {
+  if (!canLoadSource.value) return;
+  
+  sourceLoading.value = true;
+  sourceConfigurations.value = [];
+  
+  try {
+    const response = await axios.post(route("configuration-prices.fetchPricesRoomTypes"), {
+      package_id: props.packageId,
+      season_type_id: duplicateForm.value.sourceSeason,
+      date_type_id: duplicateForm.value.sourceDateType,
+      room_type_id: duplicateForm.value.sourceRoomType || undefined,
+    });
+    
+    let rows = response?.data;
+    
+    if (typeof rows === "string") {
+      const sanitized = rows.replace(/,\s*(?=[}\]])/g, "");
+      try {
+        rows = JSON.parse(sanitized);
+      } catch (e) {
+        console.error("Failed to parse API string after sanitizing:", e);
+        rows = [];
+      }
+    }
+    
+    rows = Array.isArray(rows) ? rows : [];
+    
+    sourceConfigurations.value = rows.map((row) => ({
+      id: row?.id ?? 0,
+      room_type_id: row?.room_type_id ?? row?.room_type?.id ?? 0,
+      room_type_capacity: row?.room_type_capacity ?? 0,
+      room_type_name: row?.room_type_name ?? '',
+      base: row?.prices?.[0]?.base ?? {},
+      surch: row?.prices?.[0]?.surch ?? {},
+    }));
+    
+  } catch (error) {
+    console.error("Error loading source configurations:", error);
+    await Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Failed to load source configurations",
+    });
+  } finally {
+    sourceLoading.value = false;
+  }
+};
+
+const useCurrentSearchAsSource = () => {
+  // Set the source form to match current search
+  duplicateForm.value.sourceSeason = selectedSeason.value;
+  duplicateForm.value.sourceDateType = selectedDateType.value;
+  duplicateForm.value.sourceRoomType = selectedRoomType.value;
+  
+  // Use the current compactRooms as source configurations
+  sourceConfigurations.value = compactRooms.value.map((room) => ({
+    id: room.id,
+    room_type_id: room.room_type_id,
+    room_type_capacity: room.room_type_capacity,
+    room_type_name: room.room_type_name,
+    base: room.base,
+    surch: room.surch,
+  }));
+  
+  // Auto-select the first configuration if only one exists
+  if (sourceConfigurations.value.length === 1) {
+    duplicateForm.value.selectedSourceConfig = sourceConfigurations.value[0];
+  }
+};
+
+const loadTargetConfigurations = async () => {
+  if (!canLoadTarget.value) return;
+  
+  targetLoading.value = true;
+  targetConfigurations.value = [];
+  
+  try {
+    const response = await axios.post(route("configuration-prices.fetchPricesRoomTypes"), {
+      package_id: props.packageId,
+      season_type_id: duplicateForm.value.targetSeason,
+      date_type_id: duplicateForm.value.targetDateType,
+      room_type_id: duplicateForm.value.targetRoomType || undefined,
+    });
+    
+    let rows = response?.data;
+    
+    if (typeof rows === "string") {
+      const sanitized = rows.replace(/,\s*(?=[}\]])/g, "");
+      try {
+        rows = JSON.parse(sanitized);
+      } catch (e) {
+        console.error("Failed to parse API string after sanitizing:", e);
+        rows = [];
+      }
+    }
+    
+    rows = Array.isArray(rows) ? rows : [];
+    
+    targetConfigurations.value = rows.map((row) => ({
+      id: row?.id ?? 0,
+      room_type_id: row?.room_type_id ?? row?.room_type?.id ?? 0,
+      room_type_capacity: row?.room_type_capacity ?? 0,
+      room_type_name: row?.room_type_name ?? '',
+      base: row?.prices?.[0]?.base ?? {},
+      surch: row?.prices?.[0]?.surch ?? {},
+    }));
+    
+  } catch (error) {
+    console.error("Error loading target configurations:", error);
+    await Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Failed to load target configurations",
+    });
+  } finally {
+    targetLoading.value = false;
+  }
+};
+
+const executeDuplication = async () => {
+  if (!canExecuteDuplication.value) return;
+  
+  duplicateLoading.value = true;
+  
+  try {
+    // Prepare the duplication payload
+    const payload = {
+      package_id: props.packageId,
+      // source
+      source_season_type_id: duplicateForm.value.sourceSeason,
+      source_date_type_id: duplicateForm.value.sourceDateType,
+      source_room_type_id: duplicateForm.value.sourceRoomType,
+      // target
+      target_season_type_id: duplicateForm.value.targetSeason,
+      target_date_type_id: duplicateForm.value.targetDateType,
+      target_room_type_id: duplicateForm.value.targetRoomType,
+      // includes
+      include_base_charges: duplicateForm.value.includeBaseCharges,
+      include_surcharges: duplicateForm.value.includeSurcharges,
+    };
+
+    // Call the duplication API
+    await axios.post(route("configuration-prices.duplicateToMultiple"), payload);
+    
+    // Show success message
+    await Swal.fire({
+      icon: "success",
+      title: "Duplication Successful",
+      text: `Price configuration has been updated`,
+      timer: 2000,
+      showConfirmButton: false,
+    });
+    
+    // Close modal
+    closeDuplicateModal();
+    
+  } catch (error) {
+    console.error("Duplication error:", error);
+    await Swal.fire({
+      icon: "error",
+      title: "Duplication Failed",
+      text: error.response?.data?.message || "Failed to duplicate price configuration",
+    });
+  } finally {
+    duplicateLoading.value = false;
+  }
 };
 </script>
 

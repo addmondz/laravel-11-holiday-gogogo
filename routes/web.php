@@ -146,6 +146,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/update-room-type-prices', 'updateRoomTypePrices')->name('configuration-prices.updateRoomTypePrices');
         Route::post('/create-price-configuration', 'createPriceConfiguration')->name('configuration-prices.createPriceConfiguration');
         Route::post('/update-price-configuration-by-pax', 'updatePriceConfigurationByPax')->name('configuration-prices.updatePriceConfigurationByPax');
+        Route::post('/duplicate-to-multiple', 'duplicateToMultiple')->name('configuration-prices.duplicateToMultiple');
     });
 
     Route::resource('bookings', BookingController::class)->names([
@@ -224,4 +225,36 @@ Route::prefix('bot-api')->group(function () {
         $metadata = ['baseUrl' => url('/'), 'botPrefix' => 'bot-api', 'firstPackageName' => $firstPackage->name, 'packageRoomsIds' => $firstPackage->loadRoomTypes->pluck('id')];
         return view('api-docs', $metadata);
     })->name('bot-api.docs');
+});
+
+
+use Illuminate\Support\Facades\DB;
+Route::get('/show-duplicate-price-configuration', function () {
+    // Subquery: duplicate keys (the combos appearing > 1 time)
+    $dupKeys = DB::table('package_configurations')
+        ->select('package_id','season_type_id','date_type_id','room_type_id', DB::raw('COUNT(*) as c'))
+        ->groupBy('package_id','season_type_id','date_type_id','room_type_id')
+        ->havingRaw('COUNT(*) > 1');
+
+    // Join back to get all duplicate rows
+    $rows = DB::table('package_configurations as pc')
+        ->joinSub($dupKeys, 'dup', function ($join) {
+            $join->on('pc.package_id','=','dup.package_id')
+                 ->on('pc.season_type_id','=','dup.season_type_id')
+                 ->on('pc.date_type_id','=','dup.date_type_id')
+                 ->on('pc.room_type_id','=','dup.room_type_id');
+        })
+        ->orderBy('pc.package_id')
+        ->orderBy('pc.season_type_id')
+        ->orderBy('pc.date_type_id')
+        ->orderBy('pc.room_type_id')
+        ->get();
+
+    // Optional: just the keys & counts
+    $keys = $dupKeys->get();
+
+    return response()->json([
+        'duplicate_keys' => $keys,   // each item has c = count
+        // 'duplicate_rows' => $rows,   // the actual rows involved
+    ]);
 });

@@ -540,9 +540,9 @@
                 <!-- Step 2: Choose Add-ons -->
                 <div v-if="currentStep === 2">
                     <div class="space-y-6">
-                        <div class="text-center mb-8">
+                        <div class="mb-8">
                             <h3 class="text-2xl font-bold text-gray-900 mb-2">Choose Your Add-ons</h3>
-                            <p class="text-gray-600">Enhance your travel experience with these optional add-ons</p>
+                            <p class="text-gray-600">Please select the add-ons you want to add to your booking, and enter the number of guests for each add-on.</p>
                         </div>
 
                         <!-- Add-ons Grid -->
