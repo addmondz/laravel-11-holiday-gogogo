@@ -748,7 +748,7 @@ class ConfigurationPriceController extends Controller
             'include_surcharges'    => 'boolean',
         ]);
 
-        Log::info('duplicateToMultiple payload', $validated);
+        // Log::info('duplicateToMultiple payload', $validated);
 
         if (
             $validated['source_season_type_id'] === $validated['target_season_type_id'] &&
@@ -835,11 +835,13 @@ class ConfigurationPriceController extends Controller
                 }
 
                 if (!empty($validated['include_base_charges'])) {
-                    $configurationPrices[0]['base'] = $config->configuration_prices[0]['base'] ?? [];
+                    // $configurationPrices[0]['base'] = $config->configuration_prices[0]['base'] ?? [];
+                    $configurationPrices[0]['base'] = $this->compareAndUpdatePriceConfiguration($configurationPrices[0]['base'], $config->configuration_prices[0]['base']);
                 }
 
                 if (!empty($validated['include_surcharges'])) {
-                    $configurationPrices[0]['surch'] = $config->configuration_prices[0]['surch'] ?? [];
+                    // $configurationPrices[0]['surch'] = $config->configuration_prices[0]['surch'] ?? [];
+                    $configurationPrices[0]['surch'] = $this->compareAndUpdatePriceConfiguration($configurationPrices[0]['surch'], $config->configuration_prices[0]['surch']);
                 }
 
                 $targetConfig->update([
@@ -876,5 +878,15 @@ class ConfigurationPriceController extends Controller
                 'message' => 'Failed to duplicate configuration: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function compareAndUpdatePriceConfiguration($target, $source)
+    {
+        foreach ($source as $key => $value) {
+            if (isset($target[$key])) {
+                $target[$key] = $value;
+            }
+        }
+        return $target;
     }
 }
