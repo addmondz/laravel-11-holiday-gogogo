@@ -743,7 +743,7 @@ class ConfigurationPriceController extends Controller
             'target_configurations' => 'required|array|min:1',
             'target_configurations.*.season_type_id' => 'required|exists:season_types,id',
             'target_configurations.*.date_type_id'   => 'required|exists:date_types,id',
-            'target_configurations.*.room_type_id'   => 'required|exists:room_types,id',
+            'target_configurations.*.room_type_id'   => 'nullable|exists:room_types,id',
             // includes
             'include_base_charges'  => 'boolean',
             'include_surcharges'    => 'boolean',
@@ -779,7 +779,7 @@ class ConfigurationPriceController extends Controller
                     $fromRoomTypeId = $sourceConfig->room_type_id;
                     $toSeasonTypeId = (int)$targetConfig['season_type_id'];
                     $toDateTypeId   = (int)$targetConfig['date_type_id'];
-                    $toRoomTypeId   = (int)$targetConfig['room_type_id'];
+                    $toRoomTypeId   = (int)$targetConfig['room_type_id'] ?? null;
 
                     // Skip identical
                     if (
@@ -791,13 +791,17 @@ class ConfigurationPriceController extends Controller
                         continue;
                     }
 
-                    // Check if target already exists
-                    $existingTargetConfig = PackageConfiguration::where([
+                    $filterArray = [
                         'package_id'     => $validated['package_id'],
                         'season_type_id' => $toSeasonTypeId,
                         'date_type_id'   => $toDateTypeId,
-                        'room_type_id'   => $toRoomTypeId,
-                    ])->first();
+                    ];
+                    if ($toRoomTypeId) {
+                        $filterArray['room_type_id'] = $toRoomTypeId;
+                    }
+
+                    // Check if target already exists
+                    $existingTargetConfig = PackageConfiguration::where($filterArray)->first();
 
                     if (!$existingTargetConfig) {
                         // Create if missing
