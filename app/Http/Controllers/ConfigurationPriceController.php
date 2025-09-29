@@ -853,9 +853,8 @@ class ConfigurationPriceController extends Controller
 
             DB::commit();
 
-            Log::info('Duplication completed with some errors' . PHP_EOL . json_encode($errors, JSON_PRETTY_PRINT));
-
             if (count($errors) > 0) {
+            Log::info('Duplication completed with some errors' . PHP_EOL . json_encode($errors, JSON_PRETTY_PRINT));
                 return response()->json([
                     'success'          => false,
                     'message'          => 'Duplication completed with some errors',

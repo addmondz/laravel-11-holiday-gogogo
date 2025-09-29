@@ -245,10 +245,10 @@
     </div>
 
     <!-- Duplicate Modal -->
-    <div v-if="showDuplicateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div v-if="showDuplicateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="margin-top: 0;">
       <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white">
         <div class="mt-3">
-          <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center justify-between">
             <h3 class="text-lg font-medium text-gray-900">Duplicate Price Configuration</h3>
             <button @click="closeDuplicateModal" class="text-gray-400 hover:text-gray-600">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,6 +256,9 @@
               </svg>
             </button>
           </div>
+          <small class="text-gray-500 mb-4 block">
+            If you wish to duplicate to all room types, please select "All Room Types" for both target room type and source room type.
+          </small>
           
           <div class="space-y-6">
             <!-- Source Configuration -->
