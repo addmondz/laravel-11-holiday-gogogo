@@ -117,6 +117,32 @@
           </div>
         </div>
 
+        <div v-if="isEditMode" class="mb-4">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-sm font-medium text-blue-800 mb-1">
+                  Quick Copy Feature
+                </h3>
+                <p class="text-sm text-blue-700">
+                  Click the <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                    <CopyOutlined class="h-3 w-3 mr-1" />
+                    copy icon
+                  </span> next to any price to automatically apply that value to the same row with the same person type.
+                </p>
+                <div class="mt-2 text-xs text-blue-600">
+                  <span class="font-medium">Person types:</span> Adult, Child, Infant
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- PER ROOM -->
         <div
           v-for="room in compactRooms"
@@ -625,9 +651,17 @@ const copyPriceTypeToSameRow = (room, comboKey, slotKey) => {
     Swal.fire({
       toast: true,
       timer: 1200,
+      timerProgressBar: true,
       showConfirmButton: false,
       icon: "success",
-      title: `Copied to ${affected} ${prefix === 'a' ? 'Adult' : prefix === 'c' ? 'Child' : 'Infant'} slot(s)`,
+      title: `Updated ${affected} ${prefix === 'a' ? 'Adult' : prefix === 'c' ? 'Child' : 'Infant'} slot(s).`,
+      text: "Please click on the save button to save the changes.",
+      didOpen: (toast) => {
+        // Pause timer when hovered
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        // Resume timer when mouse leaves
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+      }
     });
   } catch (_) {
     // Swal might not be available in some contexts; ignore
