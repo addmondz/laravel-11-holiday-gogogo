@@ -86,7 +86,6 @@ import SeasonTypes from './packages-show-tabs/SeasonTypes.vue';
 import DateTypesRanges from './packages-show-tabs/DateTypesRanges.vue';
 import PriceConfigurationRoomTypes from './packages-show-tabs/PriceConfigurationRoomTypes.vue';
 import DateBlockers from './packages-show-tabs/DateBlockers.vue';
-import UpdatePriceConfigByPax from './packages-show-tabs/UpdatePriceConfigByPax.vue';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
 import PackageAddOns from './packages-show-tabs/PackageAddOns.vue';
@@ -159,7 +158,6 @@ const tabs = [
     { id: 'price-configuration', name: 'Price Configuration' },
     { id: 'date-blockers', name: 'Date Blockers' },
     { id: 'package-add-ons', name: 'Package Add Ons' },
-    // { id: 'update-price-config-by-pax', name: 'Update Price Config By Pax' }
 ];
 
 const breadcrumbs = computed(() => [
@@ -181,8 +179,6 @@ const currentTabComponent = computed(() => {
             return PriceConfigurationRoomTypes;
         case 'date-blockers':
             return DateBlockers;
-        case 'update-price-config-by-pax':
-            return UpdatePriceConfigByPax;
         case 'package-add-ons':
             return PackageAddOns;
         default:

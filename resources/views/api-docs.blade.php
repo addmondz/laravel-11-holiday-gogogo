@@ -415,7 +415,7 @@
         {
             "room_type_id": 1,
             "adults": 1,
-            "children": 1,
+            "children": 0,
             "infants": 0
         }
     ]
@@ -439,7 +439,7 @@
         {
             "room_type_id": 1,
             "adults": 1,
-            "children": 1,
+            "children": 0,
             "infants": 0
         }
     ]

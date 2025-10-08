@@ -12,6 +12,7 @@ use App\Models\Package;
 use App\Models\RoomType;
 use App\Models\SeasonType;
 use App\Services\CreatePriceConfigurationsService;
+use App\Services\EnsurePriceConfigService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,168 +20,12 @@ use Illuminate\Support\Facades\Log;
 class ConfigurationPriceController extends Controller
 {
     protected CreatePriceConfigurationsService $priceConfigurationService;
+    protected EnsurePriceConfigService $ensurePriceConfigService;
 
-    public function __construct(CreatePriceConfigurationsService $priceConfigurationService)
+    public function __construct(CreatePriceConfigurationsService $priceConfigurationService, EnsurePriceConfigService $ensurePriceConfigService)
     {
         $this->priceConfigurationService = $priceConfigurationService;
-    }
-
-    private function handlePriceConfiguration(array $validated)
-    {
-        $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
-        $configuration = PackageConfiguration::firstOrCreate(
-            [
-                'package_id' => $validated['package_id'],
-                'season_type_id' => $validated['season_type_id'],
-                'date_type_id' => $validated['date_type_id'],
-                'room_type_id' => $validated['room_type']
-            ]
-        );
-
-        // Build configuration_prices JSON
-        $configurationPrices = [];
-
-        foreach (['base_charge' => 'b', 'sur_charge' => 's'] as $inputType => $jsonKey) {
-            if (!isset($validated['prices'][$inputType])) continue;
-
-            foreach ($validated['prices'][$inputType] as $price) {
-                $combination = [
-                    'adults' => $price['number_of_adults'],
-                    'children' => $price['number_of_children']
-                ];
-                if (!in_array($combination, $combinations)) {
-                    continue;
-                }
-
-                $adultKey = "{$combination['adults']}_a_{$combination['children']}_c_a";
-                $childKey = "{$combination['adults']}_a_{$combination['children']}_c_c";
-
-                if (!isset($configurationPrices[$jsonKey])) {
-                    $configurationPrices[$jsonKey] = [];
-                }
-
-                if (!empty($price['adult_price'])) {
-                    $configurationPrices[$jsonKey][$adultKey] = (float) $price['adult_price'];
-                }
-
-                if (!empty($price['child_price'])) {
-                    $configurationPrices[$jsonKey][$childKey] = (float) $price['child_price'];
-                }
-            }
-        }
-
-        $configuration->configuration_prices = json_encode($configurationPrices);
-        $configuration->save();
-
-        return $configuration;
-    }
-
-    private function handlePriceConfigurationNew(array $prices, $package_id, $season_type_id, $date_type_id, $room_type)
-    {
-        $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
-        $configuration = PackageConfiguration::firstOrCreate(
-            [
-                'package_id' => $package_id,
-                'season_type_id' => $season_type_id,
-                'date_type_id' => $date_type_id,
-                'room_type_id' => $room_type
-            ]
-        );
-
-        // Build configuration_prices JSON
-        $configurationPrices = [];
-
-        foreach (['base_charge' => 'b', 'sur_charge' => 's'] as $inputType => $jsonKey) {
-            if (!isset($prices[$inputType])) continue;
-
-            foreach ($prices[$inputType] as $price) {
-                $combination = [
-                    'adults' => $price['number_of_adults'],
-                    'children' => $price['number_of_children'],
-                    'infants' => $price['number_of_infants']
-                ];
-                if (!in_array($combination, $combinations)) {
-                    continue;
-                }
-
-                $adultKey = "{$combination['adults']}_a_{$combination['children']}_c_{$combination['infants']}_i_a";
-                $childKey = "{$combination['adults']}_a_{$combination['children']}_c_{$combination['infants']}_i_c";
-                $infantKey = "{$combination['adults']}_a_{$combination['children']}_c_{$combination['infants']}_i_i";
-
-                if (!isset($configurationPrices[$jsonKey])) {
-                    $configurationPrices[$jsonKey] = [];
-                }
-
-                if (!empty($price['adult_price'])) {
-                    $configurationPrices[$jsonKey][$adultKey] = (float) $price['adult_price'];
-                }
-
-                if (!empty($price['child_price'])) {
-                    $configurationPrices[$jsonKey][$childKey] = (float) $price['child_price'];
-                }
-
-                if (!empty($price['infant_price'])) {
-                    $configurationPrices[$jsonKey][$infantKey] = (float) $price['infant_price'];
-                }
-            }
-        }
-
-        $configuration->configuration_prices = json_encode($configurationPrices);
-        $configuration->save();
-
-        return $configuration;
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'package_id' => 'required|exists:packages,id',
-            'season_type_id' => 'required|exists:season_types,id',
-            'date_type_id' => 'required|exists:date_types,id',
-            'room_type' => 'required|exists:room_types,id',
-            'prices' => 'required|array',
-        ]);
-
-        try {
-            DB::beginTransaction();
-            $this->handlePriceConfiguration($validated);
-            DB::commit();
-            return back()->with('success', 'Configuration prices created successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('ConfigurationPrice store error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
-            ]);
-            return back()->with('error', 'Error creating configuration prices: ' . $e->getMessage());
-        }
-    }
-
-    public function updatePrices(Request $request)
-    {
-        $validated = $request->validate([
-            'package_id' => 'required|exists:packages,id',
-            'season_type_id' => 'required|exists:season_types,id',
-            'date_type_id' => 'required|exists:date_types,id',
-            'room_type' => 'required|exists:room_types,id',
-            'prices' => 'required|array',
-        ]);
-
-        try {
-            DB::beginTransaction();
-            $this->handlePriceConfiguration($validated);
-            DB::commit();
-            return response()->json(['message' => 'Configuration prices updated successfully.']);
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            Log::error('ConfigurationPrice update error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
-            ]);
-            return response()->json(['message' => 'Error updating configuration prices: ' . $e->getMessage()], 500);
-        }
+        $this->ensurePriceConfigService = $ensurePriceConfigService;
     }
 
     public function fetchPricesSearchIndex(Request $request)
@@ -288,9 +133,7 @@ class ConfigurationPriceController extends Controller
 
         $roomTypeIds = RoomType::where('package_id', $request->package_id)->pluck('id');
 
-        $this->ensureItHasAllCombinations($query, $request->all(), $roomTypeIds);
-
-        $this->ensureOnlyOnePriceConfiguration($query, $request->all(), $roomTypeIds);
+        $this->ensurePriceConfigService->syncPriceConfigurations($request->package_id, $request->season_type_id, $request->date_type_id, $roomTypeIds);
 
         $configurations = $query->get();
         // Log::info('configurations:' . json_encode($configurations, JSON_PRETTY_PRINT));
@@ -341,8 +184,8 @@ class ConfigurationPriceController extends Controller
                 $packageConfiguration = PackageConfiguration::find($room['package_configuration_id']);
                 $pricesArray = [
                     [
-                        'base' => $room['base'],
-                        'surch' => $room['surch'],
+                        AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE => $room[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE],
+                        AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR => $room[AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR],
                     ]
                 ];
                 // $packageConfiguration->configuration_prices = json_encode($pricesArray);
@@ -360,92 +203,6 @@ class ConfigurationPriceController extends Controller
             ]);
             return response()->json(['message' => 'Error updating configuration prices: ' . $e->getMessage()], 500);
         }
-    }
-
-    public function updatePriceConfigurationByPax(Request $request)
-    {
-        $validated = $request->validate([
-            'package_id'           => 'required|exists:packages,id',
-            'adult'                => 'required|integer|min:0',
-            'child'                => 'required|integer|min:0',
-            'infant'               => 'required|integer|min:0',
-            'adult_base_charge'    => 'required|numeric|min:0',
-            'child_base_charge'    => 'required|numeric|min:0',
-            'infant_base_charge'   => 'required|numeric|min:0',
-            'adult_surcharge'      => 'required|numeric|min:0',
-            'child_surcharge'      => 'required|numeric|min:0',
-            'infant_surcharge'     => 'required|numeric|min:0',
-        ]);
-
-        $roomTypes = RoomType::where('package_id', $validated['package_id'])->get();
-
-        $season_type_ids = Season::where('package_id', $validated['package_id'])->distinct('season_type_id')->pluck('season_type_id');
-        $seasonTypes = SeasonType::whereIn('id', $season_type_ids)->get();
-
-        $date_type_ids = DateTypeRange::where('package_id', $validated['package_id'])->distinct('date_type_id')->pluck('date_type_id');
-        $dateTypes = DateType::whereIn('id', $date_type_ids)->get();
-
-        $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
-        $baseKey = AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE;
-        $surKey = AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE;
-
-        foreach ($roomTypes as $room) {
-            foreach ($seasonTypes as $season) {
-                foreach ($dateTypes as $date) {
-                    $exists = PackageConfiguration::where([
-                        'package_id' => $validated['package_id'],
-                        'room_type_id' => $room->id,
-                        'season_type_id' => $season->id,
-                        'date_type_id' => $date->id,
-                    ])->first();
-
-                    if (!$exists) {
-                        $prices = [];
-
-                        foreach ($combinations as $c) {
-                            $k = "{$c['adults']}_a_{$c['children']}_c_{$c['infants']}_i";
-                            $prices[$baseKey]["{$k}_a"] = 0;
-                            $prices[$baseKey]["{$k}_c"] = 0;
-                            $prices[$baseKey]["{$k}_i"] = 0;
-                            $prices[$surKey]["{$k}_a"] = 0;
-                            $prices[$surKey]["{$k}_c"] = 0;
-                            $prices[$surKey]["{$k}_i"] = 0;
-                        }
-
-                        $new = PackageConfiguration::create([
-                            'package_id' => $validated['package_id'],
-                            'room_type_id' => $room->id,
-                            'season_type_id' => $season->id,
-                            'date_type_id' => $date->id,
-                            'configuration_prices' => json_encode($prices),
-                        ]);
-
-                        $newlyCreatedConfigs[] = $new;
-                    }
-                }
-            }
-        }
-
-        $adultKey = "{$validated['adult']}_a_{$validated['child']}_c_{$validated['infant']}_i_a";
-        $childKey = "{$validated['adult']}_a_{$validated['child']}_c_{$validated['infant']}_i_c";
-        $infantKey = "{$validated['adult']}_a_{$validated['child']}_c_{$validated['infant']}_i_i";
-
-        $packageConfigurations = PackageConfiguration::where('package_id', $validated['package_id'])->get();
-
-        foreach ($packageConfigurations as $packageConfiguration) {
-            $price = json_decode($packageConfiguration->configuration_prices, true);
-            $price['b'][$adultKey] = $validated['adult_base_charge'];
-            $price['b'][$childKey] = $validated['child_base_charge'];
-            $price['b'][$infantKey] = $validated['infant_base_charge'];
-            $price['s'][$adultKey] = $validated['adult_surcharge'];
-            $price['s'][$childKey] = $validated['child_surcharge'];
-            $price['s'][$infantKey] = $validated['infant_surcharge'];
-            $packageConfiguration->configuration_prices = json_encode($price);
-            $packageConfiguration->save();
-        }
-
-        // You can now use $validated safely
-        return response()->json(['message' => 'Configuration prices updated successfully.']);
     }
 
     public function createPriceConfiguration(Request $request)
@@ -470,21 +227,6 @@ class ConfigurationPriceController extends Controller
         );
 
         return response()->json(['message' => 'Configuration prices created successfully.']);
-    }
-
-
-    public function ensureOnlyOnePriceConfiguration($query, $requestParam, $roomTypeIds)
-    {
-        $cloneQuery = $query->clone();
-        $request_room_type_id = $requestParam['room_type_id'] ?? null;
-        $configToDisplay = $request_room_type_id ? 1 : $roomTypeIds->count();
-
-        if ($cloneQuery->get()->count() > $configToDisplay) {
-            Log::info('Need cleaning');
-            $this->initializePriceConfigurationsCleaning();
-        } else {
-            // Log::info('No need cleaning');
-        }
     }
 
     public function initializePriceConfigurationsCleaning()
@@ -537,81 +279,6 @@ class ConfigurationPriceController extends Controller
         Log::info('initializePriceConfigurationsCleaning END');
     }
 
-
-    public function ensureItHasAllCombinations($query, $requestParam, $roomTypeIds)
-    {
-        // Clone the query with the PHP operator (not a method)
-        $cloneQuery = clone $query;
-
-        // Get optional room_type_id from request/array
-        $requestRoomTypeId = is_array($requestParam)
-            ? ($requestParam['room_type_id'] ?? null)
-            : $requestParam->input('room_type_id');
-
-        // Target set: either the single requested id, or all provided ids
-        $targetIds = $requestRoomTypeId
-            ? collect([(int) $requestRoomTypeId])
-            : $roomTypeIds->map(fn($id) => (int) $id)->unique()->values();
-
-        $configToDisplay = $targetIds->count();
-
-        // Fetch existing room_type_id values from the same (cloned) scope
-        $existing = (clone $cloneQuery)
-            ->get(['room_type_id'])
-            ->pluck('room_type_id')
-            ->map(fn($id) => (int) $id)
-            ->unique()
-            ->values();
-
-        // Compute what’s missing (value-based, not key-based)
-        $missing = $targetIds->diff($existing)->values();
-
-        // Structured logs
-        // Log::info(
-        //     'ensureItHasAllCombinationsCheck ' . PHP_EOL .
-        //     json_encode([
-        //         'expected_count'         => $configToDisplay,
-        //         'existing_count'         => $existing->count(),
-        //         'target_ids'             => $targetIds->all(),
-        //         'existing_room_type_ids' => $existing->all(),
-        //         'missing_room_type_ids'  => $missing->all(),
-        //     ], JSON_PRETTY_PRINT)
-        // );
-
-        if ($missing->isEmpty()) {
-            // Log::info('All combinations present.');
-            return;
-        }
-
-        $packageId = $requestParam['package_id'] ?? null;
-        $seasonTypeId = $requestParam['season_type_id'] ?? null;
-        $dateTypeId = $requestParam['date_type_id'] ?? null;
-
-        Log::info(
-            'Need to create missing combinations' . PHP_EOL .
-                json_encode([
-                    'count'          => $missing->count(),
-                    'room_type_ids'  => $missing->all(),
-                    'package_id'     => $packageId,
-                    'season_type_id' => $seasonTypeId,
-                    'date_type_id'   => $dateTypeId,
-                ], JSON_PRETTY_PRINT)
-        );
-
-        $roomTypes = RoomType::whereIn('id', $missing->all())->get();
-        $seasonType = SeasonType::find($seasonTypeId);
-        $dateType = DateType::find($dateTypeId);
-
-        $this->priceConfigurationService->createPriceConfigurationsService(
-            Package::find($packageId),
-            $roomTypes,
-            [$seasonType],
-            [$dateType],
-            false
-        );
-
-        Log::info('Missing combinations created successfully.');
-    }
 
     public function fetchPricesRoomTypesTest(Request $request)
     {
@@ -810,7 +477,7 @@ class ConfigurationPriceController extends Controller
                         $existingTargetConfig->season_type_id = $toSeasonTypeId;
                         $existingTargetConfig->date_type_id   = $toDateTypeId;
                         $existingTargetConfig->room_type_id   = $toRoomTypeId;
-                        $existingTargetConfig->configuration_prices = [['base' => [], 'surch' => []]];
+                        $existingTargetConfig->configuration_prices = [[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE => [], AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR => []]];
                         $existingTargetConfig->save();
                     }
 
@@ -818,15 +485,15 @@ class ConfigurationPriceController extends Controller
                     $configurationPrices = $existingTargetConfig->configuration_prices;
 
                     if (empty($configurationPrices)) {
-                        $configurationPrices = [['base' => [], 'surch' => []]];
+                        $configurationPrices = [[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE => [], AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR => []]];
                     }
 
                     if (!empty($validated['include_base_charges'])) {
-                        $configurationPrices[0]['base'] = $this->compareAndUpdatePriceConfiguration($configurationPrices[0]['base'], $sourceConfig->configuration_prices[0]['base']);
+                        $configurationPrices[0][AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE] = $this->compareAndUpdatePriceConfiguration($configurationPrices[0][AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE], $sourceConfig->configuration_prices[0][AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE]);
                     }
 
                     if (!empty($validated['include_surcharges'])) {
-                        $configurationPrices[0]['surch'] = $this->compareAndUpdatePriceConfiguration($configurationPrices[0]['surch'], $sourceConfig->configuration_prices[0]['surch']);
+                        $configurationPrices[0][AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR] = $this->compareAndUpdatePriceConfiguration($configurationPrices[0][AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR], $sourceConfig->configuration_prices[0][AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR]);
                     }
 
                     $existingTargetConfig->update([

@@ -225,7 +225,7 @@
                                 </div>
 
                                 <!-- Room Types Section -->
-                                <div class="mt-6 border-t border-gray-600 pt-6">
+                                <div class="mt-6 border-t border-gray-600 pt-6 hidden">
                                     <div class="flex justify-between items-center mb-4">
                                         <h3 class="text-lg font-medium text-gray-900">Room Types</h3>
                                         <button

@@ -22,7 +22,7 @@ class DummySeeder extends Seeder
 {
     protected CreatePriceConfigurationsService $priceConfigurationService;
     public $enabledDefaultSeasonAndDateType;
-    public $dummyPackagesCount = 5;
+    public $dummyPackagesCount = 0;
     public $dummyOtherPackagesCount = 11;
     public $enableDateBlockerDummyData = false;
 

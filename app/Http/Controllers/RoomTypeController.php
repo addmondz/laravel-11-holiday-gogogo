@@ -11,13 +11,16 @@ use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use App\Services\CreatePriceConfigurationsService;
+use App\Services\EnsurePriceConfigService;
 
 class RoomTypeController extends Controller
 {
     protected CreatePriceConfigurationsService $priceConfigurationService;
-    public function __construct(CreatePriceConfigurationsService $priceConfigurationService)
+    protected EnsurePriceConfigService $ensurePriceConfigService;
+    public function __construct(CreatePriceConfigurationsService $priceConfigurationService, EnsurePriceConfigService $ensurePriceConfigService)
     {
         $this->priceConfigurationService = $priceConfigurationService;
+        $this->ensurePriceConfigService = $ensurePriceConfigService;
     }
 
     public function index()
@@ -54,7 +57,7 @@ class RoomTypeController extends Controller
         $validated['images'] = $images;
 
         $roomType = RoomType::create($validated);
-        $this->priceConfigurationService->createPriceConfigurationsService(Package::find($validated['package_id']), [$roomType], [], []);
+        $this->ensurePriceConfigService->syncPriceConfigurationsBySeasonsAndDateTypes($validated['package_id'], [], []);
 
         // If the request has a return_to_package parameter, redirect back to the package page
         if ($request->has('return_to_package')) {
@@ -83,6 +86,9 @@ class RoomTypeController extends Controller
 
     public function update(Request $request, RoomType $roomType)
     {
+        $currentRoomPax = $roomType->max_occupancy;
+        $newRoomPax = (int) $request->max_occupancy;
+
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -118,6 +124,10 @@ class RoomTypeController extends Controller
             $validated['images'] = array_values($currentImages); // Reindex array
 
             $roomType->update($validated);
+
+            if ($currentRoomPax != $newRoomPax) {
+                $this->priceConfigurationService->updateConfigsToPaxAndFill($roomType->id, $newRoomPax);
+            }
 
             // If the request has a return_to_package parameter, redirect back to the package page
             if ($request->has('return_to_package')) {

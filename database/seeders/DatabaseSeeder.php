@@ -94,7 +94,7 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call([
-            CustomDummySeeder::class,
+            // CustomDummySeeder::class,
             DummySeeder::class,
             SstConfigurationSeeder::class,
         ]);

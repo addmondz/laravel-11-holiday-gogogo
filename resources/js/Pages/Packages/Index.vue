@@ -133,12 +133,12 @@
                                             >
                                                 View
                                             </Link>
-                                            <Link
+                                            <!-- <Link
                                                 :href="route('packages.edit', pkg.id)"
                                                 class="text-indigo-600 hover:text-indigo-900 mr-3"
                                             >
                                                 Edit
-                                            </Link>
+                                            </Link> -->
                                             <button
                                                 @click="deletePackage(pkg.id)"
                                                 class="text-red-600 hover:text-red-900 mr-3"

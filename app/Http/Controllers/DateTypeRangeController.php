@@ -6,6 +6,7 @@ use App\Models\DateType;
 use App\Models\DateTypeRange;
 use App\Models\Package;
 use App\Services\CreatePriceConfigurationsService;
+use App\Services\EnsurePriceConfigService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,10 +14,12 @@ use Inertia\Inertia;
 class DateTypeRangeController extends Controller
 {
     protected CreatePriceConfigurationsService $priceConfigurationService;
+    protected EnsurePriceConfigService $ensurePriceConfigService;
 
-    public function __construct(CreatePriceConfigurationsService $priceConfigurationService)
+    public function __construct(CreatePriceConfigurationsService $priceConfigurationService, EnsurePriceConfigService $ensurePriceConfigService)
     {
         $this->priceConfigurationService = $priceConfigurationService;
+        $this->ensurePriceConfigService = $ensurePriceConfigService;
     }
 
     public function index()
@@ -35,36 +38,36 @@ class DateTypeRangeController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'date_type_id' => 'required|exists:date_types,id',
-            'start_date'   => 'required|date',
-            'end_date'     => 'required|date|after_or_equal:start_date',
-            'package_id'   => 'required|exists:packages,id'
-        ], [
-            'end_date.after_or_equal' => 'End date must be the same as or after the start date.',
-        ]);
+    // public function store(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'date_type_id' => 'required|exists:date_types,id',
+    //         'start_date'   => 'required|date',
+    //         'end_date'     => 'required|date|after_or_equal:start_date',
+    //         'package_id'   => 'required|exists:packages,id'
+    //     ], [
+    //         'end_date.after_or_equal' => 'End date must be the same as or after the start date.',
+    //     ]);
 
-        if ($message = $this->getOverlapMessage($validated['start_date'], $validated['end_date'], $validated['package_id'])) {
-            return back()->withErrors(['date_range' => $message]);
-        }
+    //     if ($message = $this->getOverlapMessage($validated['start_date'], $validated['end_date'], $validated['package_id'])) {
+    //         return back()->withErrors(['date_range' => $message]);
+    //     }
 
-        DateTypeRange::create($validated);
+    //     DateTypeRange::create($validated);
 
-        $dateType = DateType::find($validated['date_type_id']);
-        $this->priceConfigurationService->createPriceConfigurationsService(
-            Package::find($validated['package_id']),
-            [],
-            [],
-            [$dateType],
-            false
-        );
+    //     $dateType = DateType::find($validated['date_type_id']);
+    //     $this->priceConfigurationService->createPriceConfigurationsService(
+    //         Package::find($validated['package_id']),
+    //         [],
+    //         [],
+    //         [$dateType],
+    //         false
+    //     );
 
-        return $request->has('return_to_package')
-            ? redirect()->route('packages.show', $request->package_id)->with('success', 'Date range created successfully.')
-            : redirect()->route('date-type-ranges.index')->with('success', 'Date range created successfully.');
-    }
+    //     return $request->has('return_to_package')
+    //         ? redirect()->route('packages.show', $request->package_id)->with('success', 'Date range created successfully.')
+    //         : redirect()->route('date-type-ranges.index')->with('success', 'Date range created successfully.');
+    // }
 
     public function show(DateTypeRange $dateTypeRange)
     {
@@ -190,14 +193,7 @@ class DateTypeRangeController extends Controller
                     'package_id' => $request->package_id
                 ]);
 
-                $dateType = DateType::find($range['date_type_id']);
-                $this->priceConfigurationService->createPriceConfigurationsService(
-                    Package::find($request->package_id),
-                    [],
-                    [],
-                    [$dateType],
-                    false
-                );
+                $this->ensurePriceConfigService->syncPriceConfigurationsBySeasonsAndDateTypes($request->package_id, [], [$range['date_type_id']]);
 
                 $results['success'][] = [
                     'index' => $index,

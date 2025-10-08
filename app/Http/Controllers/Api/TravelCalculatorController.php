@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Constants\AppConstants;
 use App\Http\Controllers\Controller;
 use App\Models\DateBlocker;
 use App\Models\DateType;
@@ -299,11 +300,11 @@ class TravelCalculatorController extends Controller
     public function calculatePriceByParams($packageId, $rooms, $startDate, $endDate, $isFromBot = false, $addOns = [])
     {
         $package = Package::find($packageId);
-    
+
         try {
             $startDate = Carbon::parse($startDate);
             $endDate   = Carbon::parse($endDate);
-    
+
             // 1) Date blockers per room
             foreach ($rooms as $room) {
                 $dateBlockers = DateBlocker::where('package_id', $packageId)
@@ -311,7 +312,7 @@ class TravelCalculatorController extends Controller
                     ->where('end_date', '>=', $startDate)
                     ->where('room_type_id', $room['room_type'])
                     ->get();
-    
+
                 $blockedDates = [];
                 foreach ($dateBlockers as $blocker) {
                     $period = CarbonPeriod::create($blocker->start_date, $blocker->end_date);
@@ -319,28 +320,28 @@ class TravelCalculatorController extends Controller
                         $blockedDates[] = $date->toDateString();
                     }
                 }
-    
+
                 if (!empty($blockedDates = array_unique($blockedDates))) {
                     throw new \Exception('Sorry, the selected dates and room type combination are not available. Please try to select another room type or contact us for more information.');
                 }
             }
-    
+
             $allNights = [];
             $roomBreakdowns = [];
-    
+
             foreach ($rooms as $roomIndex => $room) {
                 $roomTypeId = $room['room_type'];
                 $adults     = (int)($room['adults']   ?? 0);
                 $children   = (int)($room['children'] ?? 0);
                 $infants    = (int)($room['infants']  ?? 0);
-    
+
                 $roomType   = RoomType::find($roomTypeId);
                 $totalGuests = $adults + $children + $infants;
-    
+
                 if ($totalGuests > $roomType->max_occupancy) {
                     throw new \Exception('The selected room type id `' . $roomTypeId . '` and name `' . $roomType->name . '` has a maximum capacity of `' . $roomType->max_occupancy . '` guests. Please select a different room type.');
                 }
-    
+
                 // First-night base lump sum (computed from per-guest a1..aN / c1..cN / i1..iN)
                 $firstNightBase = [
                     'adult'      => 0.0,   // average per adult (for UI)
@@ -349,20 +350,20 @@ class TravelCalculatorController extends Controller
                     'total'      => 0.0,   // exact lump-sum base
                     'adult_list' => [],    // per-guest actual list
                     'child_list' => [],
-                    'infant_list'=> [],
+                    'infant_list' => [],
                     '_captured'  => false,
                 ];
-    
+
                 $roomNightsRaw = [];
                 $loopDate = $startDate->copy();
-    
+
                 while ($loopDate->lt($endDate)) {
                     // 2) Resolve date type (range -> fallback weekday/weekend with package override)
                     $dateTypeRange = DateTypeRange::where('start_date', '<=', $loopDate)
                         ->where('end_date', '>=', $loopDate)
                         ->where('package_id', $packageId)
                         ->first();
-    
+
                     if ($dateTypeRange) {
                         $dateType = $dateTypeRange->dateType;
                     } else {
@@ -377,13 +378,13 @@ class TravelCalculatorController extends Controller
                             throw new \Exception("Date type not found for {$loopDate->format('Y-m-d')}");
                         }
                     }
-    
+
                     // 3) Resolve season
                     $season = Season::where('start_date', '<=', $loopDate)
                         ->where('end_date', '>=', $loopDate)
                         ->where('package_id', $packageId)
                         ->first();
-    
+
                     if ($season) {
                         $seasonType = $season->type;
                     } elseif ($this->enabledDefaultSeasonAndDateType) {
@@ -395,7 +396,7 @@ class TravelCalculatorController extends Controller
                     } else {
                         throw new \Exception("The selected dates and room type combination are not available. Please contact us for more information.");
                     }
-    
+
                     // 4) Find package config
                     $packageConfig = PackageConfiguration::where([
                         'package_id'     => $packageId,
@@ -403,84 +404,84 @@ class TravelCalculatorController extends Controller
                         'date_type_id'   => $dateType->id,
                         'room_type_id'   => $roomTypeId
                     ])->first();
-    
+
                     if (!$packageConfig) {
                         Log::error("Package configuration not found for {$loopDate->format('Y-m-d')} (pkg {$packageId})");
                         return response()->json([
                             'success'  => false,
                             'message'  => "Package configuration not found for {$loopDate->format('Y-m-d')}",
-                            'breakdown'=> null,
+                            'breakdown' => null,
                             'total'    => 0
                         ]);
                     }
-    
+
                     // 5) Decode prices (support new & legacy)
                     $comboKey = "{$adults}_a_{$children}_c_{$infants}_i";
                     $decoded  = is_array($packageConfig->configuration_prices) ? $packageConfig->configuration_prices : json_decode($packageConfig->configuration_prices ?? '[]', true);
-    
+
                     // Normalize payload
-                    if (is_array($decoded) && isset($decoded[0]) && is_array($decoded[0]) && (isset($decoded[0]['base']) || isset($decoded[0]['surch']))) {
+                    if (is_array($decoded) && isset($decoded[0]) && is_array($decoded[0]) && (isset($decoded[0][AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE]) || isset($decoded[0][AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR]))) {
                         $payload = $decoded[0]; // new format with outer array
-                    } elseif (is_array($decoded) && (isset($decoded['base']) || isset($decoded['surch']))) {
+                    } elseif (is_array($decoded) && (isset($decoded[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE]) || isset($decoded[AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR]))) {
                         $payload = $decoded;    // new format without outer array
                     } elseif (is_array($decoded) && (isset($decoded['b']) || isset($decoded['s']))) {
-                        $payload = ['base' => $decoded['b'] ?? [], 'surch' => $decoded['s'] ?? []]; // legacy
+                        $payload = [AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE => $decoded['b'] ?? [], AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR => $decoded['s'] ?? []]; // legacy
                     } else {
-                        $payload = ['base' => [], 'surch' => []];
+                        $payload = [AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE => [], AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR => []];
                     }
-    
-                    $baseEntry  = $payload['base'][$comboKey]  ?? null;
-                    $surchEntry = $payload['surch'][$comboKey] ?? null;
-    
+
+                    $baseEntry  = $payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE][$comboKey]  ?? null;
+                    $surchEntry = $payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR][$comboKey] ?? null;
+
                     // Legacy fallback suffix keys
-                    if (!$baseEntry && (isset($payload['base'][$comboKey . '_a']) || isset($payload['base'][$comboKey . '_c']) || isset($payload['base'][$comboKey . '_i']))) {
+                    if (!$baseEntry && (isset($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE][$comboKey . '_a']) || isset($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE][$comboKey . '_c']) || isset($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE][$comboKey . '_i']))) {
                         $baseEntry = [
-                            'a1' => (float)($payload['base'][$comboKey . '_a'] ?? 0),
-                            'c1' => (float)($payload['base'][$comboKey . '_c'] ?? 0),
-                            'i1' => (float)($payload['base'][$comboKey . '_i'] ?? 0),
+                            'a1' => (float)($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE][$comboKey . '_a'] ?? 0),
+                            'c1' => (float)($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE][$comboKey . '_c'] ?? 0),
+                            'i1' => (float)($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE][$comboKey . '_i'] ?? 0),
                         ];
                     }
-                    if (!$surchEntry && (isset($payload['surch'][$comboKey . '_a']) || isset($payload['surch'][$comboKey . '_c']) || isset($payload['surch'][$comboKey . '_i']))) {
+                    if (!$surchEntry && (isset($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR][$comboKey . '_a']) || isset($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR][$comboKey . '_c']) || isset($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR][$comboKey . '_i']))) {
                         $surchEntry = [
-                            'a' => (float)($payload['surch'][$comboKey . '_a'] ?? 0),
-                            'c' => (float)($payload['surch'][$comboKey . '_c'] ?? 0),
-                            'i' => (float)($payload['surch'][$comboKey . '_i'] ?? 0),
+                            'a' => (float)($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR][$comboKey . '_a'] ?? 0),
+                            'c' => (float)($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR][$comboKey . '_c'] ?? 0),
+                            'i' => (float)($payload[AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR][$comboKey . '_i'] ?? 0),
                         ];
                     }
-    
+
                     if (!$baseEntry || !$surchEntry) {
                         Log::error("Prices not found for combo {$comboKey} in configuration {$packageConfig->id}");
                         return response()->json([
                             'success'  => false,
                             'message'  => "Prices not found for the selected guests/room combination.",
-                            'breakdown'=> null,
+                            'breakdown' => null,
                             'total'    => 0
                         ]);
                     }
-    
+
                     // 6) Build per-guest base arrays (a1..aN / c1..cN / i1..iN), exact first-night lump sum
-                    $mkList = static function(array $entry, string $prefix, int $count): array {
+                    $mkList = static function (array $entry, string $prefix, int $count): array {
                         $out = [];
                         for ($i = 1; $i <= $count; $i++) {
                             $out[] = (float)($entry[$prefix . $i] ?? 0);
                         }
                         return $out;
                     };
-    
+
                     $adultBaseList  = $mkList($baseEntry, 'a', $adults);
                     $childBaseList  = $mkList($baseEntry, 'c', $children);
                     $infantBaseList = $mkList($baseEntry, 'i', $infants);
-    
+
                     $adultBaseTotal  = array_sum($adultBaseList);
                     $childBaseTotal  = array_sum($childBaseList);
                     $infantBaseTotal = array_sum($infantBaseList);
                     $lumpSumBase     = round($adultBaseTotal + $childBaseTotal + $infantBaseTotal, 2);
-    
+
                     // Per-night surcharge (flat per pax type)
                     $surAdult  = (float)($surchEntry['a'] ?? 0);
                     $surChild  = (float)($surchEntry['c'] ?? 0);
                     $surInfant = (float)($surchEntry['i'] ?? 0);
-    
+
                     // Capture first-night base once for this room
                     if (!$firstNightBase['_captured']) {
                         // store averages for UI (price × qty) compatibility
@@ -493,7 +494,7 @@ class TravelCalculatorController extends Controller
                         $firstNightBase['infant_list'] = $infantBaseList;
                         $firstNightBase['_captured']   = true;
                     }
-    
+
                     // Build night row (base totals will be split later; surcharge is nightly)
                     $nightData = [
                         'date'        => $loopDate->format('Y-m-d'),
@@ -505,7 +506,7 @@ class TravelCalculatorController extends Controller
                         'adults'      => $adults,
                         'children'    => $children,
                         'infants'     => $infants,
-    
+
                         'base_charge' => [
                             // keep avg "price" for UI compatibility + expose per_guest list (exact)
                             'adult'  => [
@@ -528,63 +529,63 @@ class TravelCalculatorController extends Controller
                             ],
                             'total'  => 0.0,
                         ],
-    
+
                         'surcharge' => [
                             'adult'  => ['price' => $surAdult,  'quantity' => $adults,   'total' => round($surAdult  * $adults,   2)],
                             'child'  => ['price' => $surChild,  'quantity' => $children, 'total' => round($surChild  * $children, 2)],
                             'infant' => ['price' => $surInfant, 'quantity' => $infants,  'total' => round($surInfant * $infants,  2)],
                             'total'  => round(($surAdult * $adults) + ($surChild * $children) + ($surInfant * $infants), 2),
                         ],
-    
+
                         'total' => 0.0,
                     ];
-    
+
                     $roomNightsRaw[] = $nightData;
                     $loopDate->addDay();
                 }
-    
+
                 // 7) Split first-night lump-sum base evenly across the nights (for display only)
                 $nightsCount = max(count($roomNightsRaw), 1);
-    
+
                 $baseAdultTotal  = round($firstNightBase['adult']  * $adults,   2);
                 $baseChildTotal  = round($firstNightBase['child']  * $children, 2);
                 $baseInfantTotal = round($firstNightBase['infant'] * $infants,  2);
-    
+
                 // Use exact lists to recompute component totals (avoid tiny rounding drift)
                 if (!empty($firstNightBase['adult_list']))  $baseAdultTotal  = round(array_sum($firstNightBase['adult_list']), 2);
                 if (!empty($firstNightBase['child_list']))  $baseChildTotal  = round(array_sum($firstNightBase['child_list']), 2);
                 if (!empty($firstNightBase['infant_list'])) $baseInfantTotal = round(array_sum($firstNightBase['infant_list']), 2);
-    
+
                 $evenAdult  = round($baseAdultTotal  / $nightsCount, 2);
                 $evenChild  = round($baseChildTotal  / $nightsCount, 2);
                 $evenInfant = round($baseInfantTotal / $nightsCount, 2);
-    
+
                 $adultRem   = round($baseAdultTotal  - ($evenAdult  * $nightsCount), 2);
                 $childRem   = round($baseChildTotal  - ($evenChild  * $nightsCount), 2);
                 $infantRem  = round($baseInfantTotal - ($evenInfant * $nightsCount), 2);
-    
+
                 $roomNights = [];
                 foreach ($roomNightsRaw as $idx => $night) {
                     $isLast = ($idx === $nightsCount - 1);
-    
+
                     $nightAdult  = $evenAdult  + ($isLast ? $adultRem  : 0.0);
                     $nightChild  = $evenChild  + ($isLast ? $childRem  : 0.0);
                     $nightInfant = $evenInfant + ($isLast ? $infantRem : 0.0);
-    
+
                     $night['base_charge']['adult']['total']  = $nightAdult;
                     $night['base_charge']['child']['total']  = $nightChild;
                     $night['base_charge']['infant']['total'] = $nightInfant;
                     $night['base_charge']['total'] = round($nightAdult + $nightChild + $nightInfant, 2);
-    
+
                     $night['total'] = round($night['base_charge']['total'] + ($night['surcharge']['total'] ?? 0), 2);
-    
+
                     $roomNights[] = $night;
                     $allNights[]  = $night; // global AFTER split
                 }
-    
+
                 // 8) Room summary
                 $sum = fn($key) => array_sum(array_map(fn($n) => floatval(data_get($n, $key)), $roomNights));
-    
+
                 $roomBreakdowns[] = [
                     'room_type_name' => $roomType->name,
                     'room_type'      => $roomTypeId,
@@ -636,34 +637,34 @@ class TravelCalculatorController extends Controller
                     ]
                 ];
             }
-    
+
             // 9) Overall summary + guest breakdown (use exact per-guest base)
             $sum = fn($key) => array_sum(array_map(fn($n) => floatval(data_get($n, $key)), $allNights));
-    
+
             $guestBreakdown = [];
             $totalAdults = 0;
             $totalChildren = 0;
             $totalInfants = 0;
-    
+
             foreach ($roomBreakdowns as $rIdx => $room) {
                 $adults   = (int)$room['adults'];
                 $children = (int)$room['children'];
                 $infants  = (int)$room['infants'];
-    
+
                 $totalAdults   += $adults;
                 $totalChildren += $children;
                 $totalInfants  += $infants;
-    
+
                 $nightsCount = max(count($room['nights']), 1);
-    
+
                 $adultList  = $room['summary']['base_charges']['adult']['per_guest']  ?? [];
                 $childList  = $room['summary']['base_charges']['child']['per_guest']  ?? [];
                 $infantList = $room['summary']['base_charges']['infant']['per_guest'] ?? [];
-    
+
                 $surAdult  = $room['nights'][0]['surcharge']['adult']['price']  ?? 0;
                 $surChild  = $room['nights'][0]['surcharge']['child']['price']  ?? 0;
                 $surInfant = $room['nights'][0]['surcharge']['infant']['price'] ?? 0;
-    
+
                 for ($i = 1; $i <= $adults; $i++) {
                     $base = (float)($adultList[$i - 1] ?? 0);
                     $key  = "adult_{$rIdx}_{$i}";
@@ -725,11 +726,11 @@ class TravelCalculatorController extends Controller
                     ];
                 }
             }
-    
+
             // Calculate add-ons
             $addOnsBreakdown = [];
             $addOnsTotal = 0;
-            
+
             if (!empty($addOns)) {
                 foreach ($addOns as $addOnData) {
                     $addOn = PackageAddOn::find($addOnData['id']);
@@ -737,12 +738,12 @@ class TravelCalculatorController extends Controller
                         $adults = (int)($addOnData['adults'] ?? 0);
                         $children = (int)($addOnData['children'] ?? 0);
                         $infants = (int)($addOnData['infants'] ?? 0);
-                        
+
                         $adultPrice = $addOn->adult_price * $adults;
                         $childPrice = $addOn->child_price * $children;
                         $infantPrice = $addOn->infant_price * $infants;
                         $addOnTotal = $adultPrice + $childPrice + $infantPrice;
-                        
+
                         $addOnsBreakdown[] = [
                             'id' => $addOn->id,
                             'name' => $addOn->name,
@@ -758,12 +759,12 @@ class TravelCalculatorController extends Controller
                             'infant_total' => $infantPrice,
                             'total' => $addOnTotal,
                         ];
-                        
+
                         $addOnsTotal += $addOnTotal;
                     }
                 }
             }
-    
+
             $sst = 0;
             $baseTotal = $sum('total');
             $totalWithoutSst = $baseTotal + $addOnsTotal;
@@ -774,7 +775,7 @@ class TravelCalculatorController extends Controller
             Log::info('sst_enable: ' . $package->sst_enable);
             Log::info('totalWithoutSst: ' . $totalWithoutSst);
             Log::info('sst: ' . $sst);
-    
+
             $total = $totalWithoutSst + $sst;
             Log::info('total: ' . $total);
             return response()->json([
@@ -828,7 +829,7 @@ class TravelCalculatorController extends Controller
                     'current_occupancy' => $totalGuests,
                 ], 400);
             }
-    
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()

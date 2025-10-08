@@ -8,9 +8,9 @@ use App\Models\RoomType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Faker\Factory as Faker;
-
 class CreatePriceConfigurationsService
 {
+
     /**
      * Create price configurations for a package
      *
@@ -80,28 +80,6 @@ class CreatePriceConfigurationsService
         }
     }
 
-    public function generateRandomPricesOld()
-    {
-        $faker = Faker::create();
-        $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
-        $configurationPrices = [];
-        foreach ($combinations as $combo) {
-            $keyPrefix = "{$combo['adults']}_a_{$combo['children']}_c_{$combo['infants']}_i";
-
-            // Base charge prices
-            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 100, 1000);
-            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 50, 500);
-            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE]["{$keyPrefix}_i"] = $faker->randomFloat(2, 0, 100);
-
-            // Surcharge prices
-            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_a"] = $faker->randomFloat(2, 50, 100);
-            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_c"] = $faker->randomFloat(2, 25, 50);
-            $configurationPrices[AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE]["{$keyPrefix}_i"] = $faker->randomFloat(2, 0, 10);
-        }
-
-        return $configurationPrices;
-    }
-
     public function generateRandomPrices(int $pax = 4, bool $generateRandomPrices = true): array
     {
         $faker = Faker::create();
@@ -151,21 +129,156 @@ class CreatePriceConfigurationsService
         ];
     }
 
-    // function generatePaxCombinations(int $pax): array
-    // {
-    //     if ($pax < 1) return [];
+    /**
+     * Remove price entries whose pax > newRoomPax, and (optionally) add missing ones up to newRoomPax.
+     * Works on both base and surch for ALL PackageConfiguration rows of the given roomType.
+     *
+     * @return int Number of configurations updated
+     */
+    public function updateConfigsToPaxAndFill(int $roomTypeId, int $newRoomPax, bool $fillMissing = true): int
+    {
+        if ($newRoomPax < 1) {
+            throw new \InvalidArgumentException('newRoomPax must be >= 1');
+        }
 
-    //     $combinations = [];
+        $updatedCount = 0;
 
-    //     for ($a = 1; $a <= $pax; $a++) {
-    //         for ($c = 0; $c <= $pax - $a; $c++) {
-    //             $i = $pax - $a - $c; // remaining infants
-    //             $combinations[] = sprintf('%d_a_%d_c_%d_i', $a, $c, $i);
-    //         }
-    //     }
+        // Build the authoritative list of valid keys up to $newRoomPax using your generator
+        $allowedCombos = $this->generatePaxCombinations($newRoomPax);
+        $allowedSet    = array_flip($allowedCombos);
 
-    //     return $combinations;
-    // }
+        // Fetch all configs for this room type across package/season/date
+        $configs = PackageConfiguration::where('room_type_id', $roomTypeId)->get();
+
+        DB::beginTransaction();
+        try {
+            foreach ($configs as $cfg) {
+                $prices = $cfg->configuration_prices ?? [];
+
+                // Normalize structure to: [ [ base => [], surch => [] ] ]
+                [$base, $surch] = $this->extractBaseAndSurch($prices);
+
+                // 1) Prune keys whose total pax exceeds the new limit
+                $this->pruneExcessKeys($base, $surch, $allowedSet);
+
+                // 2) Optionally fill missing keys up to the new limit (zeros)
+                if ($fillMissing) {
+                    $this->addMissingZeroCombos($base, $surch, $allowedCombos);
+                }
+
+                // Only save if something changed
+                $newPayload = [[
+                    AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE => $base,
+                    AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR  => $surch,
+                ]];
+
+                // Compare shallowly to avoid noisy writes
+                if ($this->payloadChanged($prices, $newPayload)) {
+                    $cfg->configuration_prices = $newPayload;
+                    $cfg->save();
+                    $updatedCount++;
+                }
+            }
+
+            DB::commit();
+            Log::info("updateConfigsToPaxAndFill: updated {$updatedCount} configuration(s) for room_type_id={$roomTypeId}, newRoomPax={$newRoomPax}, fillMissing=" . ($fillMissing ? '1' : '0'));
+            return $updatedCount;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('updateConfigsToPaxAndFill failed: ' . $e->getMessage(), ['room_type_id' => $roomTypeId, 'newRoomPax' => $newRoomPax]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Extract base/surch arrays from your stored payload while keeping your constants respected.
+     */
+    private function extractBaseAndSurch(array $prices): array
+    {
+        // expected: [ [ base => [...], surch => [...] ] ]
+        $first = $prices[0] ?? [];
+
+        $baseKey  = AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE; // usually 'base'
+        $surchKey = AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR;  // usually 'surch'
+
+        $base  = isset($first[$baseKey])  && is_array($first[$baseKey])  ? $first[$baseKey]  : [];
+        $surch = isset($first[$surchKey]) && is_array($first[$surchKey]) ? $first[$surchKey] : [];
+
+        return [$base, $surch];
+    }
+
+    /**
+     * Remove any combo keys not present in $allowedSet (i.e., totals > new pax).
+     */
+    private function pruneExcessKeys(array &$base, array &$surch, array $allowedSet): void
+    {
+        foreach (array_keys($base) as $key) {
+            if (!isset($allowedSet[$key])) {
+                unset($base[$key]);
+            }
+        }
+        foreach (array_keys($surch) as $key) {
+            if (!isset($allowedSet[$key])) {
+                unset($surch[$key]);
+            }
+        }
+    }
+
+    /**
+     * Add zeroed entries for any missing allowed combos (both base & surch),
+     * respecting your per-person shape for base and flat a/c/i for surch.
+     */
+    private function addMissingZeroCombos(array &$base, array &$surch, array $allowedCombos): void
+    {
+        foreach ($allowedCombos as $combo) {
+            if (!isset($base[$combo])) {
+                $counts        = $this->parsePaxCombination($combo); // ['adults'=>X,'children'=>Y,'infants'=>Z]
+                $base[$combo]  = $this->buildZeroBaseEntry($counts);
+            }
+            if (!isset($surch[$combo])) {
+                $surch[$combo] = $this->buildZeroSurchEntry();
+            }
+        }
+    }
+
+    /**
+     * Build zeroed "base" entry with a1..aN, c1..cN, i1..iN keys.
+     */
+    private function buildZeroBaseEntry(?array $counts): array
+    {
+        $entry = [];
+        if ($counts === null) {
+            return $entry;
+        }
+
+        for ($i = 1; $i <= ($counts['adults']   ?? 0); $i++) {
+            $entry["a{$i}"] = 0;
+        }
+        for ($i = 1; $i <= ($counts['children'] ?? 0); $i++) {
+            $entry["c{$i}"] = 0;
+        }
+        for ($i = 1; $i <= ($counts['infants']  ?? 0); $i++) {
+            $entry["i{$i}"] = 0;
+        }
+
+        return $entry;
+    }
+
+    /**
+     * Build zeroed "surch" entry (flat a/c/i like in your sample).
+     */
+    private function buildZeroSurchEntry(): array
+    {
+        return ['a' => 0, 'c' => 0, 'i' => 0];
+    }
+
+    /**
+     * Lightweight compare to avoid unnecessary writes.
+     */
+    private function payloadChanged($old, $new): bool
+    {
+        return json_encode($old, JSON_UNESCAPED_UNICODE) !== json_encode($new, JSON_UNESCAPED_UNICODE);
+    }
 
     function generatePaxCombinations(int $pax): array
     {

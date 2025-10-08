@@ -6,6 +6,7 @@ use App\Models\Package;
 use App\Models\Season;
 use App\Models\SeasonType;
 use App\Services\CreatePriceConfigurationsService;
+use App\Services\EnsurePriceConfigService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,9 +15,12 @@ use Illuminate\Support\Facades\Log;
 class SeasonController extends Controller
 {
     protected CreatePriceConfigurationsService $priceConfigurationService;
-    public function __construct(CreatePriceConfigurationsService $priceConfigurationService)
+    protected EnsurePriceConfigService $ensurePriceConfigService;
+
+    public function __construct(CreatePriceConfigurationsService $priceConfigurationService, EnsurePriceConfigService $ensurePriceConfigService)
     {
         $this->priceConfigurationService = $priceConfigurationService;
+        $this->ensurePriceConfigService = $ensurePriceConfigService;
     }
 
     public function index()
@@ -39,41 +43,41 @@ class SeasonController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
-        $packageId = request()->package_id;
+    // public function store(Request $request)
+    // {
+    //     $packageId = request()->package_id;
 
-        $validated = $request->validate([
-            'season_type_id' => 'required|exists:season_types,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'package_id' => 'required|exists:packages,id'
-        ]);
+    //     $validated = $request->validate([
+    //         'season_type_id' => 'required|exists:season_types,id',
+    //         'start_date' => 'required|date',
+    //         'end_date' => 'required|date|after:start_date',
+    //         'package_id' => 'required|exists:packages,id'
+    //     ]);
 
-        // Check for overlapping dates
-        if (Season::hasOverlappingDates($validated['start_date'], $validated['end_date'], $validated['package_id'])) {
-            $season = Season::where('package_id', $validated['package_id'])
-                ->where('start_date', '<=', $validated['end_date'])
-                ->where('end_date', '>=', $validated['start_date'])
-                ->first();
+    //     // Check for overlapping dates
+    //     if (Season::hasOverlappingDates($validated['start_date'], $validated['end_date'], $validated['package_id'])) {
+    //         $season = Season::where('package_id', $validated['package_id'])
+    //             ->where('start_date', '<=', $validated['end_date'])
+    //             ->where('end_date', '>=', $validated['start_date'])
+    //             ->first();
 
-            return back()->withErrors([
-                'date_range' => 'This date range overlaps with an existing season for this package in the date range of ' . Carbon::parse($season->start_date)->format('d-m-Y') . ' to ' . Carbon::parse($season->end_date)->format('d-m-Y')
-            ]);
-        }
+    //         return back()->withErrors([
+    //             'date_range' => 'This date range overlaps with an existing season for this package in the date range of ' . Carbon::parse($season->start_date)->format('d-m-Y') . ' to ' . Carbon::parse($season->end_date)->format('d-m-Y')
+    //         ]);
+    //     }
 
-        Season::create($validated);
-        $seasonType = SeasonType::find($validated['season_type_id']);
-        $this->priceConfigurationService->createPriceConfigurationsService(Package::find($validated['package_id']), [], [$seasonType], [], false);
+    //     $season = Season::create($validated);
 
-        // If the request has a return_to_package parameter, redirect back to the package page
-        if (request()->has('return_to_package')) {
-            return redirect()->route('packages.show', $packageId)
-                ->with('success', 'Season deleted successfully.');
-        }
+    //     $this->ensurePriceConfigService->syncPriceConfigurationsBySeasonsAndDateTypes($packageId, [$season->id], []);
 
-        return back()->with('success', 'Season created successfully.');
-    }
+    //     // If the request has a return_to_package parameter, redirect back to the package page
+    //     if (request()->has('return_to_package')) {
+    //         return redirect()->route('packages.show', $packageId)
+    //             ->with('success', 'Season deleted successfully.');
+    //     }
+
+    //     return back()->with('success', 'Season created successfully.');
+    // }
 
     public function storeBulk(Request $request)
     {
@@ -159,14 +163,7 @@ class SeasonController extends Controller
                 ]);
 
                 // Generate price config
-                $seasonType = SeasonType::find($seasonData['season_type_id']);
-                $this->priceConfigurationService->createPriceConfigurationsService(
-                    Package::find($request->package_id),
-                    [],
-                    [$seasonType],
-                    [],
-                    false
-                );
+                $this->ensurePriceConfigService->syncPriceConfigurationsBySeasonsAndDateTypes($request->package_id, [$seasonData['season_type_id']], []);
 
                 $results['success'][] = [
                     'index' => $index,

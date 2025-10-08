@@ -258,38 +258,6 @@ class PackageController extends Controller
                 ]);
             });
 
-            $combinations = AppConstants::ADULT_CHILD_COMBINATIONS;
-            $baseKey = AppConstants::CONFIGURATION_PRICE_TYPES_BASE_CHARGE;
-            $surKey = AppConstants::CONFIGURATION_PRICE_TYPES_SUR_CHARGE;
-
-            foreach ($roomTypes as $room) {
-                if ($this->enabledDefaultSeasonAndDateType) {
-                    foreach ($seasonTypes as $season) {
-                        foreach ($dateTypes as $date) {
-                            $prices = [];
-
-                            foreach ($combinations as $c) {
-                                $k = "{$c['adults']}_a_{$c['children']}_c_{$c['infants']}_i";
-                                $prices[$baseKey]["{$k}_a"] = $v['display_price_adult'];
-                                $prices[$baseKey]["{$k}_c"] = $v['display_price_child'];
-                                $prices[$baseKey]["{$k}_i"] = $v['display_price_infant'];
-                                $prices[$surKey]["{$k}_a"] = $v['adult_surcharge'];
-                                $prices[$surKey]["{$k}_c"] = $v['child_surcharge'];
-                                $prices[$surKey]["{$k}_i"] = $v['infant_surcharge'];
-                            }
-
-                            PackageConfiguration::create([
-                                'package_id' => $package->id,
-                                'room_type_id' => $room->id,
-                                'season_type_id' => $season->id,
-                                'date_type_id' => $date->id,
-                                'configuration_prices' => json_encode($prices),
-                            ]);
-                        }
-                    }
-                }
-            }
-
             DB::commit();
             return redirect()->route('packages.index')->with('success', 'Package created successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {

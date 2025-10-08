@@ -140,12 +140,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('configuration-prices')->controller(ConfigurationPriceController::class)->group(function () {
         Route::post('fetch-prices-search-index', 'fetchPricesSearchIndex')->name('configuration-prices.fetchPricesSearchIndex');
-        Route::put('update', 'updatePrices')->name('configuration-prices.updatePrices');
-        Route::post('store', 'store')->name('configuration-prices.store');
         Route::post('/fetch-prices-room-types', 'fetchPricesRoomTypes')->name('configuration-prices.fetchPricesRoomTypes');
         Route::put('/update-room-type-prices', 'updateRoomTypePrices')->name('configuration-prices.updateRoomTypePrices');
         Route::post('/create-price-configuration', 'createPriceConfiguration')->name('configuration-prices.createPriceConfiguration');
-        Route::post('/update-price-configuration-by-pax', 'updatePriceConfigurationByPax')->name('configuration-prices.updatePriceConfigurationByPax');
         Route::post('/duplicate-to-multiple', 'duplicateToMultiple')->name('configuration-prices.duplicateToMultiple');
     });
 

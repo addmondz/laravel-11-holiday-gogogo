@@ -17,58 +17,8 @@ class AppConstants
         self::CONFIGURATION_PRICE_TYPES_SUR_CHARGE => 'sur_charge',
     ];
 
-    // public const ADULT_CHILD_COMBINATIONS = [
-    //     ['adults' => 1, 'children' => 0],
-    //     ['adults' => 1, 'children' => 1],
-    //     ['adults' => 1, 'children' => 2],
-    //     ['adults' => 1, 'children' => 3],
-    //     ['adults' => 1, 'children' => 4],
-    //     ['adults' => 2, 'children' => 0],
-    //     ['adults' => 2, 'children' => 1],
-    //     ['adults' => 2, 'children' => 2],
-    //     ['adults' => 2, 'children' => 3],
-    //     ['adults' => 3, 'children' => 0],
-    //     ['adults' => 3, 'children' => 1],
-    //     ['adults' => 3, 'children' => 2],
-    //     ['adults' => 4, 'children' => 0],
-    //     ['adults' => 4, 'children' => 1],
-    //     ['adults' => 5, 'children' => 0],
-    // ];
-    // public const ADULT_CHILD_COMBINATIONS = [
-    //     ['adults' => 1, 'children' => 0],
-    //     ['adults' => 1, 'children' => 1],
-    //     ['adults' => 1, 'children' => 2],
-    //     ['adults' => 1, 'children' => 3],
-    //     ['adults' => 2, 'children' => 0],
-    //     ['adults' => 2, 'children' => 1],
-    //     ['adults' => 2, 'children' => 2],
-    //     ['adults' => 3, 'children' => 0],
-    //     ['adults' => 3, 'children' => 1],
-    //     ['adults' => 4, 'children' => 0],
-    // ];
-    public const ADULT_CHILD_COMBINATIONS = [
-        ['adults' => 1, 'children' => 0, 'infants' => 0],
-        ['adults' => 1, 'children' => 0, 'infants' => 1],
-        ['adults' => 1, 'children' => 0, 'infants' => 2],
-        ['adults' => 1, 'children' => 0, 'infants' => 3],
-        ['adults' => 1, 'children' => 1, 'infants' => 0],
-        ['adults' => 1, 'children' => 1, 'infants' => 1],
-        ['adults' => 1, 'children' => 1, 'infants' => 2],
-        ['adults' => 1, 'children' => 2, 'infants' => 0],
-        ['adults' => 1, 'children' => 2, 'infants' => 1],
-        ['adults' => 1, 'children' => 3, 'infants' => 0],
-        ['adults' => 2, 'children' => 0, 'infants' => 0],
-        ['adults' => 2, 'children' => 0, 'infants' => 1],
-        ['adults' => 2, 'children' => 0, 'infants' => 2],
-        ['adults' => 2, 'children' => 1, 'infants' => 0],
-        ['adults' => 2, 'children' => 1, 'infants' => 1],
-        ['adults' => 2, 'children' => 2, 'infants' => 0],
-        ['adults' => 2, 'children' => 0, 'infants' => 2],
-        ['adults' => 3, 'children' => 0, 'infants' => 0],
-        ['adults' => 3, 'children' => 0, 'infants' => 1],
-        ['adults' => 3, 'children' => 1, 'infants' => 0],
-        ['adults' => 4, 'children' => 0, 'infants' => 0],
-    ];
+    public const DATABASE_CONFIG_PRICE_INDEX_BASE = 'base';
+    public const DATABASE_CONFIG_PRICE_INDEX_SUR = 'surch';
 
     public const TESTING_IMAGES = [
         'room-types/test1.jpg',
