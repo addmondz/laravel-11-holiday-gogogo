@@ -1515,7 +1515,8 @@ const roomTypes = ref([]);
 const selectedRoomType = ref(null);
 const isLoading = ref(true);
 const packageAddOns = ref([]);
-const selectedAddOns = ref([]);
+const selectedAddOns = ref([]); // Array of add-on IDs that are selected (checkbox state)
+const addOnPaxData = ref([]); // Array of objects with pax data for each add-on
 const bookingSummary = ref(null);
 const dateError = ref('');
 const validationErrors = ref({
@@ -2044,27 +2045,43 @@ watch(() => form.rooms, (newRooms) => {
     });
 }, { deep: true });
 
+// Watch for changes in selectedAddOns to clear pax data when add-on is deselected
+watch(selectedAddOns, (newSelected, oldSelected) => {
+    // Find add-ons that were deselected
+    const deselected = oldSelected.filter(id => !newSelected.includes(id));
+    
+    // Clear pax data for deselected add-ons
+    deselected.forEach(addOnId => {
+        const index = addOnPaxData.value.findIndex(item => item.id === addOnId);
+        if (index !== -1) {
+            addOnPaxData.value.splice(index, 1);
+        }
+    });
+}, { deep: true });
+
 // Add-ons methods
 const getAddOnPax = (addOnId) => {
-    let addOnPax = selectedAddOns.value.find(item => item.id === addOnId);
+    let addOnPax = addOnPaxData.value.find(item => item.id === addOnId);
     if (!addOnPax) {
         addOnPax = { id: addOnId, adults: 0, children: 0, infants: 0 };
-        selectedAddOns.value.push(addOnPax);
+        addOnPaxData.value.push(addOnPax);
     }
     return addOnPax;
 };
 
 const getSelectedAddOnsForAPI = () => {
     return selectedAddOns.value
-        .filter(item => {
-            const pax = getAddOnPax(item.id);
+        .filter(addOnId => {
+            // Only include add-ons that are actually selected (checkbox checked)
+            // and have at least one guest selected
+            const pax = getAddOnPax(addOnId);
             return pax.adults > 0 || pax.children > 0 || pax.infants > 0;
         })
-        .map(item => ({
-            id: item.id,
-            adults: getAddOnPax(item.id).adults,
-            children: getAddOnPax(item.id).children,
-            infants: getAddOnPax(item.id).infants
+        .map(addOnId => ({
+            id: addOnId,
+            adults: getAddOnPax(addOnId).adults,
+            children: getAddOnPax(addOnId).children,
+            infants: getAddOnPax(addOnId).infants
         }));
 };
 
