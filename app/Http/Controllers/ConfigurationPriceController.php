@@ -468,8 +468,8 @@ class ConfigurationPriceController extends Controller
                     }
 
                     // Check if target already exists
+                    $toRoom = RoomType::find($toRoomTypeId);
                     $existingTargetConfig = PackageConfiguration::where($filterArray)->first();
-
                     if (!$existingTargetConfig) {
                         // Create if missing
                         $existingTargetConfig = new PackageConfiguration();
@@ -477,7 +477,11 @@ class ConfigurationPriceController extends Controller
                         $existingTargetConfig->season_type_id = $toSeasonTypeId;
                         $existingTargetConfig->date_type_id   = $toDateTypeId;
                         $existingTargetConfig->room_type_id   = $toRoomTypeId;
-                        $existingTargetConfig->configuration_prices = [[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE => [], AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR => []]];
+                        $existingTargetConfig->configuration_prices = $this->priceConfigurationService->generateRandomPrices($toRoom->max_occupancy, false);
+                        $existingTargetConfig->save();
+                    }
+                    else if ($existingTargetConfig->configuration_prices == [[AppConstants::DATABASE_CONFIG_PRICE_INDEX_BASE => [], AppConstants::DATABASE_CONFIG_PRICE_INDEX_SUR => []]]) {
+                        $existingTargetConfig->configuration_prices = $this->priceConfigurationService->generateRandomPrices($toRoom->max_occupancy, false);
                         $existingTargetConfig->save();
                     }
 
