@@ -129,15 +129,40 @@
                 <h3 class="text-sm font-medium text-blue-800 mb-1">
                   Quick Copy Feature
                 </h3>
+
                 <p class="text-sm text-blue-700">
-                  Click the <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                  Click the 
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                     <CopyOutlined class="h-3 w-3 mr-1" />
                     copy icon
-                  </span>  next to any price to instantly apply that same value across all matching <strong>fields in the current row</strong> for the same person type.
+                  </span>
+                  next to any price to instantly apply that same value across matching fields.  
+                  The copy behavior differs slightly between <strong>Base Charge</strong> and <strong>Surcharges</strong>:
                 </p>
-                <div class="mt-2 text-xs text-blue-600">
-                 <span class="font-medium">Example:</span> Clicking the copy icon beside <strong>Adult 1</strong> in the row “4 Adults + 0 Children + 0 Infants” will automatically copy that price to <strong>Adult 2</strong>, <strong>Adult 3</strong>, and <strong>Adult 4</strong> within the same row. <br>
-                 <span class="font-bold">Don’t forget to click <em>Save</em> to confirm your changes.</span>
+
+                <ul class="mt-3 text-xs text-blue-700 list-disc list-inside space-y-3">
+                  <li>
+                    <span class="font-semibold text-blue-800">Base Charge:</span>
+                    Copies the value to all fields with the same <strong>person type</strong> (e.g. Adults, Children) within the <strong>same row</strong>.
+                    <div class="mt-1 text-blue-600">
+                      <span class="font-medium">Example:</span> Clicking the copy icon beside <strong>Adult 1</strong> in the row 
+                      “4 Adults + 0 Children + 0 Infants” will automatically copy that price to 
+                      <strong>Adult 2</strong>, <strong>Adult 3</strong>, and <strong>Adult 4</strong> in that same row.
+                    </div>
+                  </li>
+
+                  <li>
+                    <span class="font-semibold text-blue-800">Surcharges:</span>
+                    Copies the value to all fields with the same <strong>person type</strong> within the <strong>same room</strong>.
+                    <div class="mt-1 text-blue-600">
+                      <span class="font-medium">Example:</span> Clicking the copy icon beside <strong>Adult 1</strong> under 
+                      “Room A” will automatically copy that surcharge value to all the adults surcharge within that same room.
+                    </div>
+                  </li>
+                </ul>
+
+                <div class="mt-3 text-xs text-blue-600">
+                  <span class="font-bold">Remember:</span> Always click <em>Save</em> after copying values to confirm your changes.
                 </div>
               </div>
             </div>
@@ -251,12 +276,22 @@
                     <td v-for="k in ['a', 'c', 'i']" :key="k" class="px-4 py-2">
                       <template v-if="slots[k] !== undefined">
                         <template v-if="isEditMode">
-                          <input
-                            type="number"
-                            step="0.01"
-                            class="w-24 rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                            v-model.number="room.surch[comboKey][k]"
-                          />
+                          <div class="flex">
+                            <input
+                              type="number"
+                              step="0.01"
+                              class="w-24 rounded-l-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                              v-model.number="room.surch[comboKey][k]"
+                            />
+                            <button
+                              type="button"
+                              class="flex items-center justify-center px-2 border-l border-gray-300 text-gray-500 hover:text-indigo-600 hover:bg-gray-50 rounded-r-md"
+                              title="Copy this surcharge value to all rows"
+                              @click="copySurchargeTypeToSameRow(room, comboKey, k)"
+                            >
+                              <CopyOutlined class="h-5 w-5" />
+                            </button>
+                          </div>
                         </template>
                         <template v-else> MYR {{ format(slots[k]) }} </template>
                       </template>
@@ -656,6 +691,51 @@ const copyPriceTypeToSameRow = (room, comboKey, slotKey) => {
       showConfirmButton: false,
       icon: "success",
       title: `Updated ${affected} ${prefix === 'a' ? 'Adult' : prefix === 'c' ? 'Child' : 'Infant'} slot(s).`,
+      text: "Please click on the save button to save the changes.",
+      didOpen: (toast) => {
+        // Pause timer when hovered
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        // Resume timer when mouse leaves
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+      }
+    });
+  } catch (_) {
+    // Swal might not be available in some contexts; ignore
+  }
+};
+
+const copySurchargeTypeToSameRow = (room, comboKey, slotKey) => {
+  if (!room || !comboKey || !slotKey) return;
+
+  const sourceRow = room.surch?.[comboKey];
+  if (!sourceRow) return;
+
+  const value = sourceRow[slotKey];
+  if (value === undefined || value === null || value === "") return;
+
+  // For surcharges, slotKey is just 'a', 'c', or 'i'
+  // We need to copy this value to all rows' same person type column
+  const prefix = String(slotKey)[0]; // 'a', 'c', or 'i'
+
+  let affected = 0;
+  // Copy to all other rows in the same room
+  Object.keys(room.surch).forEach((rowKey) => {
+    const targetRow = room.surch[rowKey];
+    if (targetRow && targetRow[slotKey] !== undefined) {
+      targetRow[slotKey] = Number(value); // normalize to number
+      affected++;
+    }
+  });
+
+  // tiny toast to confirm
+  try {
+    Swal.fire({
+      toast: true,
+      timer: 1200,
+      timerProgressBar: true,
+      showConfirmButton: false,
+      icon: "success",
+      title: `Updated ${affected} ${prefix === 'a' ? 'Adult' : prefix === 'c' ? 'Child' : 'Infant'} surcharge slot(s).`,
       text: "Please click on the save button to save the changes.",
       didOpen: (toast) => {
         // Pause timer when hovered
