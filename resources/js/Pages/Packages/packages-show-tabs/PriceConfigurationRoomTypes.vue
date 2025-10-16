@@ -133,10 +133,11 @@
                   Click the <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                     <CopyOutlined class="h-3 w-3 mr-1" />
                     copy icon
-                  </span> next to any price to automatically apply that value to the same row with the same person type.
+                  </span>  next to any price to instantly apply that same value across all matching <strong>fields in the current row</strong> for the same person type.
                 </p>
                 <div class="mt-2 text-xs text-blue-600">
-                  <span class="font-medium">Person types:</span> Adult, Child, Infant
+                 <span class="font-medium">Example:</span> Clicking the copy icon beside <strong>Adult 1</strong> in the row “4 Adults + 0 Children + 0 Infants” will automatically copy that price to <strong>Adult 2</strong>, <strong>Adult 3</strong>, and <strong>Adult 4</strong> within the same row. <br>
+                 <span class="font-bold">Don’t forget to click <em>Save</em> to confirm your changes.</span>
                 </div>
               </div>
             </div>
