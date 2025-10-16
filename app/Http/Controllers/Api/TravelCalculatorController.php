@@ -245,12 +245,13 @@ class TravelCalculatorController extends Controller
 
     public function packageCalculatePrice(Request $request)
     {
+        // Step 1: Base validation rules
         $validated = $request->validate([
             'package_id' => 'required|exists:packages,id',
             'rooms' => 'required|array|min:1',
             'rooms.*.room_type' => 'required|exists:room_types,id',
-            'rooms.*.adults' => 'required|integer|min:1|max:4',
-            'rooms.*.children' => 'required|integer|min:0|max:4',
+            'rooms.*.adults' => 'required|integer|min:1',
+            'rooms.*.children' => 'required|integer|min:0',
             'rooms.*.infants' => 'required|integer|min:0',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
@@ -261,7 +262,34 @@ class TravelCalculatorController extends Controller
             'add_ons.*.infants' => 'required|integer|min:0',
         ]);
 
-        return $this->calculatePriceByParams($validated['package_id'], $validated['rooms'], $validated['start_date'], $validated['end_date'], false, $validated['add_ons'] ?? []);
+        // Step 2: Manual occupancy validation
+        foreach ($validated['rooms'] as $index => $room) {
+            $roomType = \App\Models\RoomType::find($room['room_type']);
+
+            if (!$roomType) {
+                return response()->json([
+                    'message' => "Room type not found for room index {$index}.",
+                ], 422);
+            }
+
+            $totalGuests = $room['adults'] + $room['children'] + $room['infants'];
+
+            if ($totalGuests > $roomType->max_occupancy) {
+                return response()->json([
+                    'message' => "Room #" . ($index + 1) . " exceeds maximum occupancy ({$roomType->max_occupancy}).",
+                ], 422);
+            }
+        }
+
+        // Step 3: Continue to price calculation
+        return $this->calculatePriceByParams(
+            $validated['package_id'],
+            $validated['rooms'],
+            $validated['start_date'],
+            $validated['end_date'],
+            false,
+            $validated['add_ons'] ?? []
+        );
     }
 
     public function getSuggestedDates(int $packageId, Carbon $blockedDate): array
