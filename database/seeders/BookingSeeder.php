@@ -16,6 +16,13 @@ use Illuminate\Support\Str;
 
 class BookingSeeder extends Seeder
 {
+    public $testingPayment;
+
+    public function __construct()
+    {
+        $this->testingPayment = env('TESTING_PAYMENT', false);
+    }
+
     public function run(): void
     {
         // Check if bookings already exist
@@ -130,7 +137,7 @@ class BookingSeeder extends Seeder
                     'total_price' => 0, // Will be updated after rooms are created
                     'special_remarks' => $remarks[$i % count($remarks)],
                     'uuid' => (new GenerateBookingUid())->execute(),
-                    'status' => array_rand(ApprovalStatus::ALL_STATUS)
+                    'status' => $this->testingPayment ? ApprovalStatus::APPROVED : array_rand(ApprovalStatus::ALL_STATUS)
                 ]);
 
                 // Create rooms for this booking
@@ -166,7 +173,7 @@ class BookingSeeder extends Seeder
                     'adults' => $totalAdults,
                     'children' => $totalChildren,
                     'infants' => $totalInfants,
-                    'total_price' => round($totalPrice, 2)
+                    'total_price' => $this->testingPayment ? 1 : round($totalPrice, 2)
                 ]);
 
                 if ($booking->status >= ApprovalStatus::PAYMENT_COMPLETED) {
@@ -185,16 +192,17 @@ class BookingSeeder extends Seeder
                     $statusOptions = ['completed', 'failed', 'pending'];
 
                     // create payment transaction
-                    $transaction = Transaction::create([
-                        'booking_id' => $booking->id,
-                        'amount' => $booking->total_price,
-                        'status' => $statusOptions[array_rand($statusOptions)],
-                        'payment_method' => 'senangpay',
-                        'order_id' => $booking->id,
-                        'senang_pay_api_log_id' => $senangPayApiLog->id,
-                        'transaction_id' => $transactionId,
-                        'amount' => $booking->total_price,
-                    ]);
+                    if (!$this->testingPayment) {
+                        $transaction = Transaction::create([
+                            'booking_id' => $booking->id,
+                            'status' => 'completed',
+                            'payment_method' => 'senangpay',
+                            'order_id' => $booking->id,
+                            'senang_pay_api_log_id' => $senangPayApiLog->id,
+                            'transaction_id' => $transactionId,
+                            'amount' => 1,
+                        ]);
+                    }
                 }
             } catch (\Exception $e) {
                 $this->command->error("Failed to create booking: " . $e->getMessage());
