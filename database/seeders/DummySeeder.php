@@ -22,7 +22,7 @@ class DummySeeder extends Seeder
 {
     protected CreatePriceConfigurationsService $priceConfigurationService;
     public $enabledDefaultSeasonAndDateType;
-    public $dummyPackagesCount = 0;
+    public $dummyPackagesCount = 0; // to include all dummy data, set to any number > 1
     public $dummyOtherPackagesCount = 11;
     public $enableDateBlockerDummyData = false;
 
@@ -33,7 +33,7 @@ class DummySeeder extends Seeder
     }
     public function run(): void
     {
-        if ($this->enabledDefaultSeasonAndDateType) {
+        if ($this->dummyPackagesCount > 0) {
             for ($i = 0; $i < $this->dummyOtherPackagesCount; $i++) {
                 SeasonType::create(['name' => 'Test Season ' . $i]);
             }
@@ -237,7 +237,7 @@ class DummySeeder extends Seeder
             dump('completed ' . $pkg->id);
         }
 
-        if ($this->enabledDefaultSeasonAndDateType) {
+        if ($this->dummyPackagesCount > 0) {
             $this->call([
                 BookingSeeder::class,
             ]);
