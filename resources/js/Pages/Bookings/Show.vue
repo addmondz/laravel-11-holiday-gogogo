@@ -286,7 +286,7 @@
                                                 <span 
                                                     :class="[
                                                         'px-2 py-1 text-sm font-semibold rounded-full',
-                                                        transaction.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                                        transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
                                                         transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                                         'bg-red-100 text-red-800'
                                                     ]"

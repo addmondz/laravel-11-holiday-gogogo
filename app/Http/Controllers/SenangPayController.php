@@ -19,6 +19,7 @@ class SenangPayController extends Controller
 
         // start testing remove later
         // $mockJson = '{"status_id":"1","order_id":"25","transaction_id":"1761139218000108459","msg":"Payment_was_successful","hash":"88574f33079c3c09a29d6d1d312fc306fe00fd8329ed90624ba3c1d304b4992b"}';
+        // $mockJson = '{"status_id":"0","order_id":"25","transaction_id":"1761139928000113639","msg":"Your_payment_was_declined._Please_check_with_your_bank._Thank_you.","hash":"56d7bc1bf4e3bedd26ee551c6543bd95ba8d64f810b606c5473ba0979cf2d53b"}';
         // $requestData = json_decode($mockJson, true);
         // end testing remove later
 
