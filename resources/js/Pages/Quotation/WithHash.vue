@@ -1465,24 +1465,26 @@ const retryPayment = async () => {
         });
         return;
     }
-    
+
     isProcessingPayment.value = true;
-    
     try {
-        const response = await axios.post(route('payment.initiate', bookingSuccess.value.uuid));
-        if (response.data.success && response.data.payment_url) {
-            window.location.href = response.data.payment_url;
-        } else {
-            throw new Error('Failed to initiate payment');
-        }
-    } catch (error) {
-        console.error('Error retrying payment:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Payment Error',
-            text: 'Unable to retry payment. Please contact support.',
-            confirmButtonColor: '#EF4444'
-        });
+        const r = await axios.post(route('payment.initiate', bookingSuccess.value.uuid));
+        console.log(r.data);
+        return;
+        if (r.data.success && r.data.payment_data) {
+            const f = Object.entries(r.data.payment_data).reduce((form, [k, v]) => {
+            form.innerHTML += `<input type="hidden" name="${k}" value="${v}">`;
+            return form;
+        }, 
+        document.createElement('form'));
+        f.method = 'post';
+        f.action = `https://sandbox.senangpay.my/payment/839174991356979`;
+        document.body.appendChild(f);
+        f.submit();
+        } else throw new Error('Failed to initiate payment');
+    } catch (e) {
+        console.error(e);
+        Swal.fire({ icon: 'error', title: 'Payment Error', text: 'Unable to retry payment. Please contact support.', confirmButtonColor: '#EF4444' });
     } finally {
         isProcessingPayment.value = false;
     }
@@ -2310,24 +2312,22 @@ const proceedToPayment = async () => {
 
     try {
         isProcessingPayment.value = true;
-        
-        // Use the new SenangPay payment initiation endpoint
-        const response = await axios.post(`/payment/initiate/${bookingSuccess.value.id}`);
-
-        if (response.data.success) {
-            // Redirect user to SenangPay payment page
-            window.location.href = response.data.payment_url;
-        } else {
-            throw new Error(response.data.message || 'Failed to initiate payment');
-        }
-    } catch (error) {
-        console.error('Payment initiation error:', error);
-        await Swal.fire({
-            icon: 'error',
-            title: 'Payment Initialization Failed',
-            text: error.response?.data?.message || error.message || 'Failed to initialize payment. Please try again.',
-            confirmButtonColor: '#EF4444'
-        });
+        const r = await axios.post(route('payment.initiate', bookingSuccess.value.uuid));
+        if (r.data.success && r.data.payment_data) {
+            const f = Object.entries(r.data.payment_data).reduce((form, [k, v]) => {
+            form.innerHTML += `<input type="hidden" name="${k}" value="${v}">`;
+            return form;
+        }, 
+        document.createElement('form'));
+        f.method = 'post';
+        f.action = r.data.payment_url;
+        document.body.appendChild(f);
+        console.log(f.outerHTML);
+        f.submit();
+        } else throw new Error('Failed to initiate payment');
+    } catch (e) {
+        console.error(e);
+        Swal.fire({ icon: 'error', title: 'Payment Error', text: 'Unable to retry payment. Please contact support.', confirmButtonColor: '#EF4444' });
     } finally {
         isProcessingPayment.value = false;
     }

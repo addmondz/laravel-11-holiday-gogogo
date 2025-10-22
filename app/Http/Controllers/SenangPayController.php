@@ -76,50 +76,28 @@ class SenangPayController extends Controller
             $secret_key = config('senangpay.secret_key');
             $base_url = config('senangpay.base_url');
             $is_sandbox = config('senangpay.sandbox');
+            $hash_algorithm = config('senangpay.hash_algorithm');
             $package_hash = $booking->package->uuid;
 
             $detail = "Payment for booking {$booking->uuid}. Package: {$package_hash}";
-            $amount = round((float) $booking->total_price, 2);
+            $amount = number_format((float) $booking->total_price, 2, '.', '');
             $order_id = (string) $booking->id;
             $customer_name = $booking->booking_name;
             $customer_email = $booking->email ?? 'customer@example.com';
             $customer_contact = $booking->phone_number;
 
-            Log::channel('senangpay')->info('SENANGPAY_SANDBOX: ' . config('senangpay.sandbox'));
-            // Log inputs
-            Log::channel('senangpay')->info('--- SenangPay Hash Generation Inputs ---' . json_encode([
-                'detail' => $detail,
-                'amount' => $amount,
-                'order_id' => $order_id,
-                'customer_name' => $customer_name,
-                'customer_email' => $customer_email,
-                'customer_contact' => $customer_contact,
-                'secret_key (partial)' => substr($secret_key, 0, 5) . '***',
-            ], JSON_PRETTY_PRINT));
-
-            // Generate hash
-            $hash_input = $secret_key . urldecode($detail) . urldecode($amount) . urldecode($order_id);
-
-            Log::channel('senangpay')->info('Hash input string:', ['hash_input' => $hash_input]);
-
-            if ($is_sandbox) {
-                $hash = md5($hash_input);
+            // Generate hash: hash_hmac('sha256', secret_key + detail + amount + order_id, secret_key)
+            if ($hash_algorithm == 'md5') {
+                $hash = md5($secret_key . $detail . $amount . $order_id);
             } else {
+                $hash_input = $secret_key . $detail . $amount . $order_id;
                 $hash = hash_hmac('sha256', $hash_input, $secret_key);
             }
 
-            Log::channel('senangpay')->info('Generated hash:', ['hash' => $hash]);
+            // Build payment URL (SenangPay expects POST)
+            $payment_url = "{$base_url}/{$merchant_id}";
 
-            // Build URL
-            $payment_url = "{$base_url}/{$merchant_id}?" . http_build_query([
-                'detail' => $detail,
-                'amount' => $amount,
-                'order_id' => $order_id,
-                'name' => $customer_name,
-                'email' => $customer_email,
-                'phone' => $customer_contact,
-                'hash' => $hash,
-            ]);
+            Log::channel('senangpay')->info('Payment URL', ['payment_url' => $payment_url]);
 
             $transaction = new Transaction();
             $transaction->booking_id = $booking->id;
@@ -129,13 +107,26 @@ class SenangPayController extends Controller
             $transaction->order_id = $order_id;
             $transaction->save();
 
-            Log::channel('senangpay')->info('Final payment URL:', ['url' => $payment_url]);
+            Log::channel('senangpay')->info('Transaction created', ['transaction_id' => $transaction->id]);
 
-            return response()->json([
+            $apiResponse = [
                 'success' => true,
                 'payment_url' => $payment_url,
-                'order_id' => $order_id
-            ]);
+                'order_id' => $order_id,
+                'payment_data' => [
+                    'detail' => $detail,
+                    'amount' => $amount,
+                    'order_id' => $order_id,
+                    'name' => $customer_name,
+                    'email' => $customer_email,
+                    'phone' => $customer_contact,
+                    'hash' => $hash,
+                ]
+            ];
+
+            // Log::channel('senangpay')->info('API response: ' . json_encode($apiResponse, JSON_PRETTY_PRINT));
+
+            return response()->json($apiResponse);
         } catch (\Exception $e) {
             Log::channel('senangpay')->error('Payment initiation failed', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => 'Payment initiation failed'], 500);

@@ -173,7 +173,7 @@ class BookingSeeder extends Seeder
                     'adults' => $totalAdults,
                     'children' => $totalChildren,
                     'infants' => $totalInfants,
-                    'total_price' => $this->testingPayment ? 1 : round($totalPrice, 2)
+                    'total_price' => $this->testingPayment ? 2 : round($totalPrice, 2)
                 ]);
 
                 if ($booking->status >= ApprovalStatus::PAYMENT_COMPLETED) {
@@ -200,7 +200,7 @@ class BookingSeeder extends Seeder
                             'order_id' => $booking->id,
                             'senang_pay_api_log_id' => $senangPayApiLog->id,
                             'transaction_id' => $transactionId,
-                            'amount' => 1,
+                            'amount' => $booking->total_price,
                         ]);
                     }
                 }
