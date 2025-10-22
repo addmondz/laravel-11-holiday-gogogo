@@ -18,8 +18,8 @@ class SenangPayController extends Controller
         Log::channel('senangpay')->info('handleReturn', $requestData);
 
         // start testing remove later
-        // $mockJson = '{"status_id":"0","order_id":"1","transaction_id":"1750598447008714710","msg":"The_payment_was_declined._Please_contact_your_bank._Thank_you._","hash":"dd96358091218465a92f738fe64636b4e46d0901d98cc1aacdbd011ff4d81ac2"}';
-        // $requestData = json_decode($mockJson, true);
+        $mockJson = '{"status_id":"1","order_id":"25","transaction_id":"1761139218000108459","msg":"Payment_was_successful","hash":"88574f33079c3c09a29d6d1d312fc306fe00fd8329ed90624ba3c1d304b4992b"}';
+        $requestData = json_decode($mockJson, true);
         // end testing remove later
 
         $result = $this->processPaymentResponse($requestData);
@@ -223,7 +223,7 @@ class SenangPayController extends Controller
     private function verifyHash(array $data)
     {
         $secretKey = config('senangpay.secret_key');
-        $isSandbox = config('senangpay.sandbox');
+        $hashAlgorithm = config('senangpay.hash_algorithm');
 
         $hashInput = $secretKey .
             ($data['status_id'] ?? '') .
@@ -231,7 +231,19 @@ class SenangPayController extends Controller
             ($data['transaction_id'] ?? '') .
             ($data['msg'] ?? '');
 
-        $expectedHash = $isSandbox ? md5($hashInput) : hash_hmac('sha256', $hashInput, $secretKey);
+        if ($hashAlgorithm === 'md5') {
+            $expectedHash = md5($hashInput);
+        } else {
+            $expectedHash = hash_hmac('sha256', $hashInput, $secretKey);
+        }
+
+        Log::channel('senangpay')->info('Hash verification', [
+            'hash_algorithm' => $hashAlgorithm,
+            'hash_input' => $hashInput,
+            'expected_hash' => $expectedHash,
+            'received_hash' => $data['hash'] ?? '',
+            'match' => hash_equals($expectedHash, $data['hash'] ?? '')
+        ]);
 
         return hash_equals($expectedHash, $data['hash'] ?? '');
     }
