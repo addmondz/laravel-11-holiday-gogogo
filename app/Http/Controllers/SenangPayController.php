@@ -18,8 +18,8 @@ class SenangPayController extends Controller
         Log::channel('senangpay')->info('handleReturn', $requestData);
 
         // start testing remove later
-        $mockJson = '{"status_id":"1","order_id":"25","transaction_id":"1761139218000108459","msg":"Payment_was_successful","hash":"88574f33079c3c09a29d6d1d312fc306fe00fd8329ed90624ba3c1d304b4992b"}';
-        $requestData = json_decode($mockJson, true);
+        // $mockJson = '{"status_id":"1","order_id":"25","transaction_id":"1761139218000108459","msg":"Payment_was_successful","hash":"88574f33079c3c09a29d6d1d312fc306fe00fd8329ed90624ba3c1d304b4992b"}';
+        // $requestData = json_decode($mockJson, true);
         // end testing remove later
 
         $result = $this->processPaymentResponse($requestData);
