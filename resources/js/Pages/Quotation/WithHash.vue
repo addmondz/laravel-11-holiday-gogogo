@@ -2327,7 +2327,7 @@ const proceedToPayment = async () => {
         } else throw new Error('Failed to initiate payment');
     } catch (e) {
         console.error(e);
-        Swal.fire({ icon: 'error', title: 'Payment Error', text: 'Unable to retry payment. Please contact support.', confirmButtonColor: '#EF4444' });
+        Swal.fire({ icon: 'error', title: 'Payment Error', text: 'Unable to create payment. Please contact support.', confirmButtonColor: '#EF4444' });
     } finally {
         isProcessingPayment.value = false;
     }

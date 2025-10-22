@@ -66,7 +66,7 @@ class SenangPayController extends Controller
     public function initiatePayment(Request $request, $bookingId)
     {
         try {
-            $booking = Booking::findOrFail($bookingId);
+            $booking = Booking::where('uuid', $bookingId)->first();
 
             if ($booking->status >= ApprovalStatus::PAYMENT_COMPLETED) {
                 return response()->json(['success' => false, 'message' => 'Booking is already paid'], 400);
