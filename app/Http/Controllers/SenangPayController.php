@@ -97,7 +97,7 @@ class SenangPayController extends Controller
             // Build payment URL (SenangPay expects POST)
             $payment_url = "{$base_url}/{$merchant_id}";
 
-            Log::channel('senangpay')->info('Payment URL', ['payment_url' => $payment_url]);
+            // Log::channel('senangpay')->info('Payment URL', ['payment_url' => $payment_url]);
 
             $transaction = new Transaction();
             $transaction->booking_id = $booking->id;
@@ -106,8 +106,6 @@ class SenangPayController extends Controller
             $transaction->status = 'pending';
             $transaction->order_id = $order_id;
             $transaction->save();
-
-            Log::channel('senangpay')->info('Transaction created', ['transaction_id' => $transaction->id]);
 
             $apiResponse = [
                 'success' => true,
@@ -123,8 +121,6 @@ class SenangPayController extends Controller
                     'hash' => $hash,
                 ]
             ];
-
-            // Log::channel('senangpay')->info('API response: ' . json_encode($apiResponse, JSON_PRETTY_PRINT));
 
             return response()->json($apiResponse);
         } catch (\Exception $e) {
@@ -236,14 +232,6 @@ class SenangPayController extends Controller
         } else {
             $expectedHash = hash_hmac('sha256', $hashInput, $secretKey);
         }
-
-        Log::channel('senangpay')->info('Hash verification', [
-            'hash_algorithm' => $hashAlgorithm,
-            'hash_input' => $hashInput,
-            'expected_hash' => $expectedHash,
-            'received_hash' => $data['hash'] ?? '',
-            'match' => hash_equals($expectedHash, $data['hash'] ?? '')
-        ]);
 
         return hash_equals($expectedHash, $data['hash'] ?? '');
     }

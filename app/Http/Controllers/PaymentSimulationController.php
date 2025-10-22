@@ -76,7 +76,7 @@ class PaymentSimulationController extends Controller
             'hash' => $hash,
         ]);
 
-        Log::channel('senangpay')->info('Final payment URL:', ['url' => $payment_url]);
+        // Log::channel('senangpay')->info('Final payment URL:', ['url' => $payment_url]);
 
         return response()->json([
             'status' => 'success',
