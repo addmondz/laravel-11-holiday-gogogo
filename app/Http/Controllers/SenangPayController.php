@@ -123,6 +123,8 @@ class SenangPayController extends Controller
                 ]
             ];
 
+            // Log::channel('senangpay')->info('Payment initiation response: '. json_encode($apiResponse, JSON_PRETTY_PRINT));
+
             return response()->json($apiResponse);
         } catch (\Exception $e) {
             Log::channel('senangpay')->error('Payment initiation failed', ['error' => $e->getMessage()]);
