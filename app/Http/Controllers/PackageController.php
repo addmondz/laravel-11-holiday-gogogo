@@ -529,6 +529,9 @@ class PackageController extends Controller
             }
         }
 
+        $package->name = $package->name . ' (Deleted ' . date('Y-m-d H:i:s') . ')';
+        $package->save();
+
         $package->addOns()->delete();
         $package->configurations()->delete();
         $package->delete();
@@ -545,6 +548,31 @@ class PackageController extends Controller
         $data['name'] = $this->generateUniqueCopyName($package->name);
         $data['uuid'] = null;
         $data['room_types'] = collect($data['load_room_types'])->unique('name')->values();
+        
+        // Filter out images that don't exist in storage
+        if (isset($data['images']) && is_array($data['images'])) {
+            $data['images'] = collect($data['images'])
+                ->filter(function ($imagePath) {
+                    return Storage::disk('public')->exists($imagePath);
+                })
+                ->values()
+                ->toArray();
+        }
+        
+        // Filter out room type images that don't exist in storage
+        if (isset($data['room_types']) && is_array($data['room_types'])) {
+            $data['room_types'] = collect($data['room_types'])->map(function ($roomType) {
+                if (isset($roomType['images']) && is_array($roomType['images'])) {
+                    $roomType['images'] = collect($roomType['images'])
+                        ->filter(function ($imagePath) {
+                            return Storage::disk('public')->exists($imagePath);
+                        })
+                        ->values()
+                        ->toArray();
+                }
+                return $roomType;
+            })->toArray();
+        }
 
         return Inertia::render('Packages/Duplicate', [
             'package' => $data,
@@ -597,11 +625,18 @@ class PackageController extends Controller
                 'package_end_date' => 'nullable|date|after:package_start_date',
                 'weekend_days' => 'nullable|array',
                 'weekend_days.*' => 'integer|min:0|max:6',
+                'existing_images' => 'nullable|array',
+                'existing_images.*' => 'nullable|string',
+                'images' => 'nullable|array',
                 'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240', // 10MB max
                 'room_types' => 'required|array|min:1',
                 'room_types.*.name' => 'required|string|max:255',
                 'room_types.*.max_occupancy' => 'required|integer|min:1',
                 'room_types.*.description' => 'nullable|string',
+                'room_types.*.existing_images' => 'nullable|array',
+                'room_types.*.existing_images.*' => 'nullable|string',
+                'room_types.*.images' => 'nullable|array',
+                'room_types.*.images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             ], [
                 'name.required' => 'Package name is required',
                 'name.max' => 'Package name cannot exceed 255 characters',
@@ -642,10 +677,10 @@ class PackageController extends Controller
             // Handle image uploads and copying
             $images = [];
 
-            // Copy existing images if they exist
-            if ($package->images) {
-                foreach ($package->images as $imagePath) {
-                    if (Storage::disk('public')->exists($imagePath)) {
+            // Copy only the existing images that were kept in the form
+            if ($request->has('existing_images') && is_array($request->existing_images)) {
+                foreach ($request->existing_images as $imagePath) {
+                    if ($imagePath && Storage::disk('public')->exists($imagePath)) {
                         // Generate new path for the copied image
                         $newPath = 'packages/' . Str::uuid() . '_' . basename($imagePath);
                         // Copy the image to the new path
@@ -668,11 +703,47 @@ class PackageController extends Controller
 
             // Step 1: Create new records and build mappings
             $roomTypeMap = [];
-            foreach ($package->roomTypes->unique('name') as $roomType) {
-                $newRoomType = $roomType->replicate();
+            $formRoomTypes = $validated['room_types'] ?? [];
+            $originalRoomTypes = $package->roomTypes->unique('name')->values();
+            
+            // Create room types based on form submission
+            foreach ($formRoomTypes as $index => $formRoomType) {
+                // Create new room type with form data
+                $newRoomType = new RoomType();
                 $newRoomType->package_id = $newPackage->id;
+                $newRoomType->name = $formRoomType['name'];
+                $newRoomType->max_occupancy = $formRoomType['max_occupancy'];
+                $newRoomType->description = $formRoomType['description'] ?? null;
+                
+                // Handle room type images
+                $roomTypeImages = [];
+                
+                // Copy existing images that were kept in the form
+                if (isset($formRoomType['existing_images']) && is_array($formRoomType['existing_images'])) {
+                    foreach ($formRoomType['existing_images'] as $imagePath) {
+                        if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+                            $newPath = 'room-types/' . Str::uuid() . '_' . basename($imagePath);
+                            Storage::disk('public')->copy($imagePath, $newPath);
+                            $roomTypeImages[] = $newPath;
+                        }
+                    }
+                }
+                
+                // Handle new image uploads
+                if ($request->hasFile("room_types.{$index}.images")) {
+                    foreach ($request->file("room_types.{$index}.images") as $image) {
+                        $path = $image->store('room-types', 'public');
+                        $roomTypeImages[] = $path;
+                    }
+                }
+                
+                $newRoomType->images = $roomTypeImages;
                 $newRoomType->save();
-                $roomTypeMap[$roomType->id] = $newRoomType->id;
+                
+                // Map old room type ID to new room type ID (if exists)
+                if (isset($originalRoomTypes[$index])) {
+                    $roomTypeMap[$originalRoomTypes[$index]->id] = $newRoomType->id;
+                }
             }
 
             $seasonMap = [];

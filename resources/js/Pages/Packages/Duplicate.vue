@@ -225,7 +225,7 @@
                                 </div>
 
                                 <!-- Room Types Section -->
-                                <div class="mt-6 border-t border-gray-600 pt-6 hidden">
+                                <div class="mt-6 border-t border-gray-600 pt-6">
                                     <div class="flex justify-between items-center mb-4">
                                         <h3 class="text-lg font-medium text-gray-900">Room Types</h3>
                                         <button
@@ -251,6 +251,7 @@
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Occupancy</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                                 </tr>
                                             </thead>
@@ -289,6 +290,44 @@
                                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                             placeholder="Description"
                                                         />
+                                                    </td>
+                                                    <td class="px-6 py-4">
+                                                        <div class="space-y-2">
+                                                            <!-- Image Preview -->
+                                                            <div v-if="roomType.imagePreviews?.length" class="flex flex-wrap gap-2">
+                                                                <div v-for="(preview, previewIndex) in roomType.imagePreviews" :key="previewIndex" class="relative">
+                                                                    <img :src="preview" class="h-20 w-20 object-cover rounded" />
+                                                                    <button
+                                                                        type="button"
+                                                                        @click="removeRoomTypeImage(index, previewIndex)"
+                                                                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                                                    >
+                                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <!-- Upload Button -->
+                                                            <div class="flex justify-center border-2 border-gray-300 border-dashed rounded-md">
+                                                                <div class="space-y-1 text-center">
+                                                                    <div class="text-sm text-gray-600">
+                                                                        <label :for="'room-type-images-' + index" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                                            <span>Upload images</span>
+                                                                            <input
+                                                                                :id="'room-type-images-' + index"
+                                                                                type="file"
+                                                                                multiple
+                                                                                accept="image/*"
+                                                                                class="sr-only"
+                                                                                @change="handleRoomTypeImagesUpload($event, index)"
+                                                                            />
+                                                                        </label>
+                                                                        <p class="pl-1">or drag and drop</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <button
@@ -330,13 +369,12 @@
 </template>
 
 <script setup>
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Swal from 'sweetalert2';
 import { Head } from '@inertiajs/vue3';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
 import { computed, ref, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
 
 const props = defineProps({
     package: Object
@@ -359,11 +397,12 @@ const form = useForm({
         name: roomType.name,
         max_occupancy: roomType.max_occupancy,
         description: roomType.description,
+        images: roomType.images || [],
+        imagePreviews: (roomType.images || []).map(imgPath => `/images/${imgPath}`)
     }))
 });
 
 const dateError = ref('');
-const router = useRouter();
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const addRoomType = () => {
@@ -371,10 +410,20 @@ const addRoomType = () => {
         name: '',
         max_occupancy: 4,
         description: '',
+        images: [],
+        imagePreviews: []
     });
 };
 
 const removeRoomType = (index) => {
+    // Clean up image previews before removing
+    if (form.room_types[index].imagePreviews) {
+        form.room_types[index].imagePreviews.forEach(url => {
+            if (url && url.startsWith('blob:')) {
+                URL.revokeObjectURL(url);
+            }
+        });
+    }
     form.room_types.splice(index, 1);
 };
 
@@ -420,7 +469,7 @@ const removeImage = (index) => {
 
 const getImagePreviewUrl = (image) => {
     if (typeof image === 'string') {
-        return `/storage/${image}`;
+        return `/images/${image}`;
     }
     
     if (typeof window !== 'undefined' && window.URL && window.URL.createObjectURL) {
@@ -428,6 +477,58 @@ const getImagePreviewUrl = (image) => {
     }
     
     return '';
+};
+
+const handleRoomTypeImagesUpload = (event, index) => {
+    const files = Array.from(event.target.files);
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const errors = [];
+
+    files.forEach(file => {
+        if (!allowedTypes.includes(file.type)) {
+            errors.push(`${file.name} is not a valid image file. Only JPG, PNG, and GIF are allowed.`);
+        }
+        if (file.size > maxSize) {
+            errors.push(`${file.name} is too large. Maximum file size is 10MB.`);
+        }
+    });
+
+    if (errors.length > 0) {
+        Swal.fire({
+            title: 'Invalid Images',
+            html: errors.join('<br>'),
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    // Add files to the room type's images array
+    form.room_types[index].images = [...(form.room_types[index].images || []), ...files];
+    
+    // Create preview URLs
+    files.forEach(file => {
+        if (!form.room_types[index].imagePreviews) {
+            form.room_types[index].imagePreviews = [];
+        }
+        form.room_types[index].imagePreviews.push(URL.createObjectURL(file));
+    });
+};
+
+const removeRoomTypeImage = (roomTypeIndex, imageIndex) => {
+    const previewUrl = form.room_types[roomTypeIndex].imagePreviews[imageIndex];
+    
+    // Remove the image from the array
+    form.room_types[roomTypeIndex].images.splice(imageIndex, 1);
+    
+    // Revoke the preview URL if it's a blob URL (newly uploaded file)
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+    }
+    
+    // Remove the preview
+    form.room_types[roomTypeIndex].imagePreviews.splice(imageIndex, 1);
 };
 
 const validateDates = () => {
@@ -485,8 +586,34 @@ const submit = () => {
         return;
     }
 
-    // Use Inertia's form submission to properly handle validation errors
-    form.post(route('packages.duplicate', props.package.id), {
+    // Use Inertia's form submission with transform to properly handle validation errors
+    form.transform((data) => {
+        // Separate existing images (strings) from new uploads (File objects)
+        const existingImages = data.images.filter(img => typeof img === 'string');
+        const newImages = data.images.filter(img => img instanceof File);
+        
+        // Transform room types to separate existing images from new uploads
+        const transformedRoomTypes = data.room_types.map(roomType => {
+            const existingRoomImages = (roomType.images || []).filter(img => typeof img === 'string');
+            const newRoomImages = (roomType.images || []).filter(img => img instanceof File);
+            
+            return {
+                name: roomType.name,
+                max_occupancy: roomType.max_occupancy,
+                description: roomType.description,
+                existing_images: existingRoomImages,
+                images: newRoomImages
+            };
+        });
+        
+        // Return transformed data with separated image data
+        return {
+            ...data,
+            existing_images: existingImages, // Paths of images to copy from original
+            images: newImages, // New file uploads
+            room_types: transformedRoomTypes
+        };
+    }).post(route('packages.duplicate', props.package.id), {
         onSuccess: () => {
             Swal.fire({
                 title: 'Success!',
@@ -494,13 +621,12 @@ const submit = () => {
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                window.location.href = route('packages.index');
+                router.visit(route('packages.index'));
             });
         },
         onError: (errors) => {
             console.log('Validation errors:', errors);
-            // The errors will automatically be bound to form.errors
-            // No need to manually handle them here as they'll show in the template
+            // Errors are automatically bound to form.errors and will display in the template
         }
     });
 };
@@ -514,7 +640,19 @@ const breadcrumbs = computed(() => [
 onUnmounted(() => {
     form.images.forEach(image => {
         if (image instanceof File) {
-            URL.revokeObjectURL(URL.createObjectURL(image));
+            const url = URL.createObjectURL(image);
+            URL.revokeObjectURL(url);
+        }
+    });
+    
+    // Clean up room type image previews
+    form.room_types.forEach(roomType => {
+        if (roomType.imagePreviews) {
+            roomType.imagePreviews.forEach(url => {
+                if (url && typeof url === 'string' && url.startsWith('blob:')) {
+                    URL.revokeObjectURL(url);
+                }
+            });
         }
     });
 });
