@@ -777,6 +777,13 @@ class PackageController extends Controller
                 $newDateBlocker->save();
             }
 
+            // package add-ons
+            foreach ($package->addOns as $addOn) {
+                $newAddOn = $addOn->replicate();
+                $newAddOn->package_id = $newPackage->id;
+                $newAddOn->save();
+            }
+
             DB::commit();
 
             return redirect()->route('packages.show', $newPackage->id)
