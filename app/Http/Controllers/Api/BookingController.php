@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\BookingAddOn;
 use App\Services\GenerateBookingUid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -27,7 +28,12 @@ class BookingController extends Controller
                 'phone_number' => 'required|string|max:20',
                 'booking_ic' => 'string|max:20|nullable',
                 'total_price' => 'required|numeric|min:0',
-                'special_remarks' => 'nullable|string'
+                'special_remarks' => 'nullable|string',
+                'add_ons' => 'nullable|array',
+                'add_ons.*.id' => 'required|exists:package_add_ons,id',
+                'add_ons.*.adults' => 'required|integer|min:0',
+                'add_ons.*.children' => 'required|integer|min:0',
+                'add_ons.*.infants' => 'required|integer|min:0',
             ]);
 
             if ($validator->fails()) {
@@ -78,9 +84,21 @@ class BookingController extends Controller
                     ]);
                 }
 
+                // Create booking add-ons
+                if (!empty($request->add_ons)) {
+                    foreach ($request->add_ons as $addOn) {
+                        $booking->addOns()->create([
+                            'package_add_on_id' => $addOn['id'],
+                            'adults' => $addOn['adults'] ?? 0,
+                            'children' => $addOn['children'] ?? 0,
+                            'infants' => $addOn['infants'] ?? 0
+                        ]);
+                    }
+                }
+
                 DB::commit();
 
-                $booking = Booking::with('rooms.roomType')->find($booking->id);
+                $booking = Booking::with(['rooms.roomType', 'addOns.packageAddOn'])->find($booking->id);
 
                 return response()->json([
                     'success' => true,

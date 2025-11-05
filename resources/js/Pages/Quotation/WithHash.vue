@@ -1105,7 +1105,7 @@
 
                             <!-- Tin Number -->
                             <div>
-                                <label for="booking_ic" class="block text-sm font-medium text-gray-700">Tin Number (Optional)</label>
+                                <label for="booking_ic" class="block text-sm font-medium text-gray-700">Tin Number (if einvoice is required)</label>
                                 <input
                                     type="text"
                                     id="booking_ic"

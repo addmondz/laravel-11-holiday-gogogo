@@ -418,6 +418,14 @@
             "children": 0,
             "infants": 0
         }
+    ],
+    "add_ons": [
+        {
+            "id": 1,
+            "adults": 2,
+            "children": 1,
+            "infants": 0
+        }
     ]
 }</code></pre>
                                 </div>
@@ -442,6 +450,14 @@
             "children": 0,
             "infants": 0
         }
+    ],
+    "add_ons": [
+        {
+            "id": 1,
+            "adults": 2,
+            "children": 1,
+            "infants": 0
+        }
     ]
   }'</code></pre>
                                 </div>
@@ -458,6 +474,14 @@
                                     <li><strong>rooms[].adults:</strong> Required integer, minimum 1, maximum 4</li>
                                     <li><strong>rooms[].children:</strong> Required integer, minimum 0, maximum 4</li>
                                     <li><strong>rooms[].infants:</strong> Required integer, minimum 0, maximum 4</li>
+                                </ul>
+                                <h4 class="font-semibold text-yellow-800 mb-2 mt-4">Optional Fields</h4>
+                                <ul class="space-y-1 text-sm text-yellow-700">
+                                    <li><strong>add_ons:</strong> Optional array of add-ons to include in the booking</li>
+                                    <li><strong>add_ons[].id:</strong> Required integer, must exist in package_add_ons table</li>
+                                    <li><strong>add_ons[].adults:</strong> Required integer, minimum 0</li>
+                                    <li><strong>add_ons[].children:</strong> Required integer, minimum 0</li>
+                                    <li><strong>add_ons[].infants:</strong> Required integer, minimum 0</li>
                                 </ul>
                             </div>
 
@@ -540,6 +564,24 @@
             }
         }
     ],
+    "add_ons": [
+        {
+            "id": 1,
+            "name": "Airport Transfer",
+            "description": "Round trip airport transfer service",
+            "adults": 2,
+            "children": 1,
+            "infants": 0,
+            "adult_price": 50.00,
+            "child_price": 30.00,
+            "infant_price": 0.00,
+            "adult_total": 100.00,
+            "child_total": 30.00,
+            "infant_total": 0.00,
+            "total": 130.00
+        }
+    ],
+    "add_ons_total": 130.00,
     "summary": {
         "total_nights": 7,
         "total_adults": 1,
@@ -557,11 +599,12 @@
             "infant": {"total": 0},
             "total": 2604.1
         },
-        "grand_total": 9559.36
+        "add_ons_total": 130.00,
+        "grand_total": 9689.36
     },
-    "total_without_sst": 9559.36,
-    "sst": 573.56,
-    "total": 10132.92
+    "total_without_sst": 9689.36,
+    "sst": 581.36,
+    "total": 10270.72
 }</code></pre>
                             </div>
 
@@ -639,7 +682,92 @@
                                             <tr class="hover:bg-gray-100">
                                                 <td class="py-2 px-3 font-mono text-gray-800">summary.grand_total</td>
                                                 <td class="py-2 px-3 text-gray-600">decimal</td>
-                                                <td class="py-2 px-3 text-gray-700">Total amount before SST (same as total_without_sst)</td>
+                                                <td class="py-2 px-3 text-gray-700">Total amount before SST (includes base charges, surcharges, and add-ons)</td>
+                                            </tr>
+                                            
+                                            <!-- Add-ons Information -->
+                                            <tr class="bg-orange-50">
+                                                <td colspan="3" class="py-2 px-3 font-semibold text-orange-900">Add-ons Information</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons</td>
+                                                <td class="py-2 px-3 text-gray-600">array</td>
+                                                <td class="py-2 px-3 text-gray-700">Array of selected add-ons (empty array if no add-ons selected)</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].id</td>
+                                                <td class="py-2 px-3 text-gray-600">integer</td>
+                                                <td class="py-2 px-3 text-gray-700">Add-on ID</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].name</td>
+                                                <td class="py-2 px-3 text-gray-600">string</td>
+                                                <td class="py-2 px-3 text-gray-700">Add-on name</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].description</td>
+                                                <td class="py-2 px-3 text-gray-600">string</td>
+                                                <td class="py-2 px-3 text-gray-700">Add-on description</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].adults</td>
+                                                <td class="py-2 px-3 text-gray-600">integer</td>
+                                                <td class="py-2 px-3 text-gray-700">Number of adults for this add-on</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].children</td>
+                                                <td class="py-2 px-3 text-gray-600">integer</td>
+                                                <td class="py-2 px-3 text-gray-700">Number of children for this add-on</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].infants</td>
+                                                <td class="py-2 px-3 text-gray-600">integer</td>
+                                                <td class="py-2 px-3 text-gray-700">Number of infants for this add-on</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].adult_price</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Price per adult for this add-on</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].child_price</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Price per child for this add-on</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].infant_price</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Price per infant for this add-on</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].adult_total</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Total price for adults (adult_price × adults)</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].child_total</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Total price for children (child_price × children)</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].infant_total</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Total price for infants (infant_price × infants)</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons[].total</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Total price for this add-on (adult_total + child_total + infant_total)</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">add_ons_total</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Sum of all add-on totals</td>
+                                            </tr>
+                                            <tr class="hover:bg-gray-100">
+                                                <td class="py-2 px-3 font-mono text-gray-800">summary.add_ons_total</td>
+                                                <td class="py-2 px-3 text-gray-600">decimal</td>
+                                                <td class="py-2 px-3 text-gray-700">Same as add_ons_total (for consistency)</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -656,6 +784,8 @@
                                     <li><strong>Currency:</strong> All prices are in Malaysian Ringgit (MYR).</li>
                                     <li><strong>SST Calculation:</strong> SST (Sales and Service Tax) is automatically calculated based on the system configuration. If SST is disabled, the <code class="bg-blue-100 px-1 rounded">sst</code> field will be 0.</li>
                                     <li><strong>Total Breakdown:</strong> The response includes <code class="bg-blue-100 px-1 rounded">total_without_sst</code> (amount before tax), <code class="bg-blue-100 px-1 rounded">sst</code> (tax amount), and <code class="bg-blue-100 px-1 rounded">total</code> (final amount including tax).</li>
+                                    <li><strong>Add-ons:</strong> Add-ons are optional and can be included in the request. Each add-on requires specifying the number of adults, children, and infants. The add-on prices are added to the base total before SST calculation.</li>
+                                    <li><strong>Add-on Pricing:</strong> Add-ons have separate pricing for adults, children, and infants. The total for each add-on is calculated as (adult_price × adults) + (child_price × children) + (infant_price × infants).</li>
                                 </ul>
                             </div>
                         </div>

@@ -61,4 +61,9 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class, 'approval_by');
     }
+
+    public function addOns(): HasMany
+    {
+        return $this->hasMany(BookingAddOn::class);
+    }
 }

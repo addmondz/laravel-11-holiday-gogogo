@@ -155,6 +155,11 @@ class BotApiController extends Controller
             'travel_date_start' => 'required|date|after:today',
             'rooms' => 'required|array|min:1',
             'rooms.*.room_type_id' => 'required|integer|exists:room_types,id',
+            'add_ons' => 'nullable|array',
+            'add_ons.*.id' => 'required|exists:package_add_ons,id',
+            'add_ons.*.adults' => 'required|integer|min:0',
+            'add_ons.*.children' => 'required|integer|min:0',
+            'add_ons.*.infants' => 'required|integer|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -183,7 +188,8 @@ class BotApiController extends Controller
                 $rooms,
                 $request->travel_date_start,
                 $endDate,
-                true
+                true,
+                $request->add_ons ?? []
             );
 
             return $this->returnBotApiResponse(true, 'Success', $spiResponse, 200, $request, 'fetchQuotation');

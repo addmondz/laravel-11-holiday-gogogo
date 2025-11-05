@@ -252,6 +252,87 @@
                     </div>
                 </div>
 
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8" v-if="booking.add_ons && booking.add_ons.length > 0">
+                    <div class="p-6 text-gray-900">
+                        <!-- Add-ons Details -->
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Add-ons Details</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Add-on Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adults</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Children</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prices</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr v-for="addOn in booking.add_ons" :key="addOn.id">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ addOn.package_add_on?.name || 'N/A' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-900">{{ addOn.package_add_on?.description || '-' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ addOn.adults }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ addOn.children }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ addOn.infants }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-600 space-y-1">
+                                                <div v-if="addOn.package_add_on?.adult_price">
+                                                    Adult: MYR {{ formatNumber(addOn.package_add_on.adult_price) }}
+                                                </div>
+                                                <div v-if="addOn.package_add_on?.child_price">
+                                                    Child: MYR {{ formatNumber(addOn.package_add_on.child_price) }}
+                                                </div>
+                                                <div v-if="addOn.package_add_on?.infant_price">
+                                                    Infant: MYR {{ formatNumber(addOn.package_add_on.infant_price) }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                MYR {{ formatNumber(
+                                                    (addOn.adults * (addOn.package_add_on?.adult_price || 0)) +
+                                                    (addOn.children * (addOn.package_add_on?.child_price || 0)) +
+                                                    (addOn.infants * (addOn.package_add_on?.infant_price || 0))
+                                                ) }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Summary Row -->
+                                    <tr class="bg-gray-50">
+                                        <td colspan="6" class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">Add-ons Total</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                MYR {{ formatNumber(
+                                                    booking.add_ons.reduce((total, addOn) => {
+                                                        return total + 
+                                                            (addOn.adults * (addOn.package_add_on?.adult_price || 0)) +
+                                                            (addOn.children * (addOn.package_add_on?.child_price || 0)) +
+                                                            (addOn.infants * (addOn.package_add_on?.infant_price || 0));
+                                                    }, 0)
+                                                ) }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8" v-if="booking.transactions && booking.transactions.length > 0">
                     <div class="p-6 text-gray-900">
                         <!-- Transaction History -->
