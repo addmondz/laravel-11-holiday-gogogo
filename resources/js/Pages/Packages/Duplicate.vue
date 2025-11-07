@@ -162,13 +162,20 @@
                                 </div>
 
                                 <div>
-                                    <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">Terms and Conditions</label>
+                                    <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">
+                                        Terms and Conditions
+                                        <span class="text-xs text-gray-500 font-normal ml-2">(Enter each point on a new line)</span>
+                                    </label>
                                     <textarea
                                         id="terms_and_conditions"
                                         v-model="form.terms_and_conditions"
-                                        rows="3"
+                                        rows="8"
+                                        placeholder="Enter each term or condition on a new line. They will be displayed as bullet points on the quotation page."
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     ></textarea>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        Each line will be displayed as a bullet point. Use line breaks to separate different terms.
+                                    </p>
                                     <div v-if="form.errors.terms_and_conditions" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.terms_and_conditions }}
                                     </div>

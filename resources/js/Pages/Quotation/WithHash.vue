@@ -1496,7 +1496,7 @@
                     </svg> -->
                     Terms and Conditions
                 </h2>
-                <p class="text-gray-600 text-sm" v-html="linkify(packageData.terms_and_conditions)"></p>
+                <div class="text-gray-600 text-sm" v-html="formatTermsAndConditions(packageData.terms_and_conditions)"></div>
             </div>
         </div>
     </div>
@@ -1552,6 +1552,29 @@ const linkify = (text) => {
   if (!text) return "";
   const urlPattern = /(https?:\/\/[^\s]+)/g;
   return text.replace(urlPattern, '<a href="$1" target="_blank" class="text-blue-600 underline">$1</a>');
+}
+
+// Format terms and conditions as bullet points
+const formatTermsAndConditions = (text) => {
+  if (!text) return "";
+  
+  // Split by newlines and filter out empty lines
+  const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+  
+  if (lines.length === 0) return "";
+  
+  // If only one line or no newlines, return as paragraph with linkify
+  if (lines.length === 1) {
+    return `<p>${linkify(lines[0])}</p>`;
+  }
+  
+  // Convert to bullet points
+  const bulletPoints = lines.map(line => {
+    const linkedLine = linkify(line.trim());
+    return `<li class="mb-1">${linkedLine}</li>`;
+  }).join('');
+  
+  return `<ul class="list-disc list-inside space-y-1">${bulletPoints}</ul>`;
 }
 
 // Function to retry payment
