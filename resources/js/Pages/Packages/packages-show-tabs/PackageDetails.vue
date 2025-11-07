@@ -69,6 +69,14 @@
                 <h4 class="text-sm font-medium text-gray-500">Terms and Conditions</h4>
                 <div class="mt-1 text-sm text-gray-900" v-html="formatTermsAndConditions(package.terms_and_conditions)"></div>
             </div>
+            <div v-if="package.wordpress_link">
+                <h4 class="text-sm font-medium text-gray-500">WordPress Link</h4>
+                <p class="mt-1 text-sm text-gray-900">
+                    <a :href="package.wordpress_link" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-900 underline break-all">
+                        {{ package.wordpress_link }}
+                    </a>
+                </p>
+            </div>
             <div class="grid grid-cols-2 gap-6">
                 <div>
                     <h4 class="text-sm font-medium text-gray-500">Package Date</h4>

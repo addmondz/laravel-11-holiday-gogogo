@@ -138,6 +138,17 @@
                                     </h2>
                                     <p class="text-gray-700">{{ packageData.location }}</p>
                                 </div>
+                                <div v-if="packageData.wordpress_link" class="bg-gray-50 rounded-lg p-4">
+                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                                        <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                        </svg>
+                                        Package Details
+                                    </h2>
+                                    <a :href="packageData.wordpress_link" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-900 underline break-all text-sm">
+                                        {{ packageData.wordpress_link }}
+                                    </a>
+                                </div>
                                 <div class="bg-gray-50 rounded-lg p-4">
                                     <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
                                         <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

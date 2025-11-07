@@ -256,6 +256,12 @@
                                     <div v-if="form.errors.terms_and_conditions" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.terms_and_conditions }}
                                     </div>
+                                    
+                                    <!-- Preview Section -->
+                                    <div v-if="form.terms_and_conditions" class="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200">
+                                        <p class="text-xs font-medium text-gray-700 mb-2">Preview:</p>
+                                        <div class="text-sm text-gray-600" v-html="formatTermsAndConditions(form.terms_and_conditions)"></div>
+                                    </div>
                                 </div>
 
                                 <div>
@@ -269,6 +275,24 @@
                                     />
                                     <div v-if="form.errors.location" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.location }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="wordpress_link" class="block text-sm font-medium text-gray-700">WordPress Link</label>
+                                    <input
+                                        type="url"
+                                        id="wordpress_link"
+                                        v-model="form.wordpress_link"
+                                        placeholder="https://example.com/package"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        :class="{ 'border-red-500': form.errors.wordpress_link }"
+                                    />
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        Enter the full URL to the WordPress page for this package.
+                                    </p>
+                                    <div v-if="form.errors.wordpress_link" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.wordpress_link }}
                                     </div>
                                 </div>
 
@@ -477,6 +501,7 @@ const form = useForm({
     weekend_days: [0, 6], // Default to Saturday and Sunday
     terms_and_conditions: '',
     location: '',
+    wordpress_link: '',
     package_start_date: '',
     package_end_date: '',
     room_types: [{
@@ -587,6 +612,35 @@ const removeRoomTypeImage = (roomTypeIndex, imageIndex) => {
     // Revoke the preview URL to prevent memory leaks
     URL.revokeObjectURL(form.room_types[roomTypeIndex].imagePreviews[imageIndex]);
     form.room_types[roomTypeIndex].imagePreviews.splice(imageIndex, 1);
+};
+
+// Format terms and conditions as bullet points (same as quotation page)
+const linkify = (text) => {
+    if (!text) return "";
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlPattern, '<a href="$1" target="_blank" class="text-blue-600 underline">$1</a>');
+};
+
+const formatTermsAndConditions = (text) => {
+    if (!text) return "";
+    
+    // Split by newlines and filter out empty lines
+    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+    
+    if (lines.length === 0) return "";
+    
+    // If only one line or no newlines, return as paragraph with linkify
+    if (lines.length === 1) {
+        return `<p>${linkify(lines[0])}</p>`;
+    }
+    
+    // Convert to bullet points
+    const bulletPoints = lines.map(line => {
+        const linkedLine = linkify(line.trim());
+        return `<li class="mb-1">${linkedLine}</li>`;
+    }).join('');
+    
+    return `<ul class="list-disc list-inside space-y-1">${bulletPoints}</ul>`;
 };
 
 // Clean up preview URLs when component is unmounted

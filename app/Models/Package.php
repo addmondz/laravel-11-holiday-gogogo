@@ -24,6 +24,7 @@ class Package extends Model
         'package_max_days',
         'terms_and_conditions',
         'location',
+        'wordpress_link',
         'package_start_date',
         'package_end_date',
         'uuid',
