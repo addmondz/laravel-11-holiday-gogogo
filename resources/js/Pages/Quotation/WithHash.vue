@@ -172,7 +172,7 @@
                                         <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
-                                        Valid Period
+                                        Travel Period
                                     </h2>
                                     <p class="text-gray-700">{{ moment(packageData.package_start_date).format('DD MMM YYYY') }} - {{ moment(packageData.package_end_date).format('DD MMM YYYY') }}</p>
                                 </div>
@@ -481,7 +481,6 @@
                                         <div v-if="room.room_type_id" class="bg-gray-50 rounded-md p-3">
                                             <p class="text-sm text-gray-600">
                                                 Room {{ index + 1 }}: {{ (room.adults || 0) + (room.children || 0) + (room.infants || 0) }} guests
-                                                Room {{ index + 1 }}: {{ room.adults + room.children + room.infants }} guests
                                                 ({{ room.adults }} adults, {{ room.children }} children, {{ room.infants }} infants)
                                             </p>
                                         </div>
@@ -793,8 +792,8 @@
 
                         <!-- Nightly Breakdown -->
                         <div v-if="priceBreakdown?.nights" class="mt-6">
-                            <div class="nightly-breakdown"> <!-- Extra HIDDEN SUMMARY DETAILS -->
-                            <!-- <div class="nightly-breakdown hidden"> --> <!-- Extra HIDDEN SUMMARY DETAILS -->
+                            <!-- <div class="nightly-breakdown"> Extra HIDDEN SUMMARY DETAILS -->
+                            <div class="nightly-breakdown hidden"> <!-- Extra HIDDEN SUMMARY DETAILS -->
                                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Price Breakdown by Rooms</h3>
                                 <!-- Room Breakdown -->
                                 <div v-for="(room, roomIndex) in priceBreakdown.rooms" :key="roomIndex" class="mb-6">
@@ -907,7 +906,6 @@
                                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
                                                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Nights</th>
                                                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base Total</th>
-                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surcharge/Night</th>
                                                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surcharge Total</th>
                                                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                                                 </tr>
@@ -935,9 +933,6 @@
                                                         MYR {{ formatNumber(guest.base_charge.total) }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
-                                                        MYR {{ formatNumber(guest.surcharge.price_per_night) }}
-                                                    </td>
-                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
                                                         MYR {{ formatNumber(guest.surcharge.total) }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-600 text-right">
@@ -947,7 +942,7 @@
                                                 
                                                 <!-- Guest Type Summary Rows -->
                                                 <tr v-if="priceBreakdown.summary.total_adults > 0" class="bg-indigo-50">
-                                                    <td colspan="5" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900">
+                                                    <td colspan="4" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900">
                                                         Total Adults ({{ priceBreakdown.summary.total_adults }})
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900 text-right">
@@ -1052,7 +1047,7 @@
                                     </div>
                                     
                                     <!-- Add-ons Breakdown -->
-                                    <div v-if="priceBreakdown.add_ons && priceBreakdown.add_ons.length > 0" class="mb-3">
+                                    <!-- <div v-if="priceBreakdown.add_ons && priceBreakdown.add_ons.length > 0" class="mb-3">
                                         <div class="text-sm font-medium text-gray-700 mb-2">Add-ons:</div>
                                         <div v-for="addOn in priceBreakdown.add_ons" :key="addOn.id" class="text-xs text-gray-600 mb-1">
                                             <div class="flex justify-between">
@@ -1069,7 +1064,7 @@
                                             <span>Add-ons Total</span>
                                             <span>MYR {{ formatNumber(priceBreakdown.add_ons_total) }}</span>
                                         </div>
-                                    </div>
+                                    </div> -->
                                     
                                     <hr class="border-gray-200 mb-3">
                                     <div class="flex justify-between text-base font-semibold text-indigo-700">
