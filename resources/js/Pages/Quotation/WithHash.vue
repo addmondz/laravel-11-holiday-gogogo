@@ -547,94 +547,84 @@
 
                 <!-- Step 2: Choose Add-ons -->
                 <div v-if="currentStep === 2">
-                    <div class="space-y-6">
-                        <div class="mb-8">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2">Choose Your Add-ons</h3>
-                            <p class="text-gray-600">Please select the add-ons you want to add to your booking, and enter the number of guests for each add-on.</p>
+                    <div class="space-y-4">
+                        <div class="mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-1">Choose Your Add-ons</h3>
+                            <p class="text-sm text-gray-500">Select add-ons and enter the number of guests for each.</p>
                         </div>
 
                         <!-- Add-ons Grid -->
-                        <div v-if="packageAddOns.length > 0" class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div v-for="addOn in packageAddOns" :key="addOn.id" 
-                                     class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                                    <div class="flex items-start justify-between mb-4">
-                                        <div class="flex-1">
-                                            <h4 class="text-lg font-medium text-gray-900 mb-2">{{ addOn.name }}</h4>
-                                            <p class="text-sm text-gray-600 mb-4">{{ addOn.description || 'No description available' }}</p>
+                        <div v-if="packageAddOns.length > 0" class="space-y-3">
+                            <div v-for="addOn in packageAddOns" :key="addOn.id" 
+                                 class="bg-white border border-gray-200 rounded-lg p-4 hover:border-indigo-300 transition-colors"
+                                 :class="{'ring-2 ring-indigo-500 border-indigo-500': selectedAddOns.includes(addOn.id)}">
+                                <!-- Header Row -->
+                                <div class="flex items-start justify-between gap-3 mb-3">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <input type="checkbox" 
+                                                   :value="addOn.id" 
+                                                   v-model="selectedAddOns"
+                                                   class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                                            <h4 class="text-sm font-medium text-gray-900">{{ addOn.name }}</h4>
                                         </div>
-                                        <div class="ml-4">
-                                            <label class="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" 
-                                                       :value="addOn.id" 
-                                                       v-model="selectedAddOns"
-                                                       class="sr-only peer">
-                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                                            </label>
+                                        <p class="text-xs text-gray-500 line-clamp-2">{{ addOn.description || 'No description available' }}</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pricing Row - Compact -->
+                                <div class="flex items-center gap-3 mb-3 text-xs">
+                                    <div v-if="addOn.adult_price" class="flex items-center gap-1">
+                                        <span class="text-gray-500">Adult:</span>
+                                        <span class="font-medium text-gray-900">MYR {{ formatNumber(addOn.adult_price) }}</span>
+                                    </div>
+                                    <div v-if="addOn.child_price" class="flex items-center gap-1">
+                                        <span class="text-gray-500">Child:</span>
+                                        <span class="font-medium text-gray-900">MYR {{ formatNumber(addOn.child_price) }}</span>
+                                    </div>
+                                    <div v-if="addOn.infant_price" class="flex items-center gap-1">
+                                        <span class="text-gray-500">Infant:</span>
+                                        <span class="font-medium text-gray-900">MYR {{ formatNumber(addOn.infant_price) }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pax Input Fields - Compact -->
+                                <div v-if="selectedAddOns.includes(addOn.id)" class="pt-3 border-t border-gray-100 space-y-2">
+                                    <div class="text-xs font-medium text-gray-700 mb-2">Number of Guests:</div>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <div v-if="addOn.adult_price">
+                                            <label class="block text-xs text-gray-500 mb-1">Adults</label>
+                                            <input type="number" 
+                                                   :min="0" 
+                                                   :max="totalGuests"
+                                                   v-model="getAddOnPax(addOn.id).adults"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                        </div>
+                                        <div v-if="addOn.child_price">
+                                            <label class="block text-xs text-gray-500 mb-1">Children</label>
+                                            <input type="number" 
+                                                   :min="0" 
+                                                   :max="totalGuests"
+                                                   v-model="getAddOnPax(addOn.id).children"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                        </div>
+                                        <div v-if="addOn.infant_price">
+                                            <label class="block text-xs text-gray-500 mb-1">Infants</label>
+                                            <input type="number" 
+                                                   :min="0" 
+                                                   :max="totalGuests"
+                                                   v-model="getAddOnPax(addOn.id).infants"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                                         </div>
                                     </div>
                                     
-                                    <!-- Pricing Display -->
-                                    <div class="mb-4">
-                                        <div class="grid grid-cols-3 gap-2 text-sm">
-                                            <div v-if="addOn.adult_price" class="text-center">
-                                                <div class="text-gray-500">Adult</div>
-                                                <div class="font-medium text-gray-900">MYR {{ formatNumber(addOn.adult_price) }}</div>
-                                            </div>
-                                            <div v-if="addOn.child_price" class="text-center">
-                                                <div class="text-gray-500">Child</div>
-                                                <div class="font-medium text-gray-900">MYR {{ formatNumber(addOn.child_price) }}</div>
-                                            </div>
-                                            <div v-if="addOn.infant_price" class="text-center">
-                                                <div class="text-gray-500">Infant</div>
-                                                <div class="font-medium text-gray-900">MYR {{ formatNumber(addOn.infant_price) }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Pax Input Fields -->
-                                    <div v-if="selectedAddOns.includes(addOn.id)" class="space-y-3">
-                                        <div class="text-sm font-medium text-gray-700 mb-2">Number of Guests:</div>
-                                        <div class="grid grid-cols-3 gap-3">
-                                            <div v-if="addOn.adult_price">
-                                                <label class="block text-xs text-gray-500 mb-1">Adults</label>
-                                                <input type="number" 
-                                                       :min="0" 
-                                                       :max="totalGuests"
-                                                       v-model="getAddOnPax(addOn.id).adults"
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                            </div>
-                                            <div v-if="addOn.child_price">
-                                                <label class="block text-xs text-gray-500 mb-1">Children</label>
-                                                <input type="number" 
-                                                       :min="0" 
-                                                       :max="totalGuests"
-                                                       v-model="getAddOnPax(addOn.id).children"
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                            </div>
-                                            <div v-if="addOn.infant_price">
-                                                <label class="block text-xs text-gray-500 mb-1">Infants</label>
-                                                <input type="number" 
-                                                       :min="0" 
-                                                       :max="totalGuests"
-                                                       v-model="getAddOnPax(addOn.id).infants"
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Live Subtotal -->
-                                        <div class="mt-3 p-3 bg-indigo-50 rounded-md border border-indigo-200">
-                                            <div class="flex justify-between items-center">
-                                                <span class="text-sm font-medium text-indigo-700">Subtotal:</span>
-                                                <span class="text-lg font-bold text-indigo-700">
-                                                    MYR {{ formatNumber(calculateAddOnSubtotal(addOn)) }}
-                                                </span>
-                                            </div>
-                                            <div class="text-xs text-indigo-600 mt-1">
-                                                {{ getAddOnPax(addOn.id).adults }} adults × MYR {{ formatNumber(addOn.adult_price) }} + 
-                                                {{ getAddOnPax(addOn.id).children }} children × MYR {{ formatNumber(addOn.child_price) }} + 
-                                                {{ getAddOnPax(addOn.id).infants }} infants × MYR {{ formatNumber(addOn.infant_price) }}
-                                            </div>
+                                    <!-- Live Subtotal - Compact -->
+                                    <div class="mt-2 pt-2 border-t border-gray-100">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-xs font-medium text-gray-600">Subtotal:</span>
+                                            <span class="text-sm font-semibold text-indigo-600">
+                                                MYR {{ formatNumber(calculateAddOnSubtotal(addOn)) }}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -642,16 +632,16 @@
                         </div>
 
                         <!-- No Add-ons Available -->
-                        <div v-else class="text-center py-12">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div v-else class="text-center py-8">
+                            <svg class="mx-auto h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                             </svg>
                             <h3 class="mt-2 text-sm font-medium text-gray-900">No Add-ons Available</h3>
-                            <p class="mt-1 text-sm text-gray-500">This package doesn't have any add-ons available.</p>
+                            <p class="mt-1 text-xs text-gray-500">This package doesn't have any add-ons available.</p>
                         </div>
 
                         <!-- Navigation Buttons -->
-                        <div class="flex justify-between mt-8">
+                        <div class="flex justify-between mt-6">
                             <button
                                 @click="currentStep = 1"
                                 class="px-8 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
@@ -662,7 +652,7 @@
                                 @click="handleStep2Submit"
                                 class="px-8 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
-                                Continue to Price Summary
+                                Next
                             </button>
                         </div>
                     </div>
