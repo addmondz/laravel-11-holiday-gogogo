@@ -36,12 +36,12 @@
         </div>
 
         <!-- Package Found State -->
-        <div v-else class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8" style="padding-top: 100px; padding-bottom: 50px;">
+        <div v-else class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 pb-32 sm:pb-12" style="padding-top: 100px;">
             <!-- Package Header with Images and Details -->
             <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
                 <div class="flex flex-col lg:flex-row">
                     <!-- Left Side - Images -->
-                    <div class="lg:w-1/3 p-6">
+                    <div class="lg:w-1/3 p-4 sm:p-6">
                         <div class="relative">
                             <template v-if="packageData.images && packageData.images.length > 0">
                                 <!-- Main Image -->
@@ -113,17 +113,17 @@
                     </div>
 
                     <!-- Right Side - Package Details -->
-                    <div class="lg:w-2/3 p-6">
+                    <div class="lg:w-2/3 p-4 sm:p-6">
                         <div class="h-full flex flex-col">
                             <!-- Package Title and Promo Badge -->
                             <div class="mb-4">
-                                <h1 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white mr-3">
+                                <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 flex flex-col sm:flex-row sm:items-center">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white mb-2 sm:mb-0 sm:mr-3">
                                         {{ computedPromoPeriod }} Promo
                                     </span>
                                     {{ packageData.name }}
                                 </h1>
-                                <p class="text-gray-600 text-md">{{ packageData.description }}</p>
+                                <p class="text-gray-600 text-sm sm:text-md">{{ packageData.description }}</p>
                             </div>
 
                             <!-- Package Information Grid -->
@@ -166,29 +166,37 @@
                                     <p class="text-gray-700">{{ moment(packageData.package_start_date).format('DD MMM YYYY') }} - {{ moment(packageData.package_end_date).format('DD MMM YYYY') }}</p>
                                 </div>
                             </div>
-
-                            <!-- Terms and Conditions -->
-                            <div class="mt-auto">
-                                <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                                    <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    Terms and Conditions
-                                </h2>
-                                <p class="text-gray-600 text-sm" v-html="linkify(packageData.terms_and_conditions)"></p>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Booking Form -->
-            <div class="bg-white rounded-lg shadow-lg p-6" id="booking-form">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ currentStep === 4 ? 'Your Booking' : 'Book Your Stay' }}</h2>
+            <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6" id="booking-form">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-6">{{ currentStep === 4 ? 'Your Booking' : 'Book Your Stay' }}</h2>
                 
                 <!-- Step Indicators -->
                 <div class="mb-8">
-                    <div class="flex items-center justify-between">
+                    <!-- Mobile: Show only numbers with tooltips -->
+                    <div class="flex items-center justify-between md:hidden">
+                        <div class="flex items-center flex-1 justify-center">
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 1 ? 'Quotation Details' : ''">1</div>
+                        </div>
+                        <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 2 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <div class="flex items-center flex-1 justify-center">
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 2 ? 'Choose Add-ons' : ''">2</div>
+                        </div>
+                        <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <div class="flex items-center flex-1 justify-center">
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 3 ? 'Price Summary' : ''">3</div>
+                        </div>
+                        <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 4 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <div class="flex items-center flex-1 justify-center">
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 4 ? 'Booking Details' : ''">4</div>
+                        </div>
+                    </div>
+                    <!-- Desktop: Show full labels -->
+                    <div class="hidden md:flex items-center justify-between">
                         <div class="flex items-center">
                             <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">1</div>
                             <div class="ml-2 text-sm font-medium" :class="currentStep >= 1 ? 'text-indigo-600' : 'text-gray-500'">Quotation Details</div>
@@ -216,10 +224,10 @@
                     <form @submit.prevent="handleStep1Submit" class="space-y-6">
                         <!-- Room Management -->
                         <div class="space-y-4">
-                            <div class="flex justify-between items-center">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                                 <h3 class="text-lg font-medium text-gray-900">Select Rooms</h3>
-                                <div class="flex items-center gap-4">
-                                    <span class="text-sm text-gray-600">
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                                    <span class="text-sm text-gray-600 whitespace-nowrap">
                                         Total Guests: {{ totalGuests }}
                                     </span>
                                     <button
@@ -227,7 +235,7 @@
                                         @click="addRoom"
                                         :disabled="!canAddRoom"
                                         :class="[
-                                            'inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                                            'inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors w-full sm:w-auto justify-center',
                                             canAddRoom
                                                 ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                                                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -1398,6 +1406,17 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Terms and Conditions -->
+            <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 mt-6 mb-8 sm:mb-0">
+                <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                    <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Terms and Conditions
+                </h2>
+                <p class="text-gray-600 text-sm" v-html="linkify(packageData.terms_and_conditions)"></p>
+            </div>
         </div>
     </div>
 </template>
@@ -2558,6 +2577,17 @@ const handleInfantsChange = (room, index) => {
     
     .inline-flex {
         margin-bottom: 0.5rem;
+    }
+    
+    /* Ensure proper scrolling on mobile */
+    body {
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Add extra bottom padding for mobile safe area */
+    .min-h-screen {
+        padding-bottom: env(safe-area-inset-bottom, 2rem);
     }
 }
 
