@@ -44,12 +44,11 @@
                     <div class="lg:w-1/3 p-4 sm:p-6">
                         <div class="relative">
                             <template v-if="packageData.images && packageData.images.length > 0">
-                                <!-- Main Image - Clickable to open lightbox -->
+                                <!-- Main Image - Clickable to open lightbox (desktop only) -->
                                 <div 
-                                    class="relative mb-4 cursor-pointer group touch-none" 
+                                    class="relative mb-4 cursor-pointer sm:cursor-pointer cursor-default group touch-none" 
                                     style="height: 300px;"
                                     @click="openPackageImageLightbox(currentImageIndex)"
-                                    @touchend.prevent="openPackageImageLightbox(currentImageIndex)"
                                 >
                                     <img
                                         v-for="(image, index) in packageData.images"
@@ -61,8 +60,8 @@
                                         ]"
                                         :alt="packageData?.name || 'Package Image'"
                                     />
-                                    <!-- Overlay hint for mobile -->
-                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 rounded-lg flex items-center justify-center z-30">
+                                    <!-- Overlay hint for desktop only -->
+                                    <div class="hidden sm:flex absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 rounded-lg items-center justify-center z-30">
                                         <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3 shadow-lg">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
@@ -98,7 +97,7 @@
                                         :key="index"
                                         @click.stop="currentImageIndex = index"
                                         @touchend.stop="currentImageIndex = index"
-                                        @dblclick="openPackageImageLightbox(index)"
+                                        @dblclick="handlePackageThumbnailDoubleClick(index)"
                                         @touchstart.prevent
                                         :class="[
                                             'flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer touch-none',
@@ -2351,9 +2350,22 @@ const previousImage = () => {
 
 // Package Image Lightbox Functions
 const openPackageImageLightbox = (index = 0) => {
+    // Disable on mobile - only allow on desktop (sm breakpoint and above)
+    if (window.innerWidth < 640) {
+        return;
+    }
     lightboxPackageImageIndex.value = index;
     showPackageImageLightbox.value = true;
     document.body.style.overflow = 'hidden';
+};
+
+// Handle thumbnail double-click (desktop only)
+const handlePackageThumbnailDoubleClick = (index = 0) => {
+    // Disable on mobile - only allow on desktop (sm breakpoint and above)
+    if (window.innerWidth < 640) {
+        return;
+    }
+    openPackageImageLightbox(index);
 };
 
 const closePackageImageLightbox = () => {
