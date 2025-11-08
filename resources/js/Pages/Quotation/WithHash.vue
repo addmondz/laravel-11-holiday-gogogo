@@ -348,13 +348,13 @@
                                                                     :modules="[Pagination]"
                                                                     :slides-per-view="1"
                                                                     :space-between="0"
-                                                                    :pagination="{ clickable: true }"
+                                                                    :pagination="{ clickable: false }"
                                                                     :loop="true"
                                                                     :autoplay="{
                                                                         delay: 3000,
                                                                         disableOnInteraction: false
                                                                     }"
-                                                                    :allow-touch-move="true"
+                                                                    :allow-touch-move="false"
                                                                     class="room-image-swiper"
                                                                     @click="openRoomTypeImageLightbox(roomType, 0)"
                                                                 >
@@ -1560,7 +1560,12 @@
                     @touchmove="handleTouchMove"
                 >
                     <!-- Main Image Display -->
-                    <div class="flex items-center justify-center w-full px-2 py-12 sm:px-4 sm:py-8 md:px-8 md:py-12">
+                    <div 
+                        class="flex items-center justify-center w-full px-2 py-12 sm:px-4 sm:py-8 md:px-8 md:py-12"
+                        @touchstart="handleTouchStart"
+                        @touchend="handleTouchEnd"
+                        @touchmove="handleTouchMove"
+                    >
                         <img
                             v-for="(image, index) in packageData.images"
                             :key="'lightbox-package-' + index"
@@ -1626,7 +1631,7 @@
 
         <!-- Room Type Images Lightbox Modal -->
         <Modal :show="showRoomTypeImageLightbox" @close="closeRoomTypeImageLightbox" :max-width="'7xl'">
-            <div class="relative bg-white lightbox-container">
+            <div class="relative bg-white lightbox-container h-screen sm:h-auto rounded-none sm:rounded-lg -m-6 sm:m-0">
                 <!-- Close Button (Desktop only - mobile is in top bar) -->
                 <button
                     @click="closeRoomTypeImageLightbox"
@@ -1750,7 +1755,12 @@
                     </div>
 
                     <!-- Main Image Display -->
-                    <div class="flex items-center justify-center w-full px-2 min-h-[calc(100vh-3.5rem)] pt-14 pb-12 sm:min-h-0 sm:pt-4 sm:px-4 sm:py-8 md:px-8 md:py-12">
+                    <div 
+                        class="flex items-center justify-center w-full px-2 h-[calc(100vh-3.5rem)] pt-14 pb-0 sm:h-auto sm:min-h-0 sm:pt-4 sm:px-4 sm:py-8 md:px-8 md:py-12"
+                        @touchstart="handleTouchStart"
+                        @touchend="handleTouchEnd"
+                        @touchmove="handleTouchMove"
+                    >
                         <img
                             v-for="(image, index) in lightboxRoomTypeData.images"
                             :key="'lightbox-room-' + index"
@@ -3431,8 +3441,8 @@ const handleInfantsChange = (room, index) => {
 /* Simplified styles for room image swiper */
 .room-image-swiper {
     height: 100%;
-    /* Allow touch interactions but also allow clicking to open lightbox */
-    touch-action: pan-y pinch-zoom;
+    /* Disable touch swiping but allow tap to open lightbox */
+    touch-action: manipulation;
 }
 
 .room-image-swiper :deep(.swiper-pagination) {
@@ -3489,6 +3499,8 @@ const handleInfantsChange = (room, index) => {
     user-select: none;
     /* Allow pointer events for touch interactions */
     pointer-events: auto;
+    /* Enable touch interactions for swiping */
+    touch-action: pan-x;
 }
 
 /* Lightbox container spacing */
@@ -3551,6 +3563,17 @@ const handleInfantsChange = (room, index) => {
     /* Room type selector styling */
     .lightbox-container .bg-white\/95 {
         max-width: calc(100% - 4rem);
+    }
+    
+    /* Full screen modal on mobile */
+    :deep(.lightbox-container) {
+        height: 100vh !important;
+        margin-bottom: 0 !important;
+    }
+    
+    /* Override Modal component margin on mobile for room type lightbox */
+    :deep(div[class*="mb-6"]) {
+        margin-bottom: 0 !important;
     }
 }
 
