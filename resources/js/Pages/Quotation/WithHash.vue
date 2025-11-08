@@ -1627,10 +1627,11 @@
         <!-- Room Type Images Lightbox Modal -->
         <Modal :show="showRoomTypeImageLightbox" @close="closeRoomTypeImageLightbox" :max-width="'7xl'">
             <div class="relative bg-white lightbox-container">
+                <!-- Close Button (Desktop only - mobile is in top bar) -->
                 <button
                     @click="closeRoomTypeImageLightbox"
                     @touchend.prevent="closeRoomTypeImageLightbox"
-                    class="absolute top-2 right-2 sm:top-4 sm:right-4 z-50 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full p-2 shadow-md transition-all lightbox-close-button touch-none"
+                    class="hidden sm:flex absolute top-2 right-2 sm:top-4 sm:right-4 z-50 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full p-2 shadow-md transition-all lightbox-close-button touch-none"
                     aria-label="Close lightbox"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1645,13 +1646,111 @@
                     @touchend="handleTouchEnd"
                     @touchmove="handleTouchMove"
                 >
-                    <!-- Room Type Title -->
-                    <div class="absolute top-2 left-2 sm:top-4 sm:left-4 z-40 bg-white border border-gray-200 shadow-md text-gray-800 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg">
+                    <!-- Fixed Top Bar (Mobile) -->
+                    <div v-if="availableRoomTypes.length > 1" class="fixed top-0 left-0 right-0 z-50 sm:hidden bg-white border-b border-gray-200 shadow-sm">
+                        <div class="flex items-center h-14 px-2 gap-2">
+                            <!-- Left Button (Previous Room Type) -->
+                            <button
+                                @click="previousRoomType"
+                                @touchend.prevent="previousRoomType"
+                                class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors touch-none"
+                                aria-label="Previous room type"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            
+                            <!-- Room Type Name and Counter (Scrollable) -->
+                            <div class="flex-1 min-w-0 flex items-center gap-2">
+                                <h3 class="text-sm font-semibold text-gray-900 truncate">
+                                    {{ lightboxRoomTypeData.name }}
+                                </h3>
+                                <span class="flex-shrink-0 text-xs text-gray-500 whitespace-nowrap">
+                                    {{ availableRoomTypes.findIndex(rt => rt.id === lightboxRoomTypeData.id) + 1 }}/{{ availableRoomTypes.length }}
+                                </span>
+                            </div>
+                            
+                            <!-- Right Button (Next Room Type) -->
+                            <button
+                                @click="nextRoomType"
+                                @touchend.prevent="nextRoomType"
+                                class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors touch-none"
+                                aria-label="Next room type"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                            
+                            <!-- Close Button -->
+                            <button
+                                @click="closeRoomTypeImageLightbox"
+                                @touchend.prevent="closeRoomTypeImageLightbox"
+                                class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors touch-none ml-1"
+                                aria-label="Close lightbox"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Single Room Type Header (Mobile - when only one room type) -->
+                    <div v-if="availableRoomTypes.length === 1" class="fixed top-0 left-0 right-0 z-50 sm:hidden bg-white border-b border-gray-200 shadow-sm">
+                        <div class="flex items-center h-14 px-2 gap-2">
+                            <h3 class="flex-1 text-sm font-semibold text-gray-900 truncate">
+                                {{ lightboxRoomTypeData.name }}
+                            </h3>
+                            <button
+                                @click="closeRoomTypeImageLightbox"
+                                @touchend.prevent="closeRoomTypeImageLightbox"
+                                class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors touch-none"
+                                aria-label="Close lightbox"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Room Type Title and Navigation (Desktop) -->
+                    <div class="absolute top-2 left-2 sm:top-4 sm:left-4 z-40 bg-white border border-gray-200 shadow-md text-gray-800 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg flex items-center gap-2 hidden sm:flex">
+                        <!-- Previous Room Type Button (Desktop) -->
+                        <button
+                            v-if="availableRoomTypes.length > 1"
+                            @click="previousRoomType"
+                            @touchend.prevent="previousRoomType"
+                            class="flex items-center justify-center w-6 h-6 rounded-full hover:bg-gray-100 transition-colors touch-none"
+                            aria-label="Previous room type"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
                         <h3 class="text-sm sm:text-base md:text-lg font-semibold">{{ lightboxRoomTypeData.name }}</h3>
+                        <!-- Next Room Type Button (Desktop) -->
+                        <button
+                            v-if="availableRoomTypes.length > 1"
+                            @click="nextRoomType"
+                            @touchend.prevent="nextRoomType"
+                            class="flex items-center justify-center w-6 h-6 rounded-full hover:bg-gray-100 transition-colors touch-none"
+                            aria-label="Next room type"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <!-- Room Type Counter (Desktop) -->
+                        <span v-if="availableRoomTypes.length > 1" class="text-xs text-gray-500 ml-1">
+                            ({{ availableRoomTypes.findIndex(rt => rt.id === lightboxRoomTypeData.id) + 1 }}/{{ availableRoomTypes.length }})
+                        </span>
                     </div>
 
                     <!-- Main Image Display -->
-                    <div class="flex items-center justify-center w-full px-2 py-12 sm:px-4 sm:py-8 md:px-8 md:py-12">
+                    <div class="flex items-center justify-center w-full px-2 pt-16 pb-12 sm:pt-4 sm:px-4 sm:py-8 md:px-8 md:py-12">
                         <img
                             v-for="(image, index) in lightboxRoomTypeData.images"
                             :key="'lightbox-room-' + index"
@@ -1664,7 +1763,7 @@
                         />
                     </div>
 
-                    <!-- Navigation Buttons -->
+                    <!-- Navigation Buttons for Images -->
                     <button
                         v-if="lightboxRoomTypeData.images && lightboxRoomTypeData.images.length > 1"
                         @click="previousLightboxRoomTypeImage"
@@ -1687,11 +1786,36 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                         </svg>
                     </button>
+                    
+                    <!-- Room Type Navigation Buttons (Mobile - when at edges) -->
+                    <button
+                        v-if="availableRoomTypes.length > 1 && lightboxRoomTypeImageIndex === 0 && lightboxRoomTypeData.images.length === 1"
+                        @click="previousRoomType"
+                        @touchend.prevent="previousRoomType"
+                        class="absolute left-1 sm:left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-1.5 sm:p-2 md:p-3 shadow-lg border border-indigo-700 z-40 transition-all lightbox-nav-button touch-none"
+                        aria-label="Previous room type"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button
+                        v-if="availableRoomTypes.length > 1 && lightboxRoomTypeImageIndex === (lightboxRoomTypeData.images.length - 1) && lightboxRoomTypeData.images.length === 1"
+                        @click="nextRoomType"
+                        @touchend.prevent="nextRoomType"
+                        class="absolute right-1 sm:right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-1.5 sm:p-2 md:p-3 shadow-lg border border-indigo-700 z-40 transition-all lightbox-nav-button touch-none"
+                        aria-label="Next room type"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
 
                     <!-- Image Counter -->
-                    <div v-if="lightboxRoomTypeData.images && lightboxRoomTypeData.images.length > 1" class="absolute bottom-12 sm:bottom-16 md:bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800/80 text-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm z-40 font-medium">
+                    <div v-if="lightboxRoomTypeData.images && lightboxRoomTypeData.images.length > 1" class="absolute bottom-12 sm:bottom-16 md:bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-900/90 text-white px-3 py-1.5 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm z-40 font-medium shadow-lg">
                         {{ lightboxRoomTypeImageIndex + 1 }} / {{ lightboxRoomTypeData.images.length }}
                     </div>
+                    
 
                     <!-- Thumbnail Strip (Desktop) -->
                     <div v-if="lightboxRoomTypeData.images && lightboxRoomTypeData.images.length > 1" class="hidden md:flex absolute bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 p-2 md:p-3 space-x-1.5 md:space-x-2 overflow-x-auto justify-center z-30 lightbox-thumbnails">
@@ -1856,6 +1980,7 @@ const lightboxPackageImageIndex = ref(0);
 const showRoomTypeImageLightbox = ref(false);
 const lightboxRoomTypeData = ref(null);
 const lightboxRoomTypeImageIndex = ref(0);
+const currentRoomTypeIndex = ref(0); // Track which room type is currently shown
 
 // Touch/swipe support for mobile
 const touchStartX = ref(0);
@@ -2241,11 +2366,59 @@ const previousLightboxPackageImage = () => {
 // Room Type Image Lightbox Functions
 const openRoomTypeImageLightbox = (roomType, index = 0) => {
     if (!roomType || !roomType.images || roomType.images.length === 0) return;
+    
+    // Find the index of this room type in the roomTypes array
+    const roomTypeIndex = roomTypes.value.findIndex(rt => rt.id === roomType.id);
+    if (roomTypeIndex !== -1) {
+        currentRoomTypeIndex.value = roomTypeIndex;
+    }
+    
     lightboxRoomTypeData.value = roomType;
     lightboxRoomTypeImageIndex.value = index;
     showRoomTypeImageLightbox.value = true;
     document.body.style.overflow = 'hidden';
 };
+
+// Navigate to next room type
+const nextRoomType = () => {
+    const availableRoomTypes = roomTypes.value.filter(rt => rt.images && rt.images.length > 0);
+    if (availableRoomTypes.length <= 1) return;
+    
+    const currentIndex = availableRoomTypes.findIndex(rt => rt.id === lightboxRoomTypeData.value?.id);
+    const nextIndex = (currentIndex + 1) % availableRoomTypes.length;
+    const nextRoomType = availableRoomTypes[nextIndex];
+    
+    lightboxRoomTypeData.value = nextRoomType;
+    lightboxRoomTypeImageIndex.value = 0;
+    currentRoomTypeIndex.value = roomTypes.value.findIndex(rt => rt.id === nextRoomType.id);
+};
+
+// Navigate to previous room type
+const previousRoomType = () => {
+    const availableRoomTypes = roomTypes.value.filter(rt => rt.images && rt.images.length > 0);
+    if (availableRoomTypes.length <= 1) return;
+    
+    const currentIndex = availableRoomTypes.findIndex(rt => rt.id === lightboxRoomTypeData.value?.id);
+    const prevIndex = (currentIndex - 1 + availableRoomTypes.length) % availableRoomTypes.length;
+    const prevRoomType = availableRoomTypes[prevIndex];
+    
+    lightboxRoomTypeData.value = prevRoomType;
+    lightboxRoomTypeImageIndex.value = 0;
+    currentRoomTypeIndex.value = roomTypes.value.findIndex(rt => rt.id === prevRoomType.id);
+};
+
+// Switch to a specific room type
+const switchToRoomType = (roomType) => {
+    if (!roomType || !roomType.images || roomType.images.length === 0) return;
+    lightboxRoomTypeData.value = roomType;
+    lightboxRoomTypeImageIndex.value = 0;
+    currentRoomTypeIndex.value = roomTypes.value.findIndex(rt => rt.id === roomType.id);
+};
+
+// Get available room types with images
+const availableRoomTypes = computed(() => {
+    return roomTypes.value.filter(rt => rt.images && rt.images.length > 0);
+});
 
 // Handle tap on room type images (for mobile)
 let roomTypeTapStartTime = 0;
@@ -2371,12 +2544,29 @@ const handleSwipe = () => {
                 previousLightboxPackageImage();
             }
         } else if (showRoomTypeImageLightbox.value) {
+            // For room type lightbox, check if we're at the edge to switch room types
+            const isFirstImage = lightboxRoomTypeImageIndex.value === 0;
+            const isLastImage = lightboxRoomTypeImageIndex.value === (lightboxRoomTypeData.value?.images?.length - 1 || 0);
+            const hasMultipleRoomTypes = availableRoomTypes.value.length > 1;
+            
             if (deltaX > 0) {
-                // Swipe left - next image
-                nextLightboxRoomTypeImage();
+                // Swipe left
+                if (isLastImage && hasMultipleRoomTypes) {
+                    // At last image, swipe to next room type
+                    nextRoomType();
+                } else {
+                    // Navigate to next image
+                    nextLightboxRoomTypeImage();
+                }
             } else {
-                // Swipe right - previous image
-                previousLightboxRoomTypeImage();
+                // Swipe right
+                if (isFirstImage && hasMultipleRoomTypes) {
+                    // At first image, swipe to previous room type
+                    previousRoomType();
+                } else {
+                    // Navigate to previous image
+                    previousLightboxRoomTypeImage();
+                }
             }
         }
     }
@@ -3341,11 +3531,14 @@ const handleInfantsChange = (room, index) => {
         min-width: 3rem !important;
         min-height: 3rem !important;
         touch-action: manipulation;
+        /* Position above room type selector on mobile */
+        top: 0.5rem !important;
+        right: 0.5rem !important;
     }
     
     /* Better image display on mobile */
     .lightbox-image {
-        max-height: 70vh !important;
+        max-height: 75vh !important;
         width: 100%;
     }
     
@@ -3354,6 +3547,11 @@ const handleInfantsChange = (room, index) => {
         -webkit-user-select: none;
         user-select: none;
     }
+    
+    /* Room type selector styling */
+    .lightbox-container .bg-white\/95 {
+        max-width: calc(100% - 4rem);
+    }
 }
 
 /* Tablet and Desktop improvements */
@@ -3361,5 +3559,15 @@ const handleInfantsChange = (room, index) => {
     :deep(.sm\\:max-w-7xl) {
         max-width: 90vw !important;
     }
+}
+
+/* Hide scrollbar for room type selector */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
 }
 </style>
