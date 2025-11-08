@@ -263,7 +263,7 @@
                             <div class="space-y-4">
                                 <div v-for="(room, index) in form.rooms" 
                                      :key="index"
-                                     class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                                     class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden" style="margin-left: -15px; margin-right: -15px;">
                                     <!-- Room Header -->
                                     <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
                                         <h4 class="text-lg font-medium text-gray-900">Room {{ index + 1 }}</h4>
