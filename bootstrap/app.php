@@ -25,5 +25,16 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Handle CSRF token mismatch for Inertia requests
+        $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response, \Throwable $exception, \Illuminate\Http\Request $request) {
+            if ($exception instanceof \Illuminate\Session\TokenMismatchException) {
+                // For Inertia requests, return a proper JSON response
+                if ($request->header('X-Inertia')) {
+                    return response()->json([
+                        'message' => 'CSRF token mismatch. Please refresh the page.',
+                    ], 419);
+                }
+            }
+            return $response;
+        });
     })->create();
