@@ -33,11 +33,14 @@ class Package extends Model
         'infant_max_age_desc',
         'weekend_days',
         'sst_enable',
+        'no_children_and_infant',
     ];
 
     protected $casts = [
         'images' => 'array',
-        'weekend_days' => 'array'
+        'weekend_days' => 'array',
+        'sst_enable' => 'boolean',
+        'no_children_and_infant' => 'boolean',
     ];
 
     public function addOns(): HasMany

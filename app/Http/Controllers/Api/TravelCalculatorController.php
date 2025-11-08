@@ -800,9 +800,9 @@ class TravelCalculatorController extends Controller
                 $sst = $this->sstCalculationService->calculateSst($totalWithoutSst);
             }
 
-            Log::info('sst_enable: ' . $package->sst_enable);
-            Log::info('totalWithoutSst: ' . $totalWithoutSst);
-            Log::info('sst: ' . $sst);
+            // Log::info('sst_enable: ' . $package->sst_enable);
+            // Log::info('totalWithoutSst: ' . $totalWithoutSst);
+            // Log::info('sst: ' . $sst);
 
             $total = $totalWithoutSst + $sst;
             Log::info('total: ' . $total);

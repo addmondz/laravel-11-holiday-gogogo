@@ -48,6 +48,18 @@
                     </p>
                 </div>
                 <div>
+                    <h4 class="text-sm font-medium text-gray-500">Infant Age Description</h4>
+                    <p class="mt-1 text-sm text-gray-900">
+                        {{ package.infant_max_age_desc || '-' }}
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500">Child Age Description</h4>
+                    <p class="mt-1 text-sm text-gray-900">
+                        {{ package.child_max_age_desc || '-' }}
+                    </p>
+                </div>
+                <div>
                     <div :class="{ 'opacity-50': !isGlobalSstEnable }">
                         <h4 class="text-sm font-medium text-gray-500">
                             SST Enable
@@ -63,6 +75,19 @@
                     >
                         System SST Configuration: <span class="font-bold ml-1">{{ isGlobalSstEnable ? 'Enabled' : 'Disabled' }} {{ globalSstPercent }}%</span>
                     </span>
+                </div>
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500">No Children and Infant</h4>
+                    <p class="mt-1 text-sm text-gray-900">
+                        <span :class="package.no_children_and_infant 
+                            ? 'px-3 py-1 inline-flex items-center rounded-full bg-blue-100 text-xs font-medium text-blue-700'
+                            : 'px-3 py-1 inline-flex items-center rounded-full bg-gray-100 text-xs font-medium text-gray-700'">
+                            {{ package.no_children_and_infant ? 'Enabled' : 'Disabled' }}
+                        </span>
+                    </p>
+                    <p v-if="package.no_children_and_infant" class="mt-1 text-xs text-gray-500">
+                        Children and infant input fields will be hidden on the quotation page.
+                    </p>
                 </div>
             </div>
             <div>

@@ -238,6 +238,22 @@
                                 </div>
 
                                 <div>
+                                    <label for="no_children_and_infant" class="block text-sm font-medium text-gray-700">No Children and Infant</label>
+                                    <input
+                                        type="checkbox"
+                                        id="no_children_and_infant"
+                                        v-model="form.no_children_and_infant"
+                                        class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    />
+                                    <span class="text-xs text-gray-500">
+                                        If checked, children and infant input fields will be hidden on the quotation page.
+                                    </span>
+                                    <div v-if="form.errors.no_children_and_infant" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.no_children_and_infant }}
+                                    </div>
+                                </div>
+
+                                <div>
                                     <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">
                                         Terms and Conditions
                                         <span class="text-xs text-gray-500 font-normal ml-2">(Enter each point on a new line)</span>
@@ -501,6 +517,7 @@ const form = useForm({
     weekend_days: [0, 6], // Default to Saturday and Sunday
     terms_and_conditions: '',
     location: '',
+    no_children_and_infant: false,
     wordpress_link: '',
     package_start_date: '',
     package_end_date: '',

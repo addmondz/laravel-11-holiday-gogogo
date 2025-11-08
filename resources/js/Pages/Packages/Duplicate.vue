@@ -139,6 +139,37 @@
                                     </div>
                                 </div>
 
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="infant_max_age_desc" class="block text-sm font-medium text-gray-700">Infant Age Description</label>
+                                        <input
+                                            type="text"
+                                            id="infant_max_age_desc"
+                                            v-model="form.infant_max_age_desc"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.infant_max_age_desc }"
+                                            placeholder="e.g. 0 - 11 months old"
+                                        />
+                                        <div v-if="form.errors.infant_max_age_desc" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.infant_max_age_desc }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="child_max_age_desc" class="block text-sm font-medium text-gray-700">Child Age Description</label>
+                                        <input
+                                            type="text"
+                                            id="child_max_age_desc"
+                                            v-model="form.child_max_age_desc"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.child_max_age_desc }"
+                                            placeholder="e.g. 1 - 12 years old"
+                                        />
+                                        <div v-if="form.errors.child_max_age_desc" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.child_max_age_desc }}
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Weekend Days</label>
                                     <div class="grid grid-cols-7 gap-2">
@@ -158,6 +189,39 @@
                                     <p class="mt-1 text-sm text-gray-500">Select which days are considered weekends for pricing purposes.</p>
                                     <div v-if="form.errors.weekend_days" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.weekend_days }}
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-6">
+                                    <div>
+                                        <label for="sst_enable" class="block text-sm font-medium text-gray-700">SST Enable</label>
+                                        <input
+                                            type="checkbox"
+                                            id="sst_enable"
+                                            v-model="form.sst_enable"
+                                            class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        <span class="text-xs text-gray-500">
+                                            If enabled, the SST will be added to the total price.
+                                        </span>
+                                        <div v-if="form.errors.sst_enable" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.sst_enable }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="no_children_and_infant" class="block text-sm font-medium text-gray-700">No Children and Infant</label>
+                                        <input
+                                            type="checkbox"
+                                            id="no_children_and_infant"
+                                            v-model="form.no_children_and_infant"
+                                            class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        <span class="text-xs text-gray-500">
+                                            If checked, children and infant input fields will be hidden on the quotation page.
+                                        </span>
+                                        <div v-if="form.errors.no_children_and_infant" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.no_children_and_infant }}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -424,6 +488,10 @@ const form = useForm({
     wordpress_link: props.package.wordpress_link || '',
     package_start_date: props.package.package_start_date,
     package_end_date: props.package.package_end_date,
+    sst_enable: !!props.package.sst_enable,
+    no_children_and_infant: !!props.package.no_children_and_infant,
+    infant_max_age_desc: props.package.infant_max_age_desc || '',
+    child_max_age_desc: props.package.child_max_age_desc || '',
     room_types: props.package.room_types.map(roomType => ({
         name: roomType.name,
         max_occupancy: roomType.max_occupancy,

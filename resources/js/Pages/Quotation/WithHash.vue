@@ -407,7 +407,7 @@
                                                     {{ helperMessages[index].adults }}
                                                 </p>
                                             </div>
-                                            <div>
+                                            <div v-if="!packageData?.no_children_and_infant">
                                                 <label :for="'children-' + index" 
                                                        class="block text-sm font-medium text-gray-700 mb-1">
                                                     Number of Children 
@@ -441,7 +441,7 @@
                                                     {{ helperMessages[index].children }}
                                                 </p>
                                             </div>
-                                            <div>
+                                            <div v-if="!packageData?.no_children_and_infant">
                                                 <label :for="'infants-' + index" 
                                                        class="block text-sm font-medium text-gray-700 mb-1">
                                                     Number of Infants 
@@ -481,7 +481,7 @@
                                         <div v-if="room.room_type_id" class="bg-gray-50 rounded-md p-3">
                                             <p class="text-sm text-gray-600">
                                                 Room {{ index + 1 }}: {{ (room.adults || 0) + (room.children || 0) + (room.infants || 0) }} guests
-                                                ({{ room.adults }} adults, {{ room.children }} children, {{ room.infants }} infants)
+                                                ({{ room.adults }} adults<span v-if="!packageData?.no_children_and_infant">, {{ room.children }} children, {{ room.infants }} infants</span>)
                                             </p>
                                         </div>
 
@@ -571,10 +571,10 @@
                                     <span>Add-on</span>
                                 </div>
                                 <div class="col-span-2 text-center">Adult Price</div>
-                                <div class="col-span-2 text-center">Child Price</div>
-                                <div class="col-span-2 text-center">Infant Price</div>
-                                <div class="col-span-2 text-right">Subtotal</div>
-                                <div class="col-span-1"></div>
+                                <div v-if="!packageData?.no_children_and_infant" class="col-span-2 text-center">Child Price</div>
+                                <div v-if="!packageData?.no_children_and_infant" class="col-span-2 text-center">Infant Price</div>
+                                <div :class="packageData?.no_children_and_infant ? 'col-span-6' : 'col-span-2'" class="text-right">Subtotal</div>
+                                <div v-if="!packageData?.no_children_and_infant" class="col-span-1"></div>
                             </div>
                             
                             <!-- Desktop Table Rows -->
@@ -636,7 +636,7 @@
                                                    class="w-16 px-2 py-1 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                                         </div>
                                         <!-- Child -->
-                                        <div v-if="addOn.child_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                        <div v-if="!packageData?.no_children_and_infant && addOn.child_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
                                             <div class="flex items-center gap-2">
                                                 <span class="text-xs font-medium text-gray-700">Child:</span>
                                                 <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.child_price) }}</span>
@@ -649,7 +649,7 @@
                                                    class="w-16 px-2 py-1 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                                         </div>
                                         <!-- Infant -->
-                                        <div v-if="addOn.infant_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                        <div v-if="!packageData?.no_children_and_infant && addOn.infant_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
                                             <div class="flex items-center gap-2">
                                                 <span class="text-xs font-medium text-gray-700">Infant:</span>
                                                 <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.infant_price) }}</span>
@@ -688,7 +688,7 @@
                                     </div>
                                     
                                     <!-- Child Price and Input -->
-                                    <div class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
+                                    <div v-if="!packageData?.no_children_and_infant" class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
                                         <div v-if="addOn.child_price" class="text-xs font-medium text-gray-900">
                                             MYR {{ formatNumber(addOn.child_price) }}
                                         </div>
@@ -704,7 +704,7 @@
                                     </div>
                                     
                                     <!-- Infant Price and Input -->
-                                    <div class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
+                                    <div v-if="!packageData?.no_children_and_infant" class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
                                         <div v-if="addOn.infant_price" class="text-xs font-medium text-gray-900">
                                             MYR {{ formatNumber(addOn.infant_price) }}
                                         </div>
@@ -720,13 +720,12 @@
                                     </div>
                                     
                                     <!-- Subtotal Desktop -->
-                                    <div class="hidden sm:flex sm:col-span-2 items-center justify-end">
+                                    <div :class="packageData?.no_children_and_infant ? 'hidden sm:flex sm:col-span-6' : 'hidden sm:flex sm:col-span-2'" class="items-center justify-end">
                                         <span class="text-xs font-semibold text-indigo-600">
                                             MYR {{ formatNumber(calculateAddOnSubtotal(addOn)) }}
                                         </span>
                                     </div>
-                                    
-                                    <!-- Spacer Desktop -->
+                                    <!-- Empty spacer -->
                                     <div class="hidden sm:block sm:col-span-1"></div>
                                 </div>
                             </div>
@@ -769,9 +768,9 @@
                                 <div>
                                     <p class="text-sm text-gray-600">Total Guests</p>
                                     <p class="font-medium">
-                                        {{ priceBreakdown.summary.total_adults || 0 }} Adults, 
+                                        {{ priceBreakdown.summary.total_adults || 0 }} Adults<span v-if="!packageData?.no_children_and_infant">, 
                                         {{ priceBreakdown.summary.total_children || 0 }} Children,
-                                        {{ priceBreakdown.summary.total_infants || 0 }} Infants
+                                        {{ priceBreakdown.summary.total_infants || 0 }} Infants</span>
                                         ({{ (priceBreakdown.summary.total_adults || 0) + (priceBreakdown.summary.total_children || 0) + (priceBreakdown.summary.total_infants || 0) }} Total)
                                     </p>
                                 </div>

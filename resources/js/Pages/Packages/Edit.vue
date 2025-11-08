@@ -107,7 +107,38 @@
                                     </div> -->
                                 </div>
 
-                                <div>
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="infant_max_age_desc" class="block text-sm font-medium text-gray-700">Infant Age Description</label>
+                                        <input
+                                            type="text"
+                                            id="infant_max_age_desc"
+                                            v-model="form.infant_max_age_desc"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.infant_max_age_desc }"
+                                            placeholder="e.g. 0 - 11 months old"
+                                        />
+                                        <div v-if="form.errors.infant_max_age_desc" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.infant_max_age_desc }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="child_max_age_desc" class="block text-sm font-medium text-gray-700">Child Age Description</label>
+                                        <input
+                                            type="text"
+                                            id="child_max_age_desc"
+                                            v-model="form.child_max_age_desc"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            :class="{ 'border-red-500': form.errors.child_max_age_desc }"
+                                            placeholder="e.g. 1 - 12 years old"
+                                        />
+                                        <div v-if="form.errors.child_max_age_desc" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.child_max_age_desc }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-6">
                                     <div>
                                         <label for="sst_enable" class="block text-sm font-medium text-gray-700">SST Enable</label>
                                         <input
@@ -121,6 +152,21 @@
                                         </span>
                                         <div v-if="form.errors.sst_enable" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.sst_enable }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="no_children_and_infant" class="block text-sm font-medium text-gray-700">No Children and Infant</label>
+                                        <input
+                                            type="checkbox"
+                                            id="no_children_and_infant"
+                                            v-model="form.no_children_and_infant"
+                                            class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        <span class="text-xs text-gray-500">
+                                            If checked, children and infant input fields will be hidden on the quotation page.
+                                        </span>
+                                        <div v-if="form.errors.no_children_and_infant" class="mt-1 text-sm text-red-600">
+                                            {{ form.errors.no_children_and_infant }}
                                         </div>
                                     </div>
                                 </div>
@@ -313,6 +359,9 @@ const form = useForm({
     package_end_date: props.package.package_end_date,
     weekend_days: props.package.weekend_days || [0, 6], // Default to Saturday and Sunday
     sst_enable: !!props.package.sst_enable,
+    no_children_and_infant: !!props.package.no_children_and_infant,
+    infant_max_age_desc: props.package.infant_max_age_desc || '',
+    child_max_age_desc: props.package.child_max_age_desc || '',
 });
 
 const handleImagesUpload = (event) => {

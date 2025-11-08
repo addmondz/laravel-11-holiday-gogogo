@@ -429,6 +429,9 @@ class PackageController extends Controller
                 'delete_images' => 'nullable|array',
                 'delete_images.*' => 'string',
                 'sst_enable' => 'nullable|boolean',
+                'no_children_and_infant' => 'required|boolean',
+                'infant_max_age_desc' => 'nullable|string|max:255',
+                'child_max_age_desc' => 'nullable|string|max:255',
             ], [
                 'name.required' => 'Package name is required',
                 'name.max' => 'Package name cannot exceed 255 characters',
@@ -452,7 +455,7 @@ class PackageController extends Controller
                 'weekend_days.*.integer' => 'Weekend day must be a whole number',
                 'weekend_days.*.min' => 'Weekend day must be between 0 and 6',
                 'weekend_days.*.max' => 'Weekend day must be between 0 and 6',
-                'sst_enable.boolean' => 'SST enable must be a boolean value'
+                'sst_enable.boolean' => 'SST enable must be a boolean value',
             ]);
 
             if ($validator->fails()) {
@@ -628,6 +631,10 @@ class PackageController extends Controller
                 'package_end_date' => 'nullable|date|after:package_start_date',
                 'weekend_days' => 'nullable|array',
                 'weekend_days.*' => 'integer|min:0|max:6',
+                'sst_enable' => 'nullable|boolean',
+                'no_children_and_infant' => 'nullable|boolean',
+                'infant_max_age_desc' => 'nullable|string|max:255',
+                'child_max_age_desc' => 'nullable|string|max:255',
                 'existing_images' => 'nullable|array',
                 'existing_images.*' => 'nullable|string',
                 'images' => 'nullable|array',
