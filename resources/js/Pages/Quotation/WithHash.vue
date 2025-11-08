@@ -36,7 +36,7 @@
         </div>
 
         <!-- Package Found State -->
-        <div v-else class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 pb-32 sm:pb-12" style="padding-top: 100px;">
+        <div v-else class="max-w-7xl mx-auto py-12 px-0 sm:px-4 sm:px-6 lg:px-8 pb-32 sm:pb-12" style="padding-top: 100px;">
             <!-- Package Header with Images and Details -->
             <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
                 <div class="flex flex-col lg:flex-row">
