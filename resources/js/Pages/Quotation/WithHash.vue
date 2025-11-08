@@ -1750,7 +1750,7 @@
                     </div>
 
                     <!-- Main Image Display -->
-                    <div class="flex items-center justify-center w-full px-2 pt-16 pb-12 sm:pt-4 sm:px-4 sm:py-8 md:px-8 md:py-12">
+                    <div class="flex items-center justify-center w-full px-2 min-h-[calc(100vh-3.5rem)] pt-14 pb-12 sm:min-h-0 sm:pt-4 sm:px-4 sm:py-8 md:px-8 md:py-12">
                         <img
                             v-for="(image, index) in lightboxRoomTypeData.images"
                             :key="'lightbox-room-' + index"
