@@ -41,7 +41,7 @@
             <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
                 <div class="flex flex-col lg:flex-row">
                     <!-- Left Side - Images -->
-                    <div class="lg:w-1/3 p-4 sm:p-6">
+                    <div class="lg:w-1/3 p-0 sm:p-6 md:p-4">
                         <div class="relative">
                             <template v-if="packageData.images && packageData.images.length > 0">
                                 <!-- Main Image - Clickable to open lightbox (desktop only) -->
