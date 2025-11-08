@@ -45,7 +45,41 @@ router.on('navigate', (event) => {
 // Handle Inertia request errors, especially 419 CSRF token mismatch
 router.on('error', (event) => {
     if (event.detail?.response?.status === 419) {
-        // CSRF token mismatch - reload the page to get a fresh token
-        window.location.reload();
+        // Check if we're on the login page
+        const currentPath = window.location.pathname;
+        const isLoginPage = currentPath.includes('/login') || currentPath === '/';
+        
+        if (isLoginPage) {
+            // Stop event propagation to prevent Inertia's default error modal
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+            
+            // Save form data before reload (if not already saved by axios interceptor)
+            const form = document.querySelector('form');
+            if (form) {
+                const emailInput = form.querySelector('input[type="email"]') as HTMLInputElement;
+                const rememberInput = form.querySelector('input[type="checkbox"]') as HTMLInputElement;
+                if (emailInput && emailInput.value && !sessionStorage.getItem('login_email')) {
+                    sessionStorage.setItem('login_email', emailInput.value);
+                }
+                if (rememberInput && !sessionStorage.getItem('login_remember')) {
+                    sessionStorage.setItem('login_remember', String(rememberInput.checked));
+                }
+            }
+            
+            // Silently reload to get fresh token
+            // The Login component will restore form data on mount
+            // Use setTimeout to ensure the error modal doesn't show
+            setTimeout(() => {
+                window.location.reload();
+            }, 0);
+        } else {
+            // On other pages, reload to get fresh token
+            window.location.reload();
+        }
     }
 });

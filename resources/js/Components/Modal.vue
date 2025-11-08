@@ -4,7 +4,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 const props = withDefaults(
     defineProps<{
         show?: boolean;
-        maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+        maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '7xl';
         closeable?: boolean;
     }>(),
     {
@@ -68,6 +68,7 @@ const maxWidthClass = computed(() => {
         lg: 'sm:max-w-lg',
         xl: 'sm:max-w-xl',
         '2xl': 'sm:max-w-2xl',
+        '7xl': 'sm:max-w-7xl',
     }[props.maxWidth];
 });
 </script>
@@ -93,6 +94,7 @@ const maxWidthClass = computed(() => {
                     v-show="show"
                     class="fixed inset-0 transform transition-all"
                     @click="close"
+                    @touchend="close"
                 >
                     <div
                         class="absolute inset-0 bg-gray-500 opacity-75 dark:bg-gray-900"
@@ -112,6 +114,8 @@ const maxWidthClass = computed(() => {
                     v-show="show"
                     class="mb-6 transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:mx-auto sm:w-full dark:bg-gray-800"
                     :class="maxWidthClass"
+                    @click.stop
+                    @touchend.stop
                 >
                     <slot v-if="showSlot" />
                 </div>

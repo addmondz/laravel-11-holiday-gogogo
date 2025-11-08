@@ -44,8 +44,13 @@
                     <div class="lg:w-1/3 p-4 sm:p-6">
                         <div class="relative">
                             <template v-if="packageData.images && packageData.images.length > 0">
-                                <!-- Main Image -->
-                                <div class="relative mb-4" style="height: 300px;">
+                                <!-- Main Image - Clickable to open lightbox -->
+                                <div 
+                                    class="relative mb-4 cursor-pointer group touch-none" 
+                                    style="height: 300px;"
+                                    @click="openPackageImageLightbox(currentImageIndex)"
+                                    @touchend.prevent="openPackageImageLightbox(currentImageIndex)"
+                                >
                                     <img
                                         v-for="(image, index) in packageData.images"
                                         :key="'package-image-' + index"
@@ -56,37 +61,48 @@
                                         ]"
                                         :alt="packageData?.name || 'Package Image'"
                                     />
+                                    <!-- Overlay hint for mobile -->
+                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 rounded-lg flex items-center justify-center z-30">
+                                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3 shadow-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                            </svg>
+                                        </div>
+                                    </div>
                                     <!-- Navigation Buttons -->
                                     <button
                                         v-if="packageData.images.length > 1"
-                                        @click="previousImage"
-                                        class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-1 z-20"
+                                        @click.stop="previousImage"
+                                        class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 z-20 shadow-lg"
                                         aria-label="Previous image"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                                         </svg>
                                     </button>
                                     <button
                                         v-if="packageData.images.length > 1"
-                                        @click="nextImage"
-                                        class="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white rounded-full p-1 shadow-lg"
+                                        @click.stop="nextImage"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                         </svg>
                                     </button>
                                 </div>
                                 
                                 <!-- Thumbnail Navigation -->
-                                <div v-if="packageData.images.length > 1" class="flex space-x-2 overflow-x-auto">
+                                <div v-if="packageData.images.length > 1" class="flex space-x-2 overflow-x-auto pb-2">
                                     <button
                                         v-for="(image, index) in packageData.images"
                                         :key="index"
-                                        @click="currentImageIndex = index"
+                                        @click.stop="currentImageIndex = index"
+                                        @touchend.stop="currentImageIndex = index"
+                                        @dblclick="openPackageImageLightbox(index)"
+                                        @touchstart.prevent
                                         :class="[
-                                            'flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200',
-                                            currentImageIndex === index ? 'border-indigo-500' : 'border-gray-200 hover:border-indigo-300'
+                                            'flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer touch-none',
+                                            currentImageIndex === index ? 'border-indigo-500 ring-2 ring-indigo-300' : 'border-gray-200 hover:border-indigo-300'
                                         ]"
                                         :aria-label="`Go to image ${index + 1}`"
                                     >
@@ -321,8 +337,13 @@
                                                                 </svg>
                                                             </div>
 
-                                                            <!-- Room Type Image -->
-                                                            <div class="aspect-w-16 aspect-h-9 rounded-t-lg overflow-hidden bg-gray-100">
+                                                            <!-- Room Type Image - Clickable to open lightbox -->
+                                                            <div 
+                                                                class="aspect-w-16 aspect-h-9 rounded-t-lg overflow-hidden bg-gray-100 cursor-pointer group relative"
+                                                                @click="openRoomTypeImageLightbox(roomType, 0)"
+                                                                @touchstart="(e) => { roomTypeTapStartTime = Date.now(); roomTypeTapStartX = e.touches[0].clientX; roomTypeTapStartY = e.touches[0].clientY; }"
+                                                                @touchend="handleRoomTypeImageTap(roomType, $event)"
+                                                            >
                                                                 <Swiper
                                                                     :modules="[Pagination]"
                                                                     :slides-per-view="1"
@@ -333,14 +354,18 @@
                                                                         delay: 3000,
                                                                         disableOnInteraction: false
                                                                     }"
+                                                                    :allow-touch-move="true"
                                                                     class="room-image-swiper"
+                                                                    @click="openRoomTypeImageLightbox(roomType, 0)"
                                                                 >
                                                                     <SwiperSlide v-for="(image, imgIndex) in roomType.images" 
-                                                                                 :key="imgIndex">
+                                                                                 :key="imgIndex"
+                                                                                 @click="openRoomTypeImageLightbox(roomType, imgIndex)"
+                                                                                 @touchend="handleRoomTypeImageTap(roomType, $event)">
                                                                         <img
                                                                             :src="getImageUrl(image)"
                                                                             :alt="`${roomType.name} - Image ${imgIndex + 1}`"
-                                                                            class="w-full h-full object-cover"
+                                                                            class="w-full h-full object-cover pointer-events-none"
                                                                             @error="e => e.target.src = '/images/placeholder.jpg'"
                                                                         />
                                                                     </SwiperSlide>
@@ -352,6 +377,14 @@
                                                                         </div>
                                                                     </SwiperSlide>
                                                                 </Swiper>
+                                                                <!-- Overlay hint -->
+                                                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center z-10 pointer-events-none">
+                                                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-2 shadow-lg">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                                        </svg>
+                                                                    </div>
+                                                                </div>
                                                             </div>
 
                                                             <!-- Room Type Info -->
@@ -411,7 +444,7 @@
                                                 <label :for="'children-' + index" 
                                                        class="block text-sm font-medium text-gray-700 mb-1">
                                                     Number of Children 
-                                                    <span class="text-xs text-gray-500">
+                                                    <span class="text-xs text-gray-500" v-if="packageData.child_max_age_desc">
                                                         ({{ packageData.child_max_age_desc }})
                                                     </span>
                                                 </label>
@@ -445,7 +478,7 @@
                                                 <label :for="'infants-' + index" 
                                                        class="block text-sm font-medium text-gray-700 mb-1">
                                                     Number of Infants 
-                                                    <span class="text-xs text-gray-500">
+                                                    <span class="text-xs text-gray-500" v-if="packageData.infant_max_age_desc">
                                                         ({{ packageData.infant_max_age_desc }})
                                                     </span>
                                                 </label>
@@ -1504,6 +1537,183 @@
                 <div class="text-gray-600 text-sm" v-html="formatTermsAndConditions(packageData.terms_and_conditions)"></div>
             </div>
         </div>
+
+        <!-- Package Images Lightbox Modal -->
+        <Modal :show="showPackageImageLightbox" @close="closePackageImageLightbox" :max-width="'7xl'">
+            <div class="relative bg-white lightbox-container">
+                <button
+                    @click="closePackageImageLightbox"
+                    @touchend.prevent="closePackageImageLightbox"
+                    class="absolute top-2 right-2 sm:top-4 sm:right-4 z-50 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full p-2 shadow-md transition-all lightbox-close-button touch-none"
+                    aria-label="Close lightbox"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                
+                <div 
+                    v-if="packageData?.images && packageData.images.length > 0" 
+                    class="relative w-full" 
+                    @touchstart="handleTouchStart"
+                    @touchend="handleTouchEnd"
+                    @touchmove="handleTouchMove"
+                >
+                    <!-- Main Image Display -->
+                    <div class="flex items-center justify-center w-full px-2 py-12 sm:px-4 sm:py-8 md:px-8 md:py-12">
+                        <img
+                            v-for="(image, index) in packageData.images"
+                            :key="'lightbox-package-' + index"
+                            :src="getImageUrl(image)"
+                            :class="[
+                                'lightbox-image w-full h-auto max-h-[75vh] sm:max-h-[80vh] object-contain transition-opacity duration-500',
+                                lightboxPackageImageIndex === index ? 'opacity-100' : 'opacity-0 absolute'
+                            ]"
+                            :alt="`${packageData.name} - Image ${index + 1}`"
+                        />
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <button
+                        v-if="packageData.images.length > 1"
+                        @click="previousLightboxPackageImage"
+                        @touchend.prevent="previousLightboxPackageImage"
+                        class="absolute left-1 sm:left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white hover:bg-gray-50 text-gray-800 rounded-full p-1.5 sm:p-2 md:p-3 shadow-lg border border-gray-200 z-40 transition-all lightbox-nav-button touch-none"
+                        aria-label="Previous image"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button
+                        v-if="packageData.images.length > 1"
+                        @click="nextLightboxPackageImage"
+                        @touchend.prevent="nextLightboxPackageImage"
+                        class="absolute right-1 sm:right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white hover:bg-gray-50 text-gray-800 rounded-full p-1.5 sm:p-2 md:p-3 shadow-lg border border-gray-200 z-40 transition-all lightbox-nav-button touch-none"
+                        aria-label="Next image"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <!-- Image Counter -->
+                    <div class="absolute bottom-12 sm:bottom-16 md:bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800/80 text-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm z-40 font-medium">
+                        {{ lightboxPackageImageIndex + 1 }} / {{ packageData.images.length }}
+                    </div>
+
+                    <!-- Thumbnail Strip (Desktop) -->
+                    <div v-if="packageData.images.length > 1" class="hidden md:flex absolute bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 p-2 md:p-3 space-x-1.5 md:space-x-2 overflow-x-auto justify-center z-30 lightbox-thumbnails">
+                        <button
+                            v-for="(image, index) in packageData.images"
+                            :key="'thumb-' + index"
+                            @click="lightboxPackageImageIndex = index"
+                            :class="[
+                                'flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-lg overflow-hidden border-2 transition-all duration-200',
+                                lightboxPackageImageIndex === index ? 'border-indigo-600 ring-2 ring-indigo-300' : 'border-gray-300 hover:border-indigo-400'
+                            ]"
+                        >
+                            <img
+                                :src="getImageUrl(image)"
+                                :alt="`Thumbnail ${index + 1}`"
+                                class="w-full h-full object-cover"
+                            />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Modal>
+
+        <!-- Room Type Images Lightbox Modal -->
+        <Modal :show="showRoomTypeImageLightbox" @close="closeRoomTypeImageLightbox" :max-width="'7xl'">
+            <div class="relative bg-white lightbox-container">
+                <button
+                    @click="closeRoomTypeImageLightbox"
+                    @touchend.prevent="closeRoomTypeImageLightbox"
+                    class="absolute top-2 right-2 sm:top-4 sm:right-4 z-50 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full p-2 shadow-md transition-all lightbox-close-button touch-none"
+                    aria-label="Close lightbox"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <div 
+                    v-if="lightboxRoomTypeData" 
+                    class="relative w-full" 
+                    @touchstart="handleTouchStart"
+                    @touchend="handleTouchEnd"
+                    @touchmove="handleTouchMove"
+                >
+                    <!-- Room Type Title -->
+                    <div class="absolute top-2 left-2 sm:top-4 sm:left-4 z-40 bg-white border border-gray-200 shadow-md text-gray-800 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg">
+                        <h3 class="text-sm sm:text-base md:text-lg font-semibold">{{ lightboxRoomTypeData.name }}</h3>
+                    </div>
+
+                    <!-- Main Image Display -->
+                    <div class="flex items-center justify-center w-full px-2 py-12 sm:px-4 sm:py-8 md:px-8 md:py-12">
+                        <img
+                            v-for="(image, index) in lightboxRoomTypeData.images"
+                            :key="'lightbox-room-' + index"
+                            :src="getImageUrl(image)"
+                            :class="[
+                                'lightbox-image w-full h-auto max-h-[75vh] sm:max-h-[80vh] object-contain transition-opacity duration-500',
+                                lightboxRoomTypeImageIndex === index ? 'opacity-100' : 'opacity-0 absolute'
+                            ]"
+                            :alt="`${lightboxRoomTypeData.name} - Image ${index + 1}`"
+                        />
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <button
+                        v-if="lightboxRoomTypeData.images && lightboxRoomTypeData.images.length > 1"
+                        @click="previousLightboxRoomTypeImage"
+                        @touchend.prevent="previousLightboxRoomTypeImage"
+                        class="absolute left-1 sm:left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white hover:bg-gray-50 text-gray-800 rounded-full p-1.5 sm:p-2 md:p-3 shadow-lg border border-gray-200 z-40 transition-all lightbox-nav-button touch-none"
+                        aria-label="Previous image"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button
+                        v-if="lightboxRoomTypeData.images && lightboxRoomTypeData.images.length > 1"
+                        @click="nextLightboxRoomTypeImage"
+                        @touchend.prevent="nextLightboxRoomTypeImage"
+                        class="absolute right-1 sm:right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white hover:bg-gray-50 text-gray-800 rounded-full p-1.5 sm:p-2 md:p-3 shadow-lg border border-gray-200 z-40 transition-all lightbox-nav-button touch-none"
+                        aria-label="Next image"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <!-- Image Counter -->
+                    <div v-if="lightboxRoomTypeData.images && lightboxRoomTypeData.images.length > 1" class="absolute bottom-12 sm:bottom-16 md:bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800/80 text-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm z-40 font-medium">
+                        {{ lightboxRoomTypeImageIndex + 1 }} / {{ lightboxRoomTypeData.images.length }}
+                    </div>
+
+                    <!-- Thumbnail Strip (Desktop) -->
+                    <div v-if="lightboxRoomTypeData.images && lightboxRoomTypeData.images.length > 1" class="hidden md:flex absolute bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 p-2 md:p-3 space-x-1.5 md:space-x-2 overflow-x-auto justify-center z-30 lightbox-thumbnails">
+                        <button
+                            v-for="(image, index) in lightboxRoomTypeData.images"
+                            :key="'thumb-room-' + index"
+                            @click="lightboxRoomTypeImageIndex = index"
+                            :class="[
+                                'flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-lg overflow-hidden border-2 transition-all duration-200',
+                                lightboxRoomTypeImageIndex === index ? 'border-indigo-600 ring-2 ring-indigo-300' : 'border-gray-300 hover:border-indigo-400'
+                            ]"
+                        >
+                            <img
+                                :src="getImageUrl(image)"
+                                :alt="`Thumbnail ${index + 1}`"
+                                class="w-full h-full object-cover"
+                            />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -1639,6 +1849,19 @@ const refreshBookingData = async () => {
 const packageData = ref(null);
 const currentImageIndex = ref(0);
 const calculatedPrice = ref(null);
+
+// Lightbox states
+const showPackageImageLightbox = ref(false);
+const lightboxPackageImageIndex = ref(0);
+const showRoomTypeImageLightbox = ref(false);
+const lightboxRoomTypeData = ref(null);
+const lightboxRoomTypeImageIndex = ref(0);
+
+// Touch/swipe support for mobile
+const touchStartX = ref(0);
+const touchStartY = ref(0);
+const touchEndX = ref(0);
+const touchEndY = ref(0);
 const priceBreakdown = ref(null);
 const nightlyBreakdown = ref([]);
 const roomTypes = ref([]);
@@ -1957,6 +2180,9 @@ onMounted(() => {
     
     // Add click outside listener for country dropdown
     document.addEventListener('click', closeDropdownOnOutsideClick);
+    
+    // Add keyboard navigation for lightboxes
+    document.addEventListener('keydown', handleKeyPress);
 });
 
 // Clean up interval on component unmount
@@ -1967,6 +2193,12 @@ onUnmounted(() => {
     
     // Remove click outside listener
     document.removeEventListener('click', closeDropdownOnOutsideClick);
+    
+    // Remove keyboard navigation listener
+    document.removeEventListener('keydown', handleKeyPress);
+    
+    // Reset body overflow
+    document.body.style.overflow = '';
 });
 
 // Remove the startAutoRotation function and its call
@@ -1979,6 +2211,174 @@ const nextImage = () => {
 const previousImage = () => {
     if (packageData.value?.images?.length > 0) {
         currentImageIndex.value = (currentImageIndex.value - 1 + packageData.value.images.length) % packageData.value.images.length;
+    }
+};
+
+// Package Image Lightbox Functions
+const openPackageImageLightbox = (index = 0) => {
+    lightboxPackageImageIndex.value = index;
+    showPackageImageLightbox.value = true;
+    document.body.style.overflow = 'hidden';
+};
+
+const closePackageImageLightbox = () => {
+    showPackageImageLightbox.value = false;
+    document.body.style.overflow = '';
+};
+
+const nextLightboxPackageImage = () => {
+    if (packageData.value?.images?.length > 0) {
+        lightboxPackageImageIndex.value = (lightboxPackageImageIndex.value + 1) % packageData.value.images.length;
+    }
+};
+
+const previousLightboxPackageImage = () => {
+    if (packageData.value?.images?.length > 0) {
+        lightboxPackageImageIndex.value = (lightboxPackageImageIndex.value - 1 + packageData.value.images.length) % packageData.value.images.length;
+    }
+};
+
+// Room Type Image Lightbox Functions
+const openRoomTypeImageLightbox = (roomType, index = 0) => {
+    if (!roomType || !roomType.images || roomType.images.length === 0) return;
+    lightboxRoomTypeData.value = roomType;
+    lightboxRoomTypeImageIndex.value = index;
+    showRoomTypeImageLightbox.value = true;
+    document.body.style.overflow = 'hidden';
+};
+
+// Handle tap on room type images (for mobile)
+let roomTypeTapStartTime = 0;
+let roomTypeTapStartX = 0;
+let roomTypeTapStartY = 0;
+
+const handleRoomTypeImageTap = (roomType, event) => {
+    // Check if this was a tap (not a swipe)
+    const touch = event.changedTouches ? event.changedTouches[0] : null;
+    if (!touch) return;
+    
+    const deltaX = Math.abs(touch.clientX - roomTypeTapStartX);
+    const deltaY = Math.abs(touch.clientY - roomTypeTapStartY);
+    const deltaTime = Date.now() - roomTypeTapStartTime;
+    
+    // If it's a quick tap (not a swipe), open lightbox
+    if (deltaTime < 300 && deltaX < 10 && deltaY < 10) {
+        event.preventDefault();
+        event.stopPropagation();
+        openRoomTypeImageLightbox(roomType, 0);
+    }
+};
+
+const closeRoomTypeImageLightbox = () => {
+    showRoomTypeImageLightbox.value = false;
+    lightboxRoomTypeData.value = null;
+    document.body.style.overflow = '';
+};
+
+const nextLightboxRoomTypeImage = () => {
+    if (lightboxRoomTypeData.value?.images?.length > 0) {
+        lightboxRoomTypeImageIndex.value = (lightboxRoomTypeImageIndex.value + 1) % lightboxRoomTypeData.value.images.length;
+    }
+};
+
+const previousLightboxRoomTypeImage = () => {
+    if (lightboxRoomTypeData.value?.images?.length > 0) {
+        lightboxRoomTypeImageIndex.value = (lightboxRoomTypeImageIndex.value - 1 + lightboxRoomTypeData.value.images.length) % lightboxRoomTypeData.value.images.length;
+    }
+};
+
+// Keyboard navigation for lightboxes
+const handleKeyPress = (event) => {
+    if (showPackageImageLightbox.value) {
+        if (event.key === 'ArrowLeft') {
+            previousLightboxPackageImage();
+        } else if (event.key === 'ArrowRight') {
+            nextLightboxPackageImage();
+        } else if (event.key === 'Escape') {
+            closePackageImageLightbox();
+        }
+    } else if (showRoomTypeImageLightbox.value) {
+        if (event.key === 'ArrowLeft') {
+            previousLightboxRoomTypeImage();
+        } else if (event.key === 'ArrowRight') {
+            nextLightboxRoomTypeImage();
+        } else if (event.key === 'Escape') {
+            closeRoomTypeImageLightbox();
+        }
+    }
+};
+
+// Touch/swipe handlers for mobile
+let isSwiping = false;
+
+const handleTouchStart = (event) => {
+    // Only handle if we're in a lightbox
+    if (!showPackageImageLightbox.value && !showRoomTypeImageLightbox.value) {
+        return;
+    }
+    isSwiping = false;
+    touchStartX.value = event.touches[0].clientX;
+    touchStartY.value = event.touches[0].clientY;
+};
+
+const handleTouchMove = (event) => {
+    // Only handle if we're in a lightbox
+    if (!showPackageImageLightbox.value && !showRoomTypeImageLightbox.value) {
+        return;
+    }
+    
+    if (event.touches.length > 0) {
+        const currentX = event.touches[0].clientX;
+        const currentY = event.touches[0].clientY;
+        const deltaX = Math.abs(currentX - touchStartX.value);
+        const deltaY = Math.abs(currentY - touchStartY.value);
+        
+        // If horizontal movement is greater than vertical, prevent default scrolling
+        if (deltaX > deltaY && deltaX > 10) {
+            isSwiping = true;
+            event.preventDefault();
+        }
+    }
+};
+
+const handleTouchEnd = (event) => {
+    // Only handle if we're in a lightbox
+    if (!showPackageImageLightbox.value && !showRoomTypeImageLightbox.value) {
+        return;
+    }
+    
+    if (isSwiping) {
+        event.preventDefault();
+    }
+    
+    touchEndX.value = event.changedTouches[0].clientX;
+    touchEndY.value = event.changedTouches[0].clientY;
+    handleSwipe();
+};
+
+const handleSwipe = () => {
+    const deltaX = touchStartX.value - touchEndX.value;
+    const deltaY = touchStartY.value - touchEndY.value;
+    
+    // Only handle horizontal swipes (ignore vertical scrolling)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+        if (showPackageImageLightbox.value) {
+            if (deltaX > 0) {
+                // Swipe left - next image
+                nextLightboxPackageImage();
+            } else {
+                // Swipe right - previous image
+                previousLightboxPackageImage();
+            }
+        } else if (showRoomTypeImageLightbox.value) {
+            if (deltaX > 0) {
+                // Swipe left - next image
+                nextLightboxRoomTypeImage();
+            } else {
+                // Swipe right - previous image
+                previousLightboxRoomTypeImage();
+            }
+        }
     }
 };
 
@@ -2841,6 +3241,8 @@ const handleInfantsChange = (room, index) => {
 /* Simplified styles for room image swiper */
 .room-image-swiper {
     height: 100%;
+    /* Allow touch interactions but also allow clicking to open lightbox */
+    touch-action: pan-y pinch-zoom;
 }
 
 .room-image-swiper :deep(.swiper-pagination) {
@@ -2858,6 +3260,12 @@ const handleInfantsChange = (room, index) => {
     opacity: 1;
 }
 
+/* Make swiper slides clickable on mobile */
+.room-image-swiper :deep(.swiper-slide) {
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
 /* Remove navigation button styles since we're not using them anymore */
 
 /* Add animation for helper messages */
@@ -2873,6 +3281,85 @@ const handleInfantsChange = (room, index) => {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* Lightbox Modal Styles */
+:deep(dialog[open]) {
+    padding: 0 !important;
+}
+
+/* Make lightbox images responsive */
+.lightbox-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    /* Prevent image drag on mobile */
+    -webkit-user-drag: none;
+    user-select: none;
+    /* Allow pointer events for touch interactions */
+    pointer-events: auto;
+}
+
+/* Lightbox container spacing */
+.lightbox-container {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    /* Enable touch interactions */
+    touch-action: pan-y pinch-zoom;
+}
+
+/* Touch-friendly classes */
+.touch-none {
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.touch-pan-y {
+    touch-action: pan-y;
+}
+
+/* Improve mobile touch targets */
+@media (max-width: 640px) {
+    /* Compact spacing on mobile */
+    .lightbox-container {
+        min-height: auto !important;
+    }
+    
+    /* Navigation buttons on mobile */
+    .lightbox-nav-button {
+        padding: 0.75rem !important;
+        min-width: 3rem !important;
+        min-height: 3rem !important;
+        touch-action: manipulation;
+    }
+    
+    /* Close button on mobile */
+    .lightbox-close-button {
+        padding: 0.75rem !important;
+        min-width: 3rem !important;
+        min-height: 3rem !important;
+        touch-action: manipulation;
+    }
+    
+    /* Better image display on mobile */
+    .lightbox-image {
+        max-height: 70vh !important;
+        width: 100%;
+    }
+    
+    /* Prevent text selection on mobile */
+    .lightbox-container * {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+}
+
+/* Tablet and Desktop improvements */
+@media (min-width: 768px) {
+    :deep(.sm\\:max-w-7xl) {
+        max-width: 90vw !important;
     }
 }
 </style>
