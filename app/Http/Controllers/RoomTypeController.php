@@ -8,6 +8,7 @@ use App\Models\Package;
 use App\Models\PackageConfiguration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use App\Services\CreatePriceConfigurationsService;
@@ -150,6 +151,115 @@ class RoomTypeController extends Controller
             ]);
             throw $e;
         }
+    }
+
+    public function duplicate(Request $request, RoomType $roomType)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'max_occupancy' => 'required|integer|min:1',
+                'package_id' => 'required|exists:packages,id',
+                'images.*' => 'nullable|image|max:2048',
+                'existing_images' => 'nullable|array',
+                'existing_images.*' => 'string'
+            ]);
+            
+            // Start with existing images that should be copied
+            $duplicatedImages = [];
+            if ($request->has('existing_images') && is_array($request->existing_images)) {
+                foreach ($request->existing_images as $imagePath) {
+                    // Verify the image exists in the original room type
+                    if (in_array($imagePath, $roomType->images ?? [])) {
+                        if (Storage::disk('public')->exists($imagePath)) {
+                            // Generate new path for the copied image
+                            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
+                            $newPath = 'room-types/' . Str::uuid() . '.' . $extension;
+                            // Copy the image to the new path
+                            Storage::disk('public')->copy($imagePath, $newPath);
+                            $duplicatedImages[] = $newPath;
+                        }
+                    }
+                }
+            }
+            
+            // Handle new image uploads
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $duplicatedImages[] = $image->store('room-types', 'public');
+                }
+            }
+            
+            // Create new room type with form data
+            $newRoomType = RoomType::create([
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'max_occupancy' => $validated['max_occupancy'],
+                'package_id' => $validated['package_id'],
+                'images' => $duplicatedImages,
+            ]);
+            
+            // Sync price configurations
+            $this->ensurePriceConfigService->syncPriceConfigurationsBySeasonsAndDateTypes($validated['package_id'], [], []);
+            
+            // If the request has a return_to_package parameter, return JSON response
+            if ($request->has('return_to_package')) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Room type duplicated successfully.',
+                    'room_type' => $newRoomType
+                ]);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Room type duplicated successfully.',
+                'room_type' => $newRoomType
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed on duplicate:', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Duplicate room type failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to duplicate room type: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    private function generateUniqueCopyName($baseName, $existingNames)
+    {
+        // Check if "baseName (Copy)" already exists
+        $copyName = $baseName . ' (Copy)';
+        if (!in_array($copyName, $existingNames)) {
+            return $copyName;
+        }
+        
+        // Find the highest copy number
+        $maxCopy = 0;
+        foreach ($existingNames as $name) {
+            if (preg_match('/\s\(Copy\s(\d+)\)$/', $name, $matches)) {
+                $copyNum = (int)$matches[1];
+                $maxCopy = max($maxCopy, $copyNum);
+            } elseif (preg_match('/\s\(Copy\)$/', $name)) {
+                $maxCopy = max($maxCopy, 1);
+            }
+        }
+        
+        return $baseName . ' (Copy ' . ($maxCopy + 1) . ')';
     }
 
     public function destroy(RoomType $roomType)

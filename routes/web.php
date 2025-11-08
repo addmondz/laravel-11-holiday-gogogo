@@ -116,6 +116,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'create' => 'room-types.create',
         'edit' => 'room-types.edit',
     ]);
+    Route::post('/room-types/{roomType}/duplicate', [RoomTypeController::class, 'duplicate'])->name('room-types.duplicate');
 
     Route::resource('date-type-ranges', DateTypeRangeController::class)->names([
         'index' => 'date-type-ranges.index',

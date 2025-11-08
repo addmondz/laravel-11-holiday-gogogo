@@ -46,6 +46,12 @@
                                 Edit
                             </button>
                             <button
+                                @click="duplicateRoomType(roomType)"
+                                class="text-blue-600 hover:text-blue-900 mr-3"
+                            >
+                                Duplicate
+                            </button>
+                            <button
                                 @click="deleteRoomType(roomType.id)"
                                 class="text-red-600 hover:text-red-900"
                             >
@@ -183,6 +189,114 @@
                             :disabled="roomTypeForm.processing"
                         >
                             Create Room Type
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </Modal>
+
+        <!-- Duplicate Room Type Modal -->
+        <Modal :show="showDuplicateRoomTypeModal" @close="closeDuplicateRoomTypeModal">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Duplicate Room Type</h2>
+                <div v-if="duplicateRoomTypeErrors" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {{ duplicateRoomTypeErrors }}
+                </div>
+                <form @submit.prevent="submitDuplicateRoomType">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="duplicate_name" class="block text-sm font-medium text-gray-700">Name</label>
+                            <input
+                                type="text"
+                                id="duplicate_name"
+                                v-model="duplicateRoomTypeForm.name"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label for="duplicate_max_occupancy" class="block text-sm font-medium text-gray-700">Max Occupancy</label>
+                            <input
+                                type="number"
+                                id="duplicate_max_occupancy"
+                                v-model="duplicateRoomTypeForm.max_occupancy"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                min="1"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label for="duplicate_description" class="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea
+                                id="duplicate_description"
+                                v-model="duplicateRoomTypeForm.description"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                rows="3"
+                            ></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Images</label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <div class="text-sm text-gray-600">
+                                        <label for="duplicate_images" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                            <span>Upload images</span>
+                                            <input
+                                                id="duplicate_images"
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                class="sr-only"
+                                                @change="handleImageUpload($event, 'duplicateRoomTypeForm')"
+                                            />
+                                        </label>
+                                        <p class="pl-1">or drag and drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PNG, JPG, GIF up to 2MB each</p>
+                                </div>
+                            </div>
+                            <!-- Preview existing and uploaded images -->
+                            <div v-if="duplicateRoomTypeForm.images.length > 0" class="mt-4 grid grid-cols-3 gap-4">
+                                <div v-for="(image, index) in duplicateRoomTypeForm.images" :key="index" class="relative">
+                                    <img 
+                                        :src="getImagePreviewUrl(image)" 
+                                        class="h-24 w-full object-cover rounded-lg" 
+                                        alt="Room type image"
+                                    />
+                                    <button
+                                        type="button"
+                                        @click="removeImage(index, 'duplicateRoomTypeForm')"
+                                        class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                    >
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button
+                            type="button"
+                            @click="closeDuplicateRoomTypeModal"
+                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
+                            :disabled="duplicateRoomTypeForm.processing"
+                        >
+                            Create Duplicate
                         </button>
                     </div>
                 </form>
@@ -342,8 +456,10 @@ const roomTypesData = ref(props.roomTypes || {
 });
 const showAddRoomTypeModal = ref(false);
 const showEditRoomTypeModal = ref(false);
+const showDuplicateRoomTypeModal = ref(false);
 const addRoomTypeErrors = ref('');
 const roomTypeWarning = ref('');
+const duplicateRoomTypeErrors = ref('');
 
 const roomTypesPagination = computed(() => ({
     links: roomTypesData.value.links,
@@ -373,6 +489,17 @@ const editRoomTypeForm = useForm({
     delete_images: []
 });
 
+const duplicateRoomTypeForm = useForm({
+    name: '',
+    description: '',
+    max_occupancy: 4,
+    package_id: props.package.id,
+    return_to_package: true,
+    images: [],
+    existing_images: [],
+    originalRoomTypeId: null
+});
+
 // Watch for modal closure to reset error
 watch(showAddRoomTypeModal, (newValue) => {
     if (!newValue) {
@@ -383,6 +510,12 @@ watch(showAddRoomTypeModal, (newValue) => {
 watch(showEditRoomTypeModal, (newValue) => {
     if (!newValue) {
         roomTypeWarning.value = '';
+    }
+});
+
+watch(showDuplicateRoomTypeModal, (newValue) => {
+    if (!newValue) {
+        duplicateRoomTypeErrors.value = '';
     }
 });
 
@@ -592,6 +725,132 @@ const updateRoomType = () => {
     });
 };
 
+const duplicateRoomType = (roomType) => {
+    // Generate unique name for duplicate
+    const baseName = roomType.name.replace(/\s\(Copy(?:\s\d+)?\)$/, '');
+    let newName = baseName + ' (Copy)';
+    
+    // Check if name already exists in current package room types
+    const existingNames = roomTypesData.value.data.map(rt => rt.name);
+    if (existingNames.includes(newName)) {
+        let copyNum = 1;
+        while (existingNames.includes(baseName + ' (Copy ' + (copyNum + 1) + ')')) {
+            copyNum++;
+        }
+        newName = baseName + ' (Copy ' + (copyNum + 1) + ')';
+    }
+    
+    // Reset and populate duplicate form
+    duplicateRoomTypeForm.reset();
+    duplicateRoomTypeForm.name = newName;
+    duplicateRoomTypeForm.description = roomType.description || '';
+    duplicateRoomTypeForm.max_occupancy = parseInt(roomType.max_occupancy) || 4;
+    duplicateRoomTypeForm.package_id = parseInt(props.package.id);
+    duplicateRoomTypeForm.originalRoomTypeId = roomType.id;
+    duplicateRoomTypeForm.images = Array.isArray(roomType.images) ? [...roomType.images] : [];
+    duplicateRoomTypeForm.existing_images = Array.isArray(roomType.images) ? [...roomType.images] : [];
+    duplicateRoomTypeForm.return_to_package = true;
+    duplicateRoomTypeErrors.value = '';
+    
+    showDuplicateRoomTypeModal.value = true;
+};
+
+const closeDuplicateRoomTypeModal = () => {
+    showDuplicateRoomTypeModal.value = false;
+    duplicateRoomTypeForm.reset();
+    duplicateRoomTypeErrors.value = '';
+};
+
+const submitDuplicateRoomType = () => {
+    // Validation checks
+    if (!duplicateRoomTypeForm.name?.trim()) {
+        duplicateRoomTypeErrors.value = 'Room type name is required';
+        return;
+    }
+    if (!duplicateRoomTypeForm.max_occupancy || duplicateRoomTypeForm.max_occupancy < 1) {
+        duplicateRoomTypeErrors.value = 'Maximum occupancy must be at least 1';
+        return;
+    }
+
+    duplicateRoomTypeForm.processing = true;
+    duplicateRoomTypeErrors.value = '';
+
+    // Create FormData
+    const formData = new FormData();
+    
+    // Add basic fields
+    formData.append('name', duplicateRoomTypeForm.name.trim());
+    formData.append('description', duplicateRoomTypeForm.description?.trim() || '');
+    formData.append('max_occupancy', duplicateRoomTypeForm.max_occupancy);
+    formData.append('package_id', props.package.id);
+    formData.append('return_to_package', 'true');
+    
+    // Separate existing images (strings) from new uploads (File objects)
+    const existingImages = duplicateRoomTypeForm.images.filter(img => typeof img === 'string');
+    const newImages = duplicateRoomTypeForm.images.filter(img => img instanceof File);
+    
+    // Add existing images to copy
+    existingImages.forEach((imagePath, index) => {
+        formData.append(`existing_images[${index}]`, imagePath);
+    });
+    
+    // Add new image uploads
+    if (newImages.length > 0) {
+        newImages.forEach((image, index) => {
+            formData.append(`images[${index}]`, image);
+        });
+    }
+
+    // Use axios directly for better control over the request
+    axios.post(route('room-types.duplicate', duplicateRoomTypeForm.originalRoomTypeId), formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => {
+        duplicateRoomTypeForm.processing = false;
+        showDuplicateRoomTypeModal.value = false;
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'Room type duplicated successfully'
+        });
+        // Reset form
+        duplicateRoomTypeForm.reset();
+        // Refresh the room types list
+        router.get(route('packages.show', props.package.id));
+    })
+    .catch(error => {
+        duplicateRoomTypeForm.processing = false;
+        
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors;
+            if (errors.images) {
+                duplicateRoomTypeErrors.value = Array.isArray(errors.images) ? errors.images.join(', ') : errors.images;
+            } else if (errors.name) {
+                duplicateRoomTypeErrors.value = errors.name[0];
+            } else if (errors.max_occupancy) {
+                duplicateRoomTypeErrors.value = errors.max_occupancy[0];
+            } else if (errors.package_id) {
+                duplicateRoomTypeErrors.value = errors.package_id[0];
+            } else {
+                const errorMessages = Object.entries(errors)
+                    .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+                    .join('\n');
+                duplicateRoomTypeErrors.value = errorMessages;
+            }
+        } else if (error.response?.data?.message) {
+            duplicateRoomTypeErrors.value = error.response.data.message;
+        } else {
+            duplicateRoomTypeErrors.value = 'Failed to duplicate room type. Please try again.';
+        }
+    })
+    .finally(() => {
+        duplicateRoomTypeForm.processing = false;
+    });
+};
+
 const deleteRoomType = (id) => {
     Swal.fire({
         title: 'Are you sure?',
@@ -627,7 +886,14 @@ const deleteRoomType = (id) => {
 
 const handleImageUpload = (event, formName) => {
     const files = Array.from(event.target.files);
-    const form = formName === 'roomTypeForm' ? roomTypeForm : editRoomTypeForm;
+    let form;
+    if (formName === 'roomTypeForm') {
+        form = roomTypeForm;
+    } else if (formName === 'editRoomTypeForm') {
+        form = editRoomTypeForm;
+    } else if (formName === 'duplicateRoomTypeForm') {
+        form = duplicateRoomTypeForm;
+    }
     
     const validFiles = files.filter(file => {
         if (!file.type.startsWith('image/')) {
@@ -661,11 +927,27 @@ const handleImageUpload = (event, formName) => {
 };
 
 const removeImage = (index, formName) => {
-    const form = formName === 'roomTypeForm' ? roomTypeForm : editRoomTypeForm;
+    let form;
+    if (formName === 'roomTypeForm') {
+        form = roomTypeForm;
+    } else if (formName === 'editRoomTypeForm') {
+        form = editRoomTypeForm;
+    } else if (formName === 'duplicateRoomTypeForm') {
+        form = duplicateRoomTypeForm;
+    }
+    
     const image = form.images[index];
     
     if (typeof image === 'string') {
-        form.delete_images.push(image);
+        if (formName === 'editRoomTypeForm') {
+            form.delete_images.push(image);
+        } else if (formName === 'duplicateRoomTypeForm') {
+            // For duplicate, just remove from existing_images array
+            const existingIndex = form.existing_images.indexOf(image);
+            if (existingIndex > -1) {
+                form.existing_images.splice(existingIndex, 1);
+            }
+        }
     }
     
     form.images.splice(index, 1);
