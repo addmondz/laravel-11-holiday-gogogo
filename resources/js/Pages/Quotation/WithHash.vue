@@ -257,22 +257,6 @@
                                     <span class="text-sm text-gray-600 whitespace-nowrap">
                                         Total Guests: {{ totalGuests }}
                                     </span>
-                                    <button
-                                        type="button"
-                                        @click="addRoom"
-                                        :disabled="!canAddRoom"
-                                        :class="[
-                                            'inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors w-full sm:w-auto justify-center',
-                                            canAddRoom
-                                                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        ]"
-                                    >
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                        </svg>
-                                        Add Room
-                                    </button>
                                 </div>
                             </div>
 
@@ -575,11 +559,27 @@
                             </div>
                         </div>
 
-                        <!-- Calculate Button -->
-                        <div class="flex justify-end">
+                        <!-- Action Buttons -->
+                        <div class="flex flex-row justify-between gap-3">
+                            <button
+                                type="button"
+                                @click="addRoom"
+                                :disabled="!canAddRoom"
+                                :class="[
+                                    'inline-flex items-center justify-center px-4 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex-1 sm:flex-initial',
+                                    canAddRoom
+                                        ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
+                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                ]"
+                            >
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span class="truncate">Add Room</span>
+                            </button>
                             <button
                                 type="submit"
-                                class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white text-base font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                class="inline-flex items-center justify-center px-4 py-2.5 sm:px-6 sm:py-3 bg-indigo-600 text-white text-sm sm:text-base font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex-1 sm:flex-initial"
                                 :disabled="form.processing"
                             >
                                 Calculate Price
