@@ -44,11 +44,10 @@
                     <div class="lg:w-1/3 p-0 sm:p-6 md:p-4">
                         <div class="relative">
                             <template v-if="packageData.images && packageData.images.length > 0">
-                                <!-- Main Image - Clickable to open lightbox (desktop only) -->
+                                <!-- Main Image - Enlarge icon opens lightbox (desktop only) -->
                                 <div 
-                                    class="relative mb-4 cursor-pointer sm:cursor-pointer cursor-default group touch-none package-image-wrapper" 
+                                    class="relative mb-4 group touch-none package-image-wrapper" 
                                     style="height: 300px;"
-                                    @click="openPackageImageLightbox(currentImageIndex)"
                                 >
                                     <img
                                         v-for="(image, index) in packageData.images"
@@ -60,13 +59,19 @@
                                         ]"
                                         :alt="packageData?.name || 'Package Image'"
                                     />
-                                    <!-- Overlay hint for desktop only -->
-                                    <div class="hidden sm:flex absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 items-center justify-center z-30">
-                                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3 shadow-lg">
+                                    <!-- Enlarge Icon Overlay - Clickable to open lightbox (desktop only) -->
+                                    <div 
+                                        class="hidden sm:flex absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 items-center justify-center z-30 pointer-events-none"
+                                    >
+                                        <button 
+                                            class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3 shadow-lg cursor-pointer pointer-events-auto"
+                                            @click="openPackageImageLightbox(currentImageIndex)"
+                                            aria-label="Enlarge image"
+                                        >
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                                             </svg>
-                                        </div>
+                                        </button>
                                     </div>
                                     <!-- Navigation Buttons (Mobile only - hidden on desktop since image opens modal) -->
                                     <button
@@ -321,10 +326,9 @@
                                                                 </svg>
                                                             </div>
 
-                                                            <!-- Room Type Image - Clickable to open lightbox -->
+                                                            <!-- Room Type Image - Enlarge icon opens lightbox -->
                                                             <div 
-                                                                class="aspect-w-16 aspect-h-9 rounded-t-lg overflow-hidden bg-gray-100 cursor-pointer group relative"
-                                                                @click="openRoomTypeImageLightbox(roomType, 0)"
+                                                                class="aspect-w-16 aspect-h-9 rounded-t-lg overflow-hidden bg-gray-100 group relative"
                                                                 @touchstart="(e) => { roomTypeTapStartTime = Date.now(); roomTypeTapStartX = e.touches[0].clientX; roomTypeTapStartY = e.touches[0].clientY; }"
                                                                 @touchend="handleRoomTypeImageTap(roomType, $event)"
                                                             >
@@ -340,11 +344,9 @@
                                                                     }"
                                                                     :allow-touch-move="false"
                                                                     class="room-image-swiper"
-                                                                    @click="openRoomTypeImageLightbox(roomType, 0)"
                                                                 >
                                                                     <SwiperSlide v-for="(image, imgIndex) in roomType.images" 
                                                                                  :key="imgIndex"
-                                                                                 @click="openRoomTypeImageLightbox(roomType, imgIndex)"
                                                                                  @touchend="handleRoomTypeImageTap(roomType, $event)">
                                                                         <img
                                                                             :src="getImageUrl(image)"
@@ -361,13 +363,19 @@
                                                                         </div>
                                                                     </SwiperSlide>
                                                                 </Swiper>
-                                                                <!-- Overlay hint -->
-                                                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center z-10 pointer-events-none">
-                                                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-2 shadow-lg">
+                                                                <!-- Enlarge Icon Overlay - Clickable to open lightbox -->
+                                                                <div 
+                                                                    class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center z-10 pointer-events-none"
+                                                                >
+                                                                    <button 
+                                                                        class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-2 shadow-lg cursor-pointer pointer-events-auto"
+                                                                        @click="openRoomTypeImageLightbox(roomType, 0)"
+                                                                        aria-label="Enlarge image"
+                                                                    >
                                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                                                                         </svg>
-                                                                    </div>
+                                                                    </button>
                                                                 </div>
                                                             </div>
 
