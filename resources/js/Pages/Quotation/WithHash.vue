@@ -176,21 +176,21 @@
                                 </div>
                                 <div class="bg-gray-50 rounded-lg p-4">
                                     <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                        </svg>
-                                        Package Price
-                                    </h2>
-                                    <p class="text-2xl font-bold text-indigo-600">MYR {{ formatNumber(packageData.display_price_adult) }}</p>
-                                </div>
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
                                         <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                         Travel Period
                                     </h2>
                                     <p class="text-gray-700">{{ moment(packageData.package_start_date).format('DD MMM YYYY') }} - {{ moment(packageData.package_end_date).format('DD MMM YYYY') }}</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                        </svg>
+                                        Package Price
+                                    </h2>
+                                    <p class="text-2xl font-bold text-indigo-600">MYR {{ packageData?.display_price_adult ? formatNumber(packageData.display_price_adult) : '0.00' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -1069,39 +1069,22 @@
                                     </div>
                                 </div> -->
                                 <div class="bg-gray-50 p-4 rounded-md shadow-sm w-full max-w-xs ml-auto">
-                                    <div class="flex justify-between text-sm text-gray-600 mb-1">
-                                        <span>Total (Excl. SST)</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.total_without_sst) }}</span>
-                                    </div>
-                                    <div class="flex justify-between text-sm text-gray-600 mb-1">
-                                        <span>SST</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.sst) }}</span>
+                                    <!-- Package Total -->
+                                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                        <span>Package Total</span>
+                                        <span>MYR {{ formatNumber(priceBreakdown.total_without_sst - (priceBreakdown.add_ons_total || 0)) }}</span>
                                     </div>
                                     
-                                    <!-- Add-ons Breakdown -->
-                                    <!-- <div v-if="priceBreakdown.add_ons && priceBreakdown.add_ons.length > 0" class="mb-3">
-                                        <div class="text-sm font-medium text-gray-700 mb-2">Add-ons:</div>
-                                        <div v-for="addOn in priceBreakdown.add_ons" :key="addOn.id" class="text-xs text-gray-600 mb-1">
-                                            <div class="flex justify-between">
-                                                <span>{{ addOn.name }}</span>
-                                                <span>MYR {{ formatNumber(addOn.total) }}</span>
-                                            </div>
-                                            <div class="text-gray-500 ml-2">
-                                                Adults: {{ addOn.adults }} × MYR {{ formatNumber(addOn.adult_price) }} = MYR {{ formatNumber(addOn.adult_total) }}<br>
-                                                Children: {{ addOn.children }} × MYR {{ formatNumber(addOn.child_price) }} = MYR {{ formatNumber(addOn.child_total) }}<br>
-                                                Infants: {{ addOn.infants }} × MYR {{ formatNumber(addOn.infant_price) }} = MYR {{ formatNumber(addOn.infant_total) }}
-                                            </div>
-                                        </div>
-                                        <div class="flex justify-between text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">
-                                            <span>Add-ons Total</span>
-                                            <span>MYR {{ formatNumber(priceBreakdown.add_ons_total) }}</span>
-                                        </div>
-                                    </div> -->
+                                    <!-- Add-ons Total -->
+                                    <div v-if="priceBreakdown.add_ons_total && priceBreakdown.add_ons_total > 0" class="flex justify-between text-sm text-gray-600 mb-2">
+                                        <span>Add-ons</span>
+                                        <span>MYR {{ formatNumber(priceBreakdown.add_ons_total) }}</span>
+                                    </div>
                                     
-                                    <hr class="border-gray-200 mb-3">
-                                    <div class="flex justify-between text-base font-semibold text-indigo-700">
+                                    <!-- Grand Total -->
+                                    <div class="flex justify-between text-base font-semibold text-indigo-700 mt-3 pt-2 border-t-2">
                                         <span>Grand Total</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.total) }}</span>
+                                        <span>MYR {{ formatNumber(priceBreakdown.total, false) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1994,6 +1977,7 @@ const refreshBookingData = async () => {
 const packageData = ref(null);
 const currentImageIndex = ref(0);
 const calculatedPrice = ref(null);
+const globalSst = ref(null);
 
 // Lightbox states
 const showPackageImageLightbox = ref(false);
@@ -2617,6 +2601,7 @@ onMounted(async () => {
             packageData.value = response.data.package;
             roomTypes.value = response.data.room_types;
             packageAddOns.value = response.data.add_ons || [];
+            globalSst.value = response.data.global_sst || null;
         } else {
             packageData.value = null;
         }
@@ -2960,7 +2945,11 @@ watch([() => form.start_date, () => form.end_date], () => {
     validateForm();
 });
 
-const formatNumber = (number) => {
+const formatNumber = (number, withSst = true) => {
+    if (withSst) {
+        number = calculatePackagePriceWithSst(number)
+    }
+    
     const num = parseFloat(number);
     if (isNaN(num)) return '0.00';
     return num.toLocaleString('en-US', {
@@ -2984,6 +2973,35 @@ const handleStep2Submit = async () => {
     if (calculatedPrice.value !== null) {
         currentStep.value = 3;
     }
+};
+
+const package_sst_percentage = computed(() => {
+    // Safety check: return 0 if data is not loaded yet
+    if (!packageData.value || !globalSst.value) {
+        return 0;
+    }
+
+    // Check if package SST is enabled
+    const packageSstEnabled = packageData.value.sst_enable === true;
+
+    // Check if global SST is enabled
+    const globalSstEnabled = globalSst.value.enabled === true;
+
+    // SST should be applied only when BOTH package SST and global SST are enabled
+    // Packages don't have their own percentage - they use the global SST percentage
+    if (packageSstEnabled && globalSstEnabled) {
+        return globalSst.value.percent || 0;
+    }
+
+    // If either is disabled, return 0
+    return 0;
+});
+
+const calculatePackagePriceWithSst = (amount) => {
+    if (!amount || amount === 0) return 0;
+    if (package_sst_percentage.value === 0) return amount;
+
+    return amount * (1 + package_sst_percentage.value / 100)
 };
 
 // Add new refs for booking success state

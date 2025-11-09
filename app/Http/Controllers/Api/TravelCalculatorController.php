@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Constants\AppConstants;
 use App\Http\Controllers\Controller;
+use App\Models\AppSetting;
 use App\Models\DateBlocker;
 use App\Models\DateType;
 use App\Models\DateTypeRange;
@@ -235,11 +236,20 @@ class TravelCalculatorController extends Controller
         // Load package add-ons
         $packageAddOns = PackageAddOn::where('package_id', $package->id)->get();
 
+        // Get global SST configuration
+        $globalSstConfig = AppSetting::getSstConfiguration();
+        $isGlobalSstEnable = $globalSstConfig['status'] === 1;
+        $globalSstPercent = $globalSstConfig['sst_percent'] ?? 6.0;
+
         return response()->json([
             'success' => true,
             'package' => $package,
             'room_types' => $package->loadRoomTypes,
             'add_ons' => $packageAddOns,
+            'global_sst' => [
+                'enabled' => $isGlobalSstEnable,
+                'percent' => $globalSstPercent,
+            ],
         ]);
     }
 
