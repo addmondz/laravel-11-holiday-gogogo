@@ -36,9 +36,9 @@
         </div>
 
         <!-- Package Found State -->
-        <div v-else class="max-w-7xl mx-auto py-12 px-0 sm:px-4 sm:px-6 lg:px-8 pb-32 sm:pb-12" style="padding-top: 100px;">
+        <div v-else class="max-w-7xl mx-auto py-12 px-0 sm:px-4 sm:px-6 lg:px-8 pb-32 sm:pb-12 quoataion-extra-upper-padding">
             <!-- Package Header with Images and Details -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+            <div class="bg-white rounded-none sm:rounded-lg shadow-lg overflow-hidden mb-8">
                 <div class="flex flex-col lg:flex-row">
                     <!-- Left Side - Images -->
                     <div class="lg:w-1/3 p-0 sm:p-6 md:p-4">
@@ -46,7 +46,7 @@
                             <template v-if="packageData.images && packageData.images.length > 0">
                                 <!-- Main Image - Clickable to open lightbox (desktop only) -->
                                 <div 
-                                    class="relative mb-4 cursor-pointer sm:cursor-pointer cursor-default group touch-none" 
+                                    class="relative mb-4 cursor-pointer sm:cursor-pointer cursor-default group touch-none package-image-wrapper" 
                                     style="height: 300px;"
                                     @click="openPackageImageLightbox(currentImageIndex)"
                                 >
@@ -55,7 +55,7 @@
                                         :key="'package-image-' + index"
                                         :src="getImageUrl(image)"
                                         :class="[
-                                            'absolute inset-0 w-full h-full object-cover transition-opacity duration-500 rounded-lg',
+                                            'absolute inset-0 w-full h-full object-cover transition-opacity duration-500 rounded-none sm:rounded-lg',
                                             currentImageIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
                                         ]"
                                         :alt="packageData?.name || 'Package Image'"
@@ -1851,6 +1851,17 @@
     </div>
 </template>
 
+<style>
+.quoataion-extra-upper-padding {
+    padding-top: 100px;
+}
+@media (max-width: 640px) {
+    .quoataion-extra-upper-padding {
+        padding-top: 80px !important;
+    }
+}
+</style>
+
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
@@ -3516,6 +3527,22 @@ const handleInfantsChange = (room, index) => {
     pointer-events: auto;
     /* Enable touch interactions for swiping */
     touch-action: pan-x;
+}
+
+/* Package image - ensure no rounded corners on mobile */
+@media (max-width: 639px) {
+    /* Target the package image wrapper and image on mobile */
+    .package-image-wrapper {
+        border-radius: 0 !important;
+        -webkit-border-radius: 0 !important;
+        -moz-border-radius: 0 !important;
+    }
+    
+    .package-image-wrapper img {
+        border-radius: 0 !important;
+        -webkit-border-radius: 0 !important;
+        -moz-border-radius: 0 !important;
+    }
 }
 
 /* Lightbox container spacing */
