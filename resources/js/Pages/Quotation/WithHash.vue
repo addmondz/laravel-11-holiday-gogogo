@@ -617,10 +617,10 @@
                                      :class="selectedAddOns.includes(addOn.id) ? 'bg-indigo-50 hover:bg-indigo-100' : 'hover:bg-gray-50'">
                                     <!-- Checkbox and Name with Info -->
                                     <div class="col-span-12 sm:col-span-3 flex items-center gap-1.5 min-w-0 mb-2 sm:mb-0">
-                                        <input type="checkbox" 
+                                        <!-- <input type="checkbox" 
                                                :value="addOn.id" 
                                                v-model="selectedAddOns"
-                                               class="w-3.5 h-3.5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer flex-shrink-0">
+                                               class="w-3.5 h-3.5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer flex-shrink-0"> -->
                                         <div class="min-w-0 flex-1 flex items-center gap-1">
                                             <h4 class="text-xs font-medium text-gray-900 truncate">{{ addOn.name }}</h4>
                                             <div class="relative group flex-shrink-0 addon-info-button">
@@ -665,6 +665,7 @@
                                                    :min="0" 
                                                    :max="totalGuests"
                                                    v-model="getAddOnPax(addOn.id).adults"
+                                                   @input="updateAddOnSelection(addOn.id)"
                                                    placeholder="0"
                                                    class="w-16 px-2 py-1 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                                         </div>
@@ -678,6 +679,7 @@
                                                    :min="0" 
                                                    :max="totalGuests"
                                                    v-model="getAddOnPax(addOn.id).children"
+                                                   @input="updateAddOnSelection(addOn.id)"
                                                    placeholder="0"
                                                    class="w-16 px-2 py-1 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                                         </div>
@@ -691,6 +693,7 @@
                                                    :min="0" 
                                                    :max="totalGuests"
                                                    v-model="getAddOnPax(addOn.id).infants"
+                                                   @input="updateAddOnSelection(addOn.id)"
                                                    placeholder="0"
                                                    class="w-16 px-2 py-1 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                                         </div>
@@ -715,6 +718,7 @@
                                                    :min="0" 
                                                    :max="totalGuests"
                                                    v-model="getAddOnPax(addOn.id).adults"
+                                                   @input="updateAddOnSelection(addOn.id)"
                                                    placeholder="0"
                                                    class="w-full px-1 py-0.5 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                                         </div>
@@ -731,6 +735,7 @@
                                                    :min="0" 
                                                    :max="totalGuests"
                                                    v-model="getAddOnPax(addOn.id).children"
+                                                   @input="updateAddOnSelection(addOn.id)"
                                                    placeholder="0"
                                                    class="w-full px-1 py-0.5 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                                         </div>
@@ -747,6 +752,7 @@
                                                    :min="0" 
                                                    :max="totalGuests"
                                                    v-model="getAddOnPax(addOn.id).infants"
+                                                   @input="updateAddOnSelection(addOn.id)"
                                                    placeholder="0"
                                                    class="w-full px-1 py-0.5 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                                         </div>
@@ -2477,6 +2483,18 @@ const previousLightboxRoomTypeImage = () => {
         lightboxRoomTypeImageIndex.value = (lightboxRoomTypeImageIndex.value - 1 + lightboxRoomTypeData.value.images.length) % lightboxRoomTypeData.value.images.length;
     }
 };
+
+function updateAddOnSelection(addOnId) {
+    console.log('updateAddOnSelection', addOnId);
+  const pax = getAddOnPax(addOnId);
+  const total = (pax.adults || 0) + (pax.children || 0) + (pax.infants || 0);
+
+  if (total > 0 && !selectedAddOns.value.includes(addOnId)) {
+    selectedAddOns.value.push(addOnId);
+  } else if (total === 0 && selectedAddOns.value.includes(addOnId)) {
+    selectedAddOns.value.splice(selectedAddOns.value.indexOf(addOnId), 1);
+  }
+}
 
 // Keyboard navigation for lightboxes
 const handleKeyPress = (event) => {
