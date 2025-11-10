@@ -212,7 +212,7 @@
                     <!-- Mobile: Show only numbers with tooltips -->
                     <div class="flex items-center justify-between md:hidden">
                         <div class="flex items-center flex-1 justify-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 1 ? 'Quotation Details' : ''">1</div>
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 1 ? 'Select Room and Date' : ''">1</div>
                         </div>
                         <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 2 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
                         <div class="flex items-center flex-1 justify-center">
@@ -231,7 +231,7 @@
                     <div class="hidden md:flex items-center justify-between">
                         <div class="flex items-center">
                             <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">1</div>
-                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 1 ? 'text-indigo-600' : 'text-gray-500'">Quotation Details</div>
+                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 1 ? 'text-indigo-600' : 'text-gray-500'">Select Room and Date</div>
                         </div>
                         <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 2 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
                         <div class="flex items-center">
