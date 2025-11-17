@@ -126,9 +126,10 @@ class RoomTypeController extends Controller
 
             $roomType->update($validated);
 
-            if ($currentRoomPax != $newRoomPax) {
-                $this->priceConfigurationService->updateConfigsToPaxAndFill($roomType->id, $newRoomPax);
-            }
+            // if ($currentRoomPax != $newRoomPax) {
+            //     $this->priceConfigurationService->updateConfigsToPaxAndFill($roomType->id, $newRoomPax);
+            // }
+            $this->priceConfigurationService->updateConfigsToPaxAndFill($roomType->id, $newRoomPax);
 
             // If the request has a return_to_package parameter, redirect back to the package page
             if ($request->has('return_to_package')) {
