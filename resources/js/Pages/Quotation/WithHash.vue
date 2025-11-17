@@ -166,8 +166,9 @@
                                         </svg>
                                         Package Details
                                     </h2>
-                                    <a :href="packageData.wordpress_link" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-900 underline break-all text-sm">
-                                        {{ packageData.wordpress_link }}
+                                    <a :href="packageData.wordpress_link" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-900 underline break-all text-sm cursor-pointer no-underline">
+                                        <!-- {{ packageData.wordpress_link }} -->
+                                        Click to view package details
                                     </a>
                                 </div>
                                 <div class="bg-gray-50 rounded-lg p-4">
@@ -193,7 +194,7 @@
                                         <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                                         </svg>
-                                        Package Price
+                                        Package Price From
                                     </h2>
                                     <p class="text-2xl font-bold text-indigo-600">MYR {{ packageData?.display_price_adult ? formatNumber(packageData.display_price_adult) : '0.00' }}</p>
                                 </div>
@@ -211,41 +212,53 @@
                 <div class="mb-8">
                     <!-- Mobile: Show only numbers with tooltips -->
                     <div class="flex items-center justify-between md:hidden">
+                        <!-- Step 1 -->
                         <div class="flex items-center flex-1 justify-center">
                             <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 1 ? 'Select Room and Date' : ''">1</div>
                         </div>
-                        <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 2 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <div class="flex-1 mx-2 h-0.5" :class="isStepActive(2) ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <!-- Step 2: Add-ons (conditionally shown) -->
+                        <template v-if="hasAddOns">
+                            <div class="flex items-center flex-1 justify-center">
+                                <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 2 ? 'Choose Add-ons' : ''">2</div>
+                            </div>
+                            <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        </template>
+                        <!-- Step 3: Price Summary -->
                         <div class="flex items-center flex-1 justify-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 2 ? 'Choose Add-ons' : ''">2</div>
-                        </div>
-                        <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
-                        <div class="flex items-center flex-1 justify-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 3 ? 'Price Summary' : ''">3</div>
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', isStepActive(3) ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 3 ? 'Price Summary' : ''">{{ hasAddOns ? '3' : '2' }}</div>
                         </div>
                         <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 4 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <!-- Step 4: Booking Details -->
                         <div class="flex items-center flex-1 justify-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 4 ? 'Booking Details' : ''">4</div>
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 4 ? 'Booking Details' : ''">{{ hasAddOns ? '4' : '3' }}</div>
                         </div>
                     </div>
                     <!-- Desktop: Show full labels -->
                     <div class="hidden md:flex items-center justify-between">
+                        <!-- Step 1 -->
                         <div class="flex items-center">
                             <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">1</div>
                             <div class="ml-2 text-sm font-medium" :class="currentStep >= 1 ? 'text-indigo-600' : 'text-gray-500'">Select Room and Date</div>
                         </div>
-                        <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 2 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <div class="flex-1 mx-4 h-0.5" :class="isStepActive(2) ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <!-- Step 2: Add-ons (conditionally shown) -->
+                        <template v-if="hasAddOns">
+                            <div class="flex items-center">
+                                <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">2</div>
+                                <div class="ml-2 text-sm font-medium" :class="currentStep >= 2 ? 'text-indigo-600' : 'text-gray-500'">Choose Add-ons</div>
+                            </div>
+                            <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        </template>
+                        <!-- Step 3: Price Summary -->
                         <div class="flex items-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">2</div>
-                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 2 ? 'text-indigo-600' : 'text-gray-500'">Choose Add-ons</div>
-                        </div>
-                        <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
-                        <div class="flex items-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">3</div>
-                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 3 ? 'text-indigo-600' : 'text-gray-500'">Price Summary</div>
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', isStepActive(3) ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">{{ hasAddOns ? '3' : '2' }}</div>
+                            <div class="ml-2 text-sm font-medium" :class="isStepActive(3) ? 'text-indigo-600' : 'text-gray-500'">Price Summary</div>
                         </div>
                         <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 4 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <!-- Step 4: Booking Details -->
                         <div class="flex items-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">4</div>
+                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">{{ hasAddOns ? '4' : '3' }}</div>
                             <div class="ml-2 text-sm font-medium" :class="currentStep >= 4 ? 'text-indigo-600' : 'text-gray-500'">Booking Details</div>
                         </div>
                     </div>
@@ -597,7 +610,7 @@
                 </div>
 
                 <!-- Step 2: Choose Add-ons -->
-                <div v-if="currentStep === 2">
+                <div v-if="currentStep === 2 && hasAddOns">
                     <div class="space-y-2">
                         <div class="mb-2">
                             <h3 class="text-base font-semibold text-gray-900">Choose Your Add-ons</h3>
@@ -1106,7 +1119,7 @@
 
                         <div class="flex justify-between mt-6">
                             <button
-                                @click="currentStep = 2"
+                                @click="goToPreviousStep"
                                 class="px-8 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                             >
                                 Back
@@ -1260,7 +1273,7 @@
                             <div class="flex justify-between">
                                 <button
                                     type="button"
-                                    @click="currentStep = 2"
+                                    @click="goToPreviousStep"
                                     class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                                 >
                                     Back
@@ -2984,12 +2997,56 @@ const formatNumber = (number, withSst = true) => {
     });
 };
 
+// Computed property to check if there are add-ons
+const hasAddOns = computed(() => {
+    return packageAddOns.value && packageAddOns.value.length > 0;
+});
+
+// Helper function to get the displayed step number (adjusting for hidden add-ons step)
+const getDisplayStepNumber = (step) => {
+    if (!hasAddOns.value) {
+        // If no add-ons, step 2 is hidden, so adjust:
+        // Step 1 -> 1, Step 2 -> hidden, Step 3 -> 2, Step 4 -> 3
+        if (step === 1) return 1;
+        if (step === 2) return null; // Hidden
+        if (step === 3) return 2;
+        if (step === 4) return 3;
+    }
+    return step;
+};
+
+// Helper function to check if a step should be active based on current step
+const isStepActive = (step) => {
+    if (!hasAddOns.value) {
+        // If no add-ons, step 2 is skipped
+        if (step === 2) return false;
+        if (step === 3) return currentStep.value >= 2; // Step 3 becomes step 2 visually
+        if (step === 4) return currentStep.value >= 3; // Step 4 becomes step 3 visually
+    }
+    return currentStep.value >= step;
+};
+
+// Helper function to go back to the previous step
+const goToPreviousStep = () => {
+    if (currentStep.value === 4) {
+        // From step 4 (Booking Details), always go back to step 3 (Price Summary)
+        currentStep.value = 3;
+    } else if (currentStep.value === 3) {
+        // From step 3 (Price Summary), go back to step 2 (Add-ons) if has add-ons, otherwise step 1
+        currentStep.value = hasAddOns.value ? 2 : 1;
+    } else if (currentStep.value === 2) {
+        // From step 2 (Add-ons), always go back to step 1
+        currentStep.value = 1;
+    }
+};
+
 // Add new methods for step handling
 const handleStep1Submit = async () => {
     if (!validateForm()) return;
     await calculatePrice();
     if (calculatedPrice.value !== null) {
-        currentStep.value = 2;
+        // Skip step 2 (add-ons) if there are no add-ons
+        currentStep.value = hasAddOns.value ? 2 : 3;
     }
 };
 

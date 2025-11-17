@@ -11,7 +11,7 @@ class BookingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Booking::with(['package', 'roomType', 'addOns.packageAddOn']);
+        $query = Booking::with(['package', 'rooms.roomType', 'addOns.packageAddOn']);
 
         // Search functionality
         if ($request->has('search')) {
@@ -58,7 +58,7 @@ class BookingController extends Controller
         $bookings = $query->paginate(10)->withQueryString();
 
         // Calculate summary statistics based on filtered results
-        $filteredQuery = Booking::with(['package', 'roomType', 'addOns.packageAddOn']);
+        $filteredQuery = Booking::with(['package', 'rooms.roomType', 'addOns.packageAddOn']);
 
         // Apply the same filters to summary calculation
         if ($request->has('search')) {
@@ -113,7 +113,7 @@ class BookingController extends Controller
 
     public function edit(Booking $booking)
     {
-        $booking->load(['package', 'roomType']);
+        $booking->load(['package', 'rooms.roomType']);
 
         return Inertia::render('Bookings/Edit', [
             'booking' => $booking

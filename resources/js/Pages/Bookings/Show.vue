@@ -128,19 +128,20 @@
                                         <p class="mt-1 text-sm text-gray-900">{{ booking.phone_number }}</p>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700">IC/Passport Number</label>
-                                        <p class="mt-1 text-sm text-gray-900">{{ booking.booking_ic }}</p>
+                                        <!-- <label class="block text-sm font-medium text-gray-700">IC/Passport Number</label> -->
+                                        <label class="block text-sm font-medium text-gray-700">Tin Number</label>
+                                        <p class="mt-1 text-sm text-gray-900">{{ booking.booking_ic || '-' }}</p>
                                     </div>
                                     <div v-if="booking.special_remarks">
                                         <label class="block text-sm font-medium text-gray-700">Special Remarks</label>
-                                        <p class="mt-1 text-sm text-gray-900">{{ booking.special_remarks }}</p>
+                                        <p class="mt-1 text-sm text-gray-900">{{ booking.special_remarks || '-' }}</p>
                                     </div>
-                                    <div v-if="booking.special_remarks">
+                                    <div v-if="booking.uuid">
                                         <label class="block text-sm font-medium text-gray-700">Booking Reference</label>
-                                        <p class="mt-1 text-sm text-gray-900">{{ booking.uuid }}</p>
+                                        <p class="mt-1 text-sm text-gray-900">{{ booking.uuid || '-' }}</p>
                                     </div>
 
-                                    <div>
+                                    <div v-if="booking.package">
                                         <label class="block text-sm font-medium text-gray-700">Pay now / view payment</label>
                                         <div class="mt-1 text-sm text-gray-900 flex items-center gap-2">
                                             <Link :href="route('quotation.with-hash', booking.package.uuid) + '?booking=' + booking.uuid" class="text-indigo-600 hover:text-indigo-900 mr-2">
@@ -163,7 +164,18 @@
                                 <div class="space-y-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Package</label>
-                                        <p class="mt-1 text-sm text-gray-900">{{ booking.package.name }}</p>
+                                        <div class="mt-1 flex items-center gap-2">
+                                            <span class="text-sm text-gray-900">{{ booking.package?.name || 'N/A' }}</span>
+                                            <div v-if="!booking.package" class="relative group">
+                                                <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block z-50 w-56 p-3 text-xs text-white bg-gray-800 rounded-lg shadow-xl whitespace-normal">
+                                                    Package might be deleted. Please check with admin.
+                                                    <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Dates</label>
@@ -209,8 +221,9 @@
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     <tr v-for="room in booking.rooms" :key="room.id">
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900">{{ room.room_type.name }} 
-                                                <span class="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ room.room_type?.name || 'N/A' }}
+                                                <span v-if="room.room_type?.max_occupancy" class="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded whitespace-nowrap">
                                                     Max {{ room.room_type.max_occupancy }} pax
                                                 </span>
                                             </div>

@@ -623,7 +623,7 @@ class PackageController extends Controller
                 'display_price_adult' => 'nullable|numeric|min:0',
                 'display_price_child' => 'nullable|numeric|min:0',
                 'package_min_days' => 'required|integer|min:1',
-                'package_max_days' => 'required|integer|min:1|gte:package_min_days',
+                'package_max_days' => 'required|integer|min:1',
                 'terms_and_conditions' => 'nullable|string',
                 'location' => 'nullable|string|max:255',
                 'wordpress_link' => 'nullable|string|url|max:500',
