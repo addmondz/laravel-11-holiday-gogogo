@@ -62,7 +62,7 @@ class BotApiController extends Controller
                         'booking_page_url' => route('quotation.with-hash', $package->uuid),
                         'images' => collect($package->images)->map(fn($image) => url('/images') . '/' . $image)->values(),
                         'package_id' => $package->package_id,
-                        'name' => $package->name,
+                        'name' => strtolower($package->name),
                         'description' => $package->description,
                         'location' => $package->location,
                         'package_nights' => $package->package_min_days,
