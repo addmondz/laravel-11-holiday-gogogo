@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\SeasonType;
 use App\Models\DateTypeRange;
 use App\Services\GeneratePackageUid;
+use App\Services\CreatePriceConfigurationsService;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
@@ -27,9 +28,12 @@ use Illuminate\Validation\Rule;
 class PackageController extends Controller
 {
     public $enabledDefaultSeasonAndDateType;
-    public function __construct()
+    protected CreatePriceConfigurationsService $priceConfigurationService;
+    
+    public function __construct(CreatePriceConfigurationsService $priceConfigurationService)
     {
         $this->enabledDefaultSeasonAndDateType = env('ENABLED_DEFAULT_SEASON_AND_DATE_TYPE', false);
+        $this->priceConfigurationService = $priceConfigurationService;
     }
 
     public function index(Request $request)
@@ -778,6 +782,18 @@ class PackageController extends Controller
                 $newConfig->package_id = $newPackage->id;
                 $newConfig->room_type_id = $roomTypeMap[$config->room_type_id];
                 $newConfig->save();
+            }
+
+            // Update package configurations to match new room type pax values
+            // This ensures that if room pax was changed during duplication, configs are updated accordingly
+            foreach ($roomTypeMap as $oldRoomTypeId => $newRoomTypeId) {
+                $newRoomType = RoomType::find($newRoomTypeId);
+                if ($newRoomType) {
+                    $this->priceConfigurationService->updateConfigsToPaxAndFill(
+                        $newRoomTypeId,
+                        $newRoomType->max_occupancy
+                    );
+                }
             }
 
             // date blockers
