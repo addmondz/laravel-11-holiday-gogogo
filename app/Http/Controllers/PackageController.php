@@ -683,6 +683,9 @@ class PackageController extends Controller
                 'room_types.*.max_occupancy.min' => 'Maximum occupancy must be at least 1',
             ]);
 
+            // current logic: package_max_days = package_min_days
+            $validated['package_max_days'] = $validated['package_min_days'];
+
             // Create new package with validated data
             $newPackage = new Package($validated);
             $newPackage->uuid = (new GeneratePackageUid())->execute($newPackage->name);
