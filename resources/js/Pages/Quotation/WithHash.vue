@@ -214,51 +214,123 @@
                     <div class="flex items-center justify-between md:hidden">
                         <!-- Step 1 -->
                         <div class="flex items-center flex-1 justify-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 1 ? 'Select Room and Date' : ''">1</div>
+                            <div 
+                                @click="navigateToStep(1)"
+                                :class="[
+                                    'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
+                                    currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                    1 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
+                                ]" 
+                                :title="currentStep >= 1 ? 'Select Room and Date' : ''">
+                                1
+                            </div>
                         </div>
                         <div class="flex-1 mx-2 h-0.5" :class="isStepActive(2) ? 'bg-indigo-600' : 'bg-gray-200'"></div>
                         <!-- Step 2: Add-ons (conditionally shown) -->
                         <template v-if="hasAddOns">
                             <div class="flex items-center flex-1 justify-center">
-                                <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 2 ? 'Choose Add-ons' : ''">2</div>
+                                <div 
+                                    @click="navigateToStep(2)"
+                                    :class="[
+                                        'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
+                                        currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                        2 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
+                                    ]" 
+                                    :title="currentStep >= 2 ? 'Choose Add-ons' : ''">
+                                    2
+                                </div>
                             </div>
                             <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
                         </template>
                         <!-- Step 3: Price Summary -->
                         <div class="flex items-center flex-1 justify-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', isStepActive(3) ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 3 ? 'Price Summary' : ''">{{ hasAddOns ? '3' : '2' }}</div>
+                            <div 
+                                @click="navigateToStep(3)"
+                                :class="[
+                                    'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
+                                    isStepActive(3) ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                    3 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
+                                ]" 
+                                :title="currentStep >= 3 ? 'Price Summary' : ''">
+                                {{ hasAddOns ? '3' : '2' }}
+                            </div>
                         </div>
                         <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 4 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
                         <!-- Step 4: Booking Details -->
                         <div class="flex items-center flex-1 justify-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs', currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']" :title="currentStep >= 4 ? 'Booking Details' : ''">{{ hasAddOns ? '4' : '3' }}</div>
+                            <div 
+                                @click="navigateToStep(4)"
+                                :class="[
+                                    'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
+                                    currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                    4 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
+                                ]" 
+                                :title="currentStep >= 4 ? 'Booking Details' : ''">
+                                {{ hasAddOns ? '4' : '3' }}
+                            </div>
                         </div>
                     </div>
                     <!-- Desktop: Show full labels -->
                     <div class="hidden md:flex items-center justify-between">
                         <!-- Step 1 -->
-                        <div class="flex items-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">1</div>
+                        <div 
+                            @click="navigateToStep(1)"
+                            :class="[
+                                'flex items-center transition-all',
+                                1 <= maxStepReached ? 'cursor-pointer hover:scale-105' : ''
+                            ]">
+                            <div :class="[
+                                'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                                currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                1 <= maxStepReached ? 'hover:shadow-lg' : ''
+                            ]">1</div>
                             <div class="ml-2 text-sm font-medium" :class="currentStep >= 1 ? 'text-indigo-600' : 'text-gray-500'">Select Room and Date</div>
                         </div>
                         <div class="flex-1 mx-4 h-0.5" :class="isStepActive(2) ? 'bg-indigo-600' : 'bg-gray-200'"></div>
                         <!-- Step 2: Add-ons (conditionally shown) -->
                         <template v-if="hasAddOns">
-                            <div class="flex items-center">
-                                <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">2</div>
+                            <div 
+                                @click="navigateToStep(2)"
+                                :class="[
+                                    'flex items-center transition-all',
+                                    2 <= maxStepReached ? 'cursor-pointer hover:scale-105' : ''
+                                ]">
+                                <div :class="[
+                                    'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                                    currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                    2 <= maxStepReached ? 'hover:shadow-lg' : ''
+                                ]">2</div>
                                 <div class="ml-2 text-sm font-medium" :class="currentStep >= 2 ? 'text-indigo-600' : 'text-gray-500'">Choose Add-ons</div>
                             </div>
                             <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
                         </template>
                         <!-- Step 3: Price Summary -->
-                        <div class="flex items-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', isStepActive(3) ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">{{ hasAddOns ? '3' : '2' }}</div>
+                        <div 
+                            @click="navigateToStep(3)"
+                            :class="[
+                                'flex items-center transition-all',
+                                3 <= maxStepReached ? 'cursor-pointer hover:scale-105' : ''
+                            ]">
+                            <div :class="[
+                                'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                                isStepActive(3) ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                3 <= maxStepReached ? 'hover:shadow-lg' : ''
+                            ]">{{ hasAddOns ? '3' : '2' }}</div>
                             <div class="ml-2 text-sm font-medium" :class="isStepActive(3) ? 'text-indigo-600' : 'text-gray-500'">Price Summary</div>
                         </div>
                         <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 4 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
                         <!-- Step 4: Booking Details -->
-                        <div class="flex items-center">
-                            <div :class="['w-8 h-8 rounded-full flex items-center justify-center', currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600']">{{ hasAddOns ? '4' : '3' }}</div>
+                        <div 
+                            @click="navigateToStep(4)"
+                            :class="[
+                                'flex items-center transition-all',
+                                4 <= maxStepReached ? 'cursor-pointer hover:scale-105' : ''
+                            ]">
+                            <div :class="[
+                                'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                                currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                4 <= maxStepReached ? 'hover:shadow-lg' : ''
+                            ]">{{ hasAddOns ? '4' : '3' }}</div>
                             <div class="ml-2 text-sm font-medium" :class="currentStep >= 4 ? 'text-indigo-600' : 'text-gray-500'">Booking Details</div>
                         </div>
                     </div>
@@ -2442,6 +2514,7 @@ const bookingValidationErrors = ref({
 
 const isSubmitting = ref(false);
 const currentStep = ref(1);
+const maxStepReached = ref(1); // Track the highest step user has reached
 const showBookingModal = ref(false);
 let autoRotationInterval = null;
 
@@ -3171,13 +3244,24 @@ const scrollToBookingForm = () => {
     }
 };
 
+// Navigate to a specific step (only if already reached)
+const navigateToStep = (step) => {
+    // Only allow navigation to steps that have been reached
+    if (step <= maxStepReached.value) {
+        currentStep.value = step;
+        setTimeout(() => scrollToBookingForm(), 100);
+    }
+};
+
 // Add new methods for step handling
 const handleStep1Submit = async () => {
     if (!validateForm()) return;
     await calculatePrice();
     if (calculatedPrice.value !== null) {
         // Skip step 2 (add-ons) if there are no add-ons
-        currentStep.value = hasAddOns.value ? 2 : 3;
+        const nextStep = hasAddOns.value ? 2 : 3;
+        currentStep.value = nextStep;
+        maxStepReached.value = Math.max(maxStepReached.value, nextStep);
         // Scroll to top of booking form
         setTimeout(() => scrollToBookingForm(), 100);
     }
@@ -3188,6 +3272,7 @@ const handleStep2Submit = async () => {
     await calculatePrice();
     if (calculatedPrice.value !== null) {
         currentStep.value = 3;
+        maxStepReached.value = Math.max(maxStepReached.value, 3);
         // Scroll to top of booking form
         setTimeout(() => scrollToBookingForm(), 100);
     }
@@ -3195,6 +3280,7 @@ const handleStep2Submit = async () => {
 
 const handleStep3Submit = () => {
     currentStep.value = 4;
+    maxStepReached.value = Math.max(maxStepReached.value, 4);
     // Scroll to top of booking form
     setTimeout(() => scrollToBookingForm(), 100);
 };
