@@ -1125,7 +1125,7 @@
                                 Back
                             </button>
                             <button
-                                @click="currentStep = 4"
+                                @click="handleStep3Submit"
                                 class="px-8 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                                 Next
@@ -3040,6 +3040,14 @@ const goToPreviousStep = () => {
     }
 };
 
+// Helper function to scroll to booking form
+const scrollToBookingForm = () => {
+    const bookingForm = document.getElementById('booking-form');
+    if (bookingForm) {
+        bookingForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+};
+
 // Add new methods for step handling
 const handleStep1Submit = async () => {
     if (!validateForm()) return;
@@ -3047,6 +3055,8 @@ const handleStep1Submit = async () => {
     if (calculatedPrice.value !== null) {
         // Skip step 2 (add-ons) if there are no add-ons
         currentStep.value = hasAddOns.value ? 2 : 3;
+        // Scroll to top of booking form
+        setTimeout(() => scrollToBookingForm(), 100);
     }
 };
 
@@ -3055,7 +3065,15 @@ const handleStep2Submit = async () => {
     await calculatePrice();
     if (calculatedPrice.value !== null) {
         currentStep.value = 3;
+        // Scroll to top of booking form
+        setTimeout(() => scrollToBookingForm(), 100);
     }
+};
+
+const handleStep3Submit = () => {
+    currentStep.value = 4;
+    // Scroll to top of booking form
+    setTimeout(() => scrollToBookingForm(), 100);
 };
 
 const package_sst_percentage = computed(() => {
