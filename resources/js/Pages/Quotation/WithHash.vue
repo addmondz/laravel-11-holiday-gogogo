@@ -430,7 +430,7 @@
                                                             'block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
                                                             validationErrors.rooms?.[index]?.adults ? 'border-red-500' : 'border-gray-300'
                                                         ]"
-                                                        @input="handleAdultsChange(room, index)"
+                                                        @change="handleAdultsChange(room, index)"
                                                     />
                                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                                         <span class="text-gray-500 sm:text-sm">/ {{ getRoomMaxAdults(room) }}</span>
@@ -464,7 +464,7 @@
                                                             'block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
                                                             validationErrors.rooms?.[index]?.children ? 'border-red-500' : 'border-gray-300'
                                                         ]"
-                                                        @input="handleChildrenChange(room, index)"
+                                                        @change="handleChildrenChange(room, index)"
                                                     />
                                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                                         <span class="text-gray-500 sm:text-sm">/ {{ getRoomMaxChildren(room) }}</span>
@@ -498,7 +498,7 @@
                                                             'block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
                                                             validationErrors.rooms?.[index]?.infants ? 'border-red-500' : 'border-gray-300'
                                                         ]"
-                                                        @input="handleInfantsChange(room, index)"
+                                                        @change="handleInfantsChange(room, index)"
                                                     />
                                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                                         <span class="text-gray-500 sm:text-sm">/ {{ getRoomMaxInfants(room) }}</span>
