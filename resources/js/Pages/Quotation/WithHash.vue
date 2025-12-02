@@ -953,8 +953,106 @@
                             <div v-if="priceBreakdown?.guest_breakdown" class="mt-6">
                                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Guest Breakdown</h3>
                                 
-                                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                                    <!-- Guest Breakdown Table -->
+                                <!-- Mobile Card View -->
+                                <div class="md:hidden space-y-3">
+                                    <!-- Individual Guest Cards -->
+                                    <div 
+                                        v-for="(guest, guestKey) in priceBreakdown.guest_breakdown" 
+                                        :key="guestKey" 
+                                        class="bg-white rounded-lg border border-gray-200 p-4 space-y-3"
+                                    >
+                                        <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                                            <div>
+                                                <div class="font-semibold text-gray-900">Room {{ guest.room_number }}</div>
+                                                <div class="text-sm text-gray-600">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</div>
+                                            </div>
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                                {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="space-y-2 text-sm">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Room Type:</span>
+                                                <span class="font-medium text-gray-900">{{ guest.room_type_name }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Nights:</span>
+                                                <span class="font-medium text-gray-900">{{ guest.nights }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Base Total:</span>
+                                                <span class="font-medium text-gray-900">MYR {{ formatNumber(guest.base_charge.total) }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Surcharge:</span>
+                                                <span class="font-medium text-gray-900">MYR {{ formatNumber(guest.surcharge.total) }}</span>
+                                            </div>
+                                            <div class="flex justify-between pt-2 border-t border-gray-200">
+                                                <span class="font-semibold text-gray-900">Total:</span>
+                                                <span class="font-bold text-indigo-600">MYR {{ formatNumber(guest.total) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Summary Cards -->
+                                    <div v-if="priceBreakdown.summary.total_adults > 0" class="bg-indigo-50 rounded-lg border border-indigo-200 p-4">
+                                        <div class="font-semibold text-indigo-900 mb-3">Total Adults ({{ priceBreakdown.summary.total_adults }})</div>
+                                        <div class="space-y-2 text-sm">
+                                            <div class="flex justify-between">
+                                                <span class="text-indigo-700">Base Total:</span>
+                                                <span class="font-medium text-indigo-900">MYR {{ formatNumber(priceBreakdown.summary.base_charges.adult.total) }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-indigo-700">Surcharge:</span>
+                                                <span class="font-medium text-indigo-900">MYR {{ formatNumber(priceBreakdown.summary.surcharges.adult.total) }}</span>
+                                            </div>
+                                            <div class="flex justify-between pt-2 border-t border-indigo-300">
+                                                <span class="font-semibold text-indigo-900">Total:</span>
+                                                <span class="font-bold text-indigo-900">MYR {{ formatNumber(priceBreakdown.summary.base_charges.adult.total + priceBreakdown.summary.surcharges.adult.total) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="priceBreakdown.summary.total_children > 0" class="bg-indigo-50 rounded-lg border border-indigo-200 p-4">
+                                        <div class="font-semibold text-indigo-900 mb-3">Total Children ({{ priceBreakdown.summary.total_children }})</div>
+                                        <div class="space-y-2 text-sm">
+                                            <div class="flex justify-between">
+                                                <span class="text-indigo-700">Base Total:</span>
+                                                <span class="font-medium text-indigo-900">MYR {{ formatNumber(priceBreakdown.summary.base_charges.child.total) }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-indigo-700">Surcharge:</span>
+                                                <span class="font-medium text-indigo-900">MYR {{ formatNumber(priceBreakdown.summary.surcharges.child.total) }}</span>
+                                            </div>
+                                            <div class="flex justify-between pt-2 border-t border-indigo-300">
+                                                <span class="font-semibold text-indigo-900">Total:</span>
+                                                <span class="font-bold text-indigo-900">MYR {{ formatNumber(priceBreakdown.summary.base_charges.child.total + priceBreakdown.summary.surcharges.child.total) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="priceBreakdown.summary.total_infants > 0" class="bg-indigo-50 rounded-lg border border-indigo-200 p-4">
+                                        <div class="font-semibold text-indigo-900 mb-3">Total Infants ({{ priceBreakdown.summary.total_infants }})</div>
+                                        <div class="space-y-2 text-sm">
+                                            <div class="flex justify-between">
+                                                <span class="text-indigo-700">Base Total:</span>
+                                                <span class="font-medium text-indigo-900">MYR {{ formatNumber(priceBreakdown.summary.base_charges.infant.total) }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-indigo-700">Surcharge:</span>
+                                                <span class="font-medium text-indigo-900">MYR {{ formatNumber(priceBreakdown.summary.surcharges.infant.total) }}</span>
+                                            </div>
+                                            <div class="flex justify-between pt-2 border-t border-indigo-300">
+                                                <span class="font-semibold text-indigo-900">Total:</span>
+                                                <span class="font-bold text-indigo-900">MYR {{ formatNumber(priceBreakdown.summary.base_charges.infant.total + priceBreakdown.summary.surcharges.infant.total) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Desktop Table View -->
+                                <div class="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50">
