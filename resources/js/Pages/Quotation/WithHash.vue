@@ -655,10 +655,29 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                 </button>
-                                                <!-- Tooltip/Popover -->
+                                                
+                                                <!-- Mobile Modal (teleported to body) -->
+                                                <Teleport to="body">
+                                                    <div v-if="openAddOnDescriptions[addOn.id]" 
+                                                         class="sm:hidden fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4"
+                                                         @click.stop="toggleAddOnDescription(addOn.id)">
+                                                        <div class="bg-gray-900 text-white rounded-lg shadow-2xl p-4 max-w-sm w-full"
+                                                             @click.stop>
+                                                            <div class="font-medium text-base mb-2">{{ addOn.name }}</div>
+                                                            <div class="text-gray-300 text-sm whitespace-normal">{{ addOn.description || 'No description available' }}</div>
+                                                            <div class="mt-4 pt-3 border-t border-gray-700 flex justify-end">
+                                                                <button @click.stop="toggleAddOnDescription(addOn.id)" 
+                                                                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium transition-colors">
+                                                                    Close
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </Teleport>
+                                                
+                                                <!-- Desktop Tooltip -->
                                                 <div v-if="showAddOnTooltip === addOn.id || openAddOnDescriptions[addOn.id]" 
-                                                     class="absolute left-0 top-full mt-1 z-[9999] w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg pointer-events-auto"
-                                                     :class="{'pointer-events-auto': openAddOnDescriptions[addOn.id]}"
+                                                     class="hidden sm:block absolute left-0 top-full mt-1 z-[9999] w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl pointer-events-auto"
                                                      @click.stop
                                                      @mouseenter="handleTooltipMouseEnter(addOn.id)"
                                                      @mouseleave="handleTooltipMouseLeave(addOn.id)">
@@ -2979,8 +2998,12 @@ const calculateAddOnSubtotal = (addOn) => {
 
 // Toggle add-on description on click
 const toggleAddOnDescription = (addOnId) => {
+    // Clear any hover tooltips when clicking
+    showAddOnTooltip.value = null;
+    
+    // Toggle the clicked description
     if (openAddOnDescriptions.value[addOnId]) {
-        delete openAddOnDescriptions.value[addOnId];
+        openAddOnDescriptions.value[addOnId] = false;
     } else {
         openAddOnDescriptions.value[addOnId] = true;
     }
