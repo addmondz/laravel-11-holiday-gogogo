@@ -803,7 +803,7 @@
                         <!-- Navigation Buttons -->
                         <div class="flex justify-between mt-4">
                             <button
-                                @click="currentStep = 1"
+                                @click="goToPreviousStep"
                                 class="px-8 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                             >
                                 Back
@@ -3136,6 +3136,8 @@ const goToPreviousStep = () => {
         // From step 2 (Add-ons), always go back to step 1
         currentStep.value = 1;
     }
+    // Scroll to top of booking form
+    setTimeout(() => scrollToBookingForm(), 100);
 };
 
 // Helper function to scroll to booking form
