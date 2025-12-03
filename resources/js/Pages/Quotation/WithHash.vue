@@ -352,8 +352,9 @@
 
                             <!-- Room Cards -->
                             <div class="space-y-4">
-                                <div v-for="(room, index) in form.rooms" 
+                                <div v-for="(room, index) in form.rooms"
                                      :key="index"
+                                     :ref="el => { if (el) roomRefs[index] = el }"
                                      class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden" style="margin-left: -15px; margin-right: -15px;">
                                     <!-- Room Header -->
                                     <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
@@ -1046,43 +1047,53 @@
                                 
                                 <!-- Mobile Card View -->
                                 <div class="md:hidden space-y-3">
-                                    <!-- Individual Guest Cards -->
-                                    <div 
-                                        v-for="(guest, guestKey) in priceBreakdown.guest_breakdown" 
-                                        :key="guestKey" 
+                                    <!-- Room Cards (grouped by room) -->
+                                    <div
+                                        v-for="room in guestsByRoom"
+                                        :key="room.room_number"
                                         class="bg-white rounded-lg border border-gray-200 p-4 space-y-3"
                                     >
+                                        <!-- Room Header -->
                                         <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-                                            <div>
-                                                <div class="font-semibold text-gray-900">Room {{ guest.room_number }}</div>
-                                                <div class="text-sm text-gray-600">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</div>
-                                            </div>
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                                                {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }}
-                                            </span>
+                                            <div class="font-semibold text-gray-900">Room {{ room.room_number }}</div>
+                                            <span class="text-sm text-gray-600">{{ room.room_type_name }}</span>
                                         </div>
-                                        
-                                        <div class="space-y-2 text-sm">
-                                            <div class="flex justify-between">
-                                                <span class="text-gray-600">Room Type:</span>
-                                                <span class="font-medium text-gray-900">{{ guest.room_type_name }}</span>
+
+                                        <!-- Guest List -->
+                                        <div class="space-y-3">
+                                            <div v-for="guest in room.guests" :key="`${guest.guest_type}_${guest.guest_number}`"
+                                                 class="text-sm py-2 border-b border-gray-100 last:border-0">
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                                        {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }}
+                                                    </span>
+                                                    <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
+                                                </div>
+                                                <div class="pl-2 space-y-1 text-xs">
+                                                    <div class="flex justify-between">
+                                                        <span class="text-gray-500">Nights:</span>
+                                                        <span class="text-gray-700">{{ guest.nights }}</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span class="text-gray-500">Base Total:</span>
+                                                        <span class="text-gray-700">MYR {{ formatNumber(guest.base_charge.total) }}</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span class="text-gray-500">Surcharge:</span>
+                                                        <span class="text-gray-700">MYR {{ formatNumber(guest.surcharge.total) }}</span>
+                                                    </div>
+                                                    <div class="flex justify-between font-medium">
+                                                        <span class="text-gray-700">Total:</span>
+                                                        <span class="text-gray-900">MYR {{ formatNumber(guest.total) }}</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="flex justify-between">
-                                                <span class="text-gray-600">Nights:</span>
-                                                <span class="font-medium text-gray-900">{{ guest.nights }}</span>
-                                            </div>
-                                            <div class="flex justify-between">
-                                                <span class="text-gray-600">Base Total:</span>
-                                                <span class="font-medium text-gray-900">MYR {{ formatNumber(guest.base_charge.total) }}</span>
-                                            </div>
-                                            <div class="flex justify-between">
-                                                <span class="text-gray-600">Surcharge:</span>
-                                                <span class="font-medium text-gray-900">MYR {{ formatNumber(guest.surcharge.total) }}</span>
-                                            </div>
-                                            <div class="flex justify-between pt-2 border-t border-gray-200">
-                                                <span class="font-semibold text-gray-900">Total:</span>
-                                                <span class="font-bold text-indigo-600">MYR {{ formatNumber(guest.total) }}</span>
-                                            </div>
+                                        </div>
+
+                                        <!-- Room Total -->
+                                        <div class="flex justify-between pt-2 border-t border-gray-200">
+                                            <span class="font-semibold text-gray-900">Room Total:</span>
+                                            <span class="font-bold text-indigo-600">MYR {{ formatNumber(room.total) }}</span>
                                         </div>
                                     </div>
 
@@ -1159,9 +1170,9 @@
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
-                                                <tr v-for="(guest, guestKey) in priceBreakdown.guest_breakdown" :key="guestKey" class="hover:bg-gray-50">
+                                                <tr v-for="(guest, guestKey, guestIndex) in priceBreakdown.guest_breakdown" :key="guestKey" class="hover:bg-gray-50">
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        Room {{ guest.room_number }}
+                                                        <span v-if="shouldShowRoomLabel(guestIndex)">Room {{ guest.room_number }}</span>
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                                         {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}
@@ -1830,7 +1841,7 @@
 
         <!-- Room Type Images Lightbox Modal -->
         <Modal :show="showRoomTypeImageLightbox" @close="closeRoomTypeImageLightbox" :max-width="'7xl'">
-            <div class="relative bg-white lightbox-container h-screen sm:h-auto rounded-none sm:rounded-lg -m-6 sm:m-0">
+            <div class="relative bg-white lightbox-container max-h-[100vh] sm:h-auto rounded-none sm:rounded-lg -m-6 sm:m-0 overflow-hidden">
                 <!-- Close Button (Desktop only - mobile is in top bar) -->
                 <button
                     @click="closeRoomTypeImageLightbox"
@@ -1955,7 +1966,7 @@
 
                     <!-- Main Image Display -->
                     <div 
-                        class="flex items-center justify-center w-full px-2 h-[calc(100vh-3.5rem)] pt-14 pb-0 sm:h-auto sm:min-h-0 sm:pt-4 sm:px-4 sm:py-8 md:px-8 md:py-12"
+                        class="flex items-center justify-center w-full px-2 h-[calc(100vh-3.5rem)] pt-14 pb-0 sm:h-[70vh] sm:max-h-[calc(100vh-100px)] sm:pt-4 sm:px-4 sm:py-6 md:px-8 md:py-8"
                         @touchstart="handleTouchStart"
                         @touchend="handleTouchEnd"
                         @touchmove="handleTouchMove"
@@ -2063,7 +2074,7 @@
 
 <script setup>
 import { Head } from '@inertiajs/vue3';
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import LoadingComponent from '@/Components/LoadingComponent.vue';
@@ -2194,6 +2205,7 @@ const packageData = ref(null);
 const currentImageIndex = ref(0);
 const calculatedPrice = ref(null);
 const globalSst = ref(null);
+const roomRefs = ref([]);
 
 // Lightbox states
 const showPackageImageLightbox = ref(false);
@@ -2209,6 +2221,39 @@ const touchStartY = ref(0);
 const touchEndX = ref(0);
 const touchEndY = ref(0);
 const priceBreakdown = ref(null);
+
+// Helper function to check if room label should be shown (hide if same as previous row)
+const shouldShowRoomLabel = (guestIndex) => {
+    if (!priceBreakdown.value?.guest_breakdown) return true;
+    const guests = Object.values(priceBreakdown.value.guest_breakdown);
+    if (guestIndex === 0) return true; // Always show first row
+    return guests[guestIndex].room_number !== guests[guestIndex - 1].room_number;
+};
+
+// Computed property to group guests by room for mobile view
+const guestsByRoom = computed(() => {
+    if (!priceBreakdown.value?.guest_breakdown) return [];
+    const guests = Object.values(priceBreakdown.value.guest_breakdown);
+    const grouped = {};
+
+    guests.forEach(guest => {
+        const roomNum = guest.room_number;
+        if (!grouped[roomNum]) {
+            grouped[roomNum] = {
+                room_number: roomNum,
+                room_type_name: guest.room_type_name,
+                nights: guest.nights,
+                guests: [],
+                total: 0
+            };
+        }
+        grouped[roomNum].guests.push(guest);
+        grouped[roomNum].total += guest.total;
+    });
+
+    return Object.values(grouped);
+});
+
 const nightlyBreakdown = ref([]);
 const roomTypes = ref([]);
 const selectedRoomType = ref(null);
@@ -2874,6 +2919,17 @@ const addRoom = () => {
             adults: null,
             children: null,
             infants: null
+        });
+
+        // Smooth scroll to the newly added room
+        nextTick(() => {
+            const newIndex = form.rooms.length - 1;
+            if (roomRefs.value[newIndex]) {
+                roomRefs.value[newIndex].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
         });
     }
 };
