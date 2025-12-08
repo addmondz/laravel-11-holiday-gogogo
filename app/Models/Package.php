@@ -34,9 +34,6 @@ class Package extends Model
         'weekend_days',
         'sst_enable',
         'no_children_and_infant',
-        'max_adults',
-        'max_children',
-        'max_infants',
     ];
 
     protected $casts = [

@@ -89,24 +89,6 @@
                         Children and infant input fields will be hidden on the quotation page.
                     </p>
                 </div>
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500">Max Adults</h4>
-                    <p class="mt-1 text-sm text-gray-900">
-                        {{ package.max_adults || '-' }}
-                    </p>
-                </div>
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500">Max Children</h4>
-                    <p class="mt-1 text-sm text-gray-900">
-                        {{ package.max_children || '-' }}
-                    </p>
-                </div>
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500">Max Infants</h4>
-                    <p class="mt-1 text-sm text-gray-900">
-                        {{ package.max_infants || '-' }}
-                    </p>
-                </div>
             </div>
             <div>
                 <h4 class="text-sm font-medium text-gray-500">Terms and Conditions</h4>
