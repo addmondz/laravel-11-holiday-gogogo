@@ -138,66 +138,49 @@
                         <div class="h-full flex flex-col">
                             <!-- Package Title and Promo Badge -->
                             <div class="mb-4">
-                                <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 flex flex-col sm:flex-row sm:items-center">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white mb-2 sm:mb-0 sm:mr-3">
+                                <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 flex flex-col sm:items-start">
+                                    {{ packageData.name }}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white mt-2">
                                         {{ computedPromoPeriod }} Promo
                                     </span>
-                                    {{ packageData.name }}
                                 </h1>
                                 <p class="text-gray-600 text-sm sm:text-md">{{ packageData.description }}</p>
                             </div>
 
-                            <!-- Package Information Grid -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                                        <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        Location
-                                    </h2>
-                                    <p class="text-gray-700">{{ packageData.location }}</p>
+                            <!-- Package Information - Compact Inline -->
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-2 text-sm text-gray-600">
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span>{{ packageData.location }}</span>
                                 </div>
-                                <div v-if="packageData.wordpress_link" class="bg-gray-50 rounded-lg p-4">
-                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                                        <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                        </svg>
-                                        Package Details
-                                    </h2>
-                                    <a :href="packageData.wordpress_link" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-900 underline break-all text-sm cursor-pointer no-underline">
-                                        <!-- {{ packageData.wordpress_link }} -->
-                                        Click to view package details
-                                    </a>
+                                <div class="flex items-center">
+                                    <span class="text-gray-400 mr-4">•</span>
+                                    <svg class="w-4 h-4 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>{{ packageData.package_max_days + 1 }}D{{ packageData.package_max_days }}N</span>
                                 </div>
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                                        <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        Duration
-                                    </h2>
-                                    <p class="text-gray-700">{{ packageData.package_max_days +1 }} Days {{ packageData.package_max_days }} {{packageData.package_max_days > 1 ? 'Nights' : 'Night'}}</p>
+                                <div class="flex items-center">
+                                    <span class="text-gray-400 mr-4">•</span>
+                                    <svg class="w-4 h-4 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span>{{ moment(packageData.package_start_date).format('MMM YYYY') }} - {{ moment(packageData.package_end_date).format('MMM YYYY') }}</span>
                                 </div>
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                                        <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        Travel Period
-                                    </h2>
-                                    <p class="text-gray-700">{{ moment(packageData.package_start_date).format('DD MMM YYYY') }} - {{ moment(packageData.package_end_date).format('DD MMM YYYY') }}</p>
-                                </div>
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <h2 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                        </svg>
-                                        Package Price From
-                                    </h2>
-                                    <p class="text-2xl font-bold text-indigo-600">MYR {{ packageData?.display_price_adult ? formatNumber(packageData.display_price_adult) : '0.00' }}</p>
-                                </div>
+                                <a v-if="packageData.wordpress_link" :href="packageData.wordpress_link" target="_blank" rel="noopener noreferrer" class="flex items-center text-indigo-600 hover:text-indigo-800">
+                                    <span class="text-gray-400 mr-4">•</span>
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                    <span>View Details</span>
+                                </a>
+                            </div>
+                            <!-- Price - Prominent Display -->
+                            <div class="mb-4">
+                                <span class="text-xl font-bold text-indigo-600">From MYR {{ packageData?.display_price_adult ? formatNumber(packageData.display_price_adult) : '0.00' }}</span>
                             </div>
                         </div>
                     </div>
@@ -419,16 +402,13 @@
                                                                 @touchend="handleRoomTypeImageTap(roomType, $event)"
                                                             >
                                                                 <Swiper
-                                                                    :modules="[Pagination]"
+                                                                    :modules="[Navigation, Pagination]"
                                                                     :slides-per-view="1"
                                                                     :space-between="0"
-                                                                    :pagination="{ clickable: false }"
+                                                                    :pagination="{ clickable: true }"
+                                                                    :navigation="true"
                                                                     :loop="true"
-                                                                    :autoplay="{
-                                                                        delay: 3000,
-                                                                        disableOnInteraction: false
-                                                                    }"
-                                                                    :allow-touch-move="false"
+                                                                    :allow-touch-move="true"
                                                                     class="room-image-swiper"
                                                                 >
                                                                     <SwiperSlide v-for="(image, imgIndex) in roomType.images" 
@@ -437,7 +417,7 @@
                                                                         <img
                                                                             :src="getImageUrl(image)"
                                                                             :alt="`${roomType.name} - Image ${imgIndex + 1}`"
-                                                                            class="w-full h-full object-cover pointer-events-none"
+                                                                            class="w-full h-full object-cover"
                                                                             @error="e => e.target.src = '/images/placeholder.jpg'"
                                                                         />
                                                                     </SwiperSlide>
@@ -449,20 +429,6 @@
                                                                         </div>
                                                                     </SwiperSlide>
                                                                 </Swiper>
-                                                                <!-- Enlarge Icon Overlay - Clickable to open lightbox -->
-                                                                <div 
-                                                                    class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center z-10 pointer-events-none"
-                                                                >
-                                                                    <button 
-                                                                        class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-2 shadow-lg cursor-pointer pointer-events-auto"
-                                                                        @click="openRoomTypeImageLightbox(roomType, 0)"
-                                                                        aria-label="Enlarge image"
-                                                                    >
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                                                        </svg>
-                                                                    </button>
-                                                                </div>
                                                             </div>
 
                                                             <!-- Room Type Info -->
@@ -606,6 +572,26 @@
                                 </div>
                             </div>
 
+                            <!-- Add Room Button -->
+                            <div class="flex justify-start">
+                                <button
+                                    type="button"
+                                    @click="addRoom"
+                                    :disabled="!canAddRoom"
+                                    :class="[
+                                        'inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+                                        canAddRoom
+                                            ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
+                                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    ]"
+                                >
+                                    <svg class="w-4 h-4 mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <span>Add Room</span>
+                                </button>
+                            </div>
+
                             <!-- Total Guests Summary -->
                             <div class="bg-indigo-50 rounded-lg p-4">
                                 <div class="flex justify-between items-center">
@@ -619,65 +605,54 @@
                             </div>
                         </div>
 
-                        <!-- Date Selection -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
-                                <input
-                                    type="date"
-                                    id="start_date"
-                                    v-model="form.start_date"
-                                    :min="packageData?.package_start_date"
-                                    :max="maxStartDate"
-                                    :class="[
-                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
-                                        validationErrors.start_date ? 'border-red-500' : 'border-gray-300'
-                                    ]"
-                                    required
-                                    @change="validateDates"
-                                />
-                                <p v-if="validationErrors.start_date" class="mt-1 text-sm text-red-600">{{ validationErrors.start_date }}</p>
-                            </div>
-                            <div>
-                                <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
-                                <input
-                                    type="date"
-                                    id="end_date"
-                                    v-model="form.end_date"
-                                    :min="form.start_date ? new Date(new Date(form.start_date).getTime() + 86400000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]"
-                                    class="mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-gray-100 border-gray-300"
-                                    required
-                                    readonly
-                                />
-                                <!-- <p v-if="validationErrors.end_date" class="mt-1 text-sm text-red-600">{{ validationErrors.end_date }}</p> -->
-                            </div>
-                        </div>
+                        <!-- Travel Dates Section -->
+                        <div class="border-t border-gray-200 pt-4">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Select Travel Dates</h3>
 
-                        <!-- Action Buttons -->
-                        <div class="flex flex-row justify-between gap-3">
-                            <button
-                                type="button"
-                                @click="addRoom"
-                                :disabled="!canAddRoom"
-                                :class="[
-                                    'inline-flex items-center justify-center px-4 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex-1 sm:flex-initial',
-                                    canAddRoom
-                                        ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
-                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                ]"
-                            >
-                                <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                </svg>
-                                <span class="truncate">Add Room</span>
-                            </button>
+                            <!-- Date Selection -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+                                    <input
+                                        type="date"
+                                        id="start_date"
+                                        v-model="form.start_date"
+                                        :min="packageData?.package_start_date"
+                                        :max="maxStartDate"
+                                        :class="[
+                                            'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                            validationErrors.start_date ? 'border-red-500' : 'border-gray-300'
+                                        ]"
+                                        required
+                                        @change="validateDates"
+                                    />
+                                    <p v-if="validationErrors.start_date" class="mt-1 text-sm text-red-600">{{ validationErrors.start_date }}</p>
+                                </div>
+                                <div>
+                                    <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                                    <input
+                                        type="date"
+                                        id="end_date"
+                                        v-model="form.end_date"
+                                        :min="form.start_date ? new Date(new Date(form.start_date).getTime() + 86400000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]"
+                                        class="mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-gray-100 border-gray-300"
+                                        required
+                                        readonly
+                                    />
+                                    <!-- <p v-if="validationErrors.end_date" class="mt-1 text-sm text-red-600">{{ validationErrors.end_date }}</p> -->
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-row justify-end gap-3 mt-4">
                             <button
                                 type="submit"
-                                class="inline-flex items-center justify-center px-4 py-2.5 sm:px-6 sm:py-3 bg-indigo-600 text-white text-sm sm:text-base font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex-1 sm:flex-initial"
+                                class="inline-flex items-center justify-center px-4 py-2.5 sm:px-6 sm:py-3 bg-indigo-600 text-white text-sm sm:text-base font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                 :disabled="form.processing"
                             >
                                 Calculate Price
                             </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -716,7 +691,7 @@
                                                v-model="selectedAddOns"
                                                class="w-3.5 h-3.5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer flex-shrink-0"> -->
                                         <div class="min-w-0 flex-1 flex items-center gap-1">
-                                            <h4 class="text-xs font-medium text-gray-900 truncate">{{ addOn.name }}</h4>
+                                            <h4 class="text-xs font-medium text-gray-900">{{ addOn.name }}</h4>
                                             <div class="relative group flex-shrink-0 addon-info-button">
                                                 <button 
                                                     @click.stop="toggleAddOnDescription(addOn.id)"
@@ -1045,8 +1020,8 @@
                             <div v-if="priceBreakdown?.guest_breakdown" class="mt-6">
                                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Guest Breakdown</h3>
                                 
-                                <!-- Mobile Card View -->
-                                <div class="md:hidden space-y-3">
+                                <!-- Card View (Mobile & Desktop) -->
+                                <div class="space-y-3">
                                     <!-- Room Cards (grouped by room) -->
                                     <div
                                         v-for="room in guestsByRoom"
@@ -1098,7 +1073,7 @@
                                     </div>
 
                                     <!-- Summary Cards -->
-                                    <div v-if="priceBreakdown.summary.total_adults > 0" class="bg-indigo-50 rounded-lg border border-indigo-200 p-4">
+                                    <div v-if="priceBreakdown.summary.total_adults > 0 && false" class="bg-indigo-50 rounded-lg border border-indigo-200 p-4">
                                         <div class="font-semibold text-indigo-900 mb-3">Total Adults ({{ priceBreakdown.summary.total_adults }})</div>
                                         <div class="space-y-2 text-sm">
                                             <div class="flex justify-between">
@@ -1116,7 +1091,7 @@
                                         </div>
                                     </div>
 
-                                    <div v-if="priceBreakdown.summary.total_children > 0" class="bg-indigo-50 rounded-lg border border-indigo-200 p-4">
+                                    <div v-if="priceBreakdown.summary.total_children > 0 && false" class="bg-indigo-50 rounded-lg border border-indigo-200 p-4">
                                         <div class="font-semibold text-indigo-900 mb-3">Total Children ({{ priceBreakdown.summary.total_children }})</div>
                                         <div class="space-y-2 text-sm">
                                             <div class="flex justify-between">
@@ -1134,7 +1109,7 @@
                                         </div>
                                     </div>
 
-                                    <div v-if="priceBreakdown.summary.total_infants > 0" class="bg-indigo-50 rounded-lg border border-indigo-200 p-4">
+                                    <div v-if="priceBreakdown.summary.total_infants > 0 && false" class="bg-indigo-50 rounded-lg border border-indigo-200 p-4">
                                         <div class="font-semibold text-indigo-900 mb-3">Total Infants ({{ priceBreakdown.summary.total_infants }})</div>
                                         <div class="space-y-2 text-sm">
                                             <div class="flex justify-between">
@@ -1153,8 +1128,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Desktop Table View -->
-                                <div class="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                <!-- Desktop Table View (Hidden - using card view instead) -->
+                                <div class="hidden bg-white rounded-lg border border-gray-200 overflow-hidden">
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50">
@@ -2921,13 +2896,18 @@ const addRoom = () => {
             infants: null
         });
 
-        // Smooth scroll to the newly added room
+        // Smooth scroll to the newly added room with 80px offset for fixed header
         nextTick(() => {
             const newIndex = form.rooms.length - 1;
             if (roomRefs.value[newIndex]) {
-                roomRefs.value[newIndex].scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
+                const element = roomRefs.value[newIndex];
+                const headerOffset = 80;
+                const elementPosition = element.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
                 });
             }
         });
@@ -3292,11 +3272,18 @@ const goToPreviousStep = () => {
     setTimeout(() => scrollToBookingForm(), 100);
 };
 
-// Helper function to scroll to booking form
+// Helper function to scroll to booking form with 80px offset for fixed header
 const scrollToBookingForm = () => {
     const bookingForm = document.getElementById('booking-form');
     if (bookingForm) {
-        bookingForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const headerOffset = 80;
+        const elementPosition = bookingForm.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+        });
     }
 };
 
@@ -3874,7 +3861,59 @@ const handleInfantsChange = (room, index) => {
     touch-action: manipulation;
 }
 
-/* Remove navigation button styles since we're not using them anymore */
+/* Navigation arrow styles for room image swiper */
+.room-image-swiper :deep(.swiper-button-next),
+.room-image-swiper :deep(.swiper-button-prev) {
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.room-image-swiper :deep(.swiper-button-next):hover,
+.room-image-swiper :deep(.swiper-button-prev):hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.room-image-swiper :deep(.swiper-button-next)::after,
+.room-image-swiper :deep(.swiper-button-prev)::after {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.room-image-swiper :deep(.swiper-button-prev) {
+    left: 4px;
+}
+
+.room-image-swiper :deep(.swiper-button-next) {
+    right: 4px;
+}
+
+/* Date input consistent styling across OS */
+input[type="date"] {
+    color: #111827; /* gray-900 */
+    color-scheme: light;
+}
+
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+    color: #111827; /* gray-900 */
+}
+
+/* Firefox */
+input[type="date"]::-moz-datetime-edit-fields-wrapper,
+input[type="date"]::-moz-datetime-edit-text,
+input[type="date"]::-moz-datetime-edit-month-field,
+input[type="date"]::-moz-datetime-edit-day-field,
+input[type="date"]::-moz-datetime-edit-year-field {
+    color: #111827;
+}
 
 /* Add animation for helper messages */
 .animate-fade-in {
