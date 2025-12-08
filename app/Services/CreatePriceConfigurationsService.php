@@ -58,7 +58,7 @@ class CreatePriceConfigurationsService
                                 'season_type_id' => $seasonType->id,
                                 'date_type_id' => $dateType->id,
                                 'room_type_id' => $roomType->id,
-                                'configuration_prices' => $this->generateRandomPrices($roomPax, $generateRandomPrices),
+                                'configuration_prices' => $this->generateRandomPrices($roomPax, $generateRandomPrices, $package),
                             ]);
 
                             // Log::info('configuration created: ' . json_encode($configuration, JSON_PRETTY_PRINT));
@@ -80,19 +80,38 @@ class CreatePriceConfigurationsService
         }
     }
 
-    public function generateRandomPrices(int $pax = 4, bool $generateRandomPrices = true): array
+    public function generateRandomPrices(int $pax = 4, bool $generateRandomPrices = true, $package = null): array
     {
         $faker = Faker::create();
 
         $base  = [];
         $surch = [];
 
-        // ✅ Only generate for the requested pax
-        $combinations = $this->generatePaxCombinations($pax);
+        // ✅ Only generate for the requested pax, respecting package max limits
+        $combinations = $this->generatePaxCombinations($pax, $package);
+
+        // Get package max limits (null means no limit)
+        $maxAdults = $package?->max_adults;
+        $maxChildren = $package?->max_children;
+        $maxInfants = $package?->max_infants;
 
         foreach ($combinations as $combo) {
             $counts = $this->parsePaxCombination($combo); // ['adults'=>X,'children'=>Y,'infants'=>Z]
             if ($counts === null) {
+                continue;
+            }
+
+            // Check if current counts exceed package max limits
+            if ($maxAdults !== null && $counts['adults'] > $maxAdults) {
+                Log::info('maxAdults exceeded: ' . $counts['adults'] . ' > ' . $maxAdults);
+                continue;
+            }
+            if ($maxChildren !== null && $counts['children'] > $maxChildren) {
+                Log::info('maxChildren exceeded: ' . $counts['children'] . ' > ' . $maxChildren);
+                continue;
+            }
+            if ($maxInfants !== null && $counts['infants'] > $maxInfants) {
+                Log::info('maxInfants exceeded: ' . $counts['infants'] . ' > ' . $maxInfants);
                 continue;
             }
 
@@ -143,12 +162,20 @@ class CreatePriceConfigurationsService
 
         $updatedCount = 0;
 
-        // Build the authoritative list of valid keys up to $newRoomPax using your generator
-        $allowedCombos = $this->generatePaxCombinations($newRoomPax);
-        $allowedSet    = array_flip($allowedCombos);
-
         // Fetch all configs for this room type across package/season/date
         $configs = PackageConfiguration::where('room_type_id', $roomTypeId)->get();
+
+        // Get package to check max pax limits
+        $package = null;
+        $firstConfig = $configs->first();
+        if ($firstConfig) {
+            $package = $firstConfig->package;
+        }
+
+        // Build the authoritative list of valid keys up to $newRoomPax using your generator
+        // This will automatically filter out combinations that exceed package max limits
+        $allowedCombos = $this->generatePaxCombinations($newRoomPax, $package);
+        $allowedSet    = array_flip($allowedCombos);
 
         DB::beginTransaction();
         try {
@@ -280,17 +307,38 @@ class CreatePriceConfigurationsService
         return json_encode($old, JSON_UNESCAPED_UNICODE) !== json_encode($new, JSON_UNESCAPED_UNICODE);
     }
 
-    function generatePaxCombinations(int $pax): array
+    function generatePaxCombinations(int $pax, $package = null): array
     {
         if ($pax < 1) return [];
+
+        // Get package max limits (null means no limit)
+        $maxAdults = $package?->max_adults;
+        $maxChildren = $package?->max_children;
+        $maxInfants = $package?->max_infants;
 
         $combinations = [];
 
         // Total party size from 1 up to $pax
         for ($total = 1; $total <= $pax; $total++) {
             for ($a = 1; $a <= $total; $a++) {           // Adults first
+                // Skip if exceeds package max adults limit
+                if ($maxAdults !== null && $a > $maxAdults) {
+                    continue;
+                }
+
                 for ($c = 0; $c <= $total - $a; $c++) {  // Then children
+                    // Skip if exceeds package max children limit
+                    if ($maxChildren !== null && $c > $maxChildren) {
+                        continue;
+                    }
+
                     $i = $total - $a - $c;               // Infants fill the rest
+                    
+                    // Skip if exceeds package max infants limit
+                    if ($maxInfants !== null && $i > $maxInfants) {
+                        continue;
+                    }
+
                     $combinations[] = sprintf('%d_a_%d_c_%d_i', $a, $c, $i);
                 }
             }
@@ -317,5 +365,148 @@ class CreatePriceConfigurationsService
             ];
         }
         return null;
+    }
+
+    /**
+     * Clean price configurations for a package that exceed max_adults, max_children, or max_infants limits.
+     * 
+     * @param \App\Models\Package $package
+     * @return array Statistics: ['configs_processed' => int, 'configs_cleaned' => int, 'combinations_removed' => int]
+     */
+    public function cleanPriceConfigurationsByMaxPax($package): array
+    {
+        $maxAdults = $package->max_adults ?? null;
+        $maxChildren = $package->max_children ?? null;
+        $maxInfants = $package->max_infants ?? null;
+
+        // Get all configurations for this package
+        $configurations = PackageConfiguration::where('package_id', $package->id)->get();
+
+        if ($configurations->isEmpty()) {
+            return [
+                'configs_processed' => 0,
+                'configs_cleaned' => 0,
+                'combinations_removed' => 0,
+            ];
+        }
+
+        $configsProcessed = 0;
+        $configsCleaned = 0;
+        $combinationsRemoved = 0;
+
+        foreach ($configurations as $config) {
+            $configsProcessed++;
+            $prices = $config->configuration_prices ?? [];
+
+            if (empty($prices) || !is_array($prices) || empty($prices[0])) {
+                continue;
+            }
+
+            $first = $prices[0];
+            $base = $first['base'] ?? [];
+            $surch = $first['surch'] ?? [];
+
+            // Clean base combinations
+            $cleanedBase = [];
+            $removedFromBase = 0;
+            foreach ($base as $combo => $entry) {
+                $counts = $this->parsePaxCombination($combo);
+                
+                if ($counts === null) {
+                    // Keep invalid combinations (shouldn't happen, but just in case)
+                    $cleanedBase[$combo] = $entry;
+                    continue;
+                }
+
+                // Check if combination exceeds any max limit
+                $exceedsLimit = false;
+                if ($maxAdults !== null && $counts['adults'] > $maxAdults) {
+                    $exceedsLimit = true;
+                }
+                if ($maxChildren !== null && $counts['children'] > $maxChildren) {
+                    $exceedsLimit = true;
+                }
+                if ($maxInfants !== null && $counts['infants'] > $maxInfants) {
+                    $exceedsLimit = true;
+                }
+
+                if ($exceedsLimit) {
+                    $removedFromBase++;
+                    $combinationsRemoved++;
+                    // Log::info('Removed combination from base', [
+                    //     'package_id' => $package->id,
+                    //     'config_id' => $config->id,
+                    //     'combination' => $combo,
+                    //     'counts' => $counts,
+                    //     'max_limits' => [
+                    //         'adults' => $maxAdults,
+                    //         'children' => $maxChildren,
+                    //         'infants' => $maxInfants,
+                    //     ]
+                    // ]);
+                } else {
+                    $cleanedBase[$combo] = $entry;
+                }
+            }
+
+            // Clean surch combinations
+            $cleanedSurch = [];
+            $removedFromSurch = 0;
+            foreach ($surch as $combo => $entry) {
+                $counts = $this->parsePaxCombination($combo);
+                
+                if ($counts === null) {
+                    // Keep invalid combinations
+                    $cleanedSurch[$combo] = $entry;
+                    continue;
+                }
+
+                // Check if combination exceeds any max limit
+                $exceedsLimit = false;
+                if ($maxAdults !== null && $counts['adults'] > $maxAdults) {
+                    $exceedsLimit = true;
+                }
+                if ($maxChildren !== null && $counts['children'] > $maxChildren) {
+                    $exceedsLimit = true;
+                }
+                if ($maxInfants !== null && $counts['infants'] > $maxInfants) {
+                    $exceedsLimit = true;
+                }
+
+                if ($exceedsLimit) {
+                    $removedFromSurch++;
+                    $combinationsRemoved++;
+                    // Log::info('Removed combination from surch', [
+                    //     'package_id' => $package->id,
+                    //     'config_id' => $config->id,
+                    //     'combination' => $combo,
+                    //     'counts' => $counts,
+                    //     'max_limits' => [
+                    //         'adults' => $maxAdults,
+                    //         'children' => $maxChildren,
+                    //         'infants' => $maxInfants,
+                    //     ]
+                    // ]);
+                } else {
+                    $cleanedSurch[$combo] = $entry;
+                }
+            }
+
+            // Update configuration if changes were made
+            if ($removedFromBase > 0 || $removedFromSurch > 0) {
+                $configsCleaned++;
+                $config->configuration_prices = [[
+                    'base' => $cleanedBase,
+                    'surch' => $cleanedSurch,
+                ]];
+                $config->save();
+            }
+        }
+
+        return [
+            'configs_processed' => $configsProcessed,
+            'configs_cleaned' => $configsCleaned,
+            'combinations_removed' => $combinationsRemoved,
+        ];
     }
 }
