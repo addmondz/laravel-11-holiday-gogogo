@@ -137,41 +137,51 @@
                     <div class="lg:w-2/3 p-4 sm:p-6">
                         <div class="h-full flex flex-col">
                             <!-- Package Title and Promo Badge -->
-                            <div class="mb-4">
-                                <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 flex flex-col sm:items-start">
+                            <div class="mb-4 pb-4 border-b border-gray-200">
+                                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 flex flex-col sm:items-start">
                                     {{ packageData.name }}
-                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white mt-2">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-base font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 text-white mt-2">
                                         {{ computedPromoPeriod }} Promo
                                     </span>
                                 </h1>
-                                <p class="text-gray-600 text-sm sm:text-md">{{ packageData.description }}</p>
+                                <p class="text-gray-600 text-base sm:text-lg">{{ packageData.description }}</p>
                             </div>
 
-                            <!-- Package Information - Compact Inline -->
-                            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-2 text-sm text-gray-600">
-                                <div class="flex items-center">
-                                    <svg class="w-4 h-4 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span>{{ packageData.location }}</span>
+                            <!-- Package Information - Stacked Layout with Labels -->
+                            <div class="flex flex-wrap gap-6 mb-4 text-gray-600">
+                                <!-- Location -->
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-gray-500 uppercase tracking-wide mb-1">Location</span>
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        <span>{{ packageData.location }}</span>
+                                    </div>
                                 </div>
-                                <div class="flex items-center">
-                                    <span class="text-gray-400 mr-4">•</span>
-                                    <svg class="w-4 h-4 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span>{{ packageData.package_max_days + 1 }}D{{ packageData.package_max_days }}N</span>
+                                <!-- Duration -->
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-gray-500 uppercase tracking-wide mb-1">Duration</span>
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>{{ packageData.package_max_days + 1 }}D{{ packageData.package_max_days }}N</span>
+                                    </div>
                                 </div>
-                                <div class="flex items-center">
-                                    <span class="text-gray-400 mr-4">•</span>
-                                    <svg class="w-4 h-4 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <span>{{ moment(packageData.package_start_date).format('MMM YYYY') }} - {{ moment(packageData.package_end_date).format('MMM YYYY') }}</span>
+                                <!-- Period -->
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-gray-500 uppercase tracking-wide mb-1">Period</span>
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <span>{{ moment(packageData.package_start_date).format('MMM YYYY') }} - {{ moment(packageData.package_end_date).format('MMM YYYY') }}</span>
+                                    </div>
                                 </div>
-                                <a v-if="packageData.wordpress_link" :href="packageData.wordpress_link" target="_blank" rel="noopener noreferrer" class="flex items-center text-indigo-600 hover:text-indigo-800">
-                                    <span class="text-gray-400 mr-4">•</span>
+                                <!-- View Details Link -->
+                                <a v-if="packageData.wordpress_link" :href="packageData.wordpress_link" target="_blank" rel="noopener noreferrer" class="flex items-center self-end text-indigo-600 hover:text-indigo-800">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                                     </svg>
