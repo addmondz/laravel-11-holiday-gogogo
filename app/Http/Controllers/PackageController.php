@@ -130,6 +130,9 @@ class PackageController extends Controller
                 'package_end_date' => 'required|date|after:package_start_date',
                 'weekend_days' => 'nullable|array',
                 'weekend_days.*' => 'integer|min:0|max:6',
+                'max_adults' => 'nullable|integer|min:1',
+                'max_children' => 'nullable|integer|min:1',
+                'max_infants' => 'nullable|integer|min:1',
                 'room_types' => 'required|array|min:1',
                 'room_types.*.name' => 'required|string|max:255',
                 'room_types.*.max_occupancy' => 'required|integer|min:1',
@@ -430,6 +433,9 @@ class PackageController extends Controller
                 'package_end_date' => 'nullable|date|after:package_start_date',
                 'weekend_days' => 'nullable|array',
                 'weekend_days.*' => 'integer|min:0|max:6',
+                'max_adults' => 'nullable|integer|min:1',
+                'max_children' => 'nullable|integer|min:1',
+                'max_infants' => 'nullable|integer|min:1',
                 'delete_images' => 'nullable|array',
                 'delete_images.*' => 'string',
                 'sst_enable' => 'nullable|boolean',
@@ -517,7 +523,36 @@ class PackageController extends Controller
 
             $validated['images'] = array_values($currentImages); // Reindex array
 
+            // Check if max_pax fields are being updated
+            $maxPaxChanged = false;
+            if (isset($validated['max_adults']) && $package->max_adults != $validated['max_adults']) {
+                $maxPaxChanged = true;
+            }
+            if (isset($validated['max_children']) && $package->max_children != $validated['max_children']) {
+                $maxPaxChanged = true;
+            }
+            if (isset($validated['max_infants']) && $package->max_infants != $validated['max_infants']) {
+                $maxPaxChanged = true;
+            }
+
             $package->update($validated);
+
+            // Clean price configurations if max_pax limits were updated
+            if ($maxPaxChanged) {
+                try {
+                    $stats = $this->priceConfigurationService->cleanPriceConfigurationsByMaxPax($package);
+                    Log::info('Cleaned price configurations after max_pax update', [
+                        'package_id' => $package->id,
+                        'stats' => $stats
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Failed to clean price configurations after max_pax update', [
+                        'package_id' => $package->id,
+                        'error' => $e->getMessage()
+                    ]);
+                    // Don't fail the update if cleaning fails, just log it
+                }
+            }
 
             DB::commit();
             return redirect()->route('packages.show', $package->id)
@@ -639,6 +674,9 @@ class PackageController extends Controller
                 'no_children_and_infant' => 'nullable|boolean',
                 'infant_max_age_desc' => 'nullable|string|max:255',
                 'child_max_age_desc' => 'nullable|string|max:255',
+                'max_adults' => 'nullable|integer|min:1',
+                'max_children' => 'nullable|integer|min:1',
+                'max_infants' => 'nullable|integer|min:1',
                 'existing_images' => 'nullable|array',
                 'existing_images.*' => 'nullable|string',
                 'images' => 'nullable|array',
