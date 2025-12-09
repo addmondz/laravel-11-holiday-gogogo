@@ -6,6 +6,7 @@ use App\Models\RoomType;
 use App\Services\CreatePriceConfigurationsService;
 use Illuminate\Console\Command;
 
+// can be used to fix max_pax limits for room types
 class UpdateRoomConfigByPax extends Command
 {
     protected $signature = 'update:room-config-by-pax';

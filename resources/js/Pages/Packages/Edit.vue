@@ -171,51 +171,6 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-3 gap-6">
-                                    <div>
-                                        <label for="max_adults" class="block text-sm font-medium text-gray-700">Max Adults</label>
-                                        <input
-                                            type="number"
-                                            id="max_adults"
-                                            v-model="form.max_adults"
-                                            min="1"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            :class="{ 'border-red-500': form.errors.max_adults }"
-                                        />
-                                        <div v-if="form.errors.max_adults" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.max_adults }}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label for="max_children" class="block text-sm font-medium text-gray-700">Max Children</label>
-                                        <input
-                                            type="number"
-                                            id="max_children"
-                                            v-model="form.max_children"
-                                            min="1"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            :class="{ 'border-red-500': form.errors.max_children }"
-                                        />
-                                        <div v-if="form.errors.max_children" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.max_children }}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label for="max_infants" class="block text-sm font-medium text-gray-700">Max Infants</label>
-                                        <input
-                                            type="number"
-                                            id="max_infants"
-                                            v-model="form.max_infants"
-                                            min="1"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            :class="{ 'border-red-500': form.errors.max_infants }"
-                                        />
-                                        <div v-if="form.errors.max_infants" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.max_infants }}
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div>
                                     <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">
                                         Terms and Conditions
@@ -425,9 +380,6 @@ const form = useForm({
     no_children_and_infant: !!props.package.no_children_and_infant,
     infant_max_age_desc: props.package.infant_max_age_desc || '',
     child_max_age_desc: props.package.child_max_age_desc || '',
-    max_adults: props.package.max_adults || null,
-    max_children: props.package.max_children || null,
-    max_infants: props.package.max_infants || null,
 });
 
 const handleImagesUpload = (event) => {

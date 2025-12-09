@@ -253,51 +253,6 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-3 gap-6">
-                                    <div>
-                                        <label for="max_adults" class="block text-sm font-medium text-gray-700">Max Adults</label>
-                                        <input
-                                            type="number"
-                                            id="max_adults"
-                                            v-model="form.max_adults"
-                                            min="1"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            :class="{ 'border-red-500': form.errors.max_adults }"
-                                        />
-                                        <div v-if="form.errors.max_adults" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.max_adults }}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label for="max_children" class="block text-sm font-medium text-gray-700">Max Children</label>
-                                        <input
-                                            type="number"
-                                            id="max_children"
-                                            v-model="form.max_children"
-                                            min="1"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            :class="{ 'border-red-500': form.errors.max_children }"
-                                        />
-                                        <div v-if="form.errors.max_children" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.max_children }}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label for="max_infants" class="block text-sm font-medium text-gray-700">Max Infants</label>
-                                        <input
-                                            type="number"
-                                            id="max_infants"
-                                            v-model="form.max_infants"
-                                            min="1"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            :class="{ 'border-red-500': form.errors.max_infants }"
-                                        />
-                                        <div v-if="form.errors.max_infants" class="mt-1 text-sm text-red-600">
-                                            {{ form.errors.max_infants }}
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div>
                                     <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">
                                         Terms and Conditions
@@ -435,6 +390,9 @@
                                                 <tr>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Occupancy</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Adults</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Children</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Infants</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -466,6 +424,42 @@
                                                         />
                                                         <div v-if="form.errors[`room_types.${index}.max_occupancy`]" class="mt-1 text-sm text-red-600">
                                                             {{ form.errors[`room_types.${index}.max_occupancy`] }}
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <input
+                                                            type="number"
+                                                            v-model="roomType.max_adults"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            :class="{ 'border-red-500': form.errors[`room_types.${index}.max_adults`] }"
+                                                            min="1"
+                                                        />
+                                                        <div v-if="form.errors[`room_types.${index}.max_adults`]" class="mt-1 text-sm text-red-600">
+                                                            {{ form.errors[`room_types.${index}.max_adults`] }}
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <input
+                                                            type="number"
+                                                            v-model="roomType.max_children"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            :class="{ 'border-red-500': form.errors[`room_types.${index}.max_children`] }"
+                                                            min="1"
+                                                        />
+                                                        <div v-if="form.errors[`room_types.${index}.max_children`]" class="mt-1 text-sm text-red-600">
+                                                            {{ form.errors[`room_types.${index}.max_children`] }}
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <input
+                                                            type="number"
+                                                            v-model="roomType.max_infants"
+                                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            :class="{ 'border-red-500': form.errors[`room_types.${index}.max_infants`] }"
+                                                            min="1"
+                                                        />
+                                                        <div v-if="form.errors[`room_types.${index}.max_infants`]" class="mt-1 text-sm text-red-600">
+                                                            {{ form.errors[`room_types.${index}.max_infants`] }}
                                                         </div>
                                                     </td>
                                                     <td class="px-6 py-4">
@@ -584,12 +578,12 @@ const form = useForm({
     wordpress_link: '',
     package_start_date: '',
     package_end_date: '',
-    max_adults: null,
-    max_children: null,
-    max_infants: null,
     room_types: [{
         name: '',
         max_occupancy: 2,
+        max_adults: null,
+        max_children: null,
+        max_infants: null,
         description: '',
         images: [],
         imagePreviews: []
@@ -604,6 +598,9 @@ const addRoomType = () => {
     form.room_types.push({
         name: '',
         max_occupancy: 2,
+        max_adults: null,
+        max_children: null,
+        max_infants: null,
         description: '',
         images: [],
         imagePreviews: []

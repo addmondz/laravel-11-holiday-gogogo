@@ -45,9 +45,17 @@ class RoomTypeController extends Controller
             'description' => 'nullable|string',
             'bed_desc' => 'nullable|string',
             'max_occupancy' => 'required|integer|min:1',
+            'max_adults' => 'nullable|integer|min:1',
+            'max_children' => 'nullable|integer|min:1',
+            'max_infants' => 'nullable|integer|min:1',
             'package_id' => 'required|exists:packages,id',
             'images.*' => 'nullable|image|max:2048'
         ]);
+
+        // Convert empty strings to null for max_pax fields
+        $validated['max_adults'] = !empty($validated['max_adults']) ? (int)$validated['max_adults'] : null;
+        $validated['max_children'] = !empty($validated['max_children']) ? (int)$validated['max_children'] : null;
+        $validated['max_infants'] = !empty($validated['max_infants']) ? (int)$validated['max_infants'] : null;
 
         // Handle image uploads
         $images = [];
@@ -97,6 +105,9 @@ class RoomTypeController extends Controller
                 'description' => 'nullable|string',
                 'bed_desc' => 'nullable|string',
                 'max_occupancy' => 'required|integer|min:1',
+                'max_adults' => 'nullable|integer|min:1',
+                'max_children' => 'nullable|integer|min:1',
+                'max_infants' => 'nullable|integer|min:1',
                 'package_id' => 'required|exists:packages,id',
                 'images.*' => 'nullable|image|max:2048',
                 'delete_images' => 'nullable|array',
@@ -126,12 +137,44 @@ class RoomTypeController extends Controller
 
             $validated['images'] = array_values($currentImages); // Reindex array
 
+            // Convert empty strings to null for max_pax fields
+            $validated['max_adults'] = $validated['max_adults'] ?? null;
+            $validated['max_children'] = $validated['max_children'] ?? null;
+            $validated['max_infants'] = $validated['max_infants'] ?? null;
+
+            // Check if max_pax fields are being updated
+            $maxPaxChanged = false;
+            if (isset($validated['max_adults']) && $roomType->max_adults != $validated['max_adults']) {
+                $maxPaxChanged = true;
+            }
+            if (isset($validated['max_children']) && $roomType->max_children != $validated['max_children']) {
+                $maxPaxChanged = true;
+            }
+            if (isset($validated['max_infants']) && $roomType->max_infants != $validated['max_infants']) {
+                $maxPaxChanged = true;
+            }
+
             $roomType->update($validated);
 
-            // if ($currentRoomPax != $newRoomPax) {
-            //     $this->priceConfigurationService->updateConfigsToPaxAndFill($roomType->id, $newRoomPax);
-            // }
+            // Update price configurations when max_occupancy changes
             $this->priceConfigurationService->updateConfigsToPaxAndFill($roomType->id, $newRoomPax);
+
+            // Clean price configurations if max_pax limits were updated
+            if ($maxPaxChanged) {
+                try {
+                    $stats = $this->priceConfigurationService->cleanPriceConfigurationsByMaxPax($roomType);
+                    Log::info('Cleaned price configurations after max_pax update', [
+                        'room_type_id' => $roomType->id,
+                        'stats' => $stats
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Failed to clean price configurations after max_pax update', [
+                        'room_type_id' => $roomType->id,
+                        'error' => $e->getMessage()
+                    ]);
+                    // Don't fail the update if cleaning fails, just log it
+                }
+            }
 
             // If the request has a return_to_package parameter, redirect back to the package page
             if ($request->has('return_to_package')) {
@@ -164,11 +207,19 @@ class RoomTypeController extends Controller
                 'description' => 'nullable|string',
                 'bed_desc' => 'nullable|string',
                 'max_occupancy' => 'required|integer|min:1',
+                'max_adults' => 'nullable|integer|min:1',
+                'max_children' => 'nullable|integer|min:1',
+                'max_infants' => 'nullable|integer|min:1',
                 'package_id' => 'required|exists:packages,id',
                 'images.*' => 'nullable|image|max:2048',
                 'existing_images' => 'nullable|array',
                 'existing_images.*' => 'string'
             ]);
+
+            // Convert empty strings to null for max_pax fields
+            $validated['max_adults'] = $validated['max_adults'] ?? null;
+            $validated['max_children'] = $validated['max_children'] ?? null;
+            $validated['max_infants'] = $validated['max_infants'] ?? null;
             
             // Start with existing images that should be copied
             $duplicatedImages = [];
@@ -201,6 +252,9 @@ class RoomTypeController extends Controller
                 'description' => $validated['description'] ?? null,
                 'bed_desc' => $validated['bed_desc'] ?? null,
                 'max_occupancy' => $validated['max_occupancy'],
+                'max_adults' => $validated['max_adults'] ?? null,
+                'max_children' => $validated['max_children'] ?? null,
+                'max_infants' => $validated['max_infants'] ?? null,
                 'package_id' => $validated['package_id'],
                 'images' => $duplicatedImages,
             ]);

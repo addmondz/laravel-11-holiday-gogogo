@@ -16,6 +16,9 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Occupancy</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Adults</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Children</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Infants</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bed Desc</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -51,6 +54,9 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.max_occupancy }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.max_adults }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.max_children }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.max_infants }}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ roomType.bed_desc }}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ roomType.description }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -128,6 +134,39 @@
                                 min="1"
                                 required
                             />
+                        </div>
+
+                        <div class="flex justify-between">
+                            <div>
+                                <label for="max_adults" class="block text-sm font-medium text-gray-700">Max Adults</label>
+                                <input
+                                    type="number"
+                                    id="max_adults"
+                                    v-model="roomTypeForm.max_adults"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    min="1"
+                                />
+                            </div>
+                            <div>
+                                <label for="max_children" class="block text-sm font-medium text-gray-700">Max Children</label>
+                                <input
+                                    type="number"
+                                    id="max_children"
+                                    v-model="roomTypeForm.max_children"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    min="1"
+                                />
+                            </div>
+                            <div>
+                                <label for="max_infants" class="block text-sm font-medium text-gray-700">Max Infants</label>
+                                <input
+                                    type="number"
+                                    id="max_infants"
+                                    v-model="roomTypeForm.max_infants"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    min="1"
+                                />
+                            </div>
                         </div>
 
                         <div>
@@ -252,6 +291,39 @@
                             />
                         </div>
 
+                        <div class="flex justify-between">
+                            <div>
+                                <label for="duplicate_max_adults" class="block text-sm font-medium text-gray-700">Max Adults</label>
+                                <input
+                                    type="number"
+                                    id="duplicate_max_adults"
+                                    v-model="duplicateRoomTypeForm.max_adults"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    min="1"
+                                />
+                            </div>
+                            <div>
+                                <label for="duplicate_max_children" class="block text-sm font-medium text-gray-700">Max Children</label>
+                                <input
+                                    type="number"
+                                    id="duplicate_max_children"
+                                    v-model="duplicateRoomTypeForm.max_children"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    min="1"
+                                />
+                            </div>
+                            <div>
+                                <label for="duplicate_max_infants" class="block text-sm font-medium text-gray-700">Max Infants</label>
+                                <input
+                                    type="number"
+                                    id="duplicate_max_infants"
+                                    v-model="duplicateRoomTypeForm.max_infants"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    min="1"
+                                />
+                            </div>
+                        </div>
+
                         <div>
                             <label for="duplicate_bed_desc" class="block text-sm font-medium text-gray-700">Bed Desc</label>
                             <textarea
@@ -368,6 +440,39 @@
                                 min="1"
                                 required
                             />
+                        </div>
+
+                        <div class="flex justify-between">
+                            <div>
+                                <label for="max_adults" class="block text-sm font-medium text-gray-700">Max Adults</label>
+                                <input
+                                    type="number"
+                                    id="max_adults"
+                                    v-model="editRoomTypeForm.max_adults"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    min="1"
+                                />
+                            </div>
+                            <div>
+                                <label for="max_children" class="block text-sm font-medium text-gray-700">Max Children</label>
+                                <input
+                                    type="number"
+                                    id="max_children"
+                                    v-model="editRoomTypeForm.max_children"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    min="1"
+                                />
+                            </div>
+                            <div>
+                                <label for="max_infants" class="block text-sm font-medium text-gray-700">Max Infants</label>
+                                <input
+                                    type="number"
+                                    id="max_infants"
+                                    v-model="editRoomTypeForm.max_infants"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    min="1"
+                                />
+                            </div>
                         </div>
 
                         <div>
@@ -518,6 +623,9 @@ const roomTypeForm = useForm({
     bed_desc: '',
     description: '',
     max_occupancy: 4,
+    max_adults: null,
+    max_children: null,
+    max_infants: null,
     package_id: props.package.id,
     return_to_package: true,
     images: [],
@@ -530,6 +638,9 @@ const editRoomTypeForm = useForm({
     bed_desc: '',
     description: '',
     max_occupancy: 4,
+    max_adults: null,
+    max_children: null,
+    max_infants: null,
     package_id: props.package.id,
     return_to_package: true,
     images: [],
@@ -541,6 +652,9 @@ const duplicateRoomTypeForm = useForm({
     bed_desc: '',
     description: '',
     max_occupancy: 4,
+    max_adults: null,
+    max_children: null,
+    max_infants: null,
     package_id: props.package.id,
     return_to_package: true,
     images: [],
@@ -608,6 +722,9 @@ const submitRoomType = () => {
     formData.append('bed_desc', roomTypeForm.bed_desc?.trim() || '');
     formData.append('description', roomTypeForm.description?.trim() || '');
     formData.append('max_occupancy', roomTypeForm.max_occupancy);
+    formData.append('max_adults', roomTypeForm.max_adults || '');
+    formData.append('max_children', roomTypeForm.max_children || '');
+    formData.append('max_infants', roomTypeForm.max_infants || '');
     formData.append('package_id', props.package.id);
     formData.append('return_to_package', 'true');
 
@@ -680,6 +797,9 @@ const editRoomType = (roomType) => {
     editRoomTypeForm.bed_desc = roomType.bed_desc || '';
     editRoomTypeForm.description = roomType.description || '';
     editRoomTypeForm.max_occupancy = parseInt(roomType.max_occupancy) || 2;
+    editRoomTypeForm.max_adults = parseInt(roomType.max_adults) || null;
+    editRoomTypeForm.max_children = parseInt(roomType.max_children) || null;
+    editRoomTypeForm.max_infants = parseInt(roomType.max_infants) || null;
     editRoomTypeForm.package_id = parseInt(props.package.id);
     editRoomTypeForm.images = Array.isArray(roomType.images) ? [...roomType.images] : [];
     editRoomTypeForm.delete_images = [];
@@ -709,6 +829,9 @@ const updateRoomType = () => {
     formData.append('bed_desc', editRoomTypeForm.bed_desc?.trim() || '');
     formData.append('description', editRoomTypeForm.description?.trim() || '');
     formData.append('max_occupancy', editRoomTypeForm.max_occupancy);
+    formData.append('max_adults', editRoomTypeForm.max_adults || '');
+    formData.append('max_children', editRoomTypeForm.max_children || '');
+    formData.append('max_infants', editRoomTypeForm.max_infants || '');
     formData.append('package_id', props.package.id);
     formData.append('return_to_package', 'true');
 
@@ -797,6 +920,9 @@ const duplicateRoomType = (roomType) => {
     duplicateRoomTypeForm.bed_desc = roomType.bed_desc || '';
     duplicateRoomTypeForm.description = roomType.description || '';
     duplicateRoomTypeForm.max_occupancy = parseInt(roomType.max_occupancy) || 4;
+    duplicateRoomTypeForm.max_adults = parseInt(roomType.max_adults) || null;
+    duplicateRoomTypeForm.max_children = parseInt(roomType.max_children) || null;
+    duplicateRoomTypeForm.max_infants = parseInt(roomType.max_infants) || null;
     duplicateRoomTypeForm.package_id = parseInt(props.package.id);
     duplicateRoomTypeForm.originalRoomTypeId = roomType.id;
     duplicateRoomTypeForm.images = Array.isArray(roomType.images) ? [...roomType.images] : [];
@@ -835,6 +961,9 @@ const submitDuplicateRoomType = () => {
     formData.append('bed_desc', duplicateRoomTypeForm.bed_desc?.trim() || '');
     formData.append('description', duplicateRoomTypeForm.description?.trim() || '');
     formData.append('max_occupancy', duplicateRoomTypeForm.max_occupancy);
+    formData.append('max_adults', duplicateRoomTypeForm.max_adults || '');
+    formData.append('max_children', duplicateRoomTypeForm.max_children || '');
+    formData.append('max_infants', duplicateRoomTypeForm.max_infants || '');
     formData.append('package_id', props.package.id);
     formData.append('return_to_package', 'true');
     

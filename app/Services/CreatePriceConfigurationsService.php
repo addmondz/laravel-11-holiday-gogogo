@@ -58,7 +58,7 @@ class CreatePriceConfigurationsService
                                 'season_type_id' => $seasonType->id,
                                 'date_type_id' => $dateType->id,
                                 'room_type_id' => $roomType->id,
-                                'configuration_prices' => $this->generateRandomPrices($roomPax, $generateRandomPrices, $package),
+                                'configuration_prices' => $this->generateRandomPrices($roomPax, $generateRandomPrices, $roomType),
                             ]);
 
                             // Log::info('configuration created: ' . json_encode($configuration, JSON_PRETTY_PRINT));
@@ -80,38 +80,18 @@ class CreatePriceConfigurationsService
         }
     }
 
-    public function generateRandomPrices(int $pax = 4, bool $generateRandomPrices = true, $package = null): array
+    public function generateRandomPrices(int $pax = 4, bool $generateRandomPrices = true, $roomType = null): array
     {
         $faker = Faker::create();
 
         $base  = [];
         $surch = [];
 
-        // ✅ Only generate for the requested pax, respecting package max limits
-        $combinations = $this->generatePaxCombinations($pax, $package);
-
-        // Get package max limits (null means no limit)
-        $maxAdults = $package?->max_adults;
-        $maxChildren = $package?->max_children;
-        $maxInfants = $package?->max_infants;
+        $combinations = $this->generatePaxCombinations($pax, $roomType);
 
         foreach ($combinations as $combo) {
             $counts = $this->parsePaxCombination($combo); // ['adults'=>X,'children'=>Y,'infants'=>Z]
             if ($counts === null) {
-                continue;
-            }
-
-            // Check if current counts exceed package max limits
-            if ($maxAdults !== null && $counts['adults'] > $maxAdults) {
-                Log::info('maxAdults exceeded: ' . $counts['adults'] . ' > ' . $maxAdults);
-                continue;
-            }
-            if ($maxChildren !== null && $counts['children'] > $maxChildren) {
-                Log::info('maxChildren exceeded: ' . $counts['children'] . ' > ' . $maxChildren);
-                continue;
-            }
-            if ($maxInfants !== null && $counts['infants'] > $maxInfants) {
-                Log::info('maxInfants exceeded: ' . $counts['infants'] . ' > ' . $maxInfants);
                 continue;
             }
 
@@ -165,16 +145,12 @@ class CreatePriceConfigurationsService
         // Fetch all configs for this room type across package/season/date
         $configs = PackageConfiguration::where('room_type_id', $roomTypeId)->get();
 
-        // Get package to check max pax limits
-        $package = null;
-        $firstConfig = $configs->first();
-        if ($firstConfig) {
-            $package = $firstConfig->package;
-        }
+        // Get room type to check max pax limits
+        $roomType = RoomType::find($roomTypeId);
 
         // Build the authoritative list of valid keys up to $newRoomPax using your generator
-        // This will automatically filter out combinations that exceed package max limits
-        $allowedCombos = $this->generatePaxCombinations($newRoomPax, $package);
+        // This will automatically filter out combinations that exceed room type max limits
+        $allowedCombos = $this->generatePaxCombinations($newRoomPax, $roomType);
         $allowedSet    = array_flip($allowedCombos);
 
         DB::beginTransaction();
@@ -307,34 +283,34 @@ class CreatePriceConfigurationsService
         return json_encode($old, JSON_UNESCAPED_UNICODE) !== json_encode($new, JSON_UNESCAPED_UNICODE);
     }
 
-    function generatePaxCombinations(int $pax, $package = null): array
+    function generatePaxCombinations(int $pax, $roomType = null): array
     {
         if ($pax < 1) return [];
 
-        // Get package max limits (null means no limit)
-        $maxAdults = $package?->max_adults;
-        $maxChildren = $package?->max_children;
-        $maxInfants = $package?->max_infants;
+        // Get room type max limits (null means no limit)
+        $maxAdults = $roomType?->max_adults;
+        $maxChildren = $roomType?->max_children;
+        $maxInfants = $roomType?->max_infants;
 
         $combinations = [];
 
         // Total party size from 1 up to $pax
         for ($total = 1; $total <= $pax; $total++) {
             for ($a = 1; $a <= $total; $a++) {           // Adults first
-                // Skip if exceeds package max adults limit
+                // Skip if exceeds room type max adults limit
                 if ($maxAdults !== null && $a > $maxAdults) {
                     continue;
                 }
 
                 for ($c = 0; $c <= $total - $a; $c++) {  // Then children
-                    // Skip if exceeds package max children limit
+                    // Skip if exceeds room type max children limit
                     if ($maxChildren !== null && $c > $maxChildren) {
                         continue;
                     }
 
                     $i = $total - $a - $c;               // Infants fill the rest
                     
-                    // Skip if exceeds package max infants limit
+                    // Skip if exceeds room type max infants limit
                     if ($maxInfants !== null && $i > $maxInfants) {
                         continue;
                     }
@@ -368,19 +344,19 @@ class CreatePriceConfigurationsService
     }
 
     /**
-     * Clean price configurations for a package that exceed max_adults, max_children, or max_infants limits.
+     * Clean price configurations for a room type that exceed max_adults, max_children, or max_infants limits.
      * 
-     * @param \App\Models\Package $package
+     * @param \App\Models\RoomType $roomType
      * @return array Statistics: ['configs_processed' => int, 'configs_cleaned' => int, 'combinations_removed' => int]
      */
-    public function cleanPriceConfigurationsByMaxPax($package): array
+    public function cleanPriceConfigurationsByMaxPax($roomType): array
     {
-        $maxAdults = $package->max_adults ?? null;
-        $maxChildren = $package->max_children ?? null;
-        $maxInfants = $package->max_infants ?? null;
+        $maxAdults = $roomType->max_adults ?? null;
+        $maxChildren = $roomType->max_children ?? null;
+        $maxInfants = $roomType->max_infants ?? null;
 
-        // Get all configurations for this package
-        $configurations = PackageConfiguration::where('package_id', $package->id)->get();
+        // Get all configurations for this room type
+        $configurations = PackageConfiguration::where('room_type_id', $roomType->id)->get();
 
         if ($configurations->isEmpty()) {
             return [
@@ -434,7 +410,7 @@ class CreatePriceConfigurationsService
                     $removedFromBase++;
                     $combinationsRemoved++;
                     // Log::info('Removed combination from base', [
-                    //     'package_id' => $package->id,
+                    //     'room_type_id' => $roomType->id,
                     //     'config_id' => $config->id,
                     //     'combination' => $combo,
                     //     'counts' => $counts,
@@ -477,7 +453,7 @@ class CreatePriceConfigurationsService
                     $removedFromSurch++;
                     $combinationsRemoved++;
                     // Log::info('Removed combination from surch', [
-                    //     'package_id' => $package->id,
+                    //     'room_type_id' => $roomType->id,
                     //     'config_id' => $config->id,
                     //     'combination' => $combo,
                     //     'counts' => $counts,

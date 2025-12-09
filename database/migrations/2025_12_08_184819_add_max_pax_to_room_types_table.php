@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('packages', function (Blueprint $table) {
-            $table->integer('max_adults')->nullable()->after('no_children_and_infant');
+        Schema::table('room_types', function (Blueprint $table) {
+            $table->integer('max_adults')->nullable()->after('max_occupancy');
             $table->integer('max_children')->nullable()->after('max_adults');
             $table->integer('max_infants')->nullable()->after('max_children');
         });
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('packages', function (Blueprint $table) {
+        Schema::table('room_types', function (Blueprint $table) {
             $table->dropColumn(['max_adults', 'max_children', 'max_infants']);
         });
     }

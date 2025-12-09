@@ -18,6 +18,9 @@ class RoomType extends Model
         'bed_desc',
         'package_id',
         'max_occupancy',
+        'max_adults',
+        'max_children',
+        'max_infants',
         'images'
     ];
 
