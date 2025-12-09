@@ -112,6 +112,10 @@
                 <h4 class="text-sm font-medium text-gray-500">Terms and Conditions</h4>
                 <div class="mt-1 text-sm text-gray-900" v-html="formatTermsAndConditions(package.terms_and_conditions)"></div>
             </div>
+            <div v-if="package.extra_remark && package.extra_remark !== '<p><br></p>'">
+                <h4 class="text-sm font-medium text-gray-500">Extra Remark</h4>
+                <div class="mt-1 text-sm text-gray-900 prose prose-sm max-w-none" v-html="package.extra_remark"></div>
+            </div>
             <div v-if="package.wordpress_link">
                 <h4 class="text-sm font-medium text-gray-500">WordPress Link</h4>
                 <p class="mt-1 text-sm text-gray-900">

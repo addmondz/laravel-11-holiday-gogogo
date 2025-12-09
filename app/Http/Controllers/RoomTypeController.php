@@ -43,6 +43,7 @@ class RoomTypeController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'bed_desc' => 'nullable|string',
             'max_occupancy' => 'required|integer|min:1',
             'package_id' => 'required|exists:packages,id',
             'images.*' => 'nullable|image|max:2048'
@@ -94,6 +95,7 @@ class RoomTypeController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
+                'bed_desc' => 'nullable|string',
                 'max_occupancy' => 'required|integer|min:1',
                 'package_id' => 'required|exists:packages,id',
                 'images.*' => 'nullable|image|max:2048',
@@ -160,6 +162,7 @@ class RoomTypeController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
+                'bed_desc' => 'nullable|string',
                 'max_occupancy' => 'required|integer|min:1',
                 'package_id' => 'required|exists:packages,id',
                 'images.*' => 'nullable|image|max:2048',
@@ -196,6 +199,7 @@ class RoomTypeController extends Controller
             $newRoomType = RoomType::create([
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
+                'bed_desc' => $validated['bed_desc'] ?? null,
                 'max_occupancy' => $validated['max_occupancy'],
                 'package_id' => $validated['package_id'],
                 'images' => $duplicatedImages,

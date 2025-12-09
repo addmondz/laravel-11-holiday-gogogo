@@ -16,6 +16,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Occupancy</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bed Desc</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -50,6 +51,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ roomType.max_occupancy }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ roomType.bed_desc }}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ roomType.description }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button
@@ -73,7 +75,7 @@
                         </td>
                     </tr>
                     <tr v-else>
-                        <td colspan="5" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No room types found</td>
+                        <td colspan="6" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No room types found</td>
                     </tr>
                 </tbody>
             </table>
@@ -98,7 +100,7 @@
             roomTypeForm.reset();
             addRoomTypeErrors.value = '';
         }">
-            <div class="p-6">
+            <div class="p-6 max-h-[90vh] overflow-y-auto">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Add Room Type</h2>
                 <div v-if="addRoomTypeErrors" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
                     {{ addRoomTypeErrors }}
@@ -126,6 +128,16 @@
                                 min="1"
                                 required
                             />
+                        </div>
+
+                        <div>
+                            <label for="bed_desc" class="block text-sm font-medium text-gray-700">Bed Desc</label>
+                            <textarea
+                                id="bed_desc"
+                                v-model="roomTypeForm.bed_desc"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                rows="2"
+                            ></textarea>
                         </div>
 
                         <div>
@@ -241,6 +253,16 @@
                         </div>
 
                         <div>
+                            <label for="duplicate_bed_desc" class="block text-sm font-medium text-gray-700">Bed Desc</label>
+                            <textarea
+                                id="duplicate_bed_desc"
+                                v-model="duplicateRoomTypeForm.bed_desc"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                rows="2"
+                            ></textarea>
+                        </div>
+
+                        <div>
                             <label for="duplicate_description" class="block text-sm font-medium text-gray-700">Description</label>
                             <textarea
                                 id="duplicate_description"
@@ -318,7 +340,7 @@
 
         <!-- Edit Room Type Modal -->
         <Modal :show="showEditRoomTypeModal" @close="closeEditRoomTypeModal">
-            <div class="p-6">
+            <div class="p-6 max-h-[90vh] overflow-y-auto">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Edit Room Type</h2>
                 <div v-if="roomTypeWarning" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
                     {{ roomTypeWarning }}
@@ -346,6 +368,16 @@
                                 min="1"
                                 required
                             />
+                        </div>
+
+                        <div>
+                            <label for="edit_bed_desc" class="block text-sm font-medium text-gray-700">Bed Desc</label>
+                            <textarea
+                                id="edit_bed_desc"
+                                v-model="editRoomTypeForm.bed_desc"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                rows="2"
+                            ></textarea>
                         </div>
 
                         <div>
@@ -483,6 +515,7 @@ const roomTypesPagination = computed(() => ({
 
 const roomTypeForm = useForm({
     name: '',
+    bed_desc: '',
     description: '',
     max_occupancy: 4,
     package_id: props.package.id,
@@ -494,6 +527,7 @@ const roomTypeForm = useForm({
 const editRoomTypeForm = useForm({
     id: null,
     name: '',
+    bed_desc: '',
     description: '',
     max_occupancy: 4,
     package_id: props.package.id,
@@ -504,6 +538,7 @@ const editRoomTypeForm = useForm({
 
 const duplicateRoomTypeForm = useForm({
     name: '',
+    bed_desc: '',
     description: '',
     max_occupancy: 4,
     package_id: props.package.id,
@@ -570,6 +605,7 @@ const submitRoomType = () => {
     
     // Add basic fields
     formData.append('name', roomTypeForm.name.trim());
+    formData.append('bed_desc', roomTypeForm.bed_desc?.trim() || '');
     formData.append('description', roomTypeForm.description?.trim() || '');
     formData.append('max_occupancy', roomTypeForm.max_occupancy);
     formData.append('package_id', props.package.id);
@@ -641,6 +677,7 @@ const editRoomType = (roomType) => {
     editRoomTypeForm.reset();
     editRoomTypeForm.id = roomType.id;
     editRoomTypeForm.name = roomType.name || '';
+    editRoomTypeForm.bed_desc = roomType.bed_desc || '';
     editRoomTypeForm.description = roomType.description || '';
     editRoomTypeForm.max_occupancy = parseInt(roomType.max_occupancy) || 2;
     editRoomTypeForm.package_id = parseInt(props.package.id);
@@ -669,6 +706,7 @@ const updateRoomType = () => {
     const formData = new FormData();
     formData.append('_method', 'PUT');
     formData.append('name', editRoomTypeForm.name.trim());
+    formData.append('bed_desc', editRoomTypeForm.bed_desc?.trim() || '');
     formData.append('description', editRoomTypeForm.description?.trim() || '');
     formData.append('max_occupancy', editRoomTypeForm.max_occupancy);
     formData.append('package_id', props.package.id);
@@ -756,6 +794,7 @@ const duplicateRoomType = (roomType) => {
     // Reset and populate duplicate form
     duplicateRoomTypeForm.reset();
     duplicateRoomTypeForm.name = newName;
+    duplicateRoomTypeForm.bed_desc = roomType.bed_desc || '';
     duplicateRoomTypeForm.description = roomType.description || '';
     duplicateRoomTypeForm.max_occupancy = parseInt(roomType.max_occupancy) || 4;
     duplicateRoomTypeForm.package_id = parseInt(props.package.id);
@@ -793,6 +832,7 @@ const submitDuplicateRoomType = () => {
     
     // Add basic fields
     formData.append('name', duplicateRoomTypeForm.name.trim());
+    formData.append('bed_desc', duplicateRoomTypeForm.bed_desc?.trim() || '');
     formData.append('description', duplicateRoomTypeForm.description?.trim() || '');
     formData.append('max_occupancy', duplicateRoomTypeForm.max_occupancy);
     formData.append('package_id', props.package.id);

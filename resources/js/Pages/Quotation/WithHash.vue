@@ -199,74 +199,58 @@
 
             <!-- Booking Form -->
             <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6" id="booking-form">
-                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-6">{{ currentStep === 4 ? 'Your Booking' : 'Book Your Stay' }}</h2>
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-6">{{ currentStep === 3 ? 'Your Booking' : 'Book Your Stay' }}</h2>
                 
                 <!-- Step Indicators -->
                 <div class="mb-8">
                     <!-- Mobile: Show only numbers with tooltips -->
                     <div class="flex items-center justify-between md:hidden">
-                        <!-- Step 1 -->
+                        <!-- Step 1: Select Room and Date -->
                         <div class="flex items-center flex-1 justify-center">
-                            <div 
+                            <div
                                 @click="navigateToStep(1)"
                                 :class="[
                                     'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
                                     currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
                                     1 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
-                                ]" 
+                                ]"
                                 :title="currentStep >= 1 ? 'Select Room and Date' : ''">
                                 1
                             </div>
                         </div>
-                        <div class="flex-1 mx-2 h-0.5" :class="isStepActive(2) ? 'bg-indigo-600' : 'bg-gray-200'"></div>
-                        <!-- Step 2: Add-ons (conditionally shown) -->
-                        <template v-if="hasAddOns">
-                            <div class="flex items-center flex-1 justify-center">
-                                <div 
-                                    @click="navigateToStep(2)"
-                                    :class="[
-                                        'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
-                                        currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
-                                        2 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
-                                    ]" 
-                                    :title="currentStep >= 2 ? 'Choose Add-ons' : ''">
-                                    2
-                                </div>
-                            </div>
-                            <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
-                        </template>
-                        <!-- Step 3: Price Summary -->
+                        <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 2 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <!-- Step 2: Price Summary -->
                         <div class="flex items-center flex-1 justify-center">
-                            <div 
+                            <div
+                                @click="navigateToStep(2)"
+                                :class="[
+                                    'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
+                                    currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                    2 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
+                                ]"
+                                :title="currentStep >= 2 ? 'Price Summary' : ''">
+                                2
+                            </div>
+                        </div>
+                        <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <!-- Step 3: Booking Details -->
+                        <div class="flex items-center flex-1 justify-center">
+                            <div
                                 @click="navigateToStep(3)"
                                 :class="[
                                     'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
-                                    isStepActive(3) ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                    currentStep >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
                                     3 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
-                                ]" 
-                                :title="currentStep >= 3 ? 'Price Summary' : ''">
-                                {{ hasAddOns ? '3' : '2' }}
-                            </div>
-                        </div>
-                        <div class="flex-1 mx-2 h-0.5" :class="currentStep >= 4 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
-                        <!-- Step 4: Booking Details -->
-                        <div class="flex items-center flex-1 justify-center">
-                            <div 
-                                @click="navigateToStep(4)"
-                                :class="[
-                                    'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
-                                    currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
-                                    4 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
-                                ]" 
-                                :title="currentStep >= 4 ? 'Booking Details' : ''">
-                                {{ hasAddOns ? '4' : '3' }}
+                                ]"
+                                :title="currentStep >= 3 ? 'Booking Details' : ''">
+                                3
                             </div>
                         </div>
                     </div>
                     <!-- Desktop: Show full labels -->
                     <div class="hidden md:flex items-center justify-between">
-                        <!-- Step 1 -->
-                        <div 
+                        <!-- Step 1: Select Room and Date -->
+                        <div
                             @click="navigateToStep(1)"
                             :class="[
                                 'flex items-center transition-all',
@@ -279,26 +263,24 @@
                             ]">1</div>
                             <div class="ml-2 text-sm font-medium" :class="currentStep >= 1 ? 'text-indigo-600' : 'text-gray-500'">Select Room and Date</div>
                         </div>
-                        <div class="flex-1 mx-4 h-0.5" :class="isStepActive(2) ? 'bg-indigo-600' : 'bg-gray-200'"></div>
-                        <!-- Step 2: Add-ons (conditionally shown) -->
-                        <template v-if="hasAddOns">
-                            <div 
-                                @click="navigateToStep(2)"
-                                :class="[
-                                    'flex items-center transition-all',
-                                    2 <= maxStepReached ? 'cursor-pointer hover:scale-105' : ''
-                                ]">
-                                <div :class="[
-                                    'w-8 h-8 rounded-full flex items-center justify-center transition-all',
-                                    currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
-                                    2 <= maxStepReached ? 'hover:shadow-lg' : ''
-                                ]">2</div>
-                                <div class="ml-2 text-sm font-medium" :class="currentStep >= 2 ? 'text-indigo-600' : 'text-gray-500'">Choose Add-ons</div>
-                            </div>
-                            <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
-                        </template>
-                        <!-- Step 3: Price Summary -->
-                        <div 
+                        <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 2 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <!-- Step 2: Price Summary -->
+                        <div
+                            @click="navigateToStep(2)"
+                            :class="[
+                                'flex items-center transition-all',
+                                2 <= maxStepReached ? 'cursor-pointer hover:scale-105' : ''
+                            ]">
+                            <div :class="[
+                                'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                                currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                2 <= maxStepReached ? 'hover:shadow-lg' : ''
+                            ]">2</div>
+                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 2 ? 'text-indigo-600' : 'text-gray-500'">Price Summary</div>
+                        </div>
+                        <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
+                        <!-- Step 3: Booking Details -->
+                        <div
                             @click="navigateToStep(3)"
                             :class="[
                                 'flex items-center transition-all',
@@ -306,25 +288,10 @@
                             ]">
                             <div :class="[
                                 'w-8 h-8 rounded-full flex items-center justify-center transition-all',
-                                isStepActive(3) ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
+                                currentStep >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
                                 3 <= maxStepReached ? 'hover:shadow-lg' : ''
-                            ]">{{ hasAddOns ? '3' : '2' }}</div>
-                            <div class="ml-2 text-sm font-medium" :class="isStepActive(3) ? 'text-indigo-600' : 'text-gray-500'">Price Summary</div>
-                        </div>
-                        <div class="flex-1 mx-4 h-0.5" :class="currentStep >= 4 ? 'bg-indigo-600' : 'bg-gray-200'"></div>
-                        <!-- Step 4: Booking Details -->
-                        <div 
-                            @click="navigateToStep(4)"
-                            :class="[
-                                'flex items-center transition-all',
-                                4 <= maxStepReached ? 'cursor-pointer hover:scale-105' : ''
-                            ]">
-                            <div :class="[
-                                'w-8 h-8 rounded-full flex items-center justify-center transition-all',
-                                currentStep >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
-                                4 <= maxStepReached ? 'hover:shadow-lg' : ''
-                            ]">{{ hasAddOns ? '4' : '3' }}</div>
-                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 4 ? 'text-indigo-600' : 'text-gray-500'">Booking Details</div>
+                            ]">3</div>
+                            <div class="ml-2 text-sm font-medium" :class="currentStep >= 3 ? 'text-indigo-600' : 'text-gray-500'">Booking Details</div>
                         </div>
                     </div>
                 </div>
@@ -335,7 +302,7 @@
                         <!-- Room Management -->
                         <div class="space-y-4">
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                                <h3 class="text-lg font-medium text-gray-900">Select Rooms</h3>
+                                <h3 class="text-xl font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg w-fit">Select Rooms</h3>
                                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                                     <span class="text-sm text-gray-600 whitespace-nowrap">
                                         Total Guests: {{ totalGuests }}
@@ -449,6 +416,7 @@
                                                                         Max {{ roomType.max_occupancy }} pax
                                                                     </span>
                                                                 </div>
+                                                                <p class="text-xs text-gray-600 line-clamp-2">{{ roomType.bed_desc }}</p>
                                                                 <p class="text-xs text-gray-600 line-clamp-2">{{ roomType.description }}</p>
                                                             </div>
                                                         </div>
@@ -564,6 +532,204 @@
                                             </div>
                                         </div>
 
+                                        <!-- Room Add-ons Section -->
+                                        <div v-if="room.room_type_id && hasAddOns" class="mt-4 border-t border-gray-200 pt-4">
+                                            <div class="mb-2">
+                                                <h5 class="text-sm font-semibold text-gray-900">Add-ons for Room {{ index + 1 }}</h5>
+                                                <p class="text-xs text-gray-500 mt-0.5">Select add-ons and enter the number of guests for each.</p>
+                                            </div>
+
+                                            <!-- Add-ons Table -->
+                                            <div v-if="packageAddOns.length > 0" class="bg-white border border-gray-200 rounded-md overflow-visible">
+                                                <!-- Desktop Table Header -->
+                                                <div class="hidden sm:grid grid-cols-12 gap-2 bg-gray-50 border-b border-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700">
+                                                    <div class="col-span-3 flex items-center gap-1.5">
+                                                        <span>Add-on</span>
+                                                    </div>
+                                                    <div class="col-span-2 text-center">Adult Price</div>
+                                                    <div v-if="!packageData?.no_children_and_infant" class="col-span-2 text-center">Child Price</div>
+                                                    <div v-if="!packageData?.no_children_and_infant" class="col-span-2 text-center">Infant Price</div>
+                                                    <div :class="packageData?.no_children_and_infant ? 'col-span-6' : 'col-span-2'" class="text-right">Subtotal</div>
+                                                    <div v-if="!packageData?.no_children_and_infant" class="col-span-1"></div>
+                                                </div>
+
+                                                <!-- Desktop Table Rows -->
+                                                <div class="divide-y divide-gray-100">
+                                                    <div v-for="addOn in packageAddOns" :key="addOn.id"
+                                                         class="grid grid-cols-12 gap-2 px-2 py-1.5 transition-colors"
+                                                         :class="calculateRoomAddOnSubtotal(index, addOn) > 0 ? 'bg-indigo-50 hover:bg-indigo-100' : 'hover:bg-gray-50'">
+                                                        <!-- Checkbox and Name with Info -->
+                                                        <div class="col-span-12 sm:col-span-3 flex items-center gap-1.5 min-w-0 mb-2 sm:mb-0">
+                                                            <div class="min-w-0 flex-1 flex items-center gap-1">
+                                                                <h4 class="text-xs font-medium text-gray-900">{{ addOn.name }}</h4>
+                                                                <div class="relative group flex-shrink-0 addon-info-button">
+                                                                    <button
+                                                                        @click.stop="toggleAddOnDescription(`${index}-${addOn.id}`)"
+                                                                        @mouseenter="showAddOnTooltip = `${index}-${addOn.id}`"
+                                                                        @mouseleave="showAddOnTooltip = null"
+                                                                        class="text-gray-400 hover:text-indigo-600 focus:outline-none transition-colors relative z-10"
+                                                                        type="button">
+                                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                        </svg>
+                                                                    </button>
+
+                                                                    <!-- Mobile Modal (teleported to body) -->
+                                                                    <Teleport to="body">
+                                                                        <div v-if="openAddOnDescriptions[`${index}-${addOn.id}`]"
+                                                                             class="sm:hidden fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4"
+                                                                             @click.stop="toggleAddOnDescription(`${index}-${addOn.id}`)">
+                                                                            <div class="bg-gray-900 text-white rounded-lg shadow-2xl p-4 max-w-sm w-full"
+                                                                                 @click.stop>
+                                                                                <div class="font-medium text-base mb-2">{{ addOn.name }}</div>
+                                                                                <div class="text-gray-300 text-sm whitespace-normal">{{ addOn.description || 'No description available' }}</div>
+                                                                                <div class="mt-4 pt-3 border-t border-gray-700 flex justify-end">
+                                                                                    <button @click.stop="toggleAddOnDescription(`${index}-${addOn.id}`)"
+                                                                                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium transition-colors">
+                                                                                        Close
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </Teleport>
+
+                                                                    <!-- Desktop Tooltip -->
+                                                                    <div v-if="showAddOnTooltip === `${index}-${addOn.id}` || openAddOnDescriptions[`${index}-${addOn.id}`]"
+                                                                         class="hidden sm:block absolute left-0 top-full mt-1 z-[9999] w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl pointer-events-auto"
+                                                                         @click.stop
+                                                                         @mouseenter="handleTooltipMouseEnter(`${index}-${addOn.id}`)"
+                                                                         @mouseleave="handleTooltipMouseLeave(`${index}-${addOn.id}`)">
+                                                                        <div class="font-medium mb-1">{{ addOn.name }}</div>
+                                                                        <div class="text-gray-300 whitespace-normal">{{ addOn.description || 'No description available' }}</div>
+                                                                        <div v-if="openAddOnDescriptions[`${index}-${addOn.id}`]" class="mt-2 pt-2 border-t border-gray-700">
+                                                                            <button @click.stop="toggleAddOnDescription(`${index}-${addOn.id}`)" class="text-xs text-indigo-300 hover:text-indigo-200">
+                                                                                Close
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Mobile Layout: Stacked Cards -->
+                                                        <div class="col-span-12 sm:hidden space-y-2 pb-2">
+                                                            <!-- Adult -->
+                                                            <div v-if="addOn.adult_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                                                <div class="flex items-center gap-2">
+                                                                    <span class="text-xs font-medium text-gray-700">Adult:</span>
+                                                                    <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.adult_price) }}</span>
+                                                                </div>
+                                                                <input type="number"
+                                                                       :min="0"
+                                                                       :max="room.adults || 0"
+                                                                       v-model="getRoomAddOnPax(index, addOn.id).adults"
+                                                                       placeholder="0"
+                                                                       class="w-16 px-2 py-1 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                                            </div>
+                                                            <!-- Child -->
+                                                            <div v-if="!packageData?.no_children_and_infant && addOn.child_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                                                <div class="flex items-center gap-2">
+                                                                    <span class="text-xs font-medium text-gray-700">Child:</span>
+                                                                    <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.child_price) }}</span>
+                                                                </div>
+                                                                <input type="number"
+                                                                       :min="0"
+                                                                       :max="room.children || 0"
+                                                                       v-model="getRoomAddOnPax(index, addOn.id).children"
+                                                                       placeholder="0"
+                                                                       class="w-16 px-2 py-1 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                                            </div>
+                                                            <!-- Infant -->
+                                                            <div v-if="!packageData?.no_children_and_infant && addOn.infant_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                                                <div class="flex items-center gap-2">
+                                                                    <span class="text-xs font-medium text-gray-700">Infant:</span>
+                                                                    <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.infant_price) }}</span>
+                                                                </div>
+                                                                <input type="number"
+                                                                       :min="0"
+                                                                       :max="room.infants || 0"
+                                                                       v-model="getRoomAddOnPax(index, addOn.id).infants"
+                                                                       placeholder="0"
+                                                                       class="w-16 px-2 py-1 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                                            </div>
+                                                            <!-- Subtotal Mobile -->
+                                                            <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+                                                                <span class="text-xs font-medium text-gray-600">Subtotal:</span>
+                                                                <span class="text-xs font-semibold text-indigo-600">
+                                                                    MYR {{ formatNumber(calculateRoomAddOnSubtotal(index, addOn)) }}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Desktop Layout: Table Columns -->
+                                                        <!-- Adult Price and Input -->
+                                                        <div class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
+                                                            <div v-if="addOn.adult_price" class="text-xs font-medium text-gray-900">
+                                                                MYR {{ formatNumber(addOn.adult_price) }}
+                                                            </div>
+                                                            <div v-else class="text-xs text-gray-400">-</div>
+                                                            <div v-if="addOn.adult_price" class="w-full">
+                                                                <input type="number"
+                                                                       :min="0"
+                                                                       :max="room.adults || 0"
+                                                                       v-model="getRoomAddOnPax(index, addOn.id).adults"
+                                                                       placeholder="0"
+                                                                       class="w-full px-1 py-0.5 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Child Price and Input -->
+                                                        <div v-if="!packageData?.no_children_and_infant" class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
+                                                            <div v-if="addOn.child_price" class="text-xs font-medium text-gray-900">
+                                                                MYR {{ formatNumber(addOn.child_price) }}
+                                                            </div>
+                                                            <div v-else class="text-xs text-gray-400">-</div>
+                                                            <div v-if="addOn.child_price" class="w-full">
+                                                                <input type="number"
+                                                                       :min="0"
+                                                                       :max="room.children || 0"
+                                                                       v-model="getRoomAddOnPax(index, addOn.id).children"
+                                                                       placeholder="0"
+                                                                       class="w-full px-1 py-0.5 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Infant Price and Input -->
+                                                        <div v-if="!packageData?.no_children_and_infant" class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
+                                                            <div v-if="addOn.infant_price" class="text-xs font-medium text-gray-900">
+                                                                MYR {{ formatNumber(addOn.infant_price) }}
+                                                            </div>
+                                                            <div v-else class="text-xs text-gray-400">-</div>
+                                                            <div v-if="addOn.infant_price" class="w-full">
+                                                                <input type="number"
+                                                                       :min="0"
+                                                                       :max="room.infants || 0"
+                                                                       v-model="getRoomAddOnPax(index, addOn.id).infants"
+                                                                       placeholder="0"
+                                                                       class="w-full px-1 py-0.5 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Subtotal Desktop -->
+                                                        <div :class="packageData?.no_children_and_infant ? 'hidden sm:flex sm:col-span-6' : 'hidden sm:flex sm:col-span-2'" class="items-center justify-end">
+                                                            <span class="text-xs font-semibold text-indigo-600">
+                                                                MYR {{ formatNumber(calculateRoomAddOnSubtotal(index, addOn)) }}
+                                                            </span>
+                                                        </div>
+                                                        <!-- Empty spacer -->
+                                                        <div class="hidden sm:block sm:col-span-1"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Room Add-ons Total -->
+                                            <div v-if="calculateRoomAddOnsTotal(index) > 0" class="mt-2 flex justify-end">
+                                                <div class="text-sm font-medium text-indigo-700">
+                                                    Room {{ index + 1 }} Add-ons Total: MYR {{ formatNumber(calculateRoomAddOnsTotal(index)) }}
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <!-- Room Summary -->
                                         <div v-if="room.room_type_id" class="bg-gray-50 rounded-md p-3">
                                             <p class="text-sm text-gray-600">
@@ -583,7 +749,7 @@
                             </div>
 
                             <!-- Add Room Button -->
-                            <div class="flex justify-start">
+                            <div class="flex justify-end">
                                 <button
                                     type="button"
                                     @click="addRoom"
@@ -617,7 +783,7 @@
 
                         <!-- Travel Dates Section -->
                         <div class="border-t border-gray-200 pt-4">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Select Travel Dates</h3>
+                            <h3 class="text-xl font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg w-fit mb-4">Select Travel Dates</h3>
 
                             <!-- Date Selection -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -667,236 +833,8 @@
                     </form>
                 </div>
 
-                <!-- Step 2: Choose Add-ons -->
-                <div v-if="currentStep === 2 && hasAddOns">
-                    <div class="space-y-2">
-                        <div class="mb-2">
-                            <h3 class="text-base font-semibold text-gray-900">Choose Your Add-ons</h3>
-                            <p class="text-xs text-gray-500 mt-0.5">Select add-ons and enter the number of guests for each.</p>
-                        </div>
-
-                        <!-- Add-ons Table -->
-                        <div v-if="packageAddOns.length > 0" class="bg-white border border-gray-200 rounded-md overflow-visible">
-                            <!-- Desktop Table Header -->
-                            <div class="hidden sm:grid grid-cols-12 gap-2 bg-gray-50 border-b border-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700">
-                                <div class="col-span-3 flex items-center gap-1.5">
-                                    <span>Add-on</span>
-                                </div>
-                                <div class="col-span-2 text-center">Adult Price</div>
-                                <div v-if="!packageData?.no_children_and_infant" class="col-span-2 text-center">Child Price</div>
-                                <div v-if="!packageData?.no_children_and_infant" class="col-span-2 text-center">Infant Price</div>
-                                <div :class="packageData?.no_children_and_infant ? 'col-span-6' : 'col-span-2'" class="text-right">Subtotal</div>
-                                <div v-if="!packageData?.no_children_and_infant" class="col-span-1"></div>
-                            </div>
-                            
-                            <!-- Desktop Table Rows -->
-                            <div class="divide-y divide-gray-100">
-                                <div v-for="addOn in packageAddOns" :key="addOn.id" 
-                                     class="grid grid-cols-12 gap-2 px-2 py-1.5 transition-colors"
-                                     :class="selectedAddOns.includes(addOn.id) ? 'bg-indigo-50 hover:bg-indigo-100' : 'hover:bg-gray-50'">
-                                    <!-- Checkbox and Name with Info -->
-                                    <div class="col-span-12 sm:col-span-3 flex items-center gap-1.5 min-w-0 mb-2 sm:mb-0">
-                                        <!-- <input type="checkbox" 
-                                               :value="addOn.id" 
-                                               v-model="selectedAddOns"
-                                               class="w-3.5 h-3.5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer flex-shrink-0"> -->
-                                        <div class="min-w-0 flex-1 flex items-center gap-1">
-                                            <h4 class="text-xs font-medium text-gray-900">{{ addOn.name }}</h4>
-                                            <div class="relative group flex-shrink-0 addon-info-button">
-                                                <button 
-                                                    @click.stop="toggleAddOnDescription(addOn.id)"
-                                                    @mouseenter="showAddOnTooltip = addOn.id"
-                                                    @mouseleave="showAddOnTooltip = null"
-                                                    class="text-gray-400 hover:text-indigo-600 focus:outline-none transition-colors relative z-10"
-                                                    type="button">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                </button>
-                                                
-                                                <!-- Mobile Modal (teleported to body) -->
-                                                <Teleport to="body">
-                                                    <div v-if="openAddOnDescriptions[addOn.id]" 
-                                                         class="sm:hidden fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4"
-                                                         @click.stop="toggleAddOnDescription(addOn.id)">
-                                                        <div class="bg-gray-900 text-white rounded-lg shadow-2xl p-4 max-w-sm w-full"
-                                                             @click.stop>
-                                                            <div class="font-medium text-base mb-2">{{ addOn.name }}</div>
-                                                            <div class="text-gray-300 text-sm whitespace-normal">{{ addOn.description || 'No description available' }}</div>
-                                                            <div class="mt-4 pt-3 border-t border-gray-700 flex justify-end">
-                                                                <button @click.stop="toggleAddOnDescription(addOn.id)" 
-                                                                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium transition-colors">
-                                                                    Close
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </Teleport>
-                                                
-                                                <!-- Desktop Tooltip -->
-                                                <div v-if="showAddOnTooltip === addOn.id || openAddOnDescriptions[addOn.id]" 
-                                                     class="hidden sm:block absolute left-0 top-full mt-1 z-[9999] w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl pointer-events-auto"
-                                                     @click.stop
-                                                     @mouseenter="handleTooltipMouseEnter(addOn.id)"
-                                                     @mouseleave="handleTooltipMouseLeave(addOn.id)">
-                                                    <div class="font-medium mb-1">{{ addOn.name }}</div>
-                                                    <div class="text-gray-300 whitespace-normal">{{ addOn.description || 'No description available' }}</div>
-                                                    <div v-if="openAddOnDescriptions[addOn.id]" class="mt-2 pt-2 border-t border-gray-700">
-                                                        <button @click.stop="toggleAddOnDescription(addOn.id)" class="text-xs text-indigo-300 hover:text-indigo-200">
-                                                            Close
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Mobile Layout: Stacked Cards -->
-                                    <div class="col-span-12 sm:hidden space-y-2 pb-2">
-                                        <!-- Adult -->
-                                        <div v-if="addOn.adult_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-xs font-medium text-gray-700">Adult:</span>
-                                                <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.adult_price) }}</span>
-                                            </div>
-                                            <input type="number" 
-                                                   :min="0" 
-                                                   :max="totalGuests"
-                                                   v-model="getAddOnPax(addOn.id).adults"
-                                                   @input="updateAddOnSelection(addOn.id)"
-                                                   placeholder="0"
-                                                   class="w-16 px-2 py-1 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                                        </div>
-                                        <!-- Child -->
-                                        <div v-if="!packageData?.no_children_and_infant && addOn.child_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-xs font-medium text-gray-700">Child:</span>
-                                                <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.child_price) }}</span>
-                                            </div>
-                                            <input type="number" 
-                                                   :min="0" 
-                                                   :max="totalGuests"
-                                                   v-model="getAddOnPax(addOn.id).children"
-                                                   @input="updateAddOnSelection(addOn.id)"
-                                                   placeholder="0"
-                                                   class="w-16 px-2 py-1 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                                        </div>
-                                        <!-- Infant -->
-                                        <div v-if="!packageData?.no_children_and_infant && addOn.infant_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-xs font-medium text-gray-700">Infant:</span>
-                                                <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.infant_price) }}</span>
-                                            </div>
-                                            <input type="number" 
-                                                   :min="0" 
-                                                   :max="totalGuests"
-                                                   v-model="getAddOnPax(addOn.id).infants"
-                                                   @input="updateAddOnSelection(addOn.id)"
-                                                   placeholder="0"
-                                                   class="w-16 px-2 py-1 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                                        </div>
-                                        <!-- Subtotal Mobile -->
-                                        <div class="flex items-center justify-between pt-2 border-t border-gray-200">
-                                            <span class="text-xs font-medium text-gray-600">Subtotal:</span>
-                                            <span class="text-xs font-semibold text-indigo-600">
-                                                MYR {{ formatNumber(calculateAddOnSubtotal(addOn)) }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Desktop Layout: Table Columns -->
-                                    <!-- Adult Price and Input -->
-                                    <div class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
-                                        <div v-if="addOn.adult_price" class="text-xs font-medium text-gray-900">
-                                            MYR {{ formatNumber(addOn.adult_price) }}
-                                        </div>
-                                        <div v-else class="text-xs text-gray-400">-</div>
-                                        <div v-if="addOn.adult_price" class="w-full">
-                                            <input type="number" 
-                                                   :min="0" 
-                                                   :max="totalGuests"
-                                                   v-model="getAddOnPax(addOn.id).adults"
-                                                   @input="updateAddOnSelection(addOn.id)"
-                                                   placeholder="0"
-                                                   class="w-full px-1 py-0.5 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Child Price and Input -->
-                                    <div v-if="!packageData?.no_children_and_infant" class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
-                                        <div v-if="addOn.child_price" class="text-xs font-medium text-gray-900">
-                                            MYR {{ formatNumber(addOn.child_price) }}
-                                        </div>
-                                        <div v-else class="text-xs text-gray-400">-</div>
-                                        <div v-if="addOn.child_price" class="w-full">
-                                            <input type="number" 
-                                                   :min="0" 
-                                                   :max="totalGuests"
-                                                   v-model="getAddOnPax(addOn.id).children"
-                                                   @input="updateAddOnSelection(addOn.id)"
-                                                   placeholder="0"
-                                                   class="w-full px-1 py-0.5 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Infant Price and Input -->
-                                    <div v-if="!packageData?.no_children_and_infant" class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
-                                        <div v-if="addOn.infant_price" class="text-xs font-medium text-gray-900">
-                                            MYR {{ formatNumber(addOn.infant_price) }}
-                                        </div>
-                                        <div v-else class="text-xs text-gray-400">-</div>
-                                        <div v-if="addOn.infant_price" class="w-full">
-                                            <input type="number" 
-                                                   :min="0" 
-                                                   :max="totalGuests"
-                                                   v-model="getAddOnPax(addOn.id).infants"
-                                                   @input="updateAddOnSelection(addOn.id)"
-                                                   placeholder="0"
-                                                   class="w-full px-1 py-0.5 text-xs border border-gray-300 rounded text-center focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Subtotal Desktop -->
-                                    <div :class="packageData?.no_children_and_infant ? 'hidden sm:flex sm:col-span-6' : 'hidden sm:flex sm:col-span-2'" class="items-center justify-end">
-                                        <span class="text-xs font-semibold text-indigo-600">
-                                            MYR {{ formatNumber(calculateAddOnSubtotal(addOn)) }}
-                                        </span>
-                                    </div>
-                                    <!-- Empty spacer -->
-                                    <div class="hidden sm:block sm:col-span-1"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- No Add-ons Available -->
-                        <div v-else class="text-center py-6">
-                            <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                            </svg>
-                            <h3 class="mt-1.5 text-xs font-medium text-gray-900">No Add-ons Available</h3>
-                            <p class="mt-0.5 text-xs text-gray-500">This package doesn't have any add-ons available.</p>
-                        </div>
-
-                        <!-- Navigation Buttons -->
-                        <div class="flex justify-between mt-4">
-                            <button
-                                @click="goToPreviousStep"
-                                class="px-8 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                            >
-                                Back
-                            </button>
-                            <button
-                                @click="handleStep2Submit"
-                                class="px-8 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                                Next
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Price Summary -->
-                <div v-if="currentStep === 3">
+                <!-- Step 2: Price Summary -->
+                <div v-if="currentStep === 2">
                     <div class="bg-gray-50 rounded-lg p-4">
                         <!-- Booking Summary -->
                         <div v-if="bookingSummary && priceBreakdown?.summary" class="mb-6 border-b pb-4">
@@ -1310,7 +1248,7 @@
                                 Back
                             </button>
                             <button
-                                @click="handleStep3Submit"
+                                @click="handleStep2Submit"
                                 class="px-8 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                                 Next
@@ -1319,8 +1257,8 @@
                     </div>
                 </div>
 
-                <!-- Step 4: Booking Details -->
-                <div v-if="currentStep === 4">
+                <!-- Step 3: Booking Details -->
+                <div v-if="currentStep === 3">
                     <div v-if="!bookingSuccess" class="space-y-6">
                         <form @submit.prevent="submitBooking" class="space-y-6">
                             <!-- Booking Name -->
@@ -1730,6 +1668,14 @@
                     Terms and Conditions
                 </h2>
                 <div class="text-gray-600 text-sm" v-html="formatTermsAndConditions(packageData.terms_and_conditions)"></div>
+            </div>
+
+            <!-- Extra Remark -->
+            <div v-if="packageData.extra_remark && packageData.extra_remark !== '<p><br></p>'" class="bg-white rounded-lg shadow-lg p-4 sm:p-6 mt-6 mb-8 sm:mb-0">
+                <h2 class="text-lg font-semibold text-gray-900 mb-2">
+                    Extra Remark
+                </h2>
+                <div class="text-gray-600 text-sm prose prose-sm max-w-none" v-html="packageData.extra_remark"></div>
             </div>
         </div>
 
@@ -2244,8 +2190,6 @@ const roomTypes = ref([]);
 const selectedRoomType = ref(null);
 const isLoading = ref(true);
 const packageAddOns = ref([]);
-const selectedAddOns = ref([]); // Array of add-on IDs that are selected (checkbox state)
-const addOnPaxData = ref([]); // Array of objects with pax data for each add-on
 const showAddOnTooltip = ref(null); // Track which add-on tooltip is shown on hover
 const openAddOnDescriptions = ref({}); // Track which add-on descriptions are open on click
 const bookingSummary = ref(null);
@@ -2725,18 +2669,6 @@ const previousLightboxRoomTypeImage = () => {
     }
 };
 
-function updateAddOnSelection(addOnId) {
-    console.log('updateAddOnSelection', addOnId);
-  const pax = getAddOnPax(addOnId);
-  const total = (pax.adults || 0) + (pax.children || 0) + (pax.infants || 0);
-
-  if (total > 0 && !selectedAddOns.value.includes(addOnId)) {
-    selectedAddOns.value.push(addOnId);
-  } else if (total === 0 && selectedAddOns.value.includes(addOnId)) {
-    selectedAddOns.value.splice(selectedAddOns.value.indexOf(addOnId), 1);
-  }
-}
-
 // Keyboard navigation for lightboxes
 const handleKeyPress = (event) => {
     if (showPackageImageLightbox.value) {
@@ -2879,7 +2811,8 @@ const form = useForm({
         room_type_id: null,
         adults: null,
         children: null,
-        infants: null
+        infants: null,
+        add_ons: []  // [{id, adults, children, infants}, ...]
     }]
 });
 
@@ -2903,7 +2836,8 @@ const addRoom = () => {
             room_type_id: null,
             adults: null,
             children: null,
-            infants: null
+            infants: null,
+            add_ons: []
         });
 
         // Smooth scroll to the newly added room with 80px offset for fixed header
@@ -3066,53 +3000,48 @@ watch(() => form.rooms, (newRooms) => {
     });
 }, { deep: true });
 
-// Watch for changes in selectedAddOns to clear pax data when add-on is deselected
-watch(selectedAddOns, (newSelected, oldSelected) => {
-    // Find add-ons that were deselected
-    const deselected = oldSelected.filter(id => !newSelected.includes(id));
-    
-    // Clear pax data for deselected add-ons
-    deselected.forEach(addOnId => {
-        const index = addOnPaxData.value.findIndex(item => item.id === addOnId);
-        if (index !== -1) {
-            addOnPaxData.value.splice(index, 1);
-        }
-    });
-}, { deep: true });
+// Add-ons methods - per room
+const getRoomAddOnPax = (roomIndex, addOnId) => {
+    const room = form.rooms[roomIndex];
+    if (!room) return { id: addOnId, adults: 0, children: 0, infants: 0 };
 
-// Add-ons methods
-const getAddOnPax = (addOnId) => {
-    let addOnPax = addOnPaxData.value.find(item => item.id === addOnId);
+    let addOnPax = room.add_ons.find(item => item.id === addOnId);
     if (!addOnPax) {
         addOnPax = { id: addOnId, adults: 0, children: 0, infants: 0 };
-        addOnPaxData.value.push(addOnPax);
+        room.add_ons.push(addOnPax);
     }
     return addOnPax;
 };
 
 const getSelectedAddOnsForAPI = () => {
-    return selectedAddOns.value
-        .filter(addOnId => {
-            // Only include add-ons that are actually selected (checkbox checked)
-            // and have at least one guest selected
-            const pax = getAddOnPax(addOnId);
-            return pax.adults > 0 || pax.children > 0 || pax.infants > 0;
-        })
-        .map(addOnId => ({
-            id: addOnId,
-            adults: getAddOnPax(addOnId).adults,
-            children: getAddOnPax(addOnId).children,
-            infants: getAddOnPax(addOnId).infants
-        }));
+    // Flatten all room add-ons with room_number
+    return form.rooms.flatMap((room, roomIndex) =>
+        room.add_ons
+            .filter(addOn => addOn.adults > 0 || addOn.children > 0 || addOn.infants > 0)
+            .map(addOn => ({
+                id: addOn.id,
+                room_number: roomIndex + 1,
+                adults: addOn.adults,
+                children: addOn.children,
+                infants: addOn.infants
+            }))
+    );
 };
 
-// Calculate individual add-on subtotal
-const calculateAddOnSubtotal = (addOn) => {
-    const pax = getAddOnPax(addOn.id);
+// Calculate individual add-on subtotal for a specific room
+const calculateRoomAddOnSubtotal = (roomIndex, addOn) => {
+    const pax = getRoomAddOnPax(roomIndex, addOn.id);
     const adultTotal = (pax.adults || 0) * (addOn.adult_price || 0);
     const childTotal = (pax.children || 0) * (addOn.child_price || 0);
     const infantTotal = (pax.infants || 0) * (addOn.infant_price || 0);
     return adultTotal + childTotal + infantTotal;
+};
+
+// Calculate total add-ons subtotal for a room
+const calculateRoomAddOnsTotal = (roomIndex) => {
+    return packageAddOns.value.reduce((total, addOn) => {
+        return total + calculateRoomAddOnSubtotal(roomIndex, addOn);
+    }, 0);
 };
 
 // Toggle add-on description on click
@@ -3242,40 +3171,13 @@ const hasAddOns = computed(() => {
     return packageAddOns.value && packageAddOns.value.length > 0;
 });
 
-// Helper function to get the displayed step number (adjusting for hidden add-ons step)
-const getDisplayStepNumber = (step) => {
-    if (!hasAddOns.value) {
-        // If no add-ons, step 2 is hidden, so adjust:
-        // Step 1 -> 1, Step 2 -> hidden, Step 3 -> 2, Step 4 -> 3
-        if (step === 1) return 1;
-        if (step === 2) return null; // Hidden
-        if (step === 3) return 2;
-        if (step === 4) return 3;
-    }
-    return step;
-};
-
-// Helper function to check if a step should be active based on current step
-const isStepActive = (step) => {
-    if (!hasAddOns.value) {
-        // If no add-ons, step 2 is skipped
-        if (step === 2) return false;
-        if (step === 3) return currentStep.value >= 2; // Step 3 becomes step 2 visually
-        if (step === 4) return currentStep.value >= 3; // Step 4 becomes step 3 visually
-    }
-    return currentStep.value >= step;
-};
-
 // Helper function to go back to the previous step
 const goToPreviousStep = () => {
-    if (currentStep.value === 4) {
-        // From step 4 (Booking Details), always go back to step 3 (Price Summary)
-        currentStep.value = 3;
-    } else if (currentStep.value === 3) {
-        // From step 3 (Price Summary), go back to step 2 (Add-ons) if has add-ons, otherwise step 1
-        currentStep.value = hasAddOns.value ? 2 : 1;
+    if (currentStep.value === 3) {
+        // From step 3 (Booking Details), go back to step 2 (Price Summary)
+        currentStep.value = 2;
     } else if (currentStep.value === 2) {
-        // From step 2 (Add-ons), always go back to step 1
+        // From step 2 (Price Summary), go back to step 1 (Room Selection)
         currentStep.value = 1;
     }
     // Scroll to top of booking form
@@ -3311,29 +3213,18 @@ const handleStep1Submit = async () => {
     if (!validateForm()) return;
     await calculatePrice();
     if (calculatedPrice.value !== null) {
-        // Skip step 2 (add-ons) if there are no add-ons
-        const nextStep = hasAddOns.value ? 2 : 3;
-        currentStep.value = nextStep;
-        maxStepReached.value = Math.max(maxStepReached.value, nextStep);
+        // Go directly to Step 2 (Price Summary) - add-ons are now in Step 1
+        currentStep.value = 2;
+        maxStepReached.value = Math.max(maxStepReached.value, 2);
         // Scroll to top of booking form
         setTimeout(() => scrollToBookingForm(), 100);
     }
 };
 
-const handleStep2Submit = async () => {
-    // Calculate price with current add-ons selection
-    await calculatePrice();
-    if (calculatedPrice.value !== null) {
-        currentStep.value = 3;
-        maxStepReached.value = Math.max(maxStepReached.value, 3);
-        // Scroll to top of booking form
-        setTimeout(() => scrollToBookingForm(), 100);
-    }
-};
-
-const handleStep3Submit = () => {
-    currentStep.value = 4;
-    maxStepReached.value = Math.max(maxStepReached.value, 4);
+const handleStep2Submit = () => {
+    // From Price Summary, go to Booking Details
+    currentStep.value = 3;
+    maxStepReached.value = Math.max(maxStepReached.value, 3);
     // Scroll to top of booking form
     setTimeout(() => scrollToBookingForm(), 100);
 };

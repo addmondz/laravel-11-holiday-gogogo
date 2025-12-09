@@ -10,6 +10,7 @@ class BookingAddOn extends Model
     protected $fillable = [
         'booking_id',
         'package_add_on_id',
+        'room_number',
         'adults',
         'children',
         'infants'

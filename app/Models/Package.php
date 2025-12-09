@@ -23,6 +23,7 @@ class Package extends Model
         'package_min_days',
         'package_max_days',
         'terms_and_conditions',
+        'extra_remark',
         'location',
         'wordpress_link',
         'package_start_date',

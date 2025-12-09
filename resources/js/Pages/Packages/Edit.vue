@@ -243,6 +243,21 @@
                                 </div>
 
                                 <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Extra Remark</label>
+                                    <div class="quill-container">
+                                        <QuillEditor
+                                            v-model:content="form.extra_remark"
+                                            contentType="html"
+                                            theme="snow"
+                                            toolbar="essential"
+                                        />
+                                    </div>
+                                    <div v-if="form.errors.extra_remark" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.extra_remark }}
+                                    </div>
+                                </div>
+
+                                <div>
                                     <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
                                     <input
                                         type="text"
@@ -377,6 +392,8 @@ import { Head } from '@inertiajs/vue3';
 import BreadcrumbComponent from '@/Components/BreadcrumbComponent.vue';
 import { computed, ref, onUnmounted } from 'vue';
 import axios from 'axios';
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 const props = defineProps({
     package: Object
@@ -398,6 +415,7 @@ const form = useForm({
     package_min_days: props.package.package_max_days,
     package_max_days: props.package.package_max_days,
     terms_and_conditions: props.package.terms_and_conditions,
+    extra_remark: props.package.extra_remark || '',
     location: props.package.location,
     wordpress_link: props.package.wordpress_link || '',
     package_start_date: props.package.package_start_date,
@@ -524,6 +542,7 @@ onUnmounted(() => {
 const submit = () => {
     // Create FormData for file upload
     const formData = new FormData();
+
     
     // Add all form fields to FormData
     Object.keys(form).forEach(key => {
@@ -601,3 +620,24 @@ const submit = () => {
 
 };
 </script>
+
+<style scoped>
+.quill-container {
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+}
+
+.quill-container :deep(.ql-toolbar) {
+    border: none;
+    border-bottom: 1px solid #d1d5db;
+}
+
+.quill-container :deep(.ql-container) {
+    border: none;
+    min-height: 150px;
+}
+
+.quill-container :deep(.ql-editor) {
+    min-height: 150px;
+}
+</style>

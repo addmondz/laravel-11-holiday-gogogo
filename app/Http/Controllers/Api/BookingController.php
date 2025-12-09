@@ -31,6 +31,7 @@ class BookingController extends Controller
                 'special_remarks' => 'nullable|string',
                 'add_ons' => 'nullable|array',
                 'add_ons.*.id' => 'required|exists:package_add_ons,id',
+                'add_ons.*.room_number' => 'nullable|integer|min:1',
                 'add_ons.*.adults' => 'required|integer|min:0',
                 'add_ons.*.children' => 'required|integer|min:0',
                 'add_ons.*.infants' => 'required|integer|min:0',
@@ -89,6 +90,7 @@ class BookingController extends Controller
                     foreach ($request->add_ons as $addOn) {
                         $booking->addOns()->create([
                             'package_add_on_id' => $addOn['id'],
+                            'room_number' => $addOn['room_number'] ?? null,
                             'adults' => $addOn['adults'] ?? 0,
                             'children' => $addOn['children'] ?? 0,
                             'infants' => $addOn['infants'] ?? 0
