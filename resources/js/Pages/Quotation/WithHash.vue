@@ -11,7 +11,7 @@
                     <div class="flex items-center">
                         <div @click="openWhatsApp" class="bg-sky-600 text-white px-6 py-2 hover:bg-sky-700 flex items-center gap-4 transition-all duration-300 cursor-pointer" style="border-radius: 50px 50px 50px 50px; height: 40px;">
                             <WhatsAppOutlined />
-                            Enquiry 
+                            Enquiry
                         </div>
                     </div>
                 </div>
