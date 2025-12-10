@@ -372,11 +372,9 @@
                                                                 </svg>
                                                             </div>
 
-                                                            <!-- Room Type Image - Enlarge icon opens lightbox -->
-                                                            <div 
+                                                            <!-- Room Type Image - Enlarge icon opens lightbox (desktop only) -->
+                                                            <div
                                                                 class="aspect-w-16 aspect-h-9 rounded-t-lg overflow-hidden bg-gray-100 group relative"
-                                                                @touchstart="(e) => { roomTypeTapStartTime = Date.now(); roomTypeTapStartX = e.touches[0].clientX; roomTypeTapStartY = e.touches[0].clientY; }"
-                                                                @touchend="handleRoomTypeImageTap(roomType, $event)"
                                                             >
                                                                 <Swiper
                                                                     :modules="[Navigation, Pagination]"
@@ -388,9 +386,8 @@
                                                                     :allow-touch-move="true"
                                                                     class="room-image-swiper"
                                                                 >
-                                                                    <SwiperSlide v-for="(image, imgIndex) in roomType.images" 
-                                                                                 :key="imgIndex"
-                                                                                 @touchend="handleRoomTypeImageTap(roomType, $event)">
+                                                                    <SwiperSlide v-for="(image, imgIndex) in roomType.images"
+                                                                                 :key="imgIndex">
                                                                         <img
                                                                             :src="getImageUrl(image)"
                                                                             :alt="`${roomType.name} - Image ${imgIndex + 1}`"
