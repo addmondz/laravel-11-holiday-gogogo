@@ -21,11 +21,13 @@ class RoomType extends Model
         'max_adults',
         'max_children',
         'max_infants',
-        'images'
+        'images',
+        'disabled_pax_combinations',
     ];
 
     protected $casts = [
-        'images' => 'array'
+        'images' => 'array',
+        'disabled_pax_combinations' => 'array'
     ];
 
     public function configurations(): HasMany

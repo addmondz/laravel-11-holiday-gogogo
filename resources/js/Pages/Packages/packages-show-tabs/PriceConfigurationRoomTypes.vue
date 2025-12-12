@@ -190,7 +190,7 @@
                   <tr>
                     <th
                       class="px-4 py-2 text-left"
-                      :colspan="orderedSlotKeys(room.base).length"
+                      :colspan="getLargestIndexNumber(room.base)"
                     >
                       Base Charge
                     </th>
@@ -905,6 +905,21 @@ const closeDuplicateModal = () => {
     includeSurcharges: true
   };
   targetLength.value = 1;
+};
+
+const getLargestIndexNumber = (data) => {
+  let max = 0;
+
+  Object.values(data ?? {}).forEach(group => {
+    Object.keys(group ?? {}).forEach(key => {
+      const num = parseInt(key.slice(1), 10);
+      if (!isNaN(num)) {
+        max = Math.max(max, num);
+      }
+    });
+  });
+
+  return max + 1;
 };
 
 const loadSourceConfigurations = async () => {

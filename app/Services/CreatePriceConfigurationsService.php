@@ -406,6 +406,10 @@ class CreatePriceConfigurationsService
                     $exceedsLimit = true;
                 }
 
+                if (in_array($combo, $roomType->disabled_pax_combinations)) {
+                    $exceedsLimit = true;
+                }
+
                 if ($exceedsLimit) {
                     $removedFromBase++;
                     $combinationsRemoved++;
@@ -446,6 +450,10 @@ class CreatePriceConfigurationsService
                     $exceedsLimit = true;
                 }
                 if ($maxInfants !== null && $counts['infants'] > $maxInfants) {
+                    $exceedsLimit = true;
+                }
+
+                if (in_array($combo, $roomType->disabled_pax_combinations)) {
                     $exceedsLimit = true;
                 }
 

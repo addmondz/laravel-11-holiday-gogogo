@@ -105,135 +105,146 @@
             showAddRoomTypeModal = false;
             roomTypeForm.reset();
             addRoomTypeErrors.value = '';
+            selectedCombinationsToDisableForAdd.value = [];
         }">
-            <div class="p-6 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 max-h-[90vh]">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Add Room Type</h2>
                 <div v-if="addRoomTypeErrors" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
                     {{ addRoomTypeErrors }}
                 </div>
                 <form @submit.prevent="submitRoomType">
-                    <div class="space-y-4">
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                                type="text"
-                                id="name"
-                                v-model="roomTypeForm.name"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label for="max_occupancy" class="block text-sm font-medium text-gray-700">Max Occupancy</label>
-                            <input
-                                type="number"
-                                id="max_occupancy"
-                                v-model="roomTypeForm.max_occupancy"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                min="1"
-                                required
-                            />
-                        </div>
-
-                        <div class="flex justify-between">
+                    <RoomPaxCombinationComponent 
+                        :max-adults="roomTypeForm.max_adults" 
+                        :max-children="roomTypeForm.max_children" 
+                        :max-infants="roomTypeForm.max_infants"  
+                        :max-pax="roomTypeForm.max_occupancy" 
+                        :disabled-pax-combinations="roomTypeForm.disabled_pax_combinations" 
+                        v-slot:tab1 tab1Label="Room Type Details" 
+                        @update:selected-combinations="updateDisabledPaxCombinationsForAdd($event)"
+                    >
+                        <div class="space-y-4">
                             <div>
-                                <label for="max_adults" class="block text-sm font-medium text-gray-700">Max Adults</label>
+                                <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
                                 <input
-                                    type="number"
-                                    id="max_adults"
-                                    v-model="roomTypeForm.max_adults"
+                                    type="text"
+                                    id="name"
+                                    v-model="roomTypeForm.name"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    min="1"
+                                    required
                                 />
                             </div>
+
                             <div>
-                                <label for="max_children" class="block text-sm font-medium text-gray-700">Max Children</label>
+                                <label for="max_occupancy" class="block text-sm font-medium text-gray-700">Max Occupancy</label>
                                 <input
                                     type="number"
-                                    id="max_children"
-                                    v-model="roomTypeForm.max_children"
+                                    id="max_occupancy"
+                                    v-model="roomTypeForm.max_occupancy"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     min="1"
+                                    required
                                 />
                             </div>
-                            <div>
-                                <label for="max_infants" class="block text-sm font-medium text-gray-700">Max Infants</label>
-                                <input
-                                    type="number"
-                                    id="max_infants"
-                                    v-model="roomTypeForm.max_infants"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    min="1"
-                                />
-                            </div>
-                        </div>
 
-                        <div>
-                            <label for="bed_desc" class="block text-sm font-medium text-gray-700">Bed Desc</label>
-                            <textarea
-                                id="bed_desc"
-                                v-model="roomTypeForm.bed_desc"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                rows="2"
-                            ></textarea>
-                        </div>
-
-                        <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea
-                                id="description"
-                                v-model="roomTypeForm.description"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                rows="3"
-                            ></textarea>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Images</label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                <div class="space-y-1 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <div class="text-sm text-gray-600">
-                                        <label for="images" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                            <span>Upload images</span>
-                                            <input
-                                                id="images"
-                                                type="file"
-                                                multiple
-                                                accept="image/*"
-                                                class="sr-only"
-                                                @change="handleImageUpload($event, 'roomTypeForm')"
-                                            />
-                                        </label>
-                                        <p class="pl-1">or drag and drop</p>
-                                    </div>
-                                    <p class="text-xs text-gray-500">PNG, JPG, GIF up to 2MB each</p>
-                                </div>
-                            </div>
-                            <!-- Preview uploaded images -->
-                            <div v-if="roomTypeForm.images.length > 0" class="mt-4 grid grid-cols-3 gap-4">
-                                <div v-for="(image, index) in roomTypeForm.images" :key="index" class="relative">
-                                    <img 
-                                        :src="getImagePreviewUrl(image)" 
-                                        class="h-24 w-full object-cover rounded-lg" 
-                                        alt="Room type image"
+                            <div class="flex justify-between">
+                                <div>
+                                    <label for="max_adults" class="block text-sm font-medium text-gray-700">Max Adults</label>
+                                    <input
+                                        type="number"
+                                        id="max_adults"
+                                        v-model="roomTypeForm.max_adults"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        min="1"
                                     />
-                                    <button
-                                        type="button"
-                                        @click="removeImage(index, 'roomTypeForm')"
-                                        class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                                    >
-                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </div>
+                                <div>
+                                    <label for="max_children" class="block text-sm font-medium text-gray-700">Max Children</label>
+                                    <input
+                                        type="number"
+                                        id="max_children"
+                                        v-model="roomTypeForm.max_children"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        min="1"
+                                    />
+                                </div>
+                                <div>
+                                    <label for="max_infants" class="block text-sm font-medium text-gray-700">Max Infants</label>
+                                    <input
+                                        type="number"
+                                        id="max_infants"
+                                        v-model="roomTypeForm.max_infants"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        min="1"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="bed_desc" class="block text-sm font-medium text-gray-700">Bed Desc</label>
+                                <textarea
+                                    id="bed_desc"
+                                    v-model="roomTypeForm.bed_desc"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    rows="2"
+                                ></textarea>
+                            </div>
+
+                            <div>
+                                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                                <textarea
+                                    id="description"
+                                    v-model="roomTypeForm.description"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    rows="3"
+                                ></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Images</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
-                                    </button>
+                                        <div class="text-sm text-gray-600">
+                                            <label for="images" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                <span>Upload images</span>
+                                                <input
+                                                    id="images"
+                                                    type="file"
+                                                    multiple
+                                                    accept="image/*"
+                                                    class="sr-only"
+                                                    @change="handleImageUpload($event, 'roomTypeForm')"
+                                                />
+                                            </label>
+                                            <p class="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">PNG, JPG, GIF up to 2MB each</p>
+                                    </div>
+                                </div>
+                                <!-- Preview uploaded images -->
+                                <div v-if="roomTypeForm.images.length > 0" class="mt-4 grid grid-cols-3 gap-4">
+                                    <div v-for="(image, index) in roomTypeForm.images" :key="index" class="relative">
+                                        <img 
+                                            :src="getImagePreviewUrl(image)" 
+                                            class="h-24 w-full object-cover rounded-lg" 
+                                            alt="Room type image"
+                                        />
+                                        <button
+                                            type="button"
+                                            @click="removeImage(index, 'roomTypeForm')"
+                                            class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                        >
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </RoomPaxCombinationComponent>
 
                     <div class="mt-6 flex justify-end space-x-3">
                         <button
@@ -242,6 +253,7 @@
                                 showAddRoomTypeModal = false;
                                 roomTypeForm.reset();
                                 addRoomTypeErrors.value = '';
+                                selectedCombinationsToDisableForAdd.value = [];
                             }"
                             class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs"
                         >
@@ -412,134 +424,144 @@
 
         <!-- Edit Room Type Modal -->
         <Modal :show="showEditRoomTypeModal" @close="closeEditRoomTypeModal">
-            <div class="p-6 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 max-h-[90vh]">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">Edit Room Type</h2>
                 <div v-if="roomTypeWarning" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
                     {{ roomTypeWarning }}
                 </div>
                 <form @submit.prevent="updateRoomType">
-                    <div class="space-y-4">
-                        <div>
-                            <label for="edit_name" class="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                                type="text"
-                                id="edit_name"
-                                v-model="editRoomTypeForm.name"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label for="edit_max_occupancy" class="block text-sm font-medium text-gray-700">Max Occupancy</label>
-                            <input
-                                type="number"
-                                id="edit_max_occupancy"
-                                v-model="editRoomTypeForm.max_occupancy"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                min="1"
-                                required
-                            />
-                        </div>
-
-                        <div class="flex justify-between">
+                    <RoomPaxCombinationComponent 
+                        :max-adults="editRoomTypeForm.max_adults" 
+                        :max-children="editRoomTypeForm.max_children" 
+                        :max-infants="editRoomTypeForm.max_infants"  
+                        :max-pax="editRoomTypeForm.max_occupancy" 
+                        :disabled-pax-combinations="editRoomTypeForm.disabled_pax_combinations" 
+                        v-slot:tab1 tab1Label="Room Type Details" 
+                        @update:selected-combinations="updateDisabledPaxCombinations($event)"
+                    >
+                        <div class="space-y-4">
                             <div>
-                                <label for="max_adults" class="block text-sm font-medium text-gray-700">Max Adults</label>
+                                <label for="edit_name" class="block text-sm font-medium text-gray-700">Name</label>
                                 <input
-                                    type="number"
-                                    id="max_adults"
-                                    v-model="editRoomTypeForm.max_adults"
+                                    type="text"
+                                    id="edit_name"
+                                    v-model="editRoomTypeForm.name"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    min="1"
+                                    required
                                 />
                             </div>
+
                             <div>
-                                <label for="max_children" class="block text-sm font-medium text-gray-700">Max Children</label>
+                                <label for="edit_max_occupancy" class="block text-sm font-medium text-gray-700">Max Occupancy</label>
                                 <input
                                     type="number"
-                                    id="max_children"
-                                    v-model="editRoomTypeForm.max_children"
+                                    id="edit_max_occupancy"
+                                    v-model="editRoomTypeForm.max_occupancy"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     min="1"
+                                    required
                                 />
                             </div>
-                            <div>
-                                <label for="max_infants" class="block text-sm font-medium text-gray-700">Max Infants</label>
-                                <input
-                                    type="number"
-                                    id="max_infants"
-                                    v-model="editRoomTypeForm.max_infants"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    min="1"
-                                />
-                            </div>
-                        </div>
 
-                        <div>
-                            <label for="edit_bed_desc" class="block text-sm font-medium text-gray-700">Bed Desc</label>
-                            <textarea
-                                id="edit_bed_desc"
-                                v-model="editRoomTypeForm.bed_desc"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                rows="2"
-                            ></textarea>
-                        </div>
-
-                        <div>
-                            <label for="edit_description" class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea
-                                id="edit_description"
-                                v-model="editRoomTypeForm.description"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                rows="3"
-                            ></textarea>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Images</label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                <div class="space-y-1 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <div class="text-sm text-gray-600">
-                                        <label for="edit_images" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                            <span>Upload images</span>
-                                            <input
-                                                id="edit_images"
-                                                type="file"
-                                                multiple
-                                                accept="image/*"
-                                                class="sr-only"
-                                                @change="handleImageUpload($event, 'editRoomTypeForm')"
-                                            />
-                                        </label>
-                                        <p class="pl-1">or drag and drop</p>
-                                    </div>
-                                    <p class="text-xs text-gray-500">PNG, JPG, GIF up to 2MB each</p>
-                                </div>
-                            </div>
-                            <!-- Preview uploaded images -->
-                            <div v-if="editRoomTypeForm.images.length > 0" class="mt-4 grid grid-cols-3 gap-4">
-                                <div v-for="(image, index) in editRoomTypeForm.images" :key="index" class="relative">
-                                    <img 
-                                        :src="getImagePreviewUrl(image)" 
-                                        class="h-24 w-full object-cover rounded-lg" 
-                                        alt="Room type image"
+                            <div class="flex justify-between">
+                                <div>
+                                    <label for="max_adults" class="block text-sm font-medium text-gray-700">Max Adults</label>
+                                    <input
+                                        type="number"
+                                        id="max_adults"
+                                        v-model="editRoomTypeForm.max_adults"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        min="1"
                                     />
-                                    <button
-                                        type="button"
-                                        @click="removeImage(index, 'editRoomTypeForm')"
-                                        class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                                    >
-                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </div>
+                                <div>
+                                    <label for="max_children" class="block text-sm font-medium text-gray-700">Max Children</label>
+                                    <input
+                                        type="number"
+                                        id="max_children"
+                                        v-model="editRoomTypeForm.max_children"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        min="1"
+                                    />
+                                </div>
+                                <div>
+                                    <label for="max_infants" class="block text-sm font-medium text-gray-700">Max Infants</label>
+                                    <input
+                                        type="number"
+                                        id="max_infants"
+                                        v-model="editRoomTypeForm.max_infants"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        min="1"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="edit_bed_desc" class="block text-sm font-medium text-gray-700">Bed Desc</label>
+                                <textarea
+                                    id="edit_bed_desc"
+                                    v-model="editRoomTypeForm.bed_desc"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    rows="2"
+                                ></textarea>
+                            </div>
+
+                            <div>
+                                <label for="edit_description" class="block text-sm font-medium text-gray-700">Description</label>
+                                <textarea
+                                    id="edit_description"
+                                    v-model="editRoomTypeForm.description"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    rows="3"
+                                ></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Images</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
-                                    </button>
+                                        <div class="text-sm text-gray-600">
+                                            <label for="edit_images" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                <span>Upload images</span>
+                                                <input
+                                                    id="edit_images"
+                                                    type="file"
+                                                    multiple
+                                                    accept="image/*"
+                                                    class="sr-only"
+                                                    @change="handleImageUpload($event, 'editRoomTypeForm')"
+                                                />
+                                            </label>
+                                            <p class="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">PNG, JPG, GIF up to 2MB each</p>
+                                    </div>
+                                </div>
+                                <!-- Preview uploaded images -->
+                                <div v-if="editRoomTypeForm.images.length > 0" class="mt-4 grid grid-cols-3 gap-4">
+                                    <div v-for="(image, index) in editRoomTypeForm.images" :key="index" class="relative">
+                                        <img 
+                                            :src="getImagePreviewUrl(image)" 
+                                            class="h-24 w-full object-cover rounded-lg" 
+                                            alt="Room type image"
+                                        />
+                                        <button
+                                            type="button"
+                                            @click="removeImage(index, 'editRoomTypeForm')"
+                                            class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                        >
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </RoomPaxCombinationComponent>
 
                     <div class="mt-6 flex justify-end space-x-3">
                         <button
@@ -571,6 +593,7 @@ import Modal from '@/Components/Modal.vue';
 import Pagination from '@/Components/Pagination.vue';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import RoomPaxCombinationComponent from '@/Components/RoomPaxCombinationComponent.vue';
 
 const props = defineProps({
     package: {
@@ -629,6 +652,7 @@ const roomTypeForm = useForm({
     package_id: props.package.id,
     return_to_package: true,
     images: [],
+    disabled_pax_combinations: [],
     delete_images: []
 });
 
@@ -644,8 +668,21 @@ const editRoomTypeForm = useForm({
     package_id: props.package.id,
     return_to_package: true,
     images: [],
+    disabled_pax_combinations: [],
     delete_images: []
 });
+
+// Store selected combinations separately to avoid recursive updates
+const selectedCombinationsToDisable = ref([]);
+const selectedCombinationsToDisableForAdd = ref([]);
+
+const updateDisabledPaxCombinations = (combinations) => {
+    selectedCombinationsToDisable.value = combinations;
+};
+
+const updateDisabledPaxCombinationsForAdd = (combinations) => {
+    selectedCombinationsToDisableForAdd.value = combinations;
+};
 
 const duplicateRoomTypeForm = useForm({
     name: '',
@@ -666,6 +703,7 @@ const duplicateRoomTypeForm = useForm({
 watch(showAddRoomTypeModal, (newValue) => {
     if (!newValue) {
         addRoomTypeErrors.value = '';
+        selectedCombinationsToDisableForAdd.value = [];
     }
 });
 
@@ -727,6 +765,7 @@ const submitRoomType = () => {
     formData.append('max_infants', roomTypeForm.max_infants || '');
     formData.append('package_id', props.package.id);
     formData.append('return_to_package', 'true');
+    formData.append('disabled_pax_combinations', selectedCombinationsToDisableForAdd.value);
 
     // Handle images
     const hasNewImages = roomTypeForm.images.some(image => image instanceof File);
@@ -756,6 +795,7 @@ const submitRoomType = () => {
         });
         // Reset form
         roomTypeForm.reset();
+        selectedCombinationsToDisableForAdd.value = [];
         // Refresh the room types list
         // handlePageChange(1);
         router.get(route('packages.show', props.package.id));
@@ -804,6 +844,9 @@ const editRoomType = (roomType) => {
     editRoomTypeForm.images = Array.isArray(roomType.images) ? [...roomType.images] : [];
     editRoomTypeForm.delete_images = [];
     editRoomTypeForm.return_to_package = true;
+    editRoomTypeForm.disabled_pax_combinations = roomType.disabled_pax_combinations || [];
+    // Reset selected combinations when opening modal
+    selectedCombinationsToDisable.value = [];
     showEditRoomTypeModal.value = true;
 };
 
@@ -834,6 +877,7 @@ const updateRoomType = () => {
     formData.append('max_infants', editRoomTypeForm.max_infants || '');
     formData.append('package_id', props.package.id);
     formData.append('return_to_package', 'true');
+    formData.append('disabled_pax_combinations', selectedCombinationsToDisable.value);
 
     const hasNewImages = editRoomTypeForm.images.some(image => image instanceof File);
     const hasDeletedImages = editRoomTypeForm.delete_images.length > 0;

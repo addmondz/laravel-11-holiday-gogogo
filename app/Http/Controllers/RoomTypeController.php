@@ -49,8 +49,18 @@ class RoomTypeController extends Controller
             'max_children' => 'nullable|integer|min:1',
             'max_infants' => 'nullable|integer|min:1',
             'package_id' => 'required|exists:packages,id',
-            'images.*' => 'nullable|image|max:2048'
+            'images.*' => 'nullable|image|max:2048',
+            'disabled_pax_combinations' => 'nullable',
         ]);
+
+        // Handle disabled_pax_combinations
+        $disabledPax = $validated['disabled_pax_combinations'] ?? null;
+        if (is_string($disabledPax)) {
+            $disabledPax = array_values(array_filter(
+                array_map('trim', explode(',', $disabledPax))
+            ));
+        }
+        $validated['disabled_pax_combinations'] = $disabledPax;
 
         // Convert empty strings to null for max_pax fields
         $validated['max_adults'] = !empty($validated['max_adults']) ? (int)$validated['max_adults'] : null;
@@ -68,6 +78,17 @@ class RoomTypeController extends Controller
 
         $roomType = RoomType::create($validated);
         $this->ensurePriceConfigService->syncPriceConfigurationsBySeasonsAndDateTypes($validated['package_id'], [], []);
+
+        // Clean price configurations for disabled combinations
+        try {
+            $stats = $this->priceConfigurationService->cleanPriceConfigurationsByMaxPax($roomType);
+        } catch (\Exception $e) {
+            Log::error('Failed to clean price configurations after room type creation', [
+                'room_type_id' => $roomType->id,
+                'error' => $e->getMessage()
+            ]);
+            // Don't fail the creation if cleaning fails, just log it
+        }
 
         // If the request has a return_to_package parameter, redirect back to the package page
         if ($request->has('return_to_package')) {
@@ -96,8 +117,8 @@ class RoomTypeController extends Controller
 
     public function update(Request $request, RoomType $roomType)
     {
-        $currentRoomPax = $roomType->max_occupancy;
         $newRoomPax = (int) $request->max_occupancy;
+        $prev_disabled_pax_combinations = $roomType->disabled_pax_combinations;
 
         try {
             $validated = $request->validate([
@@ -111,8 +132,17 @@ class RoomTypeController extends Controller
                 'package_id' => 'required|exists:packages,id',
                 'images.*' => 'nullable|image|max:2048',
                 'delete_images' => 'nullable|array',
-                'delete_images.*' => 'string'
+                'delete_images.*' => 'string',
+                'disabled_pax_combinations' => 'nullable',
             ]);
+
+            $disabledPax = $validated['disabled_pax_combinations'] ?? null;
+            if (is_string($disabledPax)) {
+                $disabledPax = array_values(array_filter(
+                    array_map('trim', explode(',', $disabledPax))
+                ));
+            }
+            $validated['disabled_pax_combinations'] = $disabledPax;
 
             // Handle image deletions
             if ($request->has('delete_images')) {
@@ -156,11 +186,15 @@ class RoomTypeController extends Controller
 
             $roomType->update($validated);
 
+            Log::info("prev_disabled_pax_combinations: " . json_encode($prev_disabled_pax_combinations, JSON_PRETTY_PRINT));
+            Log::info("validated['disabled_pax_combinations']: " . json_encode($validated['disabled_pax_combinations'], JSON_PRETTY_PRINT));
+            Log::info($prev_disabled_pax_combinations !== $validated['disabled_pax_combinations']);
+
             // Update price configurations when max_occupancy changes
             $this->priceConfigurationService->updateConfigsToPaxAndFill($roomType->id, $newRoomPax);
 
-            // Clean price configurations if max_pax limits were updated
-            if ($maxPaxChanged) {
+            // Clean price configurations if max_pax limits were updated or disabled_pax_combinations changed
+            if ($maxPaxChanged || ($prev_disabled_pax_combinations !== $validated['disabled_pax_combinations'])) {
                 try {
                     $stats = $this->priceConfigurationService->cleanPriceConfigurationsByMaxPax($roomType);
                     Log::info('Cleaned price configurations after max_pax update', [
