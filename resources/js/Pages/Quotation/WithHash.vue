@@ -18,6 +18,7 @@
             </div>
         </header>
 
+        
         <!-- Not Found State -->
         <transition name="fade" v-if="isLoading">
             <div class="flex justify-center items-center h-full min-h-screen">
