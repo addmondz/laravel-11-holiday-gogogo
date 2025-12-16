@@ -371,6 +371,7 @@ class CreatePriceConfigurationsService
         $combinationsRemoved = 0;
 
         foreach ($configurations as $config) {
+            Log::info('cleanPriceConfigurationsByMaxPax - $config: ' . $config->id);
             $configsProcessed++;
             $prices = $config->configuration_prices ?? [];
 
@@ -406,7 +407,9 @@ class CreatePriceConfigurationsService
                     $exceedsLimit = true;
                 }
 
-                if (in_array($combo, $roomType->disabled_pax_combinations)) {
+                // Safely check if combination is disabled
+                $disabledCombinations = $roomType->disabled_pax_combinations ?? [];
+                if (is_array($disabledCombinations) && in_array($combo, $disabledCombinations)) {
                     $exceedsLimit = true;
                 }
 
@@ -453,7 +456,9 @@ class CreatePriceConfigurationsService
                     $exceedsLimit = true;
                 }
 
-                if (in_array($combo, $roomType->disabled_pax_combinations)) {
+                // Safely check if combination is disabled
+                $disabledCombinations = $roomType->disabled_pax_combinations ?? [];
+                if (is_array($disabledCombinations) && in_array($combo, $disabledCombinations)) {
                     $exceedsLimit = true;
                 }
 

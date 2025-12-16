@@ -765,7 +765,15 @@ const submitRoomType = () => {
     formData.append('max_infants', roomTypeForm.max_infants || '');
     formData.append('package_id', props.package.id);
     formData.append('return_to_package', 'true');
-    formData.append('disabled_pax_combinations', selectedCombinationsToDisableForAdd.value);
+    // Properly append array to FormData - append each item with array notation
+    if (Array.isArray(selectedCombinationsToDisableForAdd.value) && selectedCombinationsToDisableForAdd.value.length > 0) {
+        selectedCombinationsToDisableForAdd.value.forEach((combo, index) => {
+            formData.append(`disabled_pax_combinations[${index}]`, combo);
+        });
+    } else {
+        // Send empty array as empty string to indicate no disabled combinations
+        formData.append('disabled_pax_combinations', '');
+    }
 
     // Handle images
     const hasNewImages = roomTypeForm.images.some(image => image instanceof File);
@@ -845,8 +853,10 @@ const editRoomType = (roomType) => {
     editRoomTypeForm.delete_images = [];
     editRoomTypeForm.return_to_package = true;
     editRoomTypeForm.disabled_pax_combinations = roomType.disabled_pax_combinations || [];
-    // Reset selected combinations when opening modal
-    selectedCombinationsToDisable.value = [];
+    // Initialize selected combinations with current disabled combinations
+    selectedCombinationsToDisable.value = Array.isArray(roomType.disabled_pax_combinations) 
+        ? [...roomType.disabled_pax_combinations] 
+        : [];
     showEditRoomTypeModal.value = true;
 };
 
@@ -877,7 +887,15 @@ const updateRoomType = () => {
     formData.append('max_infants', editRoomTypeForm.max_infants || '');
     formData.append('package_id', props.package.id);
     formData.append('return_to_package', 'true');
-    formData.append('disabled_pax_combinations', selectedCombinationsToDisable.value);
+    // Properly append array to FormData - append each item with array notation
+    if (Array.isArray(selectedCombinationsToDisable.value) && selectedCombinationsToDisable.value.length > 0) {
+        selectedCombinationsToDisable.value.forEach((combo, index) => {
+            formData.append(`disabled_pax_combinations[${index}]`, combo);
+        });
+    } else {
+        // Send empty array as empty string to indicate no disabled combinations
+        formData.append('disabled_pax_combinations', '');
+    }
 
     const hasNewImages = editRoomTypeForm.images.some(image => image instanceof File);
     const hasDeletedImages = editRoomTypeForm.delete_images.length > 0;

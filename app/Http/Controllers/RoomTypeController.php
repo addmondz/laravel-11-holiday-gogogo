@@ -55,11 +55,25 @@ class RoomTypeController extends Controller
 
         // Handle disabled_pax_combinations
         $disabledPax = $validated['disabled_pax_combinations'] ?? null;
-        if (is_string($disabledPax)) {
-            $disabledPax = array_values(array_filter(
-                array_map('trim', explode(',', $disabledPax))
-            ));
+        
+        // Handle different input formats
+        if (is_array($disabledPax)) {
+            // Already an array (from FormData array notation)
+            $disabledPax = array_values(array_filter($disabledPax, fn($item) => !empty(trim($item))));
+        } elseif (is_string($disabledPax)) {
+            // Comma-separated string
+            if (trim($disabledPax) === '') {
+                $disabledPax = [];
+            } else {
+                $disabledPax = array_values(array_filter(
+                    array_map('trim', explode(',', $disabledPax))
+                ));
+            }
+        } else {
+            // null or other - convert to empty array
+            $disabledPax = [];
         }
+        
         $validated['disabled_pax_combinations'] = $disabledPax;
 
         // Convert empty strings to null for max_pax fields
@@ -137,11 +151,25 @@ class RoomTypeController extends Controller
             ]);
 
             $disabledPax = $validated['disabled_pax_combinations'] ?? null;
-            if (is_string($disabledPax)) {
-                $disabledPax = array_values(array_filter(
-                    array_map('trim', explode(',', $disabledPax))
-                ));
+            
+            // Handle different input formats
+            if (is_array($disabledPax)) {
+                // Already an array (from FormData array notation)
+                $disabledPax = array_values(array_filter($disabledPax, fn($item) => !empty(trim($item))));
+            } elseif (is_string($disabledPax)) {
+                // Comma-separated string
+                if (trim($disabledPax) === '') {
+                    $disabledPax = [];
+                } else {
+                    $disabledPax = array_values(array_filter(
+                        array_map('trim', explode(',', $disabledPax))
+                    ));
+                }
+            } else {
+                // null or other - convert to empty array
+                $disabledPax = [];
             }
+            
             $validated['disabled_pax_combinations'] = $disabledPax;
 
             // Handle image deletions
@@ -186,9 +214,7 @@ class RoomTypeController extends Controller
 
             $roomType->update($validated);
 
-            Log::info("prev_disabled_pax_combinations: " . json_encode($prev_disabled_pax_combinations, JSON_PRETTY_PRINT));
-            Log::info("validated['disabled_pax_combinations']: " . json_encode($validated['disabled_pax_combinations'], JSON_PRETTY_PRINT));
-            Log::info($prev_disabled_pax_combinations !== $validated['disabled_pax_combinations']);
+            Log::info('prev and current disabled_pax_combinations are different: ' . ($prev_disabled_pax_combinations !== $validated['disabled_pax_combinations'] ? 'true' : 'false'));
 
             // Update price configurations when max_occupancy changes
             $this->priceConfigurationService->updateConfigsToPaxAndFill($roomType->id, $newRoomPax);

@@ -27,6 +27,7 @@ class UpdateRoomConfigByPax extends Command
         RoomType::all()->each(function ($roomType) {
             $this->info("Updating room config for room type: {$roomType->name}");
             $this->priceConfigurationService->updateConfigsToPaxAndFill($roomType->id, $roomType->max_occupancy);
+            $this->priceConfigurationService->cleanPriceConfigurationsByMaxPax($roomType);
         });
 
         return Command::SUCCESS;
