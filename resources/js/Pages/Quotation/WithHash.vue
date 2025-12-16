@@ -991,19 +991,15 @@
                                                 </div>
                                                 <div class="pl-2 space-y-1 text-xs">
                                                     <div class="flex justify-between">
-                                                        <span class="text-gray-500">Nights:</span>
-                                                        <span class="text-gray-700">{{ guest.nights }}</span>
+                                                        <span class="text-gray-500">Package:</span>
+                                                        <span class="text-gray-700">MYR {{ formatNumber(guest.base_charge.total + guest.surcharge.total) }}</span>
                                                     </div>
                                                     <div class="flex justify-between">
-                                                        <span class="text-gray-500">Base Total:</span>
-                                                        <span class="text-gray-700">MYR {{ formatNumber(guest.base_charge.total) }}</span>
-                                                    </div>
-                                                    <div class="flex justify-between">
-                                                        <span class="text-gray-500">Surcharge:</span>
-                                                        <span class="text-gray-700">MYR {{ formatNumber(guest.surcharge.total) }}</span>
+                                                        <span class="text-gray-500">Add on:</span>
+                                                        <span class="text-gray-700">MYR {{ formatNumber(0) }}</span>
                                                     </div>
                                                     <div class="flex justify-between font-medium">
-                                                        <span class="text-gray-700">Total:</span>
+                                                        <span class="text-gray-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
                                                         <span class="text-gray-900">MYR {{ formatNumber(guest.total) }}</span>
                                                     </div>
                                                 </div>
@@ -1083,9 +1079,8 @@
                                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guest</th>
                                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
-                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Nights</th>
-                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base Total</th>
-                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surcharge Total</th>
+                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Package</th>
+                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Add on</th>
                                                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                                                 </tr>
                                             </thead>
@@ -1106,13 +1101,10 @@
                                                         {{ guest.room_type_name }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
-                                                        {{ guest.nights }}
+                                                        MYR {{ formatNumber(guest.base_charge.total + guest.surcharge.total) }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
-                                                        MYR {{ formatNumber(guest.base_charge.total) }}
-                                                    </td>
-                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
-                                                        MYR {{ formatNumber(guest.surcharge.total) }}
+                                                        MYR {{ formatNumber(0) }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-600 text-right">
                                                         MYR {{ formatNumber(guest.total) }}
@@ -1121,7 +1113,7 @@
                                                 
                                                 <!-- Guest Type Summary Rows -->
                                                 <tr v-if="priceBreakdown.summary.total_adults > 0" class="bg-indigo-50">
-                                                    <td colspan="4" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900">
+                                                    <td colspan="3" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900">
                                                         Total Adults ({{ priceBreakdown.summary.total_adults }})
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900 text-right">
@@ -1139,7 +1131,7 @@
                                                 </tr>
                                                 
                                                 <tr v-if="priceBreakdown.summary.total_children > 0" class="bg-indigo-50">
-                                                    <td colspan="5" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900">
+                                                    <td colspan="4" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900">
                                                         Total Children ({{ priceBreakdown.summary.total_children }})
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-indigo-900 text-right">
@@ -1160,7 +1152,7 @@
                                                 </tr>
                                                 
                                                 <tr v-if="priceBreakdown.summary.total_infants > 0" class="bg-indigo-50">
-                                                    <td colspan="5" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900">
+                                                    <td colspan="4" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900">
                                                         Total Infants ({{ priceBreakdown.summary.total_infants }})
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-indigo-900 text-right">
