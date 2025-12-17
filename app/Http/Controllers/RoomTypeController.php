@@ -201,16 +201,16 @@ class RoomTypeController extends Controller
             $validated['max_infants'] = $validated['max_infants'] ?? null;
 
             // Check if max_pax fields are being updated
-            $maxPaxChanged = false;
-            if (isset($validated['max_adults']) && $roomType->max_adults != $validated['max_adults']) {
-                $maxPaxChanged = true;
-            }
-            if (isset($validated['max_children']) && $roomType->max_children != $validated['max_children']) {
-                $maxPaxChanged = true;
-            }
-            if (isset($validated['max_infants']) && $roomType->max_infants != $validated['max_infants']) {
-                $maxPaxChanged = true;
-            }
+            // $maxPaxChanged = false;
+            // if (isset($validated['max_adults']) && $roomType->max_adults != $validated['max_adults']) {
+            //     $maxPaxChanged = true;
+            // }
+            // if (isset($validated['max_children']) && $roomType->max_children != $validated['max_children']) {
+            //     $maxPaxChanged = true;
+            // }
+            // if (isset($validated['max_infants']) && $roomType->max_infants != $validated['max_infants']) {
+            //     $maxPaxChanged = true;
+            // }
 
             $roomType->update($validated);
 
@@ -220,21 +220,21 @@ class RoomTypeController extends Controller
             $this->priceConfigurationService->updateConfigsToPaxAndFill($roomType->id, $newRoomPax);
 
             // Clean price configurations if max_pax limits were updated or disabled_pax_combinations changed
-            if ($maxPaxChanged || ($prev_disabled_pax_combinations !== $validated['disabled_pax_combinations'])) {
-                try {
-                    $stats = $this->priceConfigurationService->cleanPriceConfigurationsByMaxPax($roomType);
-                    Log::info('Cleaned price configurations after max_pax update', [
-                        'room_type_id' => $roomType->id,
-                        'stats' => $stats
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error('Failed to clean price configurations after max_pax update', [
-                        'room_type_id' => $roomType->id,
-                        'error' => $e->getMessage()
-                    ]);
-                    // Don't fail the update if cleaning fails, just log it
-                }
+            // if ($maxPaxChanged || ($prev_disabled_pax_combinations !== $validated['disabled_pax_combinations'])) {
+            try {
+                $stats = $this->priceConfigurationService->cleanPriceConfigurationsByMaxPax($roomType);
+                Log::info('Cleaned price configurations after max_pax update', [
+                    'room_type_id' => $roomType->id,
+                    'stats' => $stats
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to clean price configurations after max_pax update', [
+                    'room_type_id' => $roomType->id,
+                    'error' => $e->getMessage()
+                ]);
+                // Don't fail the update if cleaning fails, just log it
             }
+            // }
 
             // If the request has a return_to_package parameter, redirect back to the package page
             if ($request->has('return_to_package')) {
