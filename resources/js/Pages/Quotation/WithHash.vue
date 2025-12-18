@@ -997,11 +997,11 @@
                                                     </div>
                                                     <div class="flex justify-between">
                                                         <span class="text-gray-500">Add on:</span>
-                                                        <span class="text-gray-700">MYR {{ formatNumber(0) }}</span>
+                                                        <span class="text-gray-700">MYR {{ formatNumber(getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number)) }}</span>
                                                     </div>
                                                     <div class="flex justify-between font-medium">
                                                         <span class="text-gray-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
-                                                        <span class="text-gray-900">MYR {{ formatNumber(guest.total) }}</span>
+                                                        <span class="text-gray-900">MYR {{ formatNumber(parseFloat(guest.total) + getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number)) }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1010,7 +1010,7 @@
                                         <!-- Room Total -->
                                         <div class="flex justify-between pt-2 border-t border-gray-200">
                                             <span class="font-semibold text-gray-900">Room Total:</span>
-                                            <span class="font-bold text-indigo-600">MYR {{ formatNumber(room.total) }}</span>
+                                            <span class="font-bold text-indigo-600">MYR {{ formatNumber(room.total + getRoomAddOnTotal(room.room_number)) }}</span>
                                         </div>
                                     </div>
 
@@ -1210,19 +1210,19 @@
                                 </div> -->
                                 <div class="bg-gray-50 p-4 rounded-md shadow-sm w-full max-w-xs ml-auto">
                                     <!-- Package Total -->
-                                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <!-- <div class="flex justify-between text-sm text-gray-600 mb-2">
                                         <span>Package Total</span>
                                         <span>MYR {{ formatNumber(priceBreakdown.total_without_sst - (priceBreakdown.add_ons_total || 0)) }}</span>
-                                    </div>
+                                    </div> -->
                                     
-                                    <!-- Add-ons Total -->
-                                    <div v-if="priceBreakdown.add_ons_total && priceBreakdown.add_ons_total > 0" class="flex justify-between text-sm text-gray-600 mb-2">
+                                        <!-- Add-ons Total -->
+                                    <!-- <div v-if="priceBreakdown.add_ons_total && priceBreakdown.add_ons_total > 0" class="flex justify-between text-sm text-gray-600 mb-2">
                                         <span>Add-ons</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.add_ons_total) }}</span>
-                                    </div>
+                                            <span>MYR {{ formatNumber(priceBreakdown.add_ons_total) }}</span>
+                                    </div> -->
                                     
                                     <!-- Grand Total -->
-                                    <div class="flex justify-between text-base font-semibold text-indigo-700 mt-3 pt-2 border-t-2">
+                                    <div class="flex justify-between text-base font-semibold text-indigo-700">
                                         <span>Grand Total</span>
                                         <span>MYR {{ formatNumber(priceBreakdown.total, false) }}</span>
                                     </div>
@@ -2175,6 +2175,97 @@ const guestsByRoom = computed(() => {
     return Object.values(grouped);
 });
 
+// Computed property to show per-guest add-on breakdown
+const perGuestAddOns = computed(() => {
+    if (!priceBreakdown.value?.add_ons?.length) return [];
+
+    const result = [];
+
+    form.rooms.forEach((room, roomIndex) => {
+        const roomNumber = roomIndex + 1;
+        const roomAddOns = priceBreakdown.value.add_ons.filter(a => Number(a.room_number) === roomNumber);
+
+        if (roomAddOns.length === 0) return;
+
+        const roomData = { roomNumber, guests: [] };
+
+        // Process adults
+        for (let i = 1; i <= (room.adults || 0); i++) {
+            const applicableAddOns = roomAddOns.filter(a => a.adults >= i);
+            if (applicableAddOns.length > 0) {
+                roomData.guests.push({
+                    type: 'Adult',
+                    number: i,
+                    addOns: applicableAddOns.map(a => ({ name: a.name, price: parseFloat(a.adult_price) || 0 })),
+                    total: applicableAddOns.reduce((sum, a) => sum + (parseFloat(a.adult_price) || 0), 0)
+                });
+            }
+        }
+
+        // Process children
+        for (let i = 1; i <= (room.children || 0); i++) {
+            const applicableAddOns = roomAddOns.filter(a => a.children >= i);
+            if (applicableAddOns.length > 0) {
+                roomData.guests.push({
+                    type: 'Child',
+                    number: i,
+                    addOns: applicableAddOns.map(a => ({ name: a.name, price: parseFloat(a.child_price) || 0 })),
+                    total: applicableAddOns.reduce((sum, a) => sum + (parseFloat(a.child_price) || 0), 0)
+                });
+            }
+        }
+
+        // Process infants
+        for (let i = 1; i <= (room.infants || 0); i++) {
+            const applicableAddOns = roomAddOns.filter(a => a.infants >= i);
+            if (applicableAddOns.length > 0) {
+                roomData.guests.push({
+                    type: 'Infant',
+                    number: i,
+                    addOns: applicableAddOns.map(a => ({ name: a.name, price: parseFloat(a.infant_price) || 0 })),
+                    total: applicableAddOns.reduce((sum, a) => sum + (parseFloat(a.infant_price) || 0), 0)
+                });
+            }
+        }
+
+        if (roomData.guests.length > 0) {
+            result.push(roomData);
+        }
+    });
+
+    return result;
+});
+
+// Get add-on total for a specific guest
+const getGuestAddOnTotal = (roomNumber, guestType, guestNumber) => {
+    if (!priceBreakdown.value?.add_ons?.length) return 0;
+
+    const roomAddOns = priceBreakdown.value.add_ons.filter(a => Number(a.room_number) === Number(roomNumber));
+    let total = 0;
+
+    roomAddOns.forEach(addOn => {
+        if (guestType === 'adult' && addOn.adults >= guestNumber) {
+            total += parseFloat(addOn.adult_price) || 0;
+        } else if (guestType === 'child' && addOn.children >= guestNumber) {
+            total += parseFloat(addOn.child_price) || 0;
+        } else if (guestType === 'infant' && addOn.infants >= guestNumber) {
+            total += parseFloat(addOn.infant_price) || 0;
+        }
+    });
+
+    return total;
+};
+
+// Get total add-ons for a room
+const getRoomAddOnTotal = (roomNumber) => {
+    if (!priceBreakdown.value?.add_ons?.length) return 0;
+
+    const roomAddOns = priceBreakdown.value.add_ons.filter(a => Number(a.room_number) === Number(roomNumber));
+    return roomAddOns.reduce((sum, addOn) => {
+        return sum + (addOn.adult_total || 0) + (addOn.child_total || 0) + (addOn.infant_total || 0);
+    }, 0);
+};
+
 const nightlyBreakdown = ref([]);
 const roomTypes = ref([]);
 const selectedRoomType = ref(null);
@@ -2978,7 +3069,7 @@ watch(() => form.start_date, () => {
     }
 });
 
-// Watch for room type changes to set default guest values
+// Watch for room type changes to set default guest values and clamp add-on quantities
 watch(() => form.rooms, (newRooms) => {
     newRooms.forEach((room, index) => {
         if (room.room_type_id && (room.adults === null || room.children === null || room.infants === null)) {
@@ -2986,6 +3077,19 @@ watch(() => form.rooms, (newRooms) => {
             room.adults = 1;
             room.children = 0;
             room.infants = 0;
+        }
+
+        // Clamp add-on quantities to not exceed room pax counts
+        if (room.add_ons && room.add_ons.length > 0) {
+            const maxAdults = room.adults || 0;
+            const maxChildren = room.children || 0;
+            const maxInfants = room.infants || 0;
+
+            room.add_ons.forEach((addOn) => {
+                if (addOn.adults > maxAdults) addOn.adults = maxAdults;
+                if (addOn.children > maxChildren) addOn.children = maxChildren;
+                if (addOn.infants > maxInfants) addOn.infants = maxInfants;
+            });
         }
     });
 }, { deep: true });
