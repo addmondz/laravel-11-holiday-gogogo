@@ -993,7 +993,7 @@
                                                 <div class="pl-2 space-y-1 text-xs">
                                                     <div class="flex justify-between">
                                                         <span class="text-gray-500">Package:</span>
-                                                        <span class="text-gray-700">MYR {{ formatNumber(guest.base_charge.total + guest.surcharge.total) }}</span>
+                                                        <span class="text-gray-700">MYR {{ formatNumber(getPackagePrice(guest), false) }}</span>
                                                     </div>
                                                     <div class="flex justify-between">
                                                         <span class="text-gray-500">Add on:</span>
@@ -1001,7 +1001,7 @@
                                                     </div>
                                                     <div class="flex justify-between font-medium">
                                                         <span class="text-gray-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
-                                                        <span class="text-gray-900">MYR {{ formatNumber(parseFloat(guest.total) + getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number)) }}</span>
+                                                        <span class="text-gray-900">MYR {{ formatNumber(guest.base_charge.total + getGuestSurcharge(guest.guest_type) + getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number) + getGuestSstPortion(), false) }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1010,7 +1010,7 @@
                                         <!-- Room Total -->
                                         <div class="flex justify-between pt-2 border-t border-gray-200">
                                             <span class="font-semibold text-gray-900">Room Total:</span>
-                                            <span class="font-bold text-indigo-600">MYR {{ formatNumber(room.total + getRoomAddOnTotal(room.room_number)) }}</span>
+                                            <span class="font-bold text-indigo-600">MYR {{ formatNumber(guestsByRoom.length === 1 ? priceBreakdown.total : (room.total + getRoomSurchargePortion(room) + getRoomAddOnTotal(room.room_number) + getRoomSstPortion(room)), false) }}</span>
                                         </div>
                                     </div>
 
@@ -2264,6 +2264,63 @@ const getRoomAddOnTotal = (roomNumber) => {
     return roomAddOns.reduce((sum, addOn) => {
         return sum + (addOn.adult_total || 0) + (addOn.child_total || 0) + (addOn.infant_total || 0);
     }, 0);
+};
+
+// Get total guest count from summary
+const getTotalGuestCount = () => {
+    if (!priceBreakdown.value?.summary) return 0;
+    const summary = priceBreakdown.value.summary;
+    return (summary.total_adults || 0) + (summary.total_children || 0) + (summary.total_infants || 0);
+};
+
+// Get surcharge per guest by type (from summary, since guest.surcharge.total may be 0)
+const getGuestSurcharge = (guestType) => {
+    if (!priceBreakdown.value?.summary) return 0;
+    const summary = priceBreakdown.value.summary;
+    if (guestType === 'adult' && summary.total_adults > 0) {
+        const result = (summary.surcharges?.adult?.total || 0) / summary.total_adults;
+        return result;
+    }
+    if (guestType === 'child' && summary.total_children > 0) {
+        return (summary.surcharges?.child?.total || 0) / summary.total_children;
+    }
+    if (guestType === 'infant' && summary.total_infants > 0) {
+        return (summary.surcharges?.infant?.total || 0) / summary.total_infants;
+    }
+    return 0;
+};
+
+// Calculate package price per guest (base + surcharge + SST)
+const getPackagePrice = (guest) => {
+    const base = guest.base_charge?.total || 0;
+    const surcharge = getGuestSurcharge(guest.guest_type);
+    const sst = getGuestSstPortion();
+    return base + surcharge + sst;
+};
+
+// Get SST per guest (divided equally)
+const getGuestSstPortion = () => {
+    if (!priceBreakdown.value?.sst || priceBreakdown.value.sst <= 0) return 0;
+    const totalGuests = getTotalGuestCount();
+    if (totalGuests <= 0) return 0;
+    return priceBreakdown.value.sst / totalGuests;
+};
+
+// Get SST for a room (sum of guest SST portions)
+const getRoomSstPortion = (room) => {
+    if (!priceBreakdown.value?.sst || priceBreakdown.value.sst <= 0) return 0;
+    const guestCount = room.guests?.length || 0;
+    return getGuestSstPortion() * guestCount;
+};
+
+// Get surcharge for a room (sum of guest surcharges by type)
+const getRoomSurchargePortion = (room) => {
+    if (!room.guests?.length) return 0;
+    let total = 0;
+    room.guests.forEach(guest => {
+        total += getGuestSurcharge(guest.guest_type);
+    });
+    return total;
 };
 
 const nightlyBreakdown = ref([]);
