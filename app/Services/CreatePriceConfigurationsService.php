@@ -355,6 +355,50 @@ class CreatePriceConfigurationsService
         $maxChildren = $roomType->max_children ?? null;
         $maxInfants = $roomType->max_infants ?? null;
 
+        if (!$roomType->package) {
+            // Log::error('cleanPriceConfigurationsByMaxPax - $roomType->package is null for room_type_id: ' . $roomType->id);
+            Log::error('Deleting the room type. room_type_id: ' . $roomType->id);
+            $roomType->delete();
+            return [];
+        }
+
+        $childAndInfantDisabled = $roomType->package->no_children_and_infant;
+        if ($childAndInfantDisabled) {
+            // Get all room types in the package
+            $packageRoomTypes = RoomType::where('package_id', $roomType->package->id)->get();
+
+            // Loop through each room type in the package
+            foreach ($packageRoomTypes as $packageRoomType) {
+                // Generate all possible pax combinations for this room type
+                $allCombinations = $this->generatePaxCombinations(
+                    $packageRoomType->max_occupancy,
+                    $packageRoomType
+                );
+
+                // Find all combinations that have children > 0 OR infants > 0
+                $combinationsWithChildrenOrInfants = [];
+                foreach ($allCombinations as $combo) {
+                    $counts = $this->parsePaxCombination($combo);
+                    if ($counts !== null && ($counts['children'] > 0 || $counts['infants'] > 0)) {
+                        $combinationsWithChildrenOrInfants[] = $combo;
+                    }
+                }
+
+                // Get existing disabled combinations and merge with new ones
+                $existingDisabled = $packageRoomType->disabled_pax_combinations ?? [];
+                if (!is_array($existingDisabled)) {
+                    $existingDisabled = [];
+                }
+
+                // Merge and remove duplicates
+                $updatedDisabled = array_unique(array_merge($existingDisabled, $combinationsWithChildrenOrInfants));
+
+                // Save to the room type
+                $packageRoomType->disabled_pax_combinations = array_values($updatedDisabled);
+                $packageRoomType->save();
+            }
+        }
+
         // Get all configurations for this room type
         $configurations = PackageConfiguration::where('room_type_id', $roomType->id)->get();
 
@@ -371,7 +415,7 @@ class CreatePriceConfigurationsService
         $combinationsRemoved = 0;
 
         foreach ($configurations as $config) {
-            Log::info('cleanPriceConfigurationsByMaxPax - $config: ' . $config->id);
+            // Log::info('cleanPriceConfigurationsByMaxPax - $config: ' . $config->id);
             $configsProcessed++;
             $prices = $config->configuration_prices ?? [];
 

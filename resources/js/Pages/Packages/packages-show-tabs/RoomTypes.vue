@@ -114,6 +114,7 @@
                 </div>
                 <form @submit.prevent="submitRoomType">
                     <RoomPaxCombinationComponent 
+                        :no-children-and-infant="package.no_children_and_infant"
                         :max-adults="roomTypeForm.max_adults" 
                         :max-children="roomTypeForm.max_children" 
                         :max-infants="roomTypeForm.max_infants"  
@@ -431,6 +432,7 @@
                 </div>
                 <form @submit.prevent="updateRoomType">
                     <RoomPaxCombinationComponent 
+                        :no-children-and-infant="package.no_children_and_infant"
                         :max-adults="editRoomTypeForm.max_adults" 
                         :max-children="editRoomTypeForm.max_children" 
                         :max-infants="editRoomTypeForm.max_infants"  

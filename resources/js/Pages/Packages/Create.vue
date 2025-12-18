@@ -246,7 +246,7 @@
                                         class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     />
                                     <span class="text-xs text-gray-500">
-                                        If checked, children and infant input fields will be hidden on the quotation page.
+                                        If checked, children and infant input fields will be hidden on the quotation page. <b>All combinations with children and infants will be auto disabled.</b>
                                     </span>
                                     <div v-if="form.errors.no_children_and_infant" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.no_children_and_infant }}

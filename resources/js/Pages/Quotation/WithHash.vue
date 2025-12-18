@@ -364,7 +364,7 @@
                                                                 ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-600'
                                                                 : 'border-gray-200 hover:border-indigo-400'
                                                         ]"
-                                                        @click="room.room_type_id = roomType.id">
+                                                        @click="handleRoomChange(room, roomType, index)">
                                                             <!-- Selected Indicator -->
                                                             <div v-if="room.room_type_id === roomType.id" 
                                                                  class="absolute -top-2 -right-2 bg-indigo-600 text-white rounded-full p-1 z-10">
@@ -2009,6 +2009,7 @@ import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { generatePaxCombinations } from '@/helpers/pax';
 
 const props = defineProps({
     uuid: String,
@@ -3634,6 +3635,38 @@ const showHelperMessage = (roomIndex, field, message, duration = 10000) => {
     }, duration);
 };
 
+// Helper function to find the lowest available pax combination
+const findValidPaxCombination = (maxOccupancy, disabledPaxCombinations, maxAdults, maxChildren, maxInfants) => {
+    // Generate all available pax combinations (excluding disabled ones)
+    const availableCombinations = generatePaxCombinations(
+        maxOccupancy,
+        maxAdults ?? null,
+        maxChildren ?? null,
+        maxInfants ?? null,
+        disabledPaxCombinations || []
+    );
+    
+    // If no available combinations, return null
+    if (availableCombinations.length === 0) {
+        return null;
+    }
+    
+    // The combinations are already sorted (lowest first), so get the first one
+    const lowestCombination = availableCombinations[0];
+    
+    // Parse the combination string to extract adults, children, infants
+    const match = lowestCombination.match(/^(\d+)_a_(\d+)_c_(\d+)_i$/);
+    if (!match) {
+        return null;
+    }
+    
+    return {
+        adults: parseInt(match[1], 10),
+        children: parseInt(match[2], 10),
+        infants: parseInt(match[3], 10)
+    };
+};
+
 const handleAdultsChange = (room, index) => {
     resetHelperMessage(index, 'adults');
     const roomType = roomTypes.value.find(rt => rt.id === room.room_type_id);
@@ -3672,6 +3705,66 @@ const handleAdultsChange = (room, index) => {
     
     // Validate and update errors
     validationErrors.value.rooms[index] = validateRoomOccupancy(room, index);
+
+    validateSelectedPaxWithDisabledCombinations(room, index);
+};
+
+const handleRoomChange = (room, roomType, index) => {
+    room.room_type_id = roomType.id;
+    validateSelectedPaxWithDisabledCombinations(room, index, false);
+};
+
+const validateSelectedPaxWithDisabledCombinations = (room, index, showNotification = true) => {
+    // if all good, then proceed to validation level 2 - disabled pax combinations
+    roomTypes.value.forEach(roomType => {
+        if (roomType.id === room.room_type_id) {
+            let disabledPaxCombinations = roomType.disabled_pax_combinations || [];
+            let currentPaxCombination = `${room.adults}_a_${room.children}_c_${room.infants}_i`;
+
+            if (disabledPaxCombinations.includes(currentPaxCombination)) {
+                // Find the lowest available pax combination
+                const maxOccupancy = roomType.max_occupancy || 4;
+                let validCombination = findValidPaxCombination(
+                    maxOccupancy,
+                    disabledPaxCombinations,
+                    roomType.max_adults,
+                    roomType.max_children,
+                    roomType.max_infants
+                );
+
+                if (validCombination) {
+                    // Set to the valid combination
+                    room.adults = validCombination.adults;
+                    room.children = validCombination.children;
+                    room.infants = validCombination.infants;
+
+                    if (showNotification) {
+                        // Show helper message
+                        showHelperMessage(index, 'adults', `The selected pax combination is disabled.`);
+
+                        // Show warning alert
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Disabled Pax Combination',
+                            text: `The selected pax combination is disabled.`,
+                            confirmButtonColor: '#007bff' // change this to .text-indigo-600 color like #007bff
+                        });
+                    }
+
+                    // Re-validate after reset
+                    validationErrors.value.rooms[index] = validateRoomOccupancy(room, index);
+                } else {
+                    // No valid combination found - this should be rare
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'No Valid Pax Combination',
+                        text: 'Unable to find a valid pax combination for this room type. Please contact support.',
+                        confirmButtonColor: '#EF4444'
+                    });
+                }
+            }
+        }
+    });
 };
 
 const handleChildrenChange = (room, index) => {

@@ -56,7 +56,23 @@ class Package extends Model
 
     public function loadRoomTypes(): HasMany
     {
+        // Return the relationship - filtering happens automatically via accessor
+        // when the relationship is accessed as a property ($package->loadRoomTypes)
         return $this->hasMany(RoomType::class);
+    }
+
+    /**
+     * Accessor to automatically filter room types with available combinations
+     * This is called when accessing $package->loadRoomTypes (as a property, not method)
+     */
+    public function getLoadRoomTypesAttribute()
+    {
+        $roomTypes = $this->loadRoomTypes()->get();
+        
+        // Filter out room types where all combinations are disabled
+        return $roomTypes->filter(function ($roomType) {
+            return $roomType->hasAvailableCombinations();
+        })->values();
     }
 
     public function roomTypes(): BelongsToMany
