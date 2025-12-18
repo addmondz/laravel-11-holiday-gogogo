@@ -3719,7 +3719,7 @@ const validateSelectedPaxWithDisabledCombinations = (room, index, showNotificati
     roomTypes.value.forEach(roomType => {
         if (roomType.id === room.room_type_id) {
             let disabledPaxCombinations = roomType.disabled_pax_combinations || [];
-            let currentPaxCombination = `${room.adults}_a_${room.children}_c_${room.infants}_i`;
+            let currentPaxCombination = `${room.adults || 1}_a_${room.children || 0}_c_${room.infants || 0}_i`;
 
             if (disabledPaxCombinations.includes(currentPaxCombination)) {
                 // Find the lowest available pax combination

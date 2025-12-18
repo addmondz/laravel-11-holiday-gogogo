@@ -184,7 +184,7 @@ class CreatePriceConfigurationsService
             }
 
             DB::commit();
-            Log::info("updateConfigsToPaxAndFill: updated {$updatedCount} configuration(s) for room_type_id={$roomTypeId}, newRoomPax={$newRoomPax}, fillMissing=" . ($fillMissing ? '1' : '0'));
+            // Log::info("updateConfigsToPaxAndFill: updated {$updatedCount} configuration(s) for room_type_id={$roomTypeId}, newRoomPax={$newRoomPax}, fillMissing=" . ($fillMissing ? '1' : '0'));
             return $updatedCount;
         } catch (\Throwable $e) {
             DB::rollBack();
