@@ -613,7 +613,7 @@ const props = defineProps({
             total: 0,
             current_page: 1,
             last_page: 1,
-            per_page: 10
+            per_page: 50
         })
     }
 });
@@ -627,7 +627,7 @@ const roomTypesData = ref(props.roomTypes || {
     total: 0,
     current_page: 1,
     last_page: 1,
-    per_page: 10
+    per_page: 50
 });
 const showAddRoomTypeModal = ref(false);
 const showEditRoomTypeModal = ref(false);

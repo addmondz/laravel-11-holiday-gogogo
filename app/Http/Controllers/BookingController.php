@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\ApprovalStatus;
+use App\Models\AppSetting;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -106,8 +107,13 @@ class BookingController extends Controller
     {
         $booking->load(['package', 'rooms', 'transactions', 'rooms.roomType', 'approver', 'addOns.packageAddOn']);
 
+        // Get SST configuration
+        $sstConfig = AppSetting::getSstConfiguration();
+        $sstPercent = $booking->package?->sst_enable ? ($sstConfig['sst_percent'] ?? 0) : 0;
+
         return Inertia::render('Bookings/Show', [
-            'booking' => $booking
+            'booking' => $booking,
+            'sstPercent' => $sstPercent
         ]);
     }
 

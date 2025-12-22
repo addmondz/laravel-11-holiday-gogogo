@@ -302,22 +302,22 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-600 space-y-1">
                                                 <div v-if="addOn.package_add_on?.adult_price">
-                                                    Adult: MYR {{ formatNumber(addOn.package_add_on.adult_price) }}
+                                                    Adult: MYR {{ formatNumber(applySST(addOn.package_add_on.adult_price)) }}
                                                 </div>
                                                 <div v-if="addOn.package_add_on?.child_price">
-                                                    Child: MYR {{ formatNumber(addOn.package_add_on.child_price) }}
+                                                    Child: MYR {{ formatNumber(applySST(addOn.package_add_on.child_price)) }}
                                                 </div>
                                                 <div v-if="addOn.package_add_on?.infant_price">
-                                                    Infant: MYR {{ formatNumber(addOn.package_add_on.infant_price) }}
+                                                    Infant: MYR {{ formatNumber(applySST(addOn.package_add_on.infant_price)) }}
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">
                                                 MYR {{ formatNumber(
-                                                    (addOn.adults * (addOn.package_add_on?.adult_price || 0)) +
-                                                    (addOn.children * (addOn.package_add_on?.child_price || 0)) +
-                                                    (addOn.infants * (addOn.package_add_on?.infant_price || 0))
+                                                    (addOn.adults * applySST(addOn.package_add_on?.adult_price || 0)) +
+                                                    (addOn.children * applySST(addOn.package_add_on?.child_price || 0)) +
+                                                    (addOn.infants * applySST(addOn.package_add_on?.infant_price || 0))
                                                 ) }}
                                             </div>
                                         </td>
@@ -331,10 +331,10 @@
                                             <div class="text-sm font-medium text-gray-900">
                                                 MYR {{ formatNumber(
                                                     booking.add_ons.reduce((total, addOn) => {
-                                                        return total + 
-                                                            (addOn.adults * (addOn.package_add_on?.adult_price || 0)) +
-                                                            (addOn.children * (addOn.package_add_on?.child_price || 0)) +
-                                                            (addOn.infants * (addOn.package_add_on?.infant_price || 0));
+                                                        return total +
+                                                            (addOn.adults * applySST(addOn.package_add_on?.adult_price || 0)) +
+                                                            (addOn.children * applySST(addOn.package_add_on?.child_price || 0)) +
+                                                            (addOn.infants * applySST(addOn.package_add_on?.infant_price || 0));
                                                     }, 0)
                                                 ) }}
                                             </div>
@@ -409,7 +409,11 @@ import Swal from 'sweetalert2';
 import moment from 'moment';
 
 const props = defineProps({
-    booking: Object
+    booking: Object,
+    sstPercent: {
+        type: Number,
+        default: 0
+    }
 });
 
 const formatNumber = (number) => {
@@ -417,6 +421,12 @@ const formatNumber = (number) => {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     }).format(number);
+};
+
+// Apply SST and floor to a price
+const applySST = (price) => {
+    const priceWithSst = price * (1 + props.sstPercent / 100);
+    return Math.floor(priceWithSst);
 };
 
 const formatDate = (date) => {

@@ -98,6 +98,29 @@ class DateBlockerController extends Controller
         }
     }
 
+    public function destroyBulk(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:date_blockers,id',
+            'package_id' => 'required|exists:packages,id'
+        ]);
+
+        try {
+            $deletedCount = DateBlocker::whereIn('id', $validated['ids'])
+                ->where('package_id', $validated['package_id'])
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$deletedCount} date blocker(s) deleted successfully",
+                'deleted_count' => $deletedCount
+            ]);
+        } catch (\Exception $e) {
+            return $this->respondWithException($request, 'bulk deleting', $e, ['ids' => $validated['ids']]);
+        }
+    }
+
     // 🧩 Shared Logic
 
     private function respondWithOverlap(Request $request, DateBlocker $blocker)

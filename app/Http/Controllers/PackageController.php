@@ -79,7 +79,7 @@ class PackageController extends Controller
 
         // Pagination
         $packages = $query
-            ->paginate(10)
+            ->paginate(50)
             ->withQueryString();
 
         return Inertia::render('Packages/Index', [
@@ -289,7 +289,7 @@ class PackageController extends Controller
         // Set up pagination for each section
         $roomTypes = $package->loadRoomTypes()
             ->latest()
-            ->paginate(10);
+            ->paginate(50);
 
         $defaultSeasonTypeId = SeasonType::where('name', 'Default')->value('id');
         $seasons = Season::with('type')
@@ -298,7 +298,7 @@ class PackageController extends Controller
                 $query->where('id', '!=', $defaultSeasonTypeId);
             })
             ->orderBy('start_date', 'desc') // Order by start_date descending
-            ->paginate(10);
+            ->paginate(50);
 
         $defaultTypeRange = DateType::whereIn('name', ['Default', 'Weekday', 'Weekend'])->pluck('id');
         $dateTypeRanges = DateTypeRange::with('dateType')
@@ -307,7 +307,7 @@ class PackageController extends Controller
                 $query->whereNotIn('id', $defaultTypeRange);
             })
             ->orderBy('start_date', 'desc') // Order by start_date descending
-            ->paginate(10);
+            ->paginate(50);
 
         $seasonTypes = SeasonType::whereNot('name', 'Default')->get()->toArray();
         $allSeasonTypes = SeasonType::all()->toArray();
@@ -358,7 +358,7 @@ class PackageController extends Controller
     {
         $roomTypes = $package->loadRoomTypes()
             ->latest()
-            ->paginate(10, ['*'], 'page');
+            ->paginate(50, ['*'], 'page');
 
         return response()->json($roomTypes);
     }
@@ -370,7 +370,7 @@ class PackageController extends Controller
             ->where('package_id', $package->id)
             ->where('season_type_id', '!=', $defaultSeasonTypeId)
             ->orderBy('start_date', 'desc') // Order by start_date descending
-            ->paginate(10, ['*'], 'page');
+            ->paginate(50, ['*'], 'page');
 
         return response()->json($seasons);
     }
@@ -382,7 +382,7 @@ class PackageController extends Controller
             ->where('package_id', $package->id)
             ->whereNotIn('date_type_id', $defaultDateTypeId)
             ->orderBy('start_date', 'desc') // Order by start_date descending
-            ->paginate(10, ['*'], 'page');
+            ->paginate(50, ['*'], 'page');
 
         return response()->json($dateTypeRanges);
     }

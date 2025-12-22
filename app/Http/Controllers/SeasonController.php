@@ -237,6 +237,37 @@ class SeasonController extends Controller
             ->with('success', 'Season deleted successfully.');
     }
 
+    public function destroyBulk(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:seasons,id',
+            'package_id' => 'required|exists:packages,id'
+        ]);
+
+        try {
+            $deletedCount = Season::whereIn('id', $validated['ids'])
+                ->where('package_id', $validated['package_id'])
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$deletedCount} season(s) deleted successfully",
+                'deleted_count' => $deletedCount
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Bulk delete seasons error', [
+                'error' => $e->getMessage(),
+                'ids' => $validated['ids']
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete seasons: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     private function getSeasonOverlapMessage($startDate, $endDate, $packageId)
     {
         $existing = Season::where('package_id', $packageId)

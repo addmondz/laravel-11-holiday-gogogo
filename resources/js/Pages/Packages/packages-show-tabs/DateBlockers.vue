@@ -1,7 +1,19 @@
 <template>
     <div class="space-y-6">
         <div class="flex justify-between items-center">
-            <h3 class="text-md font-medium text-gray-900">Date Blockers</h3>
+            <div class="flex items-center space-x-4">
+                <h3 class="text-md font-medium text-gray-900">Date Blockers</h3>
+                <button
+                    v-if="selectedIds.length > 0"
+                    @click="bulkDeleteBlockers"
+                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-xs flex items-center space-x-2"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>Delete Selected ({{ selectedIds.length }})</span>
+                </button>
+            </div>
             <button
                 @click="showAddModal = true"
                 class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
@@ -18,6 +30,15 @@
             <table v-else class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                            <input
+                                type="checkbox"
+                                :checked="isAllSelected"
+                                :indeterminate="isIndeterminate"
+                                @change="toggleSelectAll"
+                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                            />
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Start Date
                         </th>
@@ -34,6 +55,14 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <tr v-for="blocker in dateBlockers.data" :key="blocker.id">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <input
+                                type="checkbox"
+                                :checked="selectedIds.includes(blocker.id)"
+                                @change="toggleSelect(blocker.id)"
+                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                            />
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ moment(blocker.start_date).format('DD/MM/YYYY') }}
                         </td>
@@ -59,7 +88,7 @@
                         </td>
                     </tr>
                     <tr v-if="dateBlockers.data.length === 0">
-                        <td colspan="3" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">
+                        <td colspan="5" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">
                             No date blockers found
                         </td>
                     </tr>
@@ -223,7 +252,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
 import Pagination from '@/Components/Pagination.vue';
@@ -255,8 +284,22 @@ const dateBlockers = ref({
     total: 0,
     current_page: 1,
     last_page: 1,
-    per_page: 10
+    per_page: 50
 });
+
+// Bulk selection state
+const selectedIds = ref([]);
+
+const isAllSelected = computed(() => {
+    if (dateBlockers.value.data.length === 0) return false;
+    return dateBlockers.value.data.every(blocker => selectedIds.value.includes(blocker.id));
+});
+
+const isIndeterminate = computed(() => {
+    const selectedOnPage = dateBlockers.value.data.filter(blocker => selectedIds.value.includes(blocker.id));
+    return selectedOnPage.length > 0 && selectedOnPage.length < dateBlockers.value.data.length;
+});
+
 const addDateBlockerErrors = ref('');
 const loadingKey = ref(0);
 const showAddModal = ref(false);
@@ -408,6 +451,73 @@ const deleteBlocker = async (id) => {
             Swal.fire({
                 title: 'Error!',
                 text: errorMessage,
+                icon: 'error',
+                confirmButtonColor: '#4F46E5'
+            });
+        }
+    }
+};
+
+// Bulk selection functions
+const toggleSelectAll = () => {
+    if (isAllSelected.value) {
+        // Deselect all on current page
+        const currentPageIds = dateBlockers.value.data.map(b => b.id);
+        selectedIds.value = selectedIds.value.filter(id => !currentPageIds.includes(id));
+    } else {
+        // Select all on current page
+        const currentPageIds = dateBlockers.value.data.map(b => b.id);
+        selectedIds.value = [...new Set([...selectedIds.value, ...currentPageIds])];
+    }
+};
+
+const toggleSelect = (id) => {
+    const index = selectedIds.value.indexOf(id);
+    if (index > -1) {
+        selectedIds.value.splice(index, 1);
+    } else {
+        selectedIds.value.push(id);
+    }
+};
+
+const bulkDeleteBlockers = async () => {
+    if (selectedIds.value.length === 0) return;
+
+    const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: `You are about to delete ${selectedIds.value.length} date blocker(s). This action cannot be undone!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e3342f',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, delete them!',
+        showConfirmButton: true,
+        showCloseButton: true
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await axios.delete(route('date-blockers.destroy-bulk'), {
+                data: {
+                    ids: selectedIds.value,
+                    package_id: props.packageId
+                }
+            });
+
+            Swal.fire({
+                title: 'Deleted!',
+                text: response.data.message,
+                icon: 'success',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#4F46E5'
+            });
+
+            selectedIds.value = [];
+            await fetchDateBlockers(1);
+        } catch (error) {
+            Swal.fire({
+                title: 'Error!',
+                text: error.response?.data?.message || 'Failed to delete date blockers',
                 icon: 'error',
                 confirmButtonColor: '#4F46E5'
             });

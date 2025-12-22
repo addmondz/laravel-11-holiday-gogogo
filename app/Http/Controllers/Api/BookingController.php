@@ -66,7 +66,7 @@ class BookingController extends Controller
                     'booking_email' => $request->booking_email,
                     'start_date' => $request->start_date,
                     'end_date' => $request->end_date,
-                    'total_price' => $request->total_price,
+                    'total_price' => floor($request->total_price),
                     'special_remarks' => $request->special_remarks,
                     // 'status' => 'pending',
                     'adults' => $totalAdults,

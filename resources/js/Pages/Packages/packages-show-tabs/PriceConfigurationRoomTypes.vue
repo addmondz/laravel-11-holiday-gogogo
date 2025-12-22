@@ -84,21 +84,7 @@
             </p>
           </div>
           <div class="space-x-2">
-            <button
-              v-if="!isEditMode"
-              @click="isEditMode = true"
-              class="px-5 py-2 rounded bg-indigo-600 text-white text-sm"
-            >
-              Edit All Prices
-            </button>
-            <button
-              v-if="!isEditMode && compactRooms.length > 0"
-              @click="duplicateToMultipleBtnClick"
-              class="px-5 py-2 rounded bg-green-600 text-white text-sm hover:bg-green-700"
-            >
-              Duplicate to Multiple
-            </button>
-            <template v-else>
+            <template v-if="isEditMode">
               <button
                 @click="cancelEdit"
                 class="px-3 py-2 rounded bg-gray-100 text-gray-700 text-sm"
@@ -180,6 +166,22 @@
             <h3 class="font-medium text-gray-900">
               {{ room.room_type_name }} ( {{ room.room_type_capacity }} pax )
             </h3>
+            <div class="space-x-2">
+              <button
+                v-if="!isEditMode"
+                @click="isEditMode = true"
+                class="px-5 py-2 rounded bg-indigo-600 text-white text-sm"
+              >
+                Edit All Prices
+              </button>
+              <button
+                v-if="!isEditMode && compactRooms.length > 0"
+                @click="duplicateToMultipleBtnClick"
+                class="px-5 py-2 rounded bg-green-600 text-white text-sm hover:bg-green-700"
+              >
+                Duplicate to Multiple
+              </button>
+            </div>
           </div>
 
           <!-- BASE TABLE -->
@@ -223,6 +225,7 @@
                               step="0.01"
                               class="w-full rounded-l-md border-none focus:ring-0 px-3 py-2"
                               v-model.number="room.base[comboKey][slotKey]"
+                              @input="checkSameCategorySamePrice(room, comboKey, slotKey)"
                             />
                             <button
                               type="button"
@@ -682,26 +685,6 @@ const copyPriceTypeToSameRow = (room, comboKey, slotKey) => {
     }
   });
 
-  // tiny toast to confirm
-  try {
-    Swal.fire({
-      toast: true,
-      timer: 1200,
-      timerProgressBar: true,
-      showConfirmButton: false,
-      icon: "success",
-      title: `Updated ${affected} ${prefix === 'a' ? 'Adult' : prefix === 'c' ? 'Child' : 'Infant'} slot(s).`,
-      text: "Please click on the save button to save the changes.",
-      didOpen: (toast) => {
-        // Pause timer when hovered
-        toast.addEventListener('mouseenter', Swal.stopTimer);
-        // Resume timer when mouse leaves
-        toast.addEventListener('mouseleave', Swal.resumeTimer);
-      }
-    });
-  } catch (_) {
-    // Swal might not be available in some contexts; ignore
-  }
 };
 
 const copySurchargeTypeToSameRow = (room, comboKey, slotKey) => {
@@ -715,37 +698,57 @@ const copySurchargeTypeToSameRow = (room, comboKey, slotKey) => {
 
   // For surcharges, slotKey is just 'a', 'c', or 'i'
   // We need to copy this value to all rows' same person type column
-  const prefix = String(slotKey)[0]; // 'a', 'c', or 'i'
 
-  let affected = 0;
   // Copy to all other rows in the same room
   Object.keys(room.surch).forEach((rowKey) => {
     const targetRow = room.surch[rowKey];
     if (targetRow && targetRow[slotKey] !== undefined) {
       targetRow[slotKey] = Number(value); // normalize to number
-      affected++;
     }
   });
 
-  // tiny toast to confirm
-  try {
+};
+
+// Track last warning to prevent alert spam
+let lastWarningKey = '';
+let lastWarningTime = 0;
+
+const checkSameCategorySamePrice = (room, comboKey, slotKey) => {
+  const row = room.base?.[comboKey];
+  if (!row) return;
+
+  // Get the person type prefix (a/c/i)
+  const prefix = String(slotKey)[0];
+
+  // Get all slots of the same category in this row
+  const sameCategorySlots = Object.entries(row).filter(([k]) => k.startsWith(prefix));
+
+  // If only one slot of this category, no need to check
+  if (sameCategorySlots.length <= 1) return;
+
+  // Check if all same-category slots have identical prices
+  const prices = sameCategorySlots.map(([, v]) => Number(v));
+  const allSame = prices.every((p) => p === prices[0]);
+
+  if (allSame && prices[0] !== 0 && prices[0] !== '' && !isNaN(prices[0])) {
+    // Debounce: prevent showing same warning within 3 seconds
+    const warningKey = `${room.room_type_id}-${comboKey}-${prefix}-${prices[0]}`;
+    const now = Date.now();
+    if (warningKey === lastWarningKey && now - lastWarningTime < 3000) {
+      return;
+    }
+    lastWarningKey = warningKey;
+    lastWarningTime = now;
+
+    const categoryName = prefix === 'a' ? 'Adult' : prefix === 'c' ? 'Child' : 'Infant';
     Swal.fire({
-      toast: true,
-      timer: 1200,
-      timerProgressBar: true,
-      showConfirmButton: false,
-      icon: "success",
-      title: `Updated ${affected} ${prefix === 'a' ? 'Adult' : prefix === 'c' ? 'Child' : 'Infant'} surcharge slot(s).`,
-      text: "Please click on the save button to save the changes.",
-      didOpen: (toast) => {
-        // Pause timer when hovered
-        toast.addEventListener('mouseenter', Swal.stopTimer);
-        // Resume timer when mouse leaves
-        toast.addEventListener('mouseleave', Swal.resumeTimer);
-      }
+      icon: "warning",
+      title: "Same Price Detected",
+      text: `All ${categoryName} prices in this row are the same (${prices[0]}). Is this intended?`,
+      timer: 3000,
+      showConfirmButton: true,
+      confirmButtonText: 'OK',
     });
-  } catch (_) {
-    // Swal might not be available in some contexts; ignore
   }
 };
 

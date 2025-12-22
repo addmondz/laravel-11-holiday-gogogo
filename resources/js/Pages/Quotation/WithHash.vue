@@ -654,7 +654,7 @@
                                                             <div class="flex items-center justify-between pt-2 border-t border-gray-200">
                                                                 <span class="text-xs font-medium text-gray-600">Subtotal:</span>
                                                                 <span class="text-xs font-semibold text-indigo-600">
-                                                                    MYR {{ formatNumber(calculateRoomAddOnSubtotal(index, addOn)) }}
+                                                                    MYR {{ formatNumber(calculateRoomAddOnSubtotal(index, addOn), false) }}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -711,7 +711,7 @@
                                                         <!-- Subtotal Desktop -->
                                                         <div :class="packageData?.no_children_and_infant ? 'hidden sm:flex sm:col-span-6' : 'hidden sm:flex sm:col-span-2'" class="items-center justify-end">
                                                             <span class="text-xs font-semibold text-indigo-600">
-                                                                MYR {{ formatNumber(calculateRoomAddOnSubtotal(index, addOn)) }}
+                                                                MYR {{ formatNumber(calculateRoomAddOnSubtotal(index, addOn), false) }}
                                                             </span>
                                                         </div>
                                                         <!-- Empty spacer -->
@@ -723,7 +723,7 @@
                                             <!-- Room Add-ons Total -->
                                             <div v-if="calculateRoomAddOnsTotal(index) > 0" class="mt-2 flex justify-end">
                                                 <div class="text-sm font-medium text-indigo-700">
-                                                    Room {{ index + 1 }} Add-ons Total: MYR {{ formatNumber(calculateRoomAddOnsTotal(index)) }}
+                                                    Room {{ index + 1 }} Add-ons Total: MYR {{ formatNumber(calculateRoomAddOnsTotal(index), false) }}
                                                 </div>
                                             </div>
                                         </div>
@@ -1561,7 +1561,7 @@
                             <div class="bg-indigo-50 rounded-lg p-6 border border-indigo-100">
                                 <div class="flex justify-between items-center">
                                     <h4 class="text-lg font-semibold text-indigo-900">Total Amount</h4>
-                                    <p class="text-2xl font-bold text-indigo-600">MYR {{ formatNumber(bookingSuccess.total_price) }}</p>
+                                    <p class="text-2xl font-bold text-indigo-600">MYR {{ formatNumber(bookingSuccess.total_price, false) }}</p>
                                 </div>
                             </div>
 
@@ -2197,8 +2197,8 @@ const perGuestAddOns = computed(() => {
                 roomData.guests.push({
                     type: 'Adult',
                     number: i,
-                    addOns: applicableAddOns.map(a => ({ name: a.name, price: parseFloat(a.adult_price) || 0 })),
-                    total: applicableAddOns.reduce((sum, a) => sum + (parseFloat(a.adult_price) || 0), 0)
+                    addOns: applicableAddOns.map(a => ({ name: a.name, price: Math.floor(parseFloat(a.adult_price) || 0) })),
+                    total: applicableAddOns.reduce((sum, a) => sum + Math.floor(parseFloat(a.adult_price) || 0), 0)
                 });
             }
         }
@@ -2210,8 +2210,8 @@ const perGuestAddOns = computed(() => {
                 roomData.guests.push({
                     type: 'Child',
                     number: i,
-                    addOns: applicableAddOns.map(a => ({ name: a.name, price: parseFloat(a.child_price) || 0 })),
-                    total: applicableAddOns.reduce((sum, a) => sum + (parseFloat(a.child_price) || 0), 0)
+                    addOns: applicableAddOns.map(a => ({ name: a.name, price: Math.floor(parseFloat(a.child_price) || 0) })),
+                    total: applicableAddOns.reduce((sum, a) => sum + Math.floor(parseFloat(a.child_price) || 0), 0)
                 });
             }
         }
@@ -2223,8 +2223,8 @@ const perGuestAddOns = computed(() => {
                 roomData.guests.push({
                     type: 'Infant',
                     number: i,
-                    addOns: applicableAddOns.map(a => ({ name: a.name, price: parseFloat(a.infant_price) || 0 })),
-                    total: applicableAddOns.reduce((sum, a) => sum + (parseFloat(a.infant_price) || 0), 0)
+                    addOns: applicableAddOns.map(a => ({ name: a.name, price: Math.floor(parseFloat(a.infant_price) || 0) })),
+                    total: applicableAddOns.reduce((sum, a) => sum + Math.floor(parseFloat(a.infant_price) || 0), 0)
                 });
             }
         }
@@ -2246,11 +2246,11 @@ const getGuestAddOnTotal = (roomNumber, guestType, guestNumber) => {
 
     roomAddOns.forEach(addOn => {
         if (guestType === 'adult' && addOn.adults >= guestNumber) {
-            total += parseFloat(addOn.adult_price) || 0;
+            total += Math.floor(parseFloat(addOn.adult_price) || 0);
         } else if (guestType === 'child' && addOn.children >= guestNumber) {
-            total += parseFloat(addOn.child_price) || 0;
+            total += Math.floor(parseFloat(addOn.child_price) || 0);
         } else if (guestType === 'infant' && addOn.infants >= guestNumber) {
-            total += parseFloat(addOn.infant_price) || 0;
+            total += Math.floor(parseFloat(addOn.infant_price) || 0);
         }
     });
 
@@ -3181,11 +3181,19 @@ const getSelectedAddOnsForAPI = () => {
 };
 
 // Calculate individual add-on subtotal for a specific room
+// Uses SST-applied floored unit prices so subtotal matches displayed unit price × quantity
 const calculateRoomAddOnSubtotal = (roomIndex, addOn) => {
     const pax = getRoomAddOnPax(roomIndex, addOn.id);
-    const adultTotal = (pax.adults || 0) * (addOn.adult_price || 0);
-    const childTotal = (pax.children || 0) * (addOn.child_price || 0);
-    const infantTotal = (pax.infants || 0) * (addOn.infant_price || 0);
+
+    // Floor the SST-applied unit price (same as what formatNumber displays)
+    const flooredAdultPrice = Math.floor(calculatePackagePriceWithSst(addOn.adult_price || 0));
+    const flooredChildPrice = Math.floor(calculatePackagePriceWithSst(addOn.child_price || 0));
+    const flooredInfantPrice = Math.floor(calculatePackagePriceWithSst(addOn.infant_price || 0));
+
+    const adultTotal = (pax.adults || 0) * flooredAdultPrice;
+    const childTotal = (pax.children || 0) * flooredChildPrice;
+    const infantTotal = (pax.infants || 0) * flooredInfantPrice;
+
     return adultTotal + childTotal + infantTotal;
 };
 
@@ -3309,8 +3317,8 @@ const formatNumber = (number, withSst = true) => {
     if (withSst) {
         number = calculatePackagePriceWithSst(number)
     }
-    
-    const num = parseFloat(number);
+
+    const num = Math.floor(parseFloat(number));
     if (isNaN(num)) return '0.00';
     return num.toLocaleString('en-US', {
         minimumFractionDigits: 2,

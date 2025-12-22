@@ -1,26 +1,49 @@
 <template>
     <div class="space-y-6">
         <div class="flex justify-between items-center">
-            <h3 class="text-md font-medium text-gray-900">Date Types Ranges</h3>
-            <button
-                @click="showAddDateTypeRangeModal = true"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs hidden"
-            >
-                Add Date Type Range
-            </button>
-            <!-- bulk add season -->
+            <div class="flex items-center space-x-4">
+                <h3 class="text-md font-medium text-gray-900">Date Types Ranges</h3>
+                <button
+                    v-if="selectedIds.length > 0"
+                    @click="bulkDeleteDateTypeRanges"
+                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-xs flex items-center space-x-2"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>Delete Selected ({{ selectedIds.length }})</span>
+                </button>
+            </div>
+            <div class="flex space-x-2">
+                <button
+                    @click="showAddDateTypeRangeModal = true"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs hidden"
+                >
+                    Add Date Type Range
+                </button>
+                <!-- bulk add season -->
                 <button
                     @click="showBulkAddDateTypeRangeModal = true"
                     class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                 >
                     Add Date Type Ranges
-            </button>
+                </button>
+            </div>
         </div>
 
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                            <input
+                                type="checkbox"
+                                :checked="isAllSelected"
+                                :indeterminate="isIndeterminate"
+                                @change="toggleSelectAll"
+                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                            />
+                        </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Type</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
@@ -29,6 +52,14 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <tr v-for="dateTypeRange in dateTypeRangesData.data" :key="dateTypeRange.id">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <input
+                                type="checkbox"
+                                :checked="selectedIds.includes(dateTypeRange.id)"
+                                @change="toggleSelect(dateTypeRange.id)"
+                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                            />
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ dateTypeRange.date_type?.name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ moment(dateTypeRange.start_date).format('DD/MM/YYYY') }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ moment(dateTypeRange.end_date).format('DD/MM/YYYY') }}</td>
@@ -48,7 +79,7 @@
                         </td>
                     </tr>
                     <tr v-if="dateTypeRangesData.data.length === 0">
-                        <td colspan="4" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No date type ranges found</td>
+                        <td colspan="5" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No date type ranges found</td>
                     </tr>
                 </tbody>
             </table>
@@ -211,8 +242,8 @@
 
         <!-- Bulk Add Date Type Ranges Modal -->
         <Modal :show="showBulkAddDateTypeRangeModal" @close="closeBulkAddDateTypeRangeModal">
-            <div class="p-6">
-            <div class="flex justify-between items-center mb-4">
+            <div class="p-6 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 flex-shrink-0">
                 <h2 class="text-lg font-medium text-gray-900">Add Date Type Ranges</h2>
                 <button
                     type="button"
@@ -222,12 +253,14 @@
                     + Add Row
                 </button>
             </div>
-                
+
+            <!-- Scrollable content area -->
+            <div class="flex-1 overflow-y-auto min-h-0">
                 <!-- Results Summary -->
                 <div v-if="bulkResults" class="mb-4">
                     <div class="bg-gray-50 rounded-lg p-4">
                         <h3 class="text-md font-medium text-gray-900 mb-3">Results Summary</h3>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div v-if="bulkResults.success.length > 0" class="bg-green-50 border border-green-200 rounded-md p-3">
                                 <div class="flex items-center">
@@ -239,7 +272,7 @@
                                     </span>
                                 </div>
                             </div>
-                            
+
                             <div v-if="bulkResults.errors.length > 0" class="bg-red-50 border border-red-200 rounded-md p-3">
                                 <div class="flex items-center">
                                     <svg class="h-5 w-5 text-red-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -254,7 +287,7 @@
                     </div>
                 </div>
 
-                <form @submit.prevent="submitBulkDateTypeRanges">
+                <form id="bulkAddForm" @submit.prevent="submitBulkDateTypeRanges">
                     <div class="space-y-4">
                         <!-- Date Type Range Rows -->
                         <div v-for="(dateTypeRange, index) in bulkDateTypeRanges" :key="index" class="border rounded-lg p-4" :class="getBulkRowClass(index)">
@@ -340,8 +373,11 @@
                             </div>
                         </div>
                     </div>
+                </form>
+            </div>
+            <!-- End scrollable content area -->
 
-                    <div class="mt-6 flex justify-end space-x-3">
+                    <div class="mt-6 flex justify-end space-x-3 flex-shrink-0">
                         <button
                             type="button"
                             @click="closeBulkAddDateTypeRangeModal"
@@ -351,13 +387,13 @@
                         </button>
                         <button
                             type="submit"
+                            form="bulkAddForm"
                             class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                             :disabled="isBulkSubmitting"
                         >
                             {{ isBulkSubmitting ? 'Creating Date Type Ranges...' : 'Create' }}
                         </button>
                     </div>
-                </form>
             </div>
         </Modal>
     </div>
@@ -390,6 +426,20 @@ const props = defineProps({
 
 const loadingKey = ref(0);
 const dateTypeRangesData = ref(props.dateTypeRanges);
+
+// Bulk selection state
+const selectedIds = ref([]);
+
+const isAllSelected = computed(() => {
+    if (dateTypeRangesData.value.data.length === 0) return false;
+    return dateTypeRangesData.value.data.every(range => selectedIds.value.includes(range.id));
+});
+
+const isIndeterminate = computed(() => {
+    const selectedOnPage = dateTypeRangesData.value.data.filter(range => selectedIds.value.includes(range.id));
+    return selectedOnPage.length > 0 && selectedOnPage.length < dateTypeRangesData.value.data.length;
+});
+
 const showAddDateTypeRangeModal = ref(false);
 const showEditDateTypeRangeModal = ref(false);
 const addDateTypeRangeErrors = ref('');
@@ -606,6 +656,73 @@ const deleteDateTypeRange = (id) => {
                     handlePageChange(1);
                 }
             });
+        }
+    });
+};
+
+// Bulk selection functions
+const toggleSelectAll = () => {
+    if (isAllSelected.value) {
+        // Deselect all on current page
+        const currentPageIds = dateTypeRangesData.value.data.map(r => r.id);
+        selectedIds.value = selectedIds.value.filter(id => !currentPageIds.includes(id));
+    } else {
+        // Select all on current page
+        const currentPageIds = dateTypeRangesData.value.data.map(r => r.id);
+        selectedIds.value = [...new Set([...selectedIds.value, ...currentPageIds])];
+    }
+};
+
+const toggleSelect = (id) => {
+    const index = selectedIds.value.indexOf(id);
+    if (index > -1) {
+        selectedIds.value.splice(index, 1);
+    } else {
+        selectedIds.value.push(id);
+    }
+};
+
+const bulkDeleteDateTypeRanges = () => {
+    if (selectedIds.value.length === 0) return;
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `You are about to delete ${selectedIds.value.length} date type range(s). This action cannot be undone!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e3342f',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, delete them!',
+        showConfirmButton: true,
+        showCloseButton: true
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const response = await axios.delete(route('date-type-ranges.destroy-bulk'), {
+                    data: {
+                        ids: selectedIds.value,
+                        package_id: props.package.id
+                    }
+                });
+
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: response.data.message,
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#4F46E5'
+                });
+
+                selectedIds.value = [];
+                handlePageChange(1);
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: error.response?.data?.message || 'Failed to delete date type ranges',
+                    icon: 'error',
+                    confirmButtonColor: '#4F46E5'
+                });
+            }
         }
     });
 };

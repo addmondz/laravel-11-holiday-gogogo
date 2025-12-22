@@ -446,7 +446,7 @@ class ConfigurationPriceController extends Controller
                     $fromRoomTypeId = $sourceConfig->room_type_id;
                     $toSeasonTypeId = (int)$targetConfig['season_type_id'];
                     $toDateTypeId   = (int)$targetConfig['date_type_id'];
-                    $toRoomTypeId   = (int)$targetConfig['room_type_id'] ?? null;
+                    $toRoomTypeId   = !empty($targetConfig['room_type_id']) ? (int)$targetConfig['room_type_id'] : null;
 
                     // Skip identical
                     if (
@@ -463,12 +463,17 @@ class ConfigurationPriceController extends Controller
                         'season_type_id' => $toSeasonTypeId,
                         'date_type_id'   => $toDateTypeId,
                     ];
+                    // When "All Room Types" is selected for target, match with source room type
+                    // Otherwise use the specific target room type
                     if ($toRoomTypeId) {
                         $filterArray['room_type_id'] = $toRoomTypeId;
+                    } else {
+                        $filterArray['room_type_id'] = $fromRoomTypeId;
                     }
 
                     // Check if target already exists
-                    $toRoom = RoomType::find($toRoomTypeId);
+                    // When "All Room Types" selected, use source room type for capacity
+                    $toRoom = RoomType::find($toRoomTypeId ?? $fromRoomTypeId);
                     $existingTargetConfig = PackageConfiguration::where($filterArray)->first();
                     if (!$existingTargetConfig) {
                         // Create if missing
@@ -476,7 +481,8 @@ class ConfigurationPriceController extends Controller
                         $existingTargetConfig->package_id     = $validated['package_id'];
                         $existingTargetConfig->season_type_id = $toSeasonTypeId;
                         $existingTargetConfig->date_type_id   = $toDateTypeId;
-                        $existingTargetConfig->room_type_id   = $toRoomTypeId;
+                        // When "All Room Types" selected, use source room type
+                        $existingTargetConfig->room_type_id   = $toRoomTypeId ?? $fromRoomTypeId;
                         $existingTargetConfig->configuration_prices = $this->priceConfigurationService->generateRandomPrices($toRoom->max_occupancy, false);
                         $existingTargetConfig->save();
                     }

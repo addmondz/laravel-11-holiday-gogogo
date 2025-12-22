@@ -1,7 +1,19 @@
 <template>
     <div class="space-y-6">
         <div class="flex justify-between items-center">
-            <h3 class="text-md font-medium text-gray-900">Season Types</h3>
+            <div class="flex items-center space-x-4">
+                <h3 class="text-md font-medium text-gray-900">Season Types</h3>
+                <button
+                    v-if="selectedIds.length > 0"
+                    @click="bulkDeleteSeasonTypes"
+                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-xs flex items-center space-x-2"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>Delete Selected ({{ selectedIds.length }})</span>
+                </button>
+            </div>
             <div class="flex space-x-2">
                 <!-- single add season -->
                 <button
@@ -24,6 +36,15 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                            <input
+                                type="checkbox"
+                                :checked="isAllSelected"
+                                :indeterminate="isIndeterminate"
+                                @change="toggleSelectAll"
+                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                            />
+                        </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
@@ -31,7 +52,15 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-if="seasons.data.length > 0" v-for="season in seasons.data" :key="season.id">
+                    <tr v-if="seasonsData.data.length > 0" v-for="season in seasonsData.data" :key="season.id">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <input
+                                type="checkbox"
+                                :checked="selectedIds.includes(season.id)"
+                                @change="toggleSelect(season.id)"
+                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                            />
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ season.type.name }}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ moment(season.start_date).format('DD/MM/YYYY') }}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ moment(season.end_date).format('DD/MM/YYYY') }}</td>
@@ -51,14 +80,14 @@
                         </td>
                     </tr>
                     <tr v-else>
-                        <td colspan="3" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No season types found</td>
+                        <td colspan="5" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">No season types found</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
         <!-- Pagination -->
-        <div v-if="seasons?.links?.length > 0" class="mt-4">
+        <div v-if="seasonsData?.links?.length > 0" class="mt-4">
             <Pagination
                 :links="seasonsPagination.links"
                 :from="seasonsPagination.from"
@@ -392,7 +421,7 @@ const props = defineProps({
             total: 0,
             current_page: 1,
             last_page: 1,
-            per_page: 10
+            per_page: 50
         })
     },
     seasonTypes: {
@@ -411,8 +440,22 @@ const seasonsData = ref(props.seasons || {
     total: 0,
     current_page: 1,
     last_page: 1,
-    per_page: 10
+    per_page: 50
 });
+
+// Bulk selection state
+const selectedIds = ref([]);
+
+const isAllSelected = computed(() => {
+    if (seasonsData.value.data.length === 0) return false;
+    return seasonsData.value.data.every(season => selectedIds.value.includes(season.id));
+});
+
+const isIndeterminate = computed(() => {
+    const selectedOnPage = seasonsData.value.data.filter(season => selectedIds.value.includes(season.id));
+    return selectedOnPage.length > 0 && selectedOnPage.length < seasonsData.value.data.length;
+});
+
 const showAddSeasonTypeModal = ref(false);
 const showEditSeasonTypeModal = ref(false);
 const showBulkAddSeasonModal = ref(false);
@@ -609,6 +652,73 @@ const deleteSeasonType = (id) => {
                     handlePageChange(1);
                 }
             });
+        }
+    });
+};
+
+// Bulk selection functions
+const toggleSelectAll = () => {
+    if (isAllSelected.value) {
+        // Deselect all on current page
+        const currentPageIds = seasonsData.value.data.map(s => s.id);
+        selectedIds.value = selectedIds.value.filter(id => !currentPageIds.includes(id));
+    } else {
+        // Select all on current page
+        const currentPageIds = seasonsData.value.data.map(s => s.id);
+        selectedIds.value = [...new Set([...selectedIds.value, ...currentPageIds])];
+    }
+};
+
+const toggleSelect = (id) => {
+    const index = selectedIds.value.indexOf(id);
+    if (index > -1) {
+        selectedIds.value.splice(index, 1);
+    } else {
+        selectedIds.value.push(id);
+    }
+};
+
+const bulkDeleteSeasonTypes = () => {
+    if (selectedIds.value.length === 0) return;
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `You are about to delete ${selectedIds.value.length} season(s). This action cannot be undone!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e3342f',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, delete them!',
+        showConfirmButton: true,
+        showCloseButton: true
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const response = await axios.delete(route('seasons.destroy-bulk'), {
+                    data: {
+                        ids: selectedIds.value,
+                        package_id: props.package.id
+                    }
+                });
+
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: response.data.message,
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#4F46E5'
+                });
+
+                selectedIds.value = [];
+                handlePageChange(1);
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: error.response?.data?.message || 'Failed to delete seasons',
+                    icon: 'error',
+                    confirmButtonColor: '#4F46E5'
+                });
+            }
         }
     });
 };

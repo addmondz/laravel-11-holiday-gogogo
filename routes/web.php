@@ -91,6 +91,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'season-types.destroy'
     ]);
 
+    // Custom routes MUST come BEFORE resource routes to avoid route parameter conflicts
+    Route::post('/seasons/store-bulk', [SeasonController::class, 'storeBulk'])->name('seasons.store-bulk');
+    Route::delete('/seasons/destroy-bulk', [SeasonController::class, 'destroyBulk'])->name('seasons.destroy-bulk');
+
     Route::resource('seasons', SeasonController::class)->names([
         'index' => 'seasons.index',
         'create' => 'seasons.create',
@@ -100,7 +104,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'update' => 'seasons.update',
         'destroy' => 'seasons.destroy'
     ]);
-    Route::post('/seasons/store-bulk', [SeasonController::class, 'storeBulk'])->name('seasons.store-bulk');
 
     Route::resource('date-types', DateTypeController::class)->names([
         'index' => 'date-types.index',
@@ -118,6 +121,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ]);
     Route::post('/room-types/{roomType}/duplicate', [RoomTypeController::class, 'duplicate'])->name('room-types.duplicate');
 
+    // Custom routes MUST come BEFORE resource routes to avoid route parameter conflicts
+    Route::post('/date-type-ranges/store-bulk', [DateTypeRangeController::class, 'storeBulk'])->name('date-type-ranges.store-bulk');
+    Route::delete('/date-type-ranges/destroy-bulk', [DateTypeRangeController::class, 'destroyBulk'])->name('date-type-ranges.destroy-bulk');
+
     Route::resource('date-type-ranges', DateTypeRangeController::class)->names([
         'index' => 'date-type-ranges.index',
         'create' => 'date-type-ranges.create',
@@ -127,7 +134,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'update' => 'date-type-ranges.update',
         'destroy' => 'date-type-ranges.destroy'
     ]);
-    Route::post('/date-type-ranges/store-bulk', [DateTypeRangeController::class, 'storeBulk'])->name('date-type-ranges.store-bulk');
 
     Route::resource('package-configurations', PackageConfigurationController::class)->names([
         'index' => 'package-configurations.index',
@@ -172,6 +178,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('date-blockers')->controller(DateBlockerController::class)->group(function () {
         Route::get('/', 'index')->name('date-blockers.index');
         Route::post('/', 'store')->name('date-blockers.store');
+        // Static routes MUST come BEFORE dynamic parameter routes
+        Route::delete('/bulk', 'destroyBulk')->name('date-blockers.destroy-bulk');
         Route::put('/{dateBlocker}', 'update')->name('date-blockers.update');
         Route::delete('/{dateBlocker}', 'destroy')->name('date-blockers.destroy');
     });

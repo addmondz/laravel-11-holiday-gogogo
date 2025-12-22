@@ -213,6 +213,32 @@ class DateTypeRangeController extends Controller
         return response()->json($results, 200);
     }
 
+    public function destroyBulk(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:date_type_ranges,id',
+            'package_id' => 'required|exists:packages,id'
+        ]);
+
+        try {
+            $deletedCount = DateTypeRange::whereIn('id', $validated['ids'])
+                ->where('package_id', $validated['package_id'])
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$deletedCount} date type range(s) deleted successfully",
+                'deleted_count' => $deletedCount
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete date type ranges: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     // 🔁 Reusable method to format overlap message
     private function getOverlapMessage($startDate, $endDate, $packageId)
     {
