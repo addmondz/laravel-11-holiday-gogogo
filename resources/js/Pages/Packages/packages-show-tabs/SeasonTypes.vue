@@ -244,8 +244,8 @@
 
         <!-- Bulk Add Seasons Modal -->
         <Modal :show="showBulkAddSeasonModal" @close="closeBulkAddSeasonModal">
-            <div class="p-6">
-            <div class="flex justify-between items-center mb-4">
+            <div class="p-6 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 flex-shrink-0">
                 <h2 class="text-lg font-medium text-gray-900">Add Seasons</h2>
                 <button
                     type="button"
@@ -255,12 +255,14 @@
                     + Add Row
                 </button>
             </div>
-                
+
+            <!-- Scrollable content area -->
+            <div class="flex-1 overflow-y-auto min-h-0">
                 <!-- Results Summary -->
                 <div v-if="bulkResults" class="mb-4">
                     <div class="bg-gray-50 rounded-lg p-4">
                         <h3 class="text-md font-medium text-gray-900 mb-3">Results Summary</h3>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div v-if="bulkResults.success.length > 0" class="bg-green-50 border border-green-200 rounded-md p-3">
                                 <div class="flex items-center">
@@ -272,7 +274,7 @@
                                     </span>
                                 </div>
                             </div>
-                            
+
                             <div v-if="bulkResults.errors.length > 0" class="bg-red-50 border border-red-200 rounded-md p-3">
                                 <div class="flex items-center">
                                     <svg class="h-5 w-5 text-red-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -287,7 +289,7 @@
                     </div>
                 </div>
 
-                <form @submit.prevent="submitBulkSeasons">
+                <form id="bulkAddSeasonsForm" @submit.prevent="submitBulkSeasons">
                     <div class="space-y-4">
                         <!-- Season Rows -->
                         <div v-for="(season, index) in bulkSeasons" :key="index" class="border rounded-lg p-4" :class="getBulkRowClass(index)">
@@ -373,8 +375,11 @@
                             </div>
                         </div>
                     </div>
+                </form>
+            </div>
+            <!-- End scrollable content area -->
 
-                    <div class="mt-6 flex justify-end space-x-3">
+                    <div class="mt-6 flex justify-end space-x-3 flex-shrink-0">
                         <button
                             type="button"
                             @click="closeBulkAddSeasonModal"
@@ -384,13 +389,13 @@
                         </button>
                         <button
                             type="submit"
+                            form="bulkAddSeasonsForm"
                             class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs"
                             :disabled="isBulkSubmitting"
                         >
                             {{ isBulkSubmitting ? 'Creating Seasons...' : 'Create' }}
                         </button>
                     </div>
-                </form>
             </div>
         </Modal>
     </div>
