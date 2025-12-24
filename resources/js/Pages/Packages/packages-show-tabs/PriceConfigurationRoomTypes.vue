@@ -306,6 +306,26 @@
             </div>
           </section>
         </div>
+
+        <!-- Bottom Action Bar (duplicate of top) -->
+        <div v-if="isEditMode" class="flex items-center justify-end pt-6 border-t">
+          <div class="space-x-2">
+            <button
+              @click="cancelEdit"
+              class="px-3 py-2 rounded bg-gray-100 text-gray-700 text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              @click="saveAll"
+              class="px-3 py-2 rounded bg-indigo-600 text-white text-sm"
+              :disabled="saveLoading"
+            >
+              <span v-if="saveLoading">Saving...</span>
+              <span v-else class="px-3 py-2">Save</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
