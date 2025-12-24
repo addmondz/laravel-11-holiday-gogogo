@@ -808,16 +808,12 @@ class TravelCalculatorController extends Controller
             $sst = 0;
             $baseTotal = $sum('total');
             $totalWithoutSst = $baseTotal + $addOnsTotal;
+
             if ($package->sst_enable) {
                 $sst = $this->sstCalculationService->calculateSst($totalWithoutSst);
             }
 
-            // Log::info('sst_enable: ' . $package->sst_enable);
-            // Log::info('totalWithoutSst: ' . $totalWithoutSst);
-            // Log::info('sst: ' . $sst);
-
             $total = $totalWithoutSst + $sst;
-            Log::info('total: ' . $total);
             return response()->json([
                 'success'          => true,
                 'currency'         => 'MYR',

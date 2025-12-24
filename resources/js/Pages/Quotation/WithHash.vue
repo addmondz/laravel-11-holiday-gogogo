@@ -1001,7 +1001,7 @@
                                                     </div>
                                                     <div class="flex justify-between font-medium">
                                                         <span class="text-gray-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
-                                                        <span class="text-gray-900">MYR {{ formatNumber(guest.base_charge.total + getGuestSurcharge(guest.guest_type) + getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number) + getGuestSstPortion(), false) }}</span>
+                                                        <span class="text-gray-900">MYR {{ formatNumber(getPackagePrice(guest) + getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number), false) }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1010,7 +1010,7 @@
                                         <!-- Room Total -->
                                         <div class="flex justify-between pt-2 border-t border-gray-200">
                                             <span class="font-semibold text-gray-900">Room Total:</span>
-                                            <span class="font-bold text-indigo-600">MYR {{ formatNumber(guestsByRoom.length === 1 ? priceBreakdown.total : (room.total + getRoomSurchargePortion(room) + getRoomAddOnTotal(room.room_number) + getRoomSstPortion(room)), false) }}</span>
+                                            <span class="font-bold text-indigo-600">MYR {{ formatNumber(getRoomTotalWithSst(room), false) }}</span>
                                         </div>
                                     </div>
 
@@ -1108,7 +1108,7 @@
                                                         MYR {{ formatNumber(0) }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-600 text-right">
-                                                        MYR {{ formatNumber(guest.total) }}
+                                                        MYR {{ formatNumber(getPackagePrice(guest), false) }}
                                                     </td>
                                                 </tr>
                                                 
@@ -1127,10 +1127,10 @@
                                                         MYR {{ formatNumber(priceBreakdown.summary.surcharges.adult.total) }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-bold text-indigo-900 text-right">
-                                                        MYR {{ formatNumber(priceBreakdown.summary.base_charges.adult.total + priceBreakdown.summary.surcharges.adult.total) }}
+                                                        MYR {{ formatNumber((priceBreakdown.summary.base_charges.adult.total + priceBreakdown.summary.surcharges.adult.total) * (1 + (package_sst_percentage || 0) / 100), false) }}
                                                     </td>
                                                 </tr>
-                                                
+
                                                 <tr v-if="priceBreakdown.summary.total_children > 0" class="bg-indigo-50">
                                                     <td colspan="4" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900">
                                                         Total Children ({{ priceBreakdown.summary.total_children }})
@@ -1148,10 +1148,10 @@
                                                         MYR {{ formatNumber(priceBreakdown.summary.surcharges.child.total) }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-bold text-indigo-900 text-right">
-                                                        MYR {{ formatNumber(priceBreakdown.summary.base_charges.child.total + priceBreakdown.summary.surcharges.child.total) }}
+                                                        MYR {{ formatNumber((priceBreakdown.summary.base_charges.child.total + priceBreakdown.summary.surcharges.child.total) * (1 + (package_sst_percentage || 0) / 100), false) }}
                                                     </td>
                                                 </tr>
-                                                
+
                                                 <tr v-if="priceBreakdown.summary.total_infants > 0" class="bg-indigo-50">
                                                     <td colspan="4" class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-900">
                                                         Total Infants ({{ priceBreakdown.summary.total_infants }})
@@ -1169,7 +1169,7 @@
                                                         MYR {{ formatNumber(priceBreakdown.summary.surcharges.infant.total) }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-bold text-indigo-900 text-right">
-                                                        MYR {{ formatNumber(priceBreakdown.summary.base_charges.infant.total + priceBreakdown.summary.surcharges.infant.total) }}
+                                                        MYR {{ formatNumber((priceBreakdown.summary.base_charges.infant.total + priceBreakdown.summary.surcharges.infant.total) * (1 + (package_sst_percentage || 0) / 100), false) }}
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -1224,7 +1224,7 @@
                                     <!-- Grand Total -->
                                     <div class="flex justify-between text-base font-semibold text-indigo-700">
                                         <span>Grand Total</span>
-                                        <span>MYR {{ formatNumber(priceBreakdown.total, false) }}</span>
+                                        <span>MYR {{ formatNumber(guestsByRoom.reduce((sum, room) => sum + getRoomTotalWithSst(room), 0), false) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -2295,7 +2295,9 @@ const getGuestSurcharge = (guestType) => {
 const getPackagePrice = (guest) => {
     const base = guest.base_charge?.total || 0;
     const surcharge = getGuestSurcharge(guest.guest_type);
-    const sst = getGuestSstPortion();
+    // Calculate SST as percentage of (base + surcharge) - proportional to guest's price
+    const sstPercent = package_sst_percentage.value || 0;
+    const sst = (base + surcharge) * (sstPercent / 100);
     return base + surcharge + sst;
 };
 
@@ -2320,6 +2322,19 @@ const getRoomSurchargePortion = (room) => {
     let total = 0;
     room.guests.forEach(guest => {
         total += getGuestSurcharge(guest.guest_type);
+    });
+    return total;
+};
+
+// Get room total by summing individual guest totals (package price + add-ons), floored per guest
+const getRoomTotalWithSst = (room) => {
+    if (!room.guests?.length) return 0;
+    let total = 0;
+    room.guests.forEach(guest => {
+        // Floor each guest's total individually to match displayed values
+        const guestPackage = Math.floor(getPackagePrice(guest));
+        const guestAddOn = Math.floor(getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number));
+        total += guestPackage + guestAddOn;
     });
     return total;
 };
@@ -3481,7 +3496,7 @@ const submitBooking = async () => {
             booking_email: bookingForm.value.booking_email,
             start_date: form.start_date,
             end_date: form.end_date,
-            total_price: priceBreakdown.value.total,
+            total_price: guestsByRoom.value.reduce((sum, room) => sum + getRoomTotalWithSst(room), 0),
             special_remarks: bookingForm.value.special_remarks.trim(),
             add_ons: getSelectedAddOnsForAPI()
         });

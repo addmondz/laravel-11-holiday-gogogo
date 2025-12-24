@@ -12,12 +12,12 @@ class SstCalculationService
     public static function calculateSst($amount): float
     {
         $sstConfig = AppSetting::getSstConfiguration();
-        
+
         if ($sstConfig['status'] != 1) {
             return 0.0;
         }
-        
-        $sstPercent = $sstConfig['sst_percent'] ?? 6.0;
+
+        $sstPercent = (float)($sstConfig['sst_percent'] ?? 6.0);
         return ($amount * $sstPercent) / 100;
     }
 
