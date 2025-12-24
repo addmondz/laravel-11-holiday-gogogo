@@ -545,9 +545,8 @@ class ConfigurationPriceController extends Controller
     private function compareAndUpdatePriceConfiguration($target, $source)
     {
         foreach ($source as $key => $value) {
-            if (isset($target[$key])) {
-                $target[$key] = $value;
-            }
+            // Copy all keys from source to target, including disabled ones
+            $target[$key] = $value;
         }
         return $target;
     }

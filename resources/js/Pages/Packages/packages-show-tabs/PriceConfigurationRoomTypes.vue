@@ -225,7 +225,7 @@
                               step="0.01"
                               class="w-full rounded-l-md border-none focus:ring-0 px-3 py-2"
                               v-model.number="room.base[comboKey][slotKey]"
-                              @input="checkSameCategorySamePrice(room, comboKey, slotKey)"
+                              @input="onPriceInput(room, comboKey, slotKey)"
                             />
                             <button
                               type="button"
@@ -482,7 +482,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, nextTick } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import LoadingComponent from "@/Components/LoadingComponent.vue";
@@ -713,6 +713,12 @@ const copySurchargeTypeToSameRow = (room, comboKey, slotKey) => {
 let lastWarningKey = '';
 let lastWarningTime = 0;
 
+const onPriceInput = (room, comboKey, slotKey) => {
+  nextTick(() => {
+    checkCrossTypeSamePriceForSingleQty(room, comboKey);
+  });
+};
+
 const checkSameCategorySamePrice = (room, comboKey, slotKey) => {
   const row = room.base?.[comboKey];
   if (!row) return;
@@ -749,6 +755,70 @@ const checkSameCategorySamePrice = (room, comboKey, slotKey) => {
       showConfirmButton: true,
       confirmButtonText: 'OK',
     });
+  }
+};
+
+const checkCrossTypeSamePriceForSingleQty = (room, comboKey) => {
+  const row = room.base?.[comboKey];
+  if (!row) return;
+
+  // Parse combo to get quantities for each category
+  const counts = parseCombo(comboKey);
+  if (!counts) return;
+
+  // Find the max slot number to check (max of all quantities)
+  const maxSlot = Math.max(counts.a, counts.c, counts.i);
+
+  // Check each slot number (1, 2, 3, etc.)
+  for (let slot = 1; slot <= maxSlot; slot++) {
+    const slotPrices = [];
+
+    // Include all types that have this slot
+    if (row[`a${slot}`] !== undefined) {
+      slotPrices.push({ type: `Adult ${slot}`, price: Number(row[`a${slot}`]) });
+    }
+    if (row[`c${slot}`] !== undefined) {
+      slotPrices.push({ type: `Child ${slot}`, price: Number(row[`c${slot}`]) });
+    }
+    if (row[`i${slot}`] !== undefined) {
+      slotPrices.push({ type: `Infant ${slot}`, price: Number(row[`i${slot}`]) });
+    }
+
+    // Need at least 2 types to compare
+    if (slotPrices.length < 2) continue;
+
+    // Find duplicates - group by price
+    const priceGroups = {};
+    slotPrices.forEach(({ type, price }) => {
+      if (price > 0) {
+        if (!priceGroups[price]) priceGroups[price] = [];
+        priceGroups[price].push(type);
+      }
+    });
+
+    // Check for any price with 2+ types
+    for (const [price, types] of Object.entries(priceGroups)) {
+      if (types.length >= 2) {
+        // Debounce check
+        const warningKey = `cross-${room.room_type_id}-${comboKey}-slot${slot}-${price}`;
+        const now = Date.now();
+        if (warningKey === lastWarningKey && now - lastWarningTime < 3000) {
+          return;
+        }
+        lastWarningKey = warningKey;
+        lastWarningTime = now;
+
+        Swal.fire({
+          icon: "warning",
+          title: "Same Price Detected",
+          text: `${types.join(' and ')} have the same price (${price}). Is this intended?`,
+          timer: 5000,
+          showConfirmButton: true,
+          confirmButtonText: 'OK',
+        });
+        return; // Only show one alert per input
+      }
+    }
   }
 };
 
