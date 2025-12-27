@@ -733,7 +733,8 @@ class PackageController extends Controller
             // Step 1: Create new records and build mappings
             $roomTypeMap = [];
             $formRoomTypes = $validated['room_types'] ?? [];
-            $originalRoomTypes = $package->roomTypes->unique('name')->values();
+            // Get all original room types keyed by name for easier lookup
+            $originalRoomTypesByName = $package->loadRoomTypes()->get()->keyBy('name');
             
             // Create room types based on form submission
             foreach ($formRoomTypes as $index => $formRoomType) {
@@ -772,9 +773,11 @@ class PackageController extends Controller
                 $newRoomType->images = $roomTypeImages;
                 $newRoomType->save();
                 
-                // Map old room type ID to new room type ID (if exists)
-                if (isset($originalRoomTypes[$index])) {
-                    $roomTypeMap[$originalRoomTypes[$index]->id] = $newRoomType->id;
+                // Map old room type ID to new room type ID by matching name
+                // This is more reliable than matching by array index
+                if (isset($originalRoomTypesByName[$formRoomType['name']])) {
+                    $originalRoomType = $originalRoomTypesByName[$formRoomType['name']];
+                    $roomTypeMap[$originalRoomType->id] = $newRoomType->id;
                 }
             }
 
@@ -796,6 +799,13 @@ class PackageController extends Controller
 
             // package configuration
             foreach ($package->configurations as $config) {
+                // Skip configurations for room types that don't exist in the mapping
+                // This can happen if a room type was deleted or not included in the form submission
+                if (!isset($roomTypeMap[$config->room_type_id])) {
+                    Log::warning("Skipping package configuration duplication: Room type ID {$config->room_type_id} not found in room type mapping for package {$package->id}");
+                    continue;
+                }
+                
                 $newConfig = $config->replicate();
                 $newConfig->package_id = $newPackage->id;
                 $newConfig->room_type_id = $roomTypeMap[$config->room_type_id];
