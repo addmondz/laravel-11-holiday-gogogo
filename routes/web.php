@@ -27,6 +27,9 @@ use App\Http\Controllers\DateBlockerController;
 use App\Http\Controllers\SenangPayController;
 use App\Models\Transaction;
 use App\Models\Package;
+use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -233,8 +236,6 @@ Route::prefix('bot-api')->group(function () {
     })->name('bot-api.docs');
 });
 
-
-use Illuminate\Support\Facades\DB;
 Route::get('/show-duplicate-price-configuration', function () {
     // Subquery: duplicate keys (the combos appearing > 1 time)
     $dupKeys = DB::table('package_configurations')
@@ -264,3 +265,74 @@ Route::get('/show-duplicate-price-configuration', function () {
         // 'duplicate_rows' => $rows,   // the actual rows involved
     ]);
 });
+
+// Re-simulate request from activity log by ID (GET route for easy browser access)
+if (env('APP_ENV') == 'local') {
+    Route::get('/replay-activity-log/{id}', function ($id) {
+        try {
+            $activityLog = ActivityLog::findOrFail($id);
+            
+            // Parse the description to extract route info: "Accessed POST packages/93/duplicate"
+            $description = $activityLog->description ?? '';
+            preg_match('/Accessed\s+(\w+)\s+(.+)/', $description, $matches);
+            $httpMethod = strtoupper($matches[1] ?? $activityLog->action ?? 'POST');
+            $routePath = $matches[2] ?? '';
+            
+            if (empty($routePath)) {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Could not parse route path from description: {$description}",
+                ], 400);
+            }
+            
+            // Parse request body
+            $requestBody = $activityLog->request_body;
+            if (is_string($requestBody)) {
+                $requestBody = json_decode($requestBody, true);
+            }
+            
+            // Add CSRF token for POST/PUT/PATCH/DELETE requests
+            if (in_array($httpMethod, ['POST', 'PUT', 'PATCH', 'DELETE'])) {
+                $csrfToken = csrf_token();
+                if (is_array($requestBody)) {
+                    $requestBody['_token'] = $csrfToken;
+                }
+            }
+            
+            // Authenticate as the original user if available
+            if ($activityLog->user_email && $activityLog->user_email !== 'guest') {
+                $user = \App\Models\User::where('email', $activityLog->user_email)->first();
+                if ($user) {
+                    auth()->login($user);
+                }
+            }
+            
+            // Create and handle the request
+            $request = Request::create($routePath, $httpMethod, $requestBody ?? []);
+            $request->setLaravelSession(request()->session());
+            
+            if (in_array($httpMethod, ['POST', 'PUT', 'PATCH', 'DELETE'])) {
+                $request->headers->set('X-CSRF-TOKEN', $csrfToken ?? csrf_token());
+            }
+            
+            $response = app()->handle($request);
+
+            Log::info("Activity Log Replay Response #{$id}");
+            
+            return $response;
+            
+        } catch (\Exception $e) {
+            Log::error("Activity Log Replay Error #{$id}", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return response()->json([
+                'error' => true,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
+        }
+    });
+}
