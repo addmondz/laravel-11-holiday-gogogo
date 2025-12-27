@@ -12,8 +12,13 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
+        $adminEmails = [
+            'admin@admin.com',
+            'dev@admin.com',
+        ];
+
         $users = User::select('id', 'name', 'email', 'created_at')
-            ->where('email', '!=', 'admin@admin.com')
+            ->whereNotIn('email', $adminEmails)
             ->orderBy('created_at', 'desc');
 
         if ($request->has('search')) {
