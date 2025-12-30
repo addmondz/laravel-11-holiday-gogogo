@@ -200,6 +200,18 @@
                                 ></textarea>
                             </div>
 
+                            <div class="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    id="default_show_surcharge"
+                                    v-model="roomTypeForm.default_show_surcharge"
+                                    class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                />
+                                <label for="default_show_surcharge" class="ml-2 block text-sm text-gray-700">
+                                    Show surcharges by default in Price Configuration
+                                </label>
+                            </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Images</label>
                                 <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
@@ -518,6 +530,18 @@
                                 ></textarea>
                             </div>
 
+                            <div class="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    id="edit_default_show_surcharge"
+                                    v-model="editRoomTypeForm.default_show_surcharge"
+                                    class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                />
+                                <label for="edit_default_show_surcharge" class="ml-2 block text-sm text-gray-700">
+                                    Show surcharges by default in Price Configuration
+                                </label>
+                            </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Images</label>
                                 <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
@@ -655,7 +679,8 @@ const roomTypeForm = useForm({
     return_to_package: true,
     images: [],
     disabled_pax_combinations: [],
-    delete_images: []
+    delete_images: [],
+    default_show_surcharge: false,
 });
 
 const editRoomTypeForm = useForm({
@@ -671,7 +696,8 @@ const editRoomTypeForm = useForm({
     return_to_package: true,
     images: [],
     disabled_pax_combinations: [],
-    delete_images: []
+    delete_images: [],
+    default_show_surcharge: false,
 });
 
 // Store selected combinations separately to avoid recursive updates
@@ -767,6 +793,7 @@ const submitRoomType = () => {
     formData.append('max_infants', roomTypeForm.max_infants || '');
     formData.append('package_id', props.package.id);
     formData.append('return_to_package', 'true');
+    formData.append('default_show_surcharge', roomTypeForm.default_show_surcharge ? '1' : '0');
     // Properly append array to FormData - append each item with array notation
     if (Array.isArray(selectedCombinationsToDisableForAdd.value) && selectedCombinationsToDisableForAdd.value.length > 0) {
         selectedCombinationsToDisableForAdd.value.forEach((combo, index) => {
@@ -855,6 +882,7 @@ const editRoomType = (roomType) => {
     editRoomTypeForm.delete_images = [];
     editRoomTypeForm.return_to_package = true;
     editRoomTypeForm.disabled_pax_combinations = roomType.disabled_pax_combinations || [];
+    editRoomTypeForm.default_show_surcharge = roomType.default_show_surcharge ?? false;
     // Initialize selected combinations with current disabled combinations
     selectedCombinationsToDisable.value = Array.isArray(roomType.disabled_pax_combinations) 
         ? [...roomType.disabled_pax_combinations] 
@@ -889,6 +917,7 @@ const updateRoomType = () => {
     formData.append('max_infants', editRoomTypeForm.max_infants || '');
     formData.append('package_id', props.package.id);
     formData.append('return_to_package', 'true');
+    formData.append('default_show_surcharge', editRoomTypeForm.default_show_surcharge ? '1' : '0');
     // Properly append array to FormData - append each item with array notation
     if (Array.isArray(selectedCombinationsToDisable.value) && selectedCombinationsToDisable.value.length > 0) {
         selectedCombinationsToDisable.value.forEach((combo, index) => {

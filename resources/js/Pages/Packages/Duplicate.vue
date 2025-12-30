@@ -601,6 +601,7 @@ const form = useForm({
         max_children: roomType.max_children || null,
         max_infants: roomType.max_infants || null,
         description: roomType.description,
+        disabled_pax_combinations: roomType.disabled_pax_combinations || [],
         images: roomType.images || [],
         imagePreviews: (roomType.images || []).map(imgPath => `/images/${imgPath}`)
     }))
@@ -617,6 +618,7 @@ const addRoomType = () => {
         max_children: null,
         max_infants: null,
         description: '',
+        disabled_pax_combinations: [],
         images: [],
         imagePreviews: []
     });
@@ -840,6 +842,7 @@ const submit = () => {
                 max_children: roomType.max_children || null,
                 max_infants: roomType.max_infants || null,
                 description: roomType.description,
+                disabled_pax_combinations: roomType.disabled_pax_combinations || [],
                 existing_images: existingRoomImages,
                 images: newRoomImages
             };

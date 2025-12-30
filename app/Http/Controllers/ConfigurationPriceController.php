@@ -164,6 +164,7 @@ class ConfigurationPriceController extends Controller
                 'prices'                => $prices,
                 'room_type_name'        => $config->roomType->name,
                 'room_type_capacity'    => $config->roomType->max_occupancy,
+                'default_show_surcharge' => $config->roomType->default_show_surcharge ?? false,
             ];
         });
 

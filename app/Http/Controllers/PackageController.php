@@ -663,6 +663,7 @@ class PackageController extends Controller
                 'room_types.*.existing_images.*' => 'nullable|string',
                 'room_types.*.images' => 'nullable|array',
                 'room_types.*.images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'room_types.*.disabled_pax_combinations' => 'nullable|array',
             ], [
                 'name.required' => 'Package name is required',
                 'name.max' => 'Package name cannot exceed 255 characters',
@@ -747,6 +748,7 @@ class PackageController extends Controller
                 $newRoomType->max_children = $formRoomType['max_children'] ?? null;
                 $newRoomType->max_infants = $formRoomType['max_infants'] ?? null;
                 $newRoomType->description = $formRoomType['description'] ?? null;
+                $newRoomType->disabled_pax_combinations = $formRoomType['disabled_pax_combinations'] ?? [];
                 
                 // Handle room type images
                 $roomTypeImages = [];

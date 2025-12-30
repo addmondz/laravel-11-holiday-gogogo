@@ -51,7 +51,11 @@ class RoomTypeController extends Controller
             'package_id' => 'required|exists:packages,id',
             'images.*' => 'nullable|image|max:2048',
             'disabled_pax_combinations' => 'nullable',
+            'default_show_surcharge' => 'nullable|boolean',
         ]);
+
+        // Convert string '1'/'0' to boolean for default_show_surcharge
+        $validated['default_show_surcharge'] = filter_var($request->input('default_show_surcharge'), FILTER_VALIDATE_BOOLEAN);
 
         // Handle disabled_pax_combinations
         $disabledPax = $validated['disabled_pax_combinations'] ?? null;
@@ -148,7 +152,11 @@ class RoomTypeController extends Controller
                 'delete_images' => 'nullable|array',
                 'delete_images.*' => 'string',
                 'disabled_pax_combinations' => 'nullable',
+                'default_show_surcharge' => 'nullable|boolean',
             ]);
+
+            // Convert string '1'/'0' to boolean for default_show_surcharge
+            $validated['default_show_surcharge'] = filter_var($request->input('default_show_surcharge'), FILTER_VALIDATE_BOOLEAN);
 
             $disabledPax = $validated['disabled_pax_combinations'] ?? null;
             

@@ -213,7 +213,7 @@
                                 :class="[
                                     'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
                                     currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
-                                    1 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
+                                    (1 <= maxStepReached && !bookingSuccess) ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
                                 ]"
                                 :title="currentStep >= 1 ? 'Select Room and Date' : ''">
                                 1
@@ -227,7 +227,7 @@
                                 :class="[
                                     'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
                                     currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
-                                    2 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
+                                    (2 <= maxStepReached && !bookingSuccess) ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
                                 ]"
                                 :title="currentStep >= 2 ? 'Price Summary' : ''">
                                 2
@@ -241,7 +241,7 @@
                                 :class="[
                                     'w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all',
                                     currentStep >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
-                                    3 <= maxStepReached ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
+                                    (3 <= maxStepReached && !bookingSuccess) ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
                                 ]"
                                 :title="currentStep >= 3 ? 'Booking Details' : ''">
                                 3
@@ -255,12 +255,12 @@
                             @click="navigateToStep(1)"
                             :class="[
                                 'flex items-center transition-all',
-                                1 <= maxStepReached ? 'cursor-pointer hover:scale-105' : ''
+                                (1 <= maxStepReached && !bookingSuccess) ? 'cursor-pointer hover:scale-105' : ''
                             ]">
                             <div :class="[
                                 'w-8 h-8 rounded-full flex items-center justify-center transition-all',
                                 currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
-                                1 <= maxStepReached ? 'hover:shadow-lg' : ''
+                                (1 <= maxStepReached && !bookingSuccess) ? 'hover:shadow-lg' : ''
                             ]">1</div>
                             <div class="ml-2 text-sm font-medium" :class="currentStep >= 1 ? 'text-indigo-600' : 'text-gray-500'">Select Room and Date</div>
                         </div>
@@ -270,12 +270,12 @@
                             @click="navigateToStep(2)"
                             :class="[
                                 'flex items-center transition-all',
-                                2 <= maxStepReached ? 'cursor-pointer hover:scale-105' : ''
+                                (2 <= maxStepReached && !bookingSuccess) ? 'cursor-pointer hover:scale-105' : ''
                             ]">
                             <div :class="[
                                 'w-8 h-8 rounded-full flex items-center justify-center transition-all',
                                 currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
-                                2 <= maxStepReached ? 'hover:shadow-lg' : ''
+                                (2 <= maxStepReached && !bookingSuccess) ? 'hover:shadow-lg' : ''
                             ]">2</div>
                             <div class="ml-2 text-sm font-medium" :class="currentStep >= 2 ? 'text-indigo-600' : 'text-gray-500'">Price Summary</div>
                         </div>
@@ -285,12 +285,12 @@
                             @click="navigateToStep(3)"
                             :class="[
                                 'flex items-center transition-all',
-                                3 <= maxStepReached ? 'cursor-pointer hover:scale-105' : ''
+                                (3 <= maxStepReached && !bookingSuccess) ? 'cursor-pointer hover:scale-105' : ''
                             ]">
                             <div :class="[
                                 'w-8 h-8 rounded-full flex items-center justify-center transition-all',
                                 currentStep >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600',
-                                3 <= maxStepReached ? 'hover:shadow-lg' : ''
+                                (3 <= maxStepReached && !bookingSuccess) ? 'hover:shadow-lg' : ''
                             ]">3</div>
                             <div class="ml-2 text-sm font-medium" :class="currentStep >= 3 ? 'text-indigo-600' : 'text-gray-500'">Booking Details</div>
                         </div>
@@ -995,9 +995,9 @@
                                                         <span class="text-gray-500">Package:</span>
                                                         <span class="text-gray-700">MYR {{ formatNumber(getPackagePrice(guest), false) }}</span>
                                                     </div>
-                                                    <div class="flex justify-between">
-                                                        <span class="text-gray-500">Add on:</span>
-                                                        <span class="text-gray-700">MYR {{ formatNumber(getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number)) }}</span>
+                                                    <div v-for="(addOnItem, addOnIndex) in getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number)" :key="'addon-' + addOnIndex" class="flex justify-between">
+                                                        <span class="text-gray-500">{{ addOnItem.name }}:</span>
+                                                        <span class="text-gray-700">MYR {{ formatNumber(addOnItem.price) }}</span>
                                                     </div>
                                                     <div class="flex justify-between font-medium">
                                                         <span class="text-gray-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
@@ -2257,6 +2257,36 @@ const getGuestAddOnTotal = (roomNumber, guestType, guestNumber) => {
     return total;
 };
 
+// Get add-on items for a specific guest with names and prices
+const getGuestAddOnItems = (roomNumber, guestType, guestNumber) => {
+    if (!priceBreakdown.value?.add_ons?.length) return [];
+
+    const roomAddOns = priceBreakdown.value.add_ons.filter(a => Number(a.room_number) === Number(roomNumber));
+    const items = [];
+
+    roomAddOns.forEach(addOn => {
+        let price = 0;
+        let applicable = false;
+
+        if (guestType === 'adult' && addOn.adults >= guestNumber) {
+            price = Math.floor(parseFloat(addOn.adult_price) || 0);
+            applicable = true;
+        } else if (guestType === 'child' && addOn.children >= guestNumber) {
+            price = Math.floor(parseFloat(addOn.child_price) || 0);
+            applicable = true;
+        } else if (guestType === 'infant' && addOn.infants >= guestNumber) {
+            price = Math.floor(parseFloat(addOn.infant_price) || 0);
+            applicable = true;
+        }
+
+        if (applicable && price > 0) {
+            items.push({ name: addOn.name, price });
+        }
+    });
+
+    return items;
+};
+
 // Get total add-ons for a room
 const getRoomAddOnTotal = (roomNumber) => {
     if (!priceBreakdown.value?.add_ons?.length) return 0;
@@ -3376,6 +3406,9 @@ const scrollToBookingForm = () => {
 
 // Navigate to a specific step (only if already reached)
 const navigateToStep = (step) => {
+    // Don't allow navigation after booking is created
+    if (bookingSuccess.value) return;
+
     // Only allow navigation to steps that have been reached
     if (step <= maxStepReached.value) {
         currentStep.value = step;

@@ -155,6 +155,21 @@
           </div>
         </div>
 
+        <!-- Same Price Alerts Suppressed Notice -->
+        <div v-if="isEditMode && suppressSamePriceAlerts" class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-yellow-800">
+              Same price alerts are currently hidden.
+            </span>
+            <button
+              @click="suppressSamePriceAlerts = false"
+              class="px-3 py-1 bg-yellow-600 text-white rounded text-xs hover:bg-yellow-700"
+            >
+              Show alerts again
+            </button>
+          </div>
+        </div>
+
         <!-- PER ROOM -->
         <div
           v-for="room in compactRooms"
@@ -181,6 +196,79 @@
               >
                 Duplicate to Multiple
               </button>
+            </div>
+          </div>
+
+          <!-- Global Adjustment Panel -->
+          <div v-if="isEditMode && roomAdjustments[room.room_type_id]" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <h4 class="text-sm font-medium text-gray-700 mb-3">
+              Global Price Adjustments
+              <span class="text-xs text-gray-500 font-normal ml-2">(Apply to all base charges in this room)</span>
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Adult -->
+              <div class="flex flex-col space-y-2">
+                <label class="text-xs font-medium text-gray-600">Adult</label>
+                <div class="flex items-center space-x-2">
+                  <input type="number" step="0.01" min="0" v-model.number="roomAdjustments[room.room_type_id].adult.value"
+                    class="w-20 rounded-md border-gray-300 text-sm" placeholder="0" />
+                  <select v-model="roomAdjustments[room.room_type_id].adult.mode" class="rounded-md border-gray-300 text-xs">
+                    <option value="value">MYR</option>
+                    <option value="percentage">%</option>
+                  </select>
+                  <button @click="applyGlobalAdjustment(room, 'adult', 'add')"
+                    class="px-2 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700" title="Add to all adult prices">
+                    <PlusOutlined />
+                  </button>
+                  <button @click="applyGlobalAdjustment(room, 'adult', 'subtract')"
+                    class="px-2 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700" title="Subtract from all adult prices">
+                    <MinusOutlined />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Child -->
+              <div class="flex flex-col space-y-2">
+                <label class="text-xs font-medium text-gray-600">Child</label>
+                <div class="flex items-center space-x-2">
+                  <input type="number" step="0.01" min="0" v-model.number="roomAdjustments[room.room_type_id].child.value"
+                    class="w-20 rounded-md border-gray-300 text-sm" placeholder="0" />
+                  <select v-model="roomAdjustments[room.room_type_id].child.mode" class="rounded-md border-gray-300 text-xs">
+                    <option value="value">MYR</option>
+                    <option value="percentage">%</option>
+                  </select>
+                  <button @click="applyGlobalAdjustment(room, 'child', 'add')"
+                    class="px-2 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700" title="Add to all child prices">
+                    <PlusOutlined />
+                  </button>
+                  <button @click="applyGlobalAdjustment(room, 'child', 'subtract')"
+                    class="px-2 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700" title="Subtract from all child prices">
+                    <MinusOutlined />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Infant -->
+              <div class="flex flex-col space-y-2">
+                <label class="text-xs font-medium text-gray-600">Infant</label>
+                <div class="flex items-center space-x-2">
+                  <input type="number" step="0.01" min="0" v-model.number="roomAdjustments[room.room_type_id].infant.value"
+                    class="w-20 rounded-md border-gray-300 text-sm" placeholder="0" />
+                  <select v-model="roomAdjustments[room.room_type_id].infant.mode" class="rounded-md border-gray-300 text-xs">
+                    <option value="value">MYR</option>
+                    <option value="percentage">%</option>
+                  </select>
+                  <button @click="applyGlobalAdjustment(room, 'infant', 'add')"
+                    class="px-2 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700" title="Add to all infant prices">
+                    <PlusOutlined />
+                  </button>
+                  <button @click="applyGlobalAdjustment(room, 'infant', 'subtract')"
+                    class="px-2 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700" title="Subtract from all infant prices">
+                    <MinusOutlined />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -259,13 +347,27 @@
               <table class="min-w-full text-sm">
                 <thead class="bg-gray-200">
                   <tr>
-                    <th class="px-4 py-2 text-left">Surcharge</th>
+                    <th class="px-4 py-2 text-left">
+                      <div class="flex items-center gap-2">
+                        <span>Surcharge</span>
+                        <button
+                          type="button"
+                          @click="toggleSurchargeTable(room.room_type_id)"
+                          class="p-1 rounded"
+                          :class="showSurchargeTable[room.room_type_id] ? 'text-indigo-600 hover:bg-indigo-50' : 'text-gray-400 hover:bg-gray-100'"
+                          :title="showSurchargeTable[room.room_type_id] ? 'Hide surcharge table' : 'Show surcharge table'"
+                        >
+                          <EyeOutlined v-if="showSurchargeTable[room.room_type_id]" class="h-4 w-4" />
+                          <EyeInvisibleOutlined v-else class="h-4 w-4" />
+                        </button>
+                      </div>
+                    </th>
                     <th v-for="k in ['a', 'c', 'i']" :key="k" class="px-4 py-2 text-left">
                       {{ surchargeLabel(k) }}
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody v-show="showSurchargeTable[room.room_type_id]">
                   <tr
                     v-for="([comboKey, slots], idx) in comboEntries(room.surch)"
                     :key="comboKey"
@@ -506,7 +608,7 @@ import { ref, computed, nextTick } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import LoadingComponent from "@/Components/LoadingComponent.vue";
-import { CopyOutlined } from "@ant-design/icons-vue";
+import { CopyOutlined, EyeOutlined, EyeInvisibleOutlined, PlusOutlined, MinusOutlined } from "@ant-design/icons-vue";
 
 const props = defineProps({
   packageId: { type: Number, required: true },
@@ -527,6 +629,15 @@ const isPriceLoading = ref(false);
 const searched = ref(false);
 const isEditMode = ref(false);
 const saveLoading = ref(false);
+
+// Suppress "Same Price Detected" alerts for this editing session
+const suppressSamePriceAlerts = ref(false);
+
+// Per-room surcharge table visibility (initialized from room's default_show_surcharge)
+const showSurchargeTable = ref({});
+
+// State for global price adjustments per room
+const roomAdjustments = ref({});
 
 // Duplicate functionality
 const showDuplicateModal = ref(false);
@@ -729,6 +840,65 @@ const copySurchargeTypeToSameRow = (room, comboKey, slotKey) => {
 
 };
 
+// Initialize room adjustments state for each room
+const initializeRoomAdjustments = () => {
+  compactRooms.value.forEach(room => {
+    if (!roomAdjustments.value[room.room_type_id]) {
+      roomAdjustments.value[room.room_type_id] = {
+        adult: { value: 0, mode: 'value' },
+        child: { value: 0, mode: 'value' },
+        infant: { value: 0, mode: 'value' }
+      };
+    }
+  });
+};
+
+// Apply global adjustment to all base charges of a category in a room
+const applyGlobalAdjustment = (room, category, operation) => {
+  // category: 'adult' | 'child' | 'infant'
+  // operation: 'add' | 'subtract'
+  const prefix = category === 'adult' ? 'a' : category === 'child' ? 'c' : 'i';
+  const adjustment = roomAdjustments.value[room.room_type_id]?.[category];
+
+  if (!adjustment || !adjustment.value || adjustment.value <= 0) {
+    Swal.fire({ icon: 'warning', title: 'Invalid Value', text: 'Please enter a positive adjustment value', timer: 2000 });
+    return;
+  }
+
+  const adjustmentValue = Number(adjustment.value);
+  const isPercentage = adjustment.mode === 'percentage';
+
+  // Apply to ALL PAX combinations in base charges
+  Object.keys(room.base).forEach(comboKey => {
+    const slots = room.base[comboKey];
+    Object.keys(slots).forEach(slotKey => {
+      if (slotKey.startsWith(prefix)) {
+        const currentValue = Number(slots[slotKey]) || 0;
+        let newValue;
+
+        if (isPercentage) {
+          const percentageAmount = currentValue * (adjustmentValue / 100);
+          newValue = operation === 'add' ? currentValue + percentageAmount : currentValue - percentageAmount;
+        } else {
+          newValue = operation === 'add' ? currentValue + adjustmentValue : currentValue - adjustmentValue;
+        }
+
+        slots[slotKey] = Math.max(0, Math.round(newValue * 100) / 100);
+      }
+    });
+  });
+
+  // Success feedback
+  const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
+  Swal.fire({
+    icon: 'success',
+    title: 'Adjustment Applied',
+    text: `${operation === 'add' ? 'Added' : 'Subtracted'} ${isPercentage ? adjustmentValue + '%' : 'MYR ' + adjustmentValue} ${operation === 'add' ? 'to' : 'from'} all ${categoryLabel} base charges`,
+    timer: 1500,
+    showConfirmButton: false
+  });
+};
+
 // Track last warning to prevent alert spam
 let lastWarningKey = '';
 let lastWarningTime = 0;
@@ -740,6 +910,9 @@ const onPriceInput = (room, comboKey, slotKey) => {
 };
 
 const checkSameCategorySamePrice = (room, comboKey, slotKey) => {
+  // Skip if alerts are suppressed
+  if (suppressSamePriceAlerts.value) return;
+
   const row = room.base?.[comboKey];
   if (!row) return;
 
@@ -774,11 +947,20 @@ const checkSameCategorySamePrice = (room, comboKey, slotKey) => {
       timer: 3000,
       showConfirmButton: true,
       confirmButtonText: 'OK',
+      showDenyButton: true,
+      denyButtonText: "Don't show again",
+    }).then((result) => {
+      if (result.isDenied) {
+        suppressSamePriceAlerts.value = true;
+      }
     });
   }
 };
 
 const checkCrossTypeSamePriceForSingleQty = (room, comboKey) => {
+  // Skip if alerts are suppressed
+  if (suppressSamePriceAlerts.value) return;
+
   const row = room.base?.[comboKey];
   if (!row) return;
 
@@ -835,6 +1017,12 @@ const checkCrossTypeSamePriceForSingleQty = (room, comboKey) => {
           timer: 5000,
           showConfirmButton: true,
           confirmButtonText: 'OK',
+          showDenyButton: true,
+          denyButtonText: "Don't show again",
+        }).then((result) => {
+          if (result.isDenied) {
+            suppressSamePriceAlerts.value = true;
+          }
         });
         return; // Only show one alert per input
       }
@@ -848,6 +1036,10 @@ const displayRoomName = (id) =>
 
 const surchargeLabel = (k) =>
   k === "a" ? "Adult (per pax)" : k === "c" ? "Child (per pax)" : "Infant (per pax)";
+
+const toggleSurchargeTable = (roomTypeId) => {
+  showSurchargeTable.value[roomTypeId] = !showSurchargeTable.value[roomTypeId];
+};
 
 // ---- Fetch & transform -----------------------------------------------------
 const fetchPrices = () => {
@@ -898,6 +1090,17 @@ const fetchPrices = () => {
           surch: p0?.surch ?? {},
         };
       });
+
+      // Initialize surcharge visibility per room based on default_show_surcharge
+      rows.forEach(row => {
+        const roomId = row?.room_type_id ?? row?.room_type?.id;
+        if (roomId) {
+          showSurchargeTable.value[roomId] = row?.default_show_surcharge ?? false;
+        }
+      });
+
+      // Initialize global adjustment state for each room
+      initializeRoomAdjustments();
     })
     .catch((err) => {
       console.error(err);
@@ -926,6 +1129,7 @@ const resetSearch = () => {
 
 const cancelEdit = () => {
   isEditMode.value = false;
+  suppressSamePriceAlerts.value = false;
   fetchPrices();
 };
 
@@ -951,6 +1155,7 @@ const saveAll = () => {
     .put(route("configuration-prices.updateRoomTypePrices"), payload)
     .then(() => {
       isEditMode.value = false;
+      suppressSamePriceAlerts.value = false;
       Swal.fire({
         icon: "success",
         title: "Saved",
