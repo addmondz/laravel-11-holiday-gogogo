@@ -165,6 +165,7 @@
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
                                 <option value="">Select Room Type</option>
+                                <option value="all">All Room Types</option>
                                 <option v-for="(roomType, key) in packageUniqueRoomTypes" :value="key" :key="key">
                                     {{ roomType }}
                                 </option>

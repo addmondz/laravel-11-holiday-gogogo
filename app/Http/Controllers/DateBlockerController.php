@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DateBlocker;
+use App\Models\RoomType;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -29,9 +30,19 @@ class DateBlockerController extends Controller
             'package_id' => 'required|exists:packages,id',
             'start_date' => 'required|date',
             'end_date'   => 'required|date|after_or_equal:start_date',
-            'room_type_id' => 'required|exists:room_types,id',
+            'room_type_id' => 'required',
         ], [
             'end_date.after_or_equal' => 'End date must be the same as or after the start date.',
+        ]);
+
+        // Handle "all" room types - create blockers for each room type in the package
+        if ($validated['room_type_id'] === 'all') {
+            return $this->storeForAllRoomTypes($request, $validated);
+        }
+
+        // Validate room_type_id exists for single room type
+        $request->validate([
+            'room_type_id' => 'exists:room_types,id',
         ]);
 
         if (DateBlocker::hasOverlappingDates($validated['start_date'], $validated['end_date'], $validated['package_id'], null, $validated['room_type_id'])) {
@@ -50,6 +61,51 @@ class DateBlockerController extends Controller
             return $request->wantsJson()
                 ? response()->json(['message' => 'Date blocker created successfully', 'dateBlocker' => $dateBlocker])
                 : back()->with('success', 'Date blocker created successfully');
+        } catch (\Exception $e) {
+            return $this->respondWithException($request, 'creating', $e, $request->all());
+        }
+    }
+
+    private function storeForAllRoomTypes(Request $request, array $validated)
+    {
+        $roomTypes = RoomType::where('package_id', $validated['package_id'])->get();
+
+        if ($roomTypes->isEmpty()) {
+            return $request->wantsJson()
+                ? response()->json(['message' => 'No room types found for this package'], 422)
+                : back()->withErrors(['room_type_id' => 'No room types found for this package']);
+        }
+
+        $created = 0;
+        $skipped = 0;
+        $skippedRoomTypes = [];
+
+        try {
+            foreach ($roomTypes as $roomType) {
+                // Check for overlapping dates for this room type
+                if (DateBlocker::hasOverlappingDates($validated['start_date'], $validated['end_date'], $validated['package_id'], null, $roomType->id)) {
+                    $skipped++;
+                    $skippedRoomTypes[] = $roomType->name;
+                    continue;
+                }
+
+                DateBlocker::create([
+                    'package_id' => $validated['package_id'],
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date'],
+                    'room_type_id' => $roomType->id,
+                ]);
+                $created++;
+            }
+
+            $message = "{$created} date blocker(s) created successfully";
+            if ($skipped > 0) {
+                $message .= ". {$skipped} room type(s) skipped due to overlapping dates: " . implode(', ', $skippedRoomTypes);
+            }
+
+            return $request->wantsJson()
+                ? response()->json(['message' => $message, 'created' => $created, 'skipped' => $skipped])
+                : back()->with('success', $message);
         } catch (\Exception $e) {
             return $this->respondWithException($request, 'creating', $e, $request->all());
         }
