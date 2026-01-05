@@ -995,9 +995,9 @@
                                                         <span class="text-gray-500">Package:</span>
                                                         <span class="text-gray-700">MYR {{ formatNumber(getPackagePrice(guest), false) }}</span>
                                                     </div>
-                                                    <div v-for="(addOnItem, addOnIndex) in getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number)" :key="'addon-' + addOnIndex" class="flex justify-between">
-                                                        <span class="text-gray-500">{{ addOnItem.name }}:</span>
-                                                        <span class="text-gray-700">MYR {{ formatNumber(addOnItem.price) }}</span>
+                                                    <div v-for="(addOnItem, addOnIndex) in getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number)" :key="'addon-' + addOnIndex" class="flex">
+                                                        <span class="flex-1 text-gray-500">{{ addOnItem.name }}:</span>
+                                                        <span class="flex-1 text-gray-700 text-right">MYR {{ formatNumber(addOnItem.price) }}</span>
                                                     </div>
                                                     <div class="flex justify-between font-medium">
                                                         <span class="text-gray-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
