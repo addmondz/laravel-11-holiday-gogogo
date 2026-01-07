@@ -983,7 +983,7 @@
                                         <!-- Guest List -->
                                         <div class="space-y-3">
                                             <div v-for="guest in room.guests" :key="`${guest.guest_type}_${guest.guest_number}`"
-                                                 class="text-sm py-2 border-b border-gray-100 last:border-0">
+                                                 class="text-sm py-2">
                                                 <div class="flex items-center gap-2 mb-2">
                                                     <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
                                                         {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }}
@@ -991,15 +991,15 @@
                                                     <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
                                                 </div>
                                                 <div class="pl-2 space-y-1 text-xs">
-                                                    <div class="flex justify-between">
+                                                    <div class="flex justify-between border-b border-gray-200 pb-1">
                                                         <span class="text-gray-500">Package:</span>
                                                         <span class="text-gray-700">MYR {{ formatNumber(getPackagePrice(guest), false) }}</span>
                                                     </div>
-                                                    <div v-for="(addOnItem, addOnIndex) in getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number)" :key="'addon-' + addOnIndex" class="flex">
+                                                    <div v-for="(addOnItem, addOnIndex) in getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number)" :key="'addon-' + addOnIndex" class="flex border-b border-gray-200 pb-1">
                                                         <span class="flex-1 text-gray-500">{{ addOnItem.name }}:</span>
                                                         <span class="flex-1 text-gray-700 text-right">MYR {{ formatNumber(addOnItem.price) }}</span>
                                                     </div>
-                                                    <div class="flex justify-between font-medium">
+                                                    <div class="flex justify-between font-medium pt-1 mt-1">
                                                         <span class="text-gray-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
                                                         <span class="text-gray-900">MYR {{ formatNumber(getPackagePrice(guest) + getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number), false) }}</span>
                                                     </div>
