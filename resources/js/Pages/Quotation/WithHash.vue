@@ -2303,19 +2303,22 @@ const getTotalGuestCount = () => {
     return (summary.total_adults || 0) + (summary.total_children || 0) + (summary.total_infants || 0);
 };
 
-// Get surcharge per guest by type (from summary, since guest.surcharge.total may be 0)
-const getGuestSurcharge = (guestType) => {
-    if (!priceBreakdown.value?.summary) return 0;
-    const summary = priceBreakdown.value.summary;
-    if (guestType === 'adult' && summary.total_adults > 0) {
-        const result = (summary.surcharges?.adult?.total || 0) / summary.total_adults;
-        return result;
+// Get surcharge per guest by type for a specific room
+const getGuestSurcharge = (guestType, roomNumber) => {
+    if (!priceBreakdown.value?.rooms) return 0;
+    const roomIndex = roomNumber - 1;
+    const room = priceBreakdown.value.rooms[roomIndex];
+    if (!room?.summary?.surcharges) return 0;
+
+    const surcharges = room.summary.surcharges;
+    if (guestType === 'adult' && room.adults > 0) {
+        return (surcharges.adult?.total || 0) / room.adults;
     }
-    if (guestType === 'child' && summary.total_children > 0) {
-        return (summary.surcharges?.child?.total || 0) / summary.total_children;
+    if (guestType === 'child' && room.children > 0) {
+        return (surcharges.child?.total || 0) / room.children;
     }
-    if (guestType === 'infant' && summary.total_infants > 0) {
-        return (summary.surcharges?.infant?.total || 0) / summary.total_infants;
+    if (guestType === 'infant' && room.infants > 0) {
+        return (surcharges.infant?.total || 0) / room.infants;
     }
     return 0;
 };
@@ -2323,7 +2326,7 @@ const getGuestSurcharge = (guestType) => {
 // Calculate package price per guest (base + surcharge + SST)
 const getPackagePrice = (guest) => {
     const base = guest.base_charge?.total || 0;
-    const surcharge = getGuestSurcharge(guest.guest_type);
+    const surcharge = getGuestSurcharge(guest.guest_type, guest.room_number);
     // Calculate SST as percentage of (base + surcharge) - proportional to guest's price
     const sstPercent = package_sst_percentage.value || 0;
     const sst = (base + surcharge) * (sstPercent / 100);
@@ -2350,7 +2353,7 @@ const getRoomSurchargePortion = (room) => {
     if (!room.guests?.length) return 0;
     let total = 0;
     room.guests.forEach(guest => {
-        total += getGuestSurcharge(guest.guest_type);
+        total += getGuestSurcharge(guest.guest_type, guest.room_number);
     });
     return total;
 };
