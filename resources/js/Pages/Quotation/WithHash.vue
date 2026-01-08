@@ -975,9 +975,8 @@
                                         class="bg-white rounded-lg border border-gray-200 p-4 space-y-3"
                                     >
                                         <!-- Room Header -->
-                                        <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-                                            <div class="font-semibold text-gray-900">Room {{ room.room_number }}</div>
-                                            <span class="text-sm text-gray-600">{{ room.room_type_name }}</span>
+                                        <div class="border-b border-gray-100 pb-2">
+                                            <div class="font-semibold text-gray-900">Room {{ room.room_number }} - {{ room.room_type_name }}</div>
                                         </div>
 
                                         <!-- Guest List -->
@@ -991,17 +990,17 @@
                                                     <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
                                                 </div>
                                                 <div class="pl-2 space-y-1 text-xs">
-                                                    <div class="flex justify-between border-b border-gray-200 pb-1">
+                                                    <div :class="['flex', 'justify-between', 'pb-1', getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number).length > 0 ? 'border-b border-gray-200' : '']">
                                                         <span class="text-gray-500">Package:</span>
                                                         <span class="text-gray-700">MYR {{ formatNumber(getPackagePrice(guest), false) }}</span>
                                                     </div>
-                                                    <div v-for="(addOnItem, addOnIndex) in getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number)" :key="'addon-' + addOnIndex" class="flex border-b border-gray-200 pb-1">
+                                                    <div v-for="(addOnItem, addOnIndex) in getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number)" :key="'addon-' + addOnIndex" class="flex pb-1">
                                                         <span class="flex-1 text-gray-500">{{ addOnItem.name }}:</span>
                                                         <span class="flex-1 text-gray-700 text-right">MYR {{ formatNumber(addOnItem.price) }}</span>
                                                     </div>
-                                                    <div class="flex justify-between font-medium pt-1 mt-1">
-                                                        <span class="text-gray-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
-                                                        <span class="text-gray-900">MYR {{ formatNumber(getPackagePrice(guest) + getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number), false) }}</span>
+                                                    <div class="flex justify-between font-medium pt-1 mt-1 bg-purple-50 -mx-2 px-2 py-1 rounded">
+                                                        <span class="text-purple-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
+                                                        <span class="text-purple-900">MYR {{ formatNumber(getPackagePrice(guest) + getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number), false) }}</span>
                                                     </div>
                                                 </div>
                                             </div>
