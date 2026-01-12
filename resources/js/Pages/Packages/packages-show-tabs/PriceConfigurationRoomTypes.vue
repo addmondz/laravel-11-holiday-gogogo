@@ -229,7 +229,7 @@
               </div>
 
               <!-- Child -->
-              <div class="flex flex-col space-y-2">
+              <div v-if="!noChildrenAndInfant" class="flex flex-col space-y-2">
                 <label class="text-xs font-medium text-gray-600">Child</label>
                 <div class="flex items-center space-x-2">
                   <input type="number" step="0.01" min="0" v-model.number="roomAdjustments[room.room_type_id].child.value"
@@ -250,7 +250,7 @@
               </div>
 
               <!-- Infant -->
-              <div class="flex flex-col space-y-2">
+              <div v-if="!noChildrenAndInfant" class="flex flex-col space-y-2">
                 <label class="text-xs font-medium text-gray-600">Infant</label>
                 <div class="flex items-center space-x-2">
                   <input type="number" step="0.01" min="0" v-model.number="roomAdjustments[room.room_type_id].infant.value"
@@ -288,7 +288,7 @@
                 </thead>
                 <tbody>
                   <tr
-                    v-for="([comboKey, slots], idx) in comboEntries(room.base)"
+                    v-for="([comboKey, slots], idx) in filteredComboEntries(room.base)"
                     :key="comboKey"
                     :class="idx % 2 ? 'bg-white' : 'bg-gray-50'"
                   >
@@ -362,14 +362,14 @@
                         </button>
                       </div>
                     </th>
-                    <th v-for="k in ['a', 'c', 'i']" :key="k" class="px-4 py-2 text-left">
+                    <th v-for="k in surchargeColumns" :key="k" class="px-4 py-2 text-left">
                       {{ surchargeLabel(k) }}
                     </th>
                   </tr>
                 </thead>
                 <tbody v-show="showSurchargeTable[room.room_type_id]">
                   <tr
-                    v-for="([comboKey, slots], idx) in comboEntries(room.surch)"
+                    v-for="([comboKey, slots], idx) in filteredComboEntries(room.surch)"
                     :key="comboKey"
                     :class="idx % 2 ? 'bg-white' : 'bg-gray-50'"
                   >
@@ -378,7 +378,7 @@
                     </td>
 
                     <!-- Adult / Child / Infant columns -->
-                    <td v-for="k in ['a', 'c', 'i']" :key="k" class="px-4 py-2">
+                    <td v-for="k in surchargeColumns" :key="k" class="px-4 py-2">
                       <template v-if="slots[k] !== undefined">
                         <template v-if="isEditMode">
                           <div class="flex">
@@ -619,6 +619,7 @@ const props = defineProps({
   allDateTypes: { type: Array, required: true },
   assignedSeasonTypes: { type: Array, required: true },
   assignedDateTypes: { type: Array, required: true },
+  noChildrenAndInfant: { type: Boolean, default: false },
 });
 
 // filters / state
@@ -772,6 +773,23 @@ const comboEntries = (obj) => {
   const keys = Object.keys(obj || {});
   const ordered = sortComboKeys(keys);
   return ordered.map((k) => [k, obj[k]]);
+};
+
+// Helper: Check if combination has children or infants
+const hasChildrenOrInfants = (comboKey) => {
+  const p = parseCombo(comboKey);
+  if (!p) return false;
+  return p.c > 0 || p.i > 0;
+};
+
+// Filtered combo entries - filters out children/infant combinations when noChildrenAndInfant is enabled
+const filteredComboEntries = (obj) => {
+  const entries = comboEntries(obj);
+  if (!props.noChildrenAndInfant) {
+    return entries;
+  }
+  // Filter to only show combinations with 0 children and 0 infants
+  return entries.filter(([comboKey]) => !hasChildrenOrInfants(comboKey));
 };
 
 // ---- Base slot helpers -----------------------------------------------------
@@ -1036,6 +1054,14 @@ const displayRoomName = (id) =>
 
 const surchargeLabel = (k) =>
   k === "a" ? "Adult (per pax)" : k === "c" ? "Child (per pax)" : "Infant (per pax)";
+
+// Surcharge columns to display - filtered based on noChildrenAndInfant
+const surchargeColumns = computed(() => {
+  if (props.noChildrenAndInfant) {
+    return ['a']; // Only show Adult when no children/infant
+  }
+  return ['a', 'c', 'i']; // Show all columns normally
+});
 
 const toggleSurchargeTable = (roomTypeId) => {
   showSurchargeTable.value[roomTypeId] = !showSurchargeTable.value[roomTypeId];

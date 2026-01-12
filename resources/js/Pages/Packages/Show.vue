@@ -66,6 +66,7 @@
                                     :assignedDateTypes="assignedDateTypes"
                                     :isGlobalSstEnable="isGlobalSstEnable"
                                     :globalSstPercent="globalSstPercent"
+                                    :noChildrenAndInfant="pkg.no_children_and_infant"
                                 />
                             </div>
                         </div>
