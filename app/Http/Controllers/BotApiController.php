@@ -80,12 +80,9 @@ class BotApiController extends Controller
                                 $travelRangeStart = $startOfMonth->copy();
                                 $travelRangeEnd = $travelRangeStart->copy()->addDays($packageMinDays - 1);
 
+                                // Only validate check-in date against blocker's start_date
                                 foreach ($roomType->dateBlockers as $blocker) {
-                                    if (
-                                        $travelRangeStart->between($blocker->start_date, $blocker->end_date) ||
-                                        $travelRangeEnd->between($blocker->start_date, $blocker->end_date) ||
-                                        ($blocker->start_date->lt($travelRangeStart) && $blocker->end_date->gt($travelRangeEnd))
-                                    ) {
+                                    if ($travelRangeStart->isSameDay($blocker->start_date)) {
                                         return null;
                                     }
                                 }
@@ -104,10 +101,9 @@ class BotApiController extends Controller
                                             $cursor->gt($today) &&
                                             $cursorEnd->lte($seasonEnd)
                                         ) {
-                                            $overlapsBlocker = $roomType->dateBlockers->contains(function ($blocker) use ($cursor, $cursorEnd) {
-                                                return $cursor->between($blocker->start_date, $blocker->end_date) ||
-                                                    $cursorEnd->between($blocker->start_date, $blocker->end_date) ||
-                                                    ($blocker->start_date->lt($cursor) && $blocker->end_date->gt($cursorEnd));
+                                            // Only validate check-in date against blocker's start_date
+                                            $overlapsBlocker = $roomType->dateBlockers->contains(function ($blocker) use ($cursor) {
+                                                return $cursor->isSameDay($blocker->start_date);
                                             });
 
                                             if (!$overlapsBlocker) {

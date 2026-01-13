@@ -344,23 +344,14 @@ class TravelCalculatorController extends Controller
             $startDate = Carbon::parse($startDate);
             $endDate   = Carbon::parse($endDate);
 
-            // 1) Date blockers per room
+            // 1) Date blockers per room - only validate check-in date
             foreach ($rooms as $room) {
-                $dateBlockers = DateBlocker::where('package_id', $packageId)
-                    ->where('start_date', '<=', $endDate)
-                    ->where('end_date', '>=', $startDate)
+                $isCheckInBlocked = DateBlocker::where('package_id', $packageId)
+                    ->whereDate('start_date', $startDate)
                     ->where('room_type_id', $room['room_type'])
-                    ->get();
+                    ->exists();
 
-                $blockedDates = [];
-                foreach ($dateBlockers as $blocker) {
-                    $period = CarbonPeriod::create($blocker->start_date, $blocker->end_date);
-                    foreach ($period as $date) {
-                        $blockedDates[] = $date->toDateString();
-                    }
-                }
-
-                if (!empty($blockedDates = array_unique($blockedDates))) {
+                if ($isCheckInBlocked) {
                     throw new \Exception('Sorry, the selected dates and room type combination are not available. Please try to select another room type or contact us for more information.');
                 }
             }
