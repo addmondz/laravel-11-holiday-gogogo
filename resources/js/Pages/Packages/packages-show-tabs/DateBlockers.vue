@@ -40,7 +40,10 @@
                             />
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Date
+                            Start Date
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            End Date
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Room Type
@@ -64,6 +67,9 @@
                             {{ moment(blocker.start_date).format('DD/MM/YYYY') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ moment(blocker.end_date).format('DD/MM/YYYY') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ blocker.room_type?.name }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -82,7 +88,7 @@
                         </td>
                     </tr>
                     <tr v-if="dateBlockers.data.length === 0">
-                        <td colspan="4" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">
+                        <td colspan="5" class="text-center text-gray-500 py-4 border-t border-b border-gray-300">
                             No date blockers found
                         </td>
                     </tr>
@@ -122,7 +128,7 @@
                 <form @submit.prevent="submitBlocker">
                     <div class="grid grid-cols-1 gap-6">
                         <div>
-                            <label for="start_date" class="block text-sm font-medium text-gray-700">Date</label>
+                            <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
                             <input
                                 type="date"
                                 id="start_date"
@@ -133,6 +139,21 @@
                             />
                             <div v-if="form.errors.start_date" class="mt-1 text-sm text-red-600">
                                 {{ form.errors.start_date }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                            <input
+                                type="date"
+                                id="end_date"
+                                v-model="form.end_date"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': form.errors.end_date }"
+                                required
+                            />
+                            <div v-if="form.errors.end_date" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.end_date }}
                             </div>
                         </div>
 
@@ -179,7 +200,7 @@
                 <form @submit.prevent="updateBlocker">
                     <div class="grid grid-cols-1 gap-6">
                         <div>
-                            <label for="edit_start_date" class="block text-sm font-medium text-gray-700">Date</label>
+                            <label for="edit_start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
                             <input
                                 type="date"
                                 id="edit_start_date"
@@ -190,6 +211,21 @@
                             />
                             <div v-if="editForm.errors.start_date" class="mt-1 text-sm text-red-600">
                                 {{ editForm.errors.start_date }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="edit_end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                            <input
+                                type="date"
+                                id="edit_end_date"
+                                v-model="editForm.end_date"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': editForm.errors.end_date }"
+                                required
+                            />
+                            <div v-if="editForm.errors.end_date" class="mt-1 text-sm text-red-600">
+                                {{ editForm.errors.end_date }}
                             </div>
                         </div>
                     </div>
@@ -310,7 +346,6 @@ const handlePageChange = async (page) => {
 };
 
 const submitBlocker = () => {
-    form.end_date = form.start_date; // Auto-set end_date to match start_date
     form.post(route('date-blockers.store'), {
         preserveScroll: true,
         onSuccess: () => {
@@ -354,7 +389,6 @@ const submitBlocker = () => {
 };
 
 const updateBlocker = () => {
-    editForm.end_date = editForm.start_date; // Auto-set end_date to match start_date
     editForm.put(route('date-blockers.update', editForm.id), {
         preserveScroll: true,
         onSuccess: () => {
@@ -495,6 +529,7 @@ const bulkDeleteBlockers = async () => {
 const editBlocker = (blocker) => {
     editForm.id = blocker.id;
     editForm.start_date = moment(blocker.start_date).format('YYYY-MM-DD');
+    editForm.end_date = moment(blocker.end_date).format('YYYY-MM-DD');
     showEditModal.value = true;
 };
 

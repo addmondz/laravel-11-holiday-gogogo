@@ -80,9 +80,9 @@ class BotApiController extends Controller
                                 $travelRangeStart = $startOfMonth->copy();
                                 $travelRangeEnd = $travelRangeStart->copy()->addDays($packageMinDays - 1);
 
-                                // Only validate check-in date against blocker's start_date
+                                // Only validate check-in date against blocker's date range
                                 foreach ($roomType->dateBlockers as $blocker) {
-                                    if ($travelRangeStart->isSameDay($blocker->start_date)) {
+                                    if ($travelRangeStart->between($blocker->start_date, $blocker->end_date)) {
                                         return null;
                                     }
                                 }
@@ -101,9 +101,9 @@ class BotApiController extends Controller
                                             $cursor->gt($today) &&
                                             $cursorEnd->lte($seasonEnd)
                                         ) {
-                                            // Only validate check-in date against blocker's start_date
+                                            // Only validate check-in date against blocker's date range
                                             $overlapsBlocker = $roomType->dateBlockers->contains(function ($blocker) use ($cursor) {
-                                                return $cursor->isSameDay($blocker->start_date);
+                                                return $cursor->between($blocker->start_date, $blocker->end_date);
                                             });
 
                                             if (!$overlapsBlocker) {
