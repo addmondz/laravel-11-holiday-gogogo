@@ -129,7 +129,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">
-                                                {{ formatDate(pkg.last_modified_at) }}
+                                                {{ formatDateTime(pkg.last_modified_at) }}
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -284,6 +284,10 @@ const clearFilters = () => {
 
 const formatDate = (date) => {
     return moment(date).format('DD MMM YYYY');
+};
+
+const formatDateTime = (date) => {
+    return moment(date).format('DD MMM YYYY, h:mm A');
 };
 
 const calculateDays = (startDate, endDate) => {
