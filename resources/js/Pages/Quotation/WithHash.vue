@@ -300,8 +300,47 @@
                 <!-- Step 1: Room Selection -->
                 <div v-if="currentStep === 1">
                     <form @submit.prevent="handleStep1Submit" class="space-y-6">
+                        <!-- Travel Dates Section -->
+                        <div>
+                            <h3 class="text-xl font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg w-fit mb-4">Select Travel Dates</h3>
+
+                            <!-- Date Selection -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+                                    <input
+                                        type="date"
+                                        id="start_date"
+                                        v-model="form.start_date"
+                                        :min="packageData?.package_start_date"
+                                        :max="maxStartDate"
+                                        :class="[
+                                            'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                            validationErrors.start_date ? 'border-red-500' : 'border-gray-300'
+                                        ]"
+                                        required
+                                        @change="validateDates"
+                                    />
+                                    <p v-if="validationErrors.start_date" class="mt-1 text-sm text-red-600">{{ validationErrors.start_date }}</p>
+                                </div>
+                                <div>
+                                    <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                                    <input
+                                        type="date"
+                                        id="end_date"
+                                        v-model="form.end_date"
+                                        :min="form.start_date ? new Date(new Date(form.start_date).getTime() + 86400000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]"
+                                        class="mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-gray-100 border-gray-300"
+                                        required
+                                        readonly
+                                    />
+                                    <!-- <p v-if="validationErrors.end_date" class="mt-1 text-sm text-red-600">{{ validationErrors.end_date }}</p> -->
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Room Management -->
-                        <div class="space-y-4">
+                        <div class="space-y-4 border-t border-gray-200 pt-4">
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                                 <h3 class="text-xl font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg w-fit">Select Rooms</h3>
                                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
@@ -531,14 +570,17 @@
                                         </div>
 
                                         <!-- Room Add-ons Section -->
-                                        <div v-if="room.room_type_id && hasAddOns" class="mt-4 border-t border-gray-200 pt-4">
-                                            <div class="mb-2">
-                                                <h5 class="text-sm font-semibold text-gray-900">Add-ons for Room {{ index + 1 }}</h5>
-                                                <p class="text-xs text-gray-500 mt-0.5">Select add-ons and enter the number of guests for each.</p>
+                                        <div v-if="room.room_type_id && hasAddOns" class="mt-4 bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                                            <div class="bg-indigo-600 text-white px-3 py-2 rounded-t-md -mx-4 -mt-4 mb-3 flex items-center gap-2">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                                </svg>
+                                                <h5 class="text-sm font-semibold">Add-ons for Room {{ index + 1 }}</h5>
                                             </div>
+                                            <p class="text-xs text-indigo-700 mb-3">Select add-ons and enter the number of guests for each.</p>
 
                                             <!-- Add-ons Table -->
-                                            <div v-if="packageAddOns.length > 0" class="bg-white border border-gray-200 rounded-md overflow-visible">
+                                            <div v-if="packageAddOns.length > 0" class="bg-white border border-indigo-200 rounded-md overflow-visible shadow-sm">
                                                 <!-- Desktop Table Header -->
                                                 <div class="hidden sm:grid grid-cols-12 gap-2 bg-gray-50 border-b border-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700">
                                                     <div class="col-span-3 flex items-center gap-1.5">
@@ -779,46 +821,8 @@
                             </div>
                         </div>
 
-                        <!-- Travel Dates Section -->
-                        <div class="border-t border-gray-200 pt-4">
-                            <h3 class="text-xl font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg w-fit mb-4">Select Travel Dates</h3>
-
-                            <!-- Date Selection -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
-                                    <input
-                                        type="date"
-                                        id="start_date"
-                                        v-model="form.start_date"
-                                        :min="packageData?.package_start_date"
-                                        :max="maxStartDate"
-                                        :class="[
-                                            'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
-                                            validationErrors.start_date ? 'border-red-500' : 'border-gray-300'
-                                        ]"
-                                        required
-                                        @change="validateDates"
-                                    />
-                                    <p v-if="validationErrors.start_date" class="mt-1 text-sm text-red-600">{{ validationErrors.start_date }}</p>
-                                </div>
-                                <div>
-                                    <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
-                                    <input
-                                        type="date"
-                                        id="end_date"
-                                        v-model="form.end_date"
-                                        :min="form.start_date ? new Date(new Date(form.start_date).getTime() + 86400000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]"
-                                        class="mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-gray-100 border-gray-300"
-                                        required
-                                        readonly
-                                    />
-                                    <!-- <p v-if="validationErrors.end_date" class="mt-1 text-sm text-red-600">{{ validationErrors.end_date }}</p> -->
-                                </div>
-                            </div>
-
-                            <!-- Action Buttons -->
-                            <div class="flex flex-row justify-end gap-3 mt-4">
+                        <!-- Action Buttons -->
+                        <div class="flex flex-row justify-end gap-3">
                             <button
                                 type="submit"
                                 class="inline-flex items-center justify-center px-4 py-2.5 sm:px-6 sm:py-3 bg-indigo-600 text-white text-sm sm:text-base font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -826,7 +830,6 @@
                             >
                                 Calculate Price
                             </button>
-                            </div>
                         </div>
                     </form>
                 </div>
@@ -980,9 +983,9 @@
                                         </div>
 
                                         <!-- Guest List -->
-                                        <div class="space-y-3">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                             <div v-for="guest in room.guests" :key="`${guest.guest_type}_${guest.guest_number}`"
-                                                 class="text-sm py-2">
+                                                 class="text-sm p-3 border border-gray-100 rounded-lg bg-gray-50">
                                                 <div class="flex items-center gap-2 mb-2">
                                                     <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
                                                         {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }}
