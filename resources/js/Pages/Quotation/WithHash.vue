@@ -302,7 +302,7 @@
                     <form @submit.prevent="handleStep1Submit" class="space-y-6">
                         <!-- Travel Dates Section -->
                         <div>
-                            <h3 class="text-xl font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg w-fit mb-4">Select Travel Dates</h3>
+                            <h3 class="text-xl font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg w-full mb-4">Select Travel Dates</h3>
 
                             <!-- Date Selection -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -341,14 +341,10 @@
 
                         <!-- Room Management -->
                         <div class="space-y-4 border-t border-gray-200 pt-4">
-                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                                <h3 class="text-xl font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg w-fit">Select Rooms</h3>
-                                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                                    <span class="text-sm text-gray-600 whitespace-nowrap">
-                                        Total Guests: {{ totalGuests }}
-                                    </span>
-                                </div>
-                            </div>
+                            <h3 class="text-xl font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg w-full mb-0 flex justify-between items-center">
+                                <span>Select Rooms</span>
+                                <span class="text-sm font-normal">Total Guests: {{ totalGuests }}</span>
+                            </h3>
 
                             <!-- Room Cards -->
                             <div class="space-y-4">
@@ -985,14 +981,14 @@
                                         <!-- Guest List -->
                                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                             <div v-for="guest in room.guests" :key="`${guest.guest_type}_${guest.guest_number}`"
-                                                 class="text-sm p-3 border border-gray-100 rounded-lg bg-gray-50">
+                                                 class="text-sm p-3 border border-gray-100 rounded-lg bg-gray-50 flex flex-col">
                                                 <div class="flex items-center gap-2 mb-2">
                                                     <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
                                                         {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }}
                                                     </span>
                                                     <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
                                                 </div>
-                                                <div class="pl-2 space-y-1 text-xs">
+                                                <div class="pl-2 space-y-1 text-sm">
                                                     <div :class="['flex', 'justify-between', 'pb-1', getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number).length > 0 ? 'border-b border-gray-200' : '']">
                                                         <span class="text-gray-500">Package:</span>
                                                         <span class="text-gray-700">MYR {{ formatNumber(getPackagePrice(guest), false) }}</span>
@@ -1001,10 +997,10 @@
                                                         <span class="flex-1 text-gray-500">{{ addOnItem.name }}:</span>
                                                         <span class="flex-1 text-gray-700 text-right">MYR {{ formatNumber(addOnItem.price) }}</span>
                                                     </div>
-                                                    <div class="flex justify-between font-medium pt-1 mt-1 bg-purple-50 -mx-2 px-2 py-1 rounded">
-                                                        <span class="text-purple-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
-                                                        <span class="text-purple-900">MYR {{ formatNumber(getPackagePrice(guest) + getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number), false) }}</span>
-                                                    </div>
+                                                </div>
+                                                <div class="flex justify-between font-medium pt-1 mt-auto bg-purple-50 px-2 py-1 rounded text-sm">
+                                                    <span class="text-purple-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
+                                                    <span class="text-purple-900">MYR {{ formatNumber(getPackagePrice(guest) + getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number), false) }}</span>
                                                 </div>
                                             </div>
                                         </div>
