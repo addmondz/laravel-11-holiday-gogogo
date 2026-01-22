@@ -265,6 +265,94 @@
                     </div>
                 </div>
 
+                <!-- Pricing Breakdown Section -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8" v-if="priceBreakdown?.guest_breakdown">
+                    <div class="p-6 text-gray-900">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Pricing Breakdown</h3>
+
+                        <!-- Room Cards with Guest Breakdown -->
+                        <div class="space-y-4">
+                            <div
+                                v-for="room in guestsByRoom"
+                                :key="room.room_number"
+                                class="bg-gray-50 rounded-lg border border-gray-200 p-4 space-y-3"
+                            >
+                                <!-- Room Header -->
+                                <div class="border-b border-gray-200 pb-2">
+                                    <div class="font-semibold text-gray-900">Room {{ room.room_number }} - {{ room.room_type_name }}</div>
+                                </div>
+
+                                <!-- Guest List -->
+                                <div class="space-y-3">
+                                    <div v-for="guest in room.guests" :key="`${guest.guest_type}_${guest.guest_number}`"
+                                         class="text-sm py-2 bg-white rounded-lg p-3">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span :class="['px-2 py-0.5 text-xs font-semibold rounded-full', getGuestTypeBadgeClass(guest.guest_type)]">
+                                                {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }}
+                                            </span>
+                                            <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
+                                        </div>
+                                        <div class="pl-2 space-y-1 text-xs">
+                                            <div :class="['flex', 'justify-between', 'pb-1', getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number).length > 0 ? 'border-b border-gray-200' : '']">
+                                                <span class="text-gray-500">Package:</span>
+                                                <span class="text-gray-700">MYR {{ formatNumber(getPackagePrice(guest)) }}</span>
+                                            </div>
+                                            <div v-for="(addOnItem, addOnIndex) in getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number)" :key="'addon-' + addOnIndex" class="flex pb-1">
+                                                <span class="flex-1 text-gray-500">{{ addOnItem.name }}:</span>
+                                                <span class="flex-1 text-gray-700 text-right">MYR {{ formatNumber(addOnItem.price) }}</span>
+                                            </div>
+                                            <div class="flex justify-between font-medium pt-1 mt-1 bg-indigo-50 -mx-2 px-2 py-1 rounded">
+                                                <span class="text-indigo-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
+                                                <span class="text-indigo-900">MYR {{ formatNumber(Math.floor(getPackagePrice(guest)) + Math.floor(getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number))) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Room Total -->
+                                <div class="flex justify-between pt-2 border-t border-gray-200">
+                                    <span class="font-semibold text-gray-900">Room Total:</span>
+                                    <span class="font-bold text-indigo-600">MYR {{ formatNumber(getRoomTotalWithSst(room)) }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grand Total Summary -->
+                        <div class="mt-6 bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+                            <div class="flex justify-between items-center">
+                                <span class="font-semibold text-indigo-900 text-lg">Grand Total:</span>
+                                <span class="font-bold text-indigo-900 text-xl">MYR {{ formatNumber(guestsByRoom.reduce((sum, room) => sum + getRoomTotalWithSst(room), 0)) }}</span>
+                            </div>
+                            <div v-if="priceBreakdown.sst > 0" class="mt-2 text-sm text-indigo-700">
+                                (Includes SST {{ sstPercent }}%)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fallback when breakdown unavailable -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8" v-else-if="booking.package">
+                    <div class="p-6 text-gray-900">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Pricing Breakdown</h3>
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex items-start gap-2 text-yellow-800">
+                                <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <span class="text-sm">Detailed pricing breakdown is not available for this booking.</span>
+                                    <p v-if="priceBreakdownError" class="text-xs mt-1 text-yellow-700">
+                                        Reason: {{ priceBreakdownError }}
+                                    </p>
+                                    <p v-else class="text-xs mt-1 text-yellow-700">
+                                        This may occur if the package configuration has been modified.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8" v-if="booking.add_ons && booking.add_ons.length > 0">
                     <div class="p-6 text-gray-900">
                         <!-- Add-ons Details -->
@@ -413,6 +501,14 @@ const props = defineProps({
     sstPercent: {
         type: Number,
         default: 0
+    },
+    priceBreakdown: {
+        type: Object,
+        default: null
+    },
+    priceBreakdownError: {
+        type: String,
+        default: null
     }
 });
 
@@ -431,6 +527,137 @@ const applySST = (price) => {
 
 const formatDate = (date) => {
     return moment(date).format('DD MMM YYYY, h:mm A');
+};
+
+// Computed property to group guests by room for breakdown view
+const guestsByRoom = computed(() => {
+    if (!props.priceBreakdown?.guest_breakdown) return [];
+    const guests = Object.values(props.priceBreakdown.guest_breakdown);
+    const grouped = {};
+
+    guests.forEach(guest => {
+        const roomNum = guest.room_number;
+        if (!grouped[roomNum]) {
+            grouped[roomNum] = {
+                room_number: roomNum,
+                room_type_name: guest.room_type_name,
+                nights: guest.nights,
+                guests: [],
+                total: 0
+            };
+        }
+        grouped[roomNum].guests.push(guest);
+        grouped[roomNum].total += guest.total;
+    });
+
+    return Object.values(grouped);
+});
+
+// Get surcharge per guest by type for a specific room
+const getGuestSurcharge = (guestType, roomNumber) => {
+    if (!props.priceBreakdown?.rooms) return 0;
+    const roomIndex = roomNumber - 1;
+    const room = props.priceBreakdown.rooms[roomIndex];
+    if (!room?.summary?.surcharges) return 0;
+
+    const surcharges = room.summary.surcharges;
+    if (guestType === 'adult' && room.adults > 0) {
+        return (surcharges.adult?.total || 0) / room.adults;
+    }
+    if (guestType === 'child' && room.children > 0) {
+        return (surcharges.child?.total || 0) / room.children;
+    }
+    if (guestType === 'infant' && room.infants > 0) {
+        return (surcharges.infant?.total || 0) / room.infants;
+    }
+    return 0;
+};
+
+// Calculate package price per guest (base + surcharge + SST)
+const getPackagePrice = (guest) => {
+    const base = guest.base_charge?.total || 0;
+    const surcharge = getGuestSurcharge(guest.guest_type, guest.room_number);
+    // Calculate SST as percentage of (base + surcharge)
+    const sstPercent = props.sstPercent || 0;
+    const sst = (base + surcharge) * (sstPercent / 100);
+    return base + surcharge + sst;
+};
+
+// Get add-on total for a specific guest
+const getGuestAddOnTotal = (roomNumber, guestType, guestNumber) => {
+    if (!props.priceBreakdown?.add_ons?.length) return 0;
+
+    const roomAddOns = props.priceBreakdown.add_ons.filter(a => Number(a.room_number) === Number(roomNumber));
+    let total = 0;
+
+    roomAddOns.forEach(addOn => {
+        if (guestType === 'adult' && addOn.adults >= guestNumber) {
+            total += Math.floor(parseFloat(addOn.adult_price) || 0);
+        } else if (guestType === 'child' && addOn.children >= guestNumber) {
+            total += Math.floor(parseFloat(addOn.child_price) || 0);
+        } else if (guestType === 'infant' && addOn.infants >= guestNumber) {
+            total += Math.floor(parseFloat(addOn.infant_price) || 0);
+        }
+    });
+
+    return total;
+};
+
+// Get add-on items for a specific guest with names and prices
+const getGuestAddOnItems = (roomNumber, guestType, guestNumber) => {
+    if (!props.priceBreakdown?.add_ons?.length) return [];
+
+    const roomAddOns = props.priceBreakdown.add_ons.filter(a => Number(a.room_number) === Number(roomNumber));
+    const items = [];
+
+    roomAddOns.forEach(addOn => {
+        let price = 0;
+        let applicable = false;
+
+        if (guestType === 'adult' && addOn.adults >= guestNumber) {
+            price = Math.floor(parseFloat(addOn.adult_price) || 0);
+            applicable = true;
+        } else if (guestType === 'child' && addOn.children >= guestNumber) {
+            price = Math.floor(parseFloat(addOn.child_price) || 0);
+            applicable = true;
+        } else if (guestType === 'infant' && addOn.infants >= guestNumber) {
+            price = Math.floor(parseFloat(addOn.infant_price) || 0);
+            applicable = true;
+        }
+
+        if (applicable && price > 0) {
+            items.push({ name: addOn.name, price });
+        }
+    });
+
+    return items;
+};
+
+// Get room total by summing individual guest totals (package price + add-ons), floored per guest
+const getRoomTotalWithSst = (room) => {
+    if (!room.guests?.length) return 0;
+    let total = 0;
+    room.guests.forEach(guest => {
+        // Floor each guest's total individually to match displayed values
+        const guestPackage = Math.floor(getPackagePrice(guest));
+        const guestAddOn = Math.floor(getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number));
+        total += guestPackage + guestAddOn;
+    });
+    return total;
+};
+
+// Get badge class for guest type
+const getGuestTypeBadgeClass = (guestType) => {
+    switch (guestType) {
+        case 'adult':
+            return 'bg-indigo-100 text-indigo-800';
+        case 'child':
+            return 'bg-green-100 text-green-800';
+        case 'infant':
+            return 'bg-yellow-100 text-yellow-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
+    }
 };
 
 const breadcrumbs = computed(() => [

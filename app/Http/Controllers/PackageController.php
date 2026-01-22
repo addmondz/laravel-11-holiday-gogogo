@@ -77,6 +77,20 @@ class PackageController extends Controller
         $sortDirection = $request->get('direction', 'desc');
         $query->orderBy($sortField, $sortDirection);
 
+        // Add last_modified_at computed column
+        $query->addSelect([
+            'packages.*',
+            DB::raw('GREATEST(
+                packages.updated_at,
+                COALESCE((SELECT MAX(updated_at) FROM package_configurations WHERE package_id = packages.id), "1970-01-01"),
+                COALESCE((SELECT MAX(updated_at) FROM date_type_ranges WHERE package_id = packages.id), "1970-01-01"),
+                COALESCE((SELECT MAX(updated_at) FROM seasons WHERE package_id = packages.id), "1970-01-01"),
+                COALESCE((SELECT MAX(updated_at) FROM room_types WHERE package_id = packages.id), "1970-01-01"),
+                COALESCE((SELECT MAX(updated_at) FROM package_add_ons WHERE package_id = packages.id), "1970-01-01"),
+                COALESCE((SELECT MAX(updated_at) FROM date_blockers WHERE package_id = packages.id), "1970-01-01")
+            ) AS last_modified_at')
+        ]);
+
         // Pagination
         $packages = $query
             ->paginate(50)

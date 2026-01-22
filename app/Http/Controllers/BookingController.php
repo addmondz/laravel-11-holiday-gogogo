@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\ApprovalStatus;
+use App\Http\Controllers\Api\TravelCalculatorController;
 use App\Models\AppSetting;
 use App\Models\Booking;
 use Illuminate\Http\Request;
@@ -111,10 +112,76 @@ class BookingController extends Controller
         $sstConfig = AppSetting::getSstConfiguration();
         $sstPercent = $booking->package?->sst_enable ? ($sstConfig['sst_percent'] ?? 0) : 0;
 
+        // Calculate price breakdown
+        $priceBreakdown = null;
+        $priceBreakdownError = null;
+        if ($booking->package) {
+            $result = $this->calculateBookingPriceBreakdown($booking);
+            if (is_array($result) && isset($result['error'])) {
+                $priceBreakdownError = $result['error'];
+            } else {
+                $priceBreakdown = $result;
+            }
+        }
+
         return Inertia::render('Bookings/Show', [
             'booking' => $booking,
-            'sstPercent' => $sstPercent
+            'sstPercent' => $sstPercent,
+            'priceBreakdown' => $priceBreakdown,
+            'priceBreakdownError' => $priceBreakdownError
         ]);
+    }
+
+    private function calculateBookingPriceBreakdown(Booking $booking): ?array
+    {
+        try {
+            $rooms = $booking->rooms->map(fn($room) => [
+                'room_type' => $room->room_type_id,
+                'adults' => $room->adults,
+                'children' => $room->children,
+                'infants' => $room->infants,
+            ])->toArray();
+
+            $addOns = $booking->addOns->map(fn($addOn) => [
+                'id' => $addOn->package_add_on_id,
+                'room_number' => $addOn->room_number,
+                'adults' => $addOn->adults,
+                'children' => $addOn->children,
+                'infants' => $addOn->infants,
+            ])->toArray();
+
+            $calculator = app(TravelCalculatorController::class);
+            $response = $calculator->calculatePriceByParams(
+                $booking->package_id,
+                $rooms,
+                $booking->start_date->format('Y-m-d'),
+                $booking->end_date->format('Y-m-d'),
+                false,
+                $addOns
+            );
+
+            $data = $response->getData(true);
+
+            if (!$data['success']) {
+                \Log::warning('Booking price breakdown calculation failed', [
+                    'booking_id' => $booking->id,
+                    'message' => $data['message'] ?? 'Unknown error',
+                    'package_id' => $booking->package_id,
+                    'start_date' => $booking->start_date->format('Y-m-d'),
+                    'end_date' => $booking->end_date->format('Y-m-d'),
+                ]);
+                return ['error' => $data['message'] ?? 'Unknown error'];
+            }
+
+            return $data;
+        } catch (\Exception $e) {
+            \Log::error('Failed to calculate booking price breakdown', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return ['error' => $e->getMessage()];
+        }
     }
 
     public function edit(Booking $booking)
