@@ -265,6 +265,89 @@
                     </div>
                 </div>
 
+                <!-- Pricing Breakdown Section -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8" v-if="priceBreakdown?.guest_breakdown || priceBreakdownError">
+                    <div class="p-6 text-gray-900">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Guest Breakdown</h3>
+
+                        <!-- Error message if calculation failed -->
+                        <div v-if="priceBreakdownError" class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="text-sm text-red-700">{{ priceBreakdownError }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Guest Breakdown Cards -->
+                        <div v-else class="space-y-3">
+                            <!-- Room Cards -->
+                            <div
+                                v-for="room in guestsByRoom"
+                                :key="room.room_number"
+                                class="bg-white rounded-lg border border-gray-200 p-4 space-y-3"
+                            >
+                                <!-- Room Header -->
+                                <div class="border-b border-gray-100 pb-2">
+                                    <div class="font-semibold text-gray-900">Room {{ room.room_number }} - {{ room.room_type_name }}</div>
+                                </div>
+
+                                <!-- Guest List -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    <div
+                                        v-for="guest in room.guests"
+                                        :key="`${guest.guest_type}_${guest.guest_number}`"
+                                        class="text-sm p-3 border border-gray-100 rounded-lg bg-gray-50 flex flex-col"
+                                    >
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                                {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }}
+                                            </span>
+                                            <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
+                                        </div>
+                                        <div class="pl-2 space-y-1 text-sm">
+                                            <div :class="['flex', 'justify-between', 'pb-1', getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number).length > 0 ? 'border-b border-gray-200' : '']">
+                                                <span class="text-gray-500">Package:</span>
+                                                <span class="text-gray-700">MYR {{ formatNumber(Math.floor(getPackagePrice(guest))) }}</span>
+                                            </div>
+                                            <div
+                                                v-for="(addOnItem, addOnIndex) in getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number)"
+                                                :key="'addon-' + addOnIndex"
+                                                class="flex pb-1"
+                                            >
+                                                <span class="flex-1 text-gray-500">{{ addOnItem.name }}:</span>
+                                                <span class="flex-1 text-gray-700 text-right">MYR {{ formatNumber(addOnItem.price) }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between font-medium pt-1 mt-auto bg-purple-50 px-2 py-1 rounded text-sm">
+                                            <span class="text-purple-700">Total for {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}:</span>
+                                            <span class="text-purple-900">MYR {{ formatNumber(Math.floor(getPackagePrice(guest)) + Math.floor(getGuestAddOnTotal(room.room_number, guest.guest_type, guest.guest_number))) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Room Total -->
+                                <div class="flex justify-between pt-2 border-t border-gray-200">
+                                    <span class="font-semibold text-gray-900">Room Total:</span>
+                                    <span class="font-bold text-indigo-600">MYR {{ formatNumber(getRoomTotalWithSst(room)) }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Overall Summary -->
+                            <div class="mt-6 bg-gray-50 rounded-lg p-4">
+                                <div class="bg-gray-50 p-4 rounded-md shadow-sm w-full max-w-xs ml-auto">
+                                    <!-- Grand Total -->
+                                    <div class="flex justify-between text-base font-semibold text-indigo-700">
+                                        <span>Grand Total</span>
+                                        <span>MYR {{ formatNumber(guestsByRoom.reduce((sum, room) => sum + getRoomTotalWithSst(room), 0)) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8" v-if="booking.add_ons && booking.add_ons.length > 0">
                     <div class="p-6 text-gray-900">
                         <!-- Add-ons Details -->

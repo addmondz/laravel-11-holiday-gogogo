@@ -302,7 +302,7 @@
                     <form @submit.prevent="handleStep1Submit" class="space-y-6">
                         <!-- Travel Dates Section -->
                         <div>
-                            <h3 class="text-xl font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg w-full mb-4">Select Travel Dates</h3>
+                            <h3 class="text-xl font-semibold text-white bg-indigo-600 px-4 py-2 rounded-lg w-full mb-4">Select Travel Dates</h3>
 
                             <!-- Date Selection -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -341,7 +341,7 @@
 
                         <!-- Room Management -->
                         <div class="space-y-4 border-t border-gray-200 pt-4">
-                            <h3 class="text-xl font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg w-full mb-0 flex justify-between items-center">
+                            <h3 class="text-xl font-semibold text-white bg-indigo-600 px-4 py-2 rounded-lg w-full mb-0 flex justify-between items-center">
                                 <span>Select Rooms</span>
                                 <span class="text-sm font-normal">Total Guests: {{ totalGuests }}</span>
                             </h3>
