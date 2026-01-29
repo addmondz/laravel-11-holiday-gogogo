@@ -23,7 +23,7 @@ class BookingController extends Controller
                 'rooms.*.children' => 'required|integer|min:0|max:4',
                 'rooms.*.infants' => 'required|integer|min:0|max:4',
                 'rooms.*.children_dob' => 'array',
-                'rooms.*.children_dob.*' => 'required|date|before:today',
+                'rooms.*.children_dob.*' => 'required|integer|min:1900|max:' . date('Y'),
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'booking_name' => 'required|string|max:255',
@@ -104,7 +104,7 @@ class BookingController extends Controller
                         foreach ($room['children_dob'] as $index => $dob) {
                             $bookingRoom->children()->create([
                                 'child_number' => $index + 1,
-                                'date_of_birth' => $dob
+                                'birth_year' => $dob
                             ]);
                         }
                     }

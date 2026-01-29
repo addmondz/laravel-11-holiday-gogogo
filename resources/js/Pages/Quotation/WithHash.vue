@@ -653,7 +653,7 @@
                                                             <div v-if="addOn.adult_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
                                                                 <div class="flex items-center gap-2">
                                                                     <span class="text-xs font-medium text-gray-700">Adult:</span>
-                                                                    <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.adult_price) }}</span>
+                                                                    <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.adult_price, false) }}</span>
                                                                 </div>
                                                                 <input type="number"
                                                                        :min="0"
@@ -666,7 +666,7 @@
                                                             <div v-if="!packageData?.no_children_and_infant && addOn.child_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
                                                                 <div class="flex items-center gap-2">
                                                                     <span class="text-xs font-medium text-gray-700">Child:</span>
-                                                                    <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.child_price) }}</span>
+                                                                    <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.child_price, false) }}</span>
                                                                 </div>
                                                                 <input type="number"
                                                                        :min="0"
@@ -679,7 +679,7 @@
                                                             <div v-if="!packageData?.no_children_and_infant && addOn.infant_price" class="flex items-center justify-between p-2 bg-gray-50 rounded">
                                                                 <div class="flex items-center gap-2">
                                                                     <span class="text-xs font-medium text-gray-700">Infant:</span>
-                                                                    <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.infant_price) }}</span>
+                                                                    <span class="text-xs text-gray-900">MYR {{ formatNumber(addOn.infant_price, false) }}</span>
                                                                 </div>
                                                                 <input type="number"
                                                                        :min="0"
@@ -701,7 +701,7 @@
                                                         <!-- Adult Price and Input -->
                                                         <div class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
                                                             <div v-if="addOn.adult_price" class="text-xs font-medium text-gray-900">
-                                                                MYR {{ formatNumber(addOn.adult_price) }}
+                                                                MYR {{ formatNumber(addOn.adult_price, false) }}
                                                             </div>
                                                             <div v-else class="text-xs text-gray-400">-</div>
                                                             <div v-if="addOn.adult_price" class="w-full">
@@ -717,7 +717,7 @@
                                                         <!-- Child Price and Input -->
                                                         <div v-if="!packageData?.no_children_and_infant" class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
                                                             <div v-if="addOn.child_price" class="text-xs font-medium text-gray-900">
-                                                                MYR {{ formatNumber(addOn.child_price) }}
+                                                                MYR {{ formatNumber(addOn.child_price, false) }}
                                                             </div>
                                                             <div v-else class="text-xs text-gray-400">-</div>
                                                             <div v-if="addOn.child_price" class="w-full">
@@ -733,7 +733,7 @@
                                                         <!-- Infant Price and Input -->
                                                         <div v-if="!packageData?.no_children_and_infant" class="hidden sm:flex sm:col-span-2 flex-col items-center gap-1">
                                                             <div v-if="addOn.infant_price" class="text-xs font-medium text-gray-900">
-                                                                MYR {{ formatNumber(addOn.infant_price) }}
+                                                                MYR {{ formatNumber(addOn.infant_price, false) }}
                                                             </div>
                                                             <div v-else class="text-xs text-gray-400">-</div>
                                                             <div v-if="addOn.infant_price" class="w-full">
@@ -988,18 +988,19 @@
                                                     </span>
                                                     <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
                                                 </div>
-                                                <!-- DOB Input for Children -->
+                                                <!-- Birth Year Input for Children -->
                                                 <div v-if="guest.guest_type === 'child'" class="mb-3">
                                                     <label class="block text-xs text-gray-500 mb-1">
-                                                        Date of Birth <span class="text-red-500">*</span>
+                                                        Birth Year <span class="text-red-500">*</span>
                                                     </label>
-                                                    <input
-                                                        type="date"
+                                                    <select
                                                         v-model="form.rooms[room.room_number - 1].children_dob[guest.guest_number - 1]"
-                                                        :max="new Date().toISOString().split('T')[0]"
                                                         required
                                                         class="w-full text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-indigo-500 focus:border-indigo-500"
-                                                    />
+                                                    >
+                                                        <option value="">Select Year</option>
+                                                        <option v-for="year in birthYearOptions" :key="year" :value="year">{{ year }}</option>
+                                                    </select>
                                                 </div>
                                                 <div class="pl-2 space-y-1 text-sm">
                                                     <div :class="['flex', 'justify-between', 'pb-1', getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number).length > 0 ? 'border-b border-gray-200' : '']">
@@ -1008,7 +1009,7 @@
                                                     </div>
                                                     <div v-for="(addOnItem, addOnIndex) in getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number)" :key="'addon-' + addOnIndex" class="flex pb-1">
                                                         <span class="flex-1 text-gray-500">{{ addOnItem.name }}:</span>
-                                                        <span class="flex-1 text-gray-700 text-right">MYR {{ formatNumber(addOnItem.price) }}</span>
+                                                        <span class="flex-1 text-gray-700 text-right">MYR {{ formatNumber(addOnItem.price, false) }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="flex justify-between font-medium pt-1 mt-auto bg-purple-50 px-2 py-1 rounded text-sm">
@@ -3242,14 +3243,14 @@ const getSelectedAddOnsForAPI = () => {
 };
 
 // Calculate individual add-on subtotal for a specific room
-// Uses SST-applied floored unit prices so subtotal matches displayed unit price × quantity
+// Add-ons do NOT have SST applied - SST only applies to package base prices
 const calculateRoomAddOnSubtotal = (roomIndex, addOn) => {
     const pax = getRoomAddOnPax(roomIndex, addOn.id);
 
-    // Floor the SST-applied unit price (same as what formatNumber displays)
-    const flooredAdultPrice = Math.floor(calculatePackagePriceWithSst(addOn.adult_price || 0));
-    const flooredChildPrice = Math.floor(calculatePackagePriceWithSst(addOn.child_price || 0));
-    const flooredInfantPrice = Math.floor(calculatePackagePriceWithSst(addOn.infant_price || 0));
+    // Floor the unit price (no SST for add-ons)
+    const flooredAdultPrice = Math.floor(addOn.adult_price || 0);
+    const flooredChildPrice = Math.floor(addOn.child_price || 0);
+    const flooredInfantPrice = Math.floor(addOn.infant_price || 0);
 
     const adultTotal = (pax.adults || 0) * flooredAdultPrice;
     const childTotal = (pax.children || 0) * flooredChildPrice;
@@ -3392,6 +3393,16 @@ const hasAddOns = computed(() => {
     return packageAddOns.value && packageAddOns.value.length > 0;
 });
 
+// Computed property for birth year options (current year down to 25 years ago for child age range)
+const birthYearOptions = computed(() => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear; year >= currentYear - 25; year--) {
+        years.push(year);
+    }
+    return years;
+});
+
 // Helper function to go back to the previous step
 const goToPreviousStep = () => {
     if (currentStep.value === 3) {
@@ -3454,7 +3465,7 @@ const validateStep2 = () => {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Missing Information',
-                    text: `Please enter date of birth for Child ${i + 1} in Room ${roomIndex + 1}.`,
+                    text: `Please select birth year for Child ${i + 1} in Room ${roomIndex + 1}.`,
                     confirmButtonColor: '#4F46E5'
                 });
                 return false;

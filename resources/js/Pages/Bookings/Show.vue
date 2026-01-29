@@ -306,9 +306,9 @@
                                             </span>
                                             <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
                                         </div>
-                                        <!-- DOB for Children -->
+                                        <!-- Birth Year for Children -->
                                         <div v-if="guest.guest_type === 'child'" class="text-xs text-gray-500 mb-2">
-                                            DOB: {{ getChildDob(room.room_number, guest.guest_number) }}
+                                            Birth Year: {{ getChildDob(room.room_number, guest.guest_number) }}
                                         </div>
                                         <div class="pl-2 space-y-1 text-sm">
                                             <div :class="['flex', 'justify-between', 'pb-1', getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number).length > 0 ? 'border-b border-gray-200' : '']">
@@ -389,22 +389,22 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-600 space-y-1">
                                                 <div v-if="addOn.package_add_on?.adult_price">
-                                                    Adult: MYR {{ formatNumber(applySST(addOn.package_add_on.adult_price)) }}
+                                                    Adult: MYR {{ formatNumber(addOn.package_add_on.adult_price) }}
                                                 </div>
                                                 <div v-if="addOn.package_add_on?.child_price">
-                                                    Child: MYR {{ formatNumber(applySST(addOn.package_add_on.child_price)) }}
+                                                    Child: MYR {{ formatNumber(addOn.package_add_on.child_price) }}
                                                 </div>
                                                 <div v-if="addOn.package_add_on?.infant_price">
-                                                    Infant: MYR {{ formatNumber(applySST(addOn.package_add_on.infant_price)) }}
+                                                    Infant: MYR {{ formatNumber(addOn.package_add_on.infant_price) }}
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">
                                                 MYR {{ formatNumber(
-                                                    (addOn.adults * applySST(addOn.package_add_on?.adult_price || 0)) +
-                                                    (addOn.children * applySST(addOn.package_add_on?.child_price || 0)) +
-                                                    (addOn.infants * applySST(addOn.package_add_on?.infant_price || 0))
+                                                    (addOn.adults * (addOn.package_add_on?.adult_price || 0)) +
+                                                    (addOn.children * (addOn.package_add_on?.child_price || 0)) +
+                                                    (addOn.infants * (addOn.package_add_on?.infant_price || 0))
                                                 ) }}
                                             </div>
                                         </td>
@@ -419,9 +419,9 @@
                                                 MYR {{ formatNumber(
                                                     booking.add_ons.reduce((total, addOn) => {
                                                         return total +
-                                                            (addOn.adults * applySST(addOn.package_add_on?.adult_price || 0)) +
-                                                            (addOn.children * applySST(addOn.package_add_on?.child_price || 0)) +
-                                                            (addOn.infants * applySST(addOn.package_add_on?.infant_price || 0));
+                                                            (addOn.adults * (addOn.package_add_on?.adult_price || 0)) +
+                                                            (addOn.children * (addOn.package_add_on?.child_price || 0)) +
+                                                            (addOn.infants * (addOn.package_add_on?.infant_price || 0));
                                                     }, 0)
                                                 ) }}
                                             </div>
@@ -659,17 +659,13 @@ const getGuestTypeBadgeClass = (guestType) => {
     }
 };
 
-// Get child DOB from booking room children data
+// Get child birth year from booking room children data
 const getChildDob = (roomNumber, childNumber) => {
     const room = props.booking.rooms?.[roomNumber - 1];
     if (!room?.children) return 'N/A';
     const child = room.children.find(c => c.child_number === childNumber);
-    if (!child?.date_of_birth) return 'N/A';
-    return new Date(child.date_of_birth).toLocaleDateString('en-MY', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
+    if (!child?.birth_year) return 'N/A';
+    return child.birth_year.toString();
 };
 
 const breadcrumbs = computed(() => [

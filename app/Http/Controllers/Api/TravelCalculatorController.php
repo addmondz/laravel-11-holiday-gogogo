@@ -799,13 +799,13 @@ class TravelCalculatorController extends Controller
 
             $sst = 0;
             $baseTotal = $sum('total');
-            $totalWithoutSst = $baseTotal + $addOnsTotal;
 
             if ($package->sst_enable) {
-                $sst = $this->sstCalculationService->calculateSst($totalWithoutSst);
+                $sst = $this->sstCalculationService->calculateSst($baseTotal); // SST only on base, not add-ons
             }
 
-            $total = $totalWithoutSst + $sst;
+            $totalWithoutSst = $baseTotal + $addOnsTotal;
+            $total = $baseTotal + $sst + $addOnsTotal;
             return response()->json([
                 'success'          => true,
                 'currency'         => 'MYR',

@@ -10,11 +10,11 @@ class BookingChild extends Model
     protected $fillable = [
         'booking_room_id',
         'child_number',
-        'date_of_birth'
+        'birth_year'
     ];
 
     protected $casts = [
-        'date_of_birth' => 'date'
+        'birth_year' => 'integer'
     ];
 
     public function bookingRoom(): BelongsTo
