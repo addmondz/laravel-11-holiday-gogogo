@@ -15,7 +15,7 @@
                                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Booking Information</h3>
                                     <div class="space-y-4">
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Booking Name</label>
+                                            <label class="block text-sm font-medium text-gray-700">Booking Name as per I/C</label>
                                             <input
                                                 type="text"
                                                 v-model="form.booking_name"

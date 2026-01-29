@@ -988,6 +988,19 @@
                                                     </span>
                                                     <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
                                                 </div>
+                                                <!-- DOB Input for Children -->
+                                                <div v-if="guest.guest_type === 'child'" class="mb-3">
+                                                    <label class="block text-xs text-gray-500 mb-1">
+                                                        Date of Birth <span class="text-red-500">*</span>
+                                                    </label>
+                                                    <input
+                                                        type="date"
+                                                        v-model="form.rooms[room.room_number - 1].children_dob[guest.guest_number - 1]"
+                                                        :max="new Date().toISOString().split('T')[0]"
+                                                        required
+                                                        class="w-full text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                                    />
+                                                </div>
                                                 <div class="pl-2 space-y-1 text-sm">
                                                     <div :class="['flex', 'justify-between', 'pb-1', getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number).length > 0 ? 'border-b border-gray-200' : '']">
                                                         <span class="text-gray-500">Package:</span>
@@ -1251,7 +1264,7 @@
                         <form @submit.prevent="submitBooking" class="space-y-6">
                             <!-- Booking Name -->
                             <div>
-                                <label for="booking_name" class="block text-sm font-medium text-gray-700">Booking Name</label>
+                                <label for="booking_name" class="block text-sm font-medium text-gray-700">Booking Name as per I/C</label>
                                 <input
                                     type="text"
                                     id="booking_name"
@@ -1490,7 +1503,7 @@
                                         <p class="text-lg text-gray-900">{{ bookingSuccess.uuid }}</p>
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                                        <h4 class="text-sm text-gray-500 mb-3">BOOKING NAME</h4>
+                                        <h4 class="text-sm text-gray-500 mb-3">BOOKING NAME AS PER I/C</h4>
                                         <p class="text-lg text-gray-900">{{ bookingSuccess.booking_name }}</p>
                                         <p class="text-sm text-gray-600">Phone: {{bookingSuccess.phone_number}}</p>
                                         <p class="text-sm text-gray-600">Email: {{bookingSuccess.booking_email}}</p>
@@ -2997,7 +3010,8 @@ const form = useForm({
         adults: null,
         children: null,
         infants: null,
-        add_ons: []  // [{id, adults, children, infants}, ...]
+        add_ons: [],  // [{id, adults, children, infants}, ...]
+        children_dob: []  // ['2020-05-15', '2018-03-22']
     }]
 });
 
@@ -3022,7 +3036,8 @@ const addRoom = () => {
             adults: null,
             children: null,
             infants: null,
-            add_ons: []
+            add_ons: [],
+            children_dob: []
         });
 
         // Smooth scroll to the newly added room with 80px offset for fixed header
@@ -3430,7 +3445,29 @@ const handleStep1Submit = async () => {
     }
 };
 
+// Validate Step 2 - Check all children have DOB
+const validateStep2 = () => {
+    for (const [roomIndex, room] of form.rooms.entries()) {
+        const childCount = room.children || 0;
+        for (let i = 0; i < childCount; i++) {
+            if (!room.children_dob?.[i]) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Information',
+                    text: `Please enter date of birth for Child ${i + 1} in Room ${roomIndex + 1}.`,
+                    confirmButtonColor: '#4F46E5'
+                });
+                return false;
+            }
+        }
+    }
+    return true;
+};
+
 const handleStep2Submit = () => {
+    // Validate children DOB before proceeding
+    if (!validateStep2()) return;
+
     // From Price Summary, go to Booking Details
     currentStep.value = 3;
     maxStepReached.value = Math.max(maxStepReached.value, 3);
@@ -3522,7 +3559,8 @@ const submitBooking = async () => {
                 room_type_id: room.room_type_id,
                 adults: room.adults || 0,
                 children: room.children || 0,
-                infants: room.infants || 0
+                infants: room.infants || 0,
+                children_dob: room.children_dob || []
             })),
             booking_name: bookingForm.value.booking_name,
             phone_number: bookingForm.value.country_code + bookingForm.value.phone_number,

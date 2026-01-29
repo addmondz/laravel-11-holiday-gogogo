@@ -120,7 +120,7 @@
                                 
                                 <div class="space-y-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700">Booking Name</label>
+                                        <label class="block text-sm font-medium text-gray-700">Booking Name as per I/C</label>
                                         <p class="mt-1 text-sm text-gray-900">{{ booking.booking_name }}</p>
                                     </div>
                                     <div>
@@ -305,6 +305,10 @@
                                                 {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }}
                                             </span>
                                             <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
+                                        </div>
+                                        <!-- DOB for Children -->
+                                        <div v-if="guest.guest_type === 'child'" class="text-xs text-gray-500 mb-2">
+                                            DOB: {{ getChildDob(room.room_number, guest.guest_number) }}
                                         </div>
                                         <div class="pl-2 space-y-1 text-sm">
                                             <div :class="['flex', 'justify-between', 'pb-1', getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number).length > 0 ? 'border-b border-gray-200' : '']">
@@ -653,6 +657,19 @@ const getGuestTypeBadgeClass = (guestType) => {
         default:
             return 'bg-gray-100 text-gray-800';
     }
+};
+
+// Get child DOB from booking room children data
+const getChildDob = (roomNumber, childNumber) => {
+    const room = props.booking.rooms?.[roomNumber - 1];
+    if (!room?.children) return 'N/A';
+    const child = room.children.find(c => c.child_number === childNumber);
+    if (!child?.date_of_birth) return 'N/A';
+    return new Date(child.date_of_birth).toLocaleDateString('en-MY', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
 };
 
 const breadcrumbs = computed(() => [

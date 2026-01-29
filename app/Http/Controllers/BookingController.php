@@ -106,7 +106,7 @@ class BookingController extends Controller
 
     public function show(Booking $booking)
     {
-        $booking->load(['package', 'rooms', 'transactions', 'rooms.roomType', 'approver', 'addOns.packageAddOn']);
+        $booking->load(['package', 'rooms', 'transactions', 'rooms.roomType', 'rooms.children', 'approver', 'addOns.packageAddOn']);
 
         // Get SST configuration
         $sstConfig = AppSetting::getSstConfiguration();
