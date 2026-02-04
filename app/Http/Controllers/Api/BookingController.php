@@ -22,8 +22,6 @@ class BookingController extends Controller
                 'rooms.*.adults' => 'required|integer|min:1|max:4',
                 'rooms.*.children' => 'required|integer|min:0|max:4',
                 'rooms.*.infants' => 'required|integer|min:0|max:4',
-                'rooms.*.children_dob' => 'array',
-                'rooms.*.children_dob.*' => 'required|integer|min:1900|max:' . date('Y'),
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'booking_name' => 'required|string|max:255',
@@ -45,19 +43,6 @@ class BookingController extends Controller
                     'message' => 'Validation failed',
                     'errors' => $validator->errors()
                 ], 422);
-            }
-
-            // Validate children_dob array size matches children count
-            foreach ($request->rooms as $index => $room) {
-                if ($room['children'] > 0) {
-                    $dobCount = count($room['children_dob'] ?? []);
-                    if ($dobCount !== $room['children']) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "Room " . ($index + 1) . ": Date of birth required for all {$room['children']} children (received {$dobCount})"
-                        ], 422);
-                    }
-                }
             }
 
             DB::beginTransaction();
@@ -92,22 +77,12 @@ class BookingController extends Controller
 
                 // Create booking rooms
                 foreach ($request->rooms as $room) {
-                    $bookingRoom = $booking->rooms()->create([
+                    $booking->rooms()->create([
                         'room_type_id' => $room['room_type_id'],
                         'adults' => $room['adults'],
                         'children' => $room['children'],
                         'infants' => $room['infants']
                     ]);
-
-                    // Create booking children with DOB
-                    if (!empty($room['children_dob'])) {
-                        foreach ($room['children_dob'] as $index => $dob) {
-                            $bookingRoom->children()->create([
-                                'child_number' => $index + 1,
-                                'birth_year' => $dob
-                            ]);
-                        }
-                    }
                 }
 
                 // Create booking add-ons

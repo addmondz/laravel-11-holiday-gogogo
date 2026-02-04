@@ -982,25 +982,15 @@
                                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                             <div v-for="guest in room.guests" :key="`${guest.guest_type}_${guest.guest_number}`"
                                                  class="text-sm p-3 border border-gray-100 rounded-lg bg-gray-50 flex flex-col">
-                                                <div class="flex items-center gap-2 mb-2">
-                                                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                                                        {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }}
-                                                    </span>
-                                                    <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
-                                                </div>
-                                                <!-- Birth Year Input for Children -->
-                                                <div v-if="guest.guest_type === 'child'" class="mb-3">
-                                                    <label class="block text-xs text-gray-500 mb-1">
-                                                        Birth Year <span class="text-red-500">*</span>
-                                                    </label>
-                                                    <select
-                                                        v-model="form.rooms[room.room_number - 1].children_dob[guest.guest_number - 1]"
-                                                        required
-                                                        class="w-full text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-indigo-500 focus:border-indigo-500"
-                                                    >
-                                                        <option value="">Select Year</option>
-                                                        <option v-for="year in birthYearOptions" :key="year" :value="year">{{ year }}</option>
-                                                    </select>
+                                                <div class="mb-2">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                                            {{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }}
+                                                        </span>
+                                                        <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
+                                                    </div>
+                                                    <p v-if="guest.guest_type === 'child' && packageData?.child_max_age_desc" class="text-xs text-gray-500 mt-1">{{ packageData.child_max_age_desc }} since birth year</p>
+                                                    <p v-if="guest.guest_type === 'infant' && packageData?.infant_max_age_desc" class="text-xs text-gray-500 mt-1">{{ packageData.infant_max_age_desc }} since birth year</p>
                                                 </div>
                                                 <div class="pl-2 space-y-1 text-sm">
                                                     <div :class="['flex', 'justify-between', 'pb-1', getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number).length > 0 ? 'border-b border-gray-200' : '']">
@@ -3393,15 +3383,6 @@ const hasAddOns = computed(() => {
     return packageAddOns.value && packageAddOns.value.length > 0;
 });
 
-// Computed property for birth year options (current year down to 25 years ago for child age range)
-const birthYearOptions = computed(() => {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let year = currentYear; year >= currentYear - 25; year--) {
-        years.push(year);
-    }
-    return years;
-});
 
 // Helper function to go back to the previous step
 const goToPreviousStep = () => {
@@ -3456,22 +3437,8 @@ const handleStep1Submit = async () => {
     }
 };
 
-// Validate Step 2 - Check all children have DOB
+// Validate Step 2 - no validation needed now that birth year is removed
 const validateStep2 = () => {
-    for (const [roomIndex, room] of form.rooms.entries()) {
-        const childCount = room.children || 0;
-        for (let i = 0; i < childCount; i++) {
-            if (!room.children_dob?.[i]) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Missing Information',
-                    text: `Please select birth year for Child ${i + 1} in Room ${roomIndex + 1}.`,
-                    confirmButtonColor: '#4F46E5'
-                });
-                return false;
-            }
-        }
-    }
     return true;
 };
 
@@ -3570,8 +3537,7 @@ const submitBooking = async () => {
                 room_type_id: room.room_type_id,
                 adults: room.adults || 0,
                 children: room.children || 0,
-                infants: room.infants || 0,
-                children_dob: room.children_dob || []
+                infants: room.infants || 0
             })),
             booking_name: bookingForm.value.booking_name,
             phone_number: bookingForm.value.country_code + bookingForm.value.phone_number,

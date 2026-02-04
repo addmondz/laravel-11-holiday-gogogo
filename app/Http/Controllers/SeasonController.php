@@ -205,7 +205,7 @@ class SeasonController extends Controller
         $validated = $request->validate([
             'season_type_id' => 'required|exists:season_types,id',
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date'
+            'end_date' => 'required|date|after_or_equal:start_date'
         ]);
 
         // Check for overlapping dates, excluding the current season

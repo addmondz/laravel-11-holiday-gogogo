@@ -306,10 +306,6 @@
                                             </span>
                                             <span class="text-gray-900 font-medium">{{ guest.guest_type.charAt(0).toUpperCase() + guest.guest_type.slice(1) }} {{ guest.guest_number }}</span>
                                         </div>
-                                        <!-- Birth Year for Children -->
-                                        <div v-if="guest.guest_type === 'child'" class="text-xs text-gray-500 mb-2">
-                                            Birth Year: {{ getChildDob(room.room_number, guest.guest_number) }}
-                                        </div>
                                         <div class="pl-2 space-y-1 text-sm">
                                             <div :class="['flex', 'justify-between', 'pb-1', getGuestAddOnItems(room.room_number, guest.guest_type, guest.guest_number).length > 0 ? 'border-b border-gray-200' : '']">
                                                 <span class="text-gray-500">Package:</span>
@@ -659,14 +655,6 @@ const getGuestTypeBadgeClass = (guestType) => {
     }
 };
 
-// Get child birth year from booking room children data
-const getChildDob = (roomNumber, childNumber) => {
-    const room = props.booking.rooms?.[roomNumber - 1];
-    if (!room?.children) return 'N/A';
-    const child = room.children.find(c => c.child_number === childNumber);
-    if (!child?.birth_year) return 'N/A';
-    return child.birth_year.toString();
-};
 
 const breadcrumbs = computed(() => [
     { title: 'Bookings', link: route('bookings.index') },
