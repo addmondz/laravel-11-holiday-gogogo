@@ -16,7 +16,8 @@ import {
   UserOutlined,
   TagOutlined,
   ScheduleOutlined,
-  SettingOutlined
+  SettingOutlined,
+  MailOutlined
 } from '@ant-design/icons-vue';
 
 const isDarkMode = ref(false);
@@ -162,6 +163,10 @@ const toggleSidebar = () => {
                                 <NavLink :href="route('settings.index')" :active="route().current('settings.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md" :class="isSidebarOpen ? '' : 'justify-center'">
                                     <SettingOutlined class="flex-shrink-0 w-5 h-5" />
                                     <span v-show="isSidebarOpen" class="ml-3 whitespace-nowrap">Settings</span>
+                                </NavLink>
+                                <NavLink :href="route('email-receivers.index')" :active="route().current('email-receivers.*')" class="flex items-center px-2 py-2 text-sm font-medium rounded-md" :class="isSidebarOpen ? '' : 'justify-center'">
+                                    <MailOutlined class="flex-shrink-0 w-5 h-5" />
+                                    <span v-show="isSidebarOpen" class="ml-3 whitespace-nowrap">Email Receivers</span>
                                 </NavLink>
                             </div>
                         </div>

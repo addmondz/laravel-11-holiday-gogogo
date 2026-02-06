@@ -24,12 +24,15 @@ use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\AppSettingController;
 use App\Http\Controllers\BotApiController;
 use App\Http\Controllers\DateBlockerController;
+use App\Http\Controllers\EmailReceiverController;
 use App\Http\Controllers\SenangPayController;
 use App\Models\Transaction;
 use App\Models\Package;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingConfirmationMail;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -207,6 +210,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/sst-configuration', 'getSstConfiguration')->name('settings.sst-configuration.get');
         Route::post('/sst-configuration', 'updateSstConfiguration')->name('settings.sst-configuration.update');
     });
+
+    Route::resource('email-receivers', EmailReceiverController::class)->names([
+        'index' => 'email-receivers.index',
+        'create' => 'email-receivers.create',
+        'store' => 'email-receivers.store',
+        'edit' => 'email-receivers.edit',
+        'update' => 'email-receivers.update',
+        'destroy' => 'email-receivers.destroy',
+    ]);
 });
 
 Route::middleware('auth')->group(function () {
@@ -334,5 +346,18 @@ if (env('APP_ENV') == 'local') {
                 'line' => $e->getLine(),
             ], 500);
         }
+    });
+
+    Route::get('/test-booking-email/{booking}', function (Booking $booking) {
+        return (new BookingConfirmationMail($booking))->render();
+    });
+
+    Route::get('/test-booking-email/{booking}/send', function (Booking $booking) {
+        Mail::to($booking->booking_email)->send(new BookingConfirmationMail($booking));
+
+        return response()->json([
+            'success' => true,
+            'message' => "Booking confirmation email sent to {$booking->booking_email}",
+        ]);
     });
 }

@@ -1416,8 +1416,8 @@
                                     </svg>
                                 </div>
                                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Booking Created!</h3>
-                                <p class="text-gray-600">Your booking has been submitted.</p>
-                                <p class="text-gray-600">Once the booking is approved, you will receive an email with the booking details.</p>
+                                <p class="text-gray-600">Your booking has been submitted and is currently <span class="font-semibold text-amber-600">pending</span>.</p>
+                                <p class="text-gray-600">A travel consultant will contact you shortly to assist with your booking.</p>
                             </div>
                         </div>
                         <div v-else-if="bookingSuccess.status == 1" class="relative bg-green-400 bg-[length:200%] bg-[position:0%_50%] animate-gradient-x px-6 py-8 rounded-2xl shadow-xl transform transition-transform duration-100 text-white mx-8 mt-5">
@@ -2021,7 +2021,8 @@ const props = defineProps({
 onMounted(() => {
     if (props.booking) {
         bookingSuccess.value = props.booking;
-        currentStep.value = 4;
+        currentStep.value = 3;
+        maxStepReached.value = 3;
         setTimeout(() => {
             const bookingForm = document.getElementById('booking-form');
             if (bookingForm) {

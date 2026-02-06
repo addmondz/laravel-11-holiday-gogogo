@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\BookingConfirmationMail;
 use App\Models\Booking;
 use App\Models\BookingAddOn;
+use App\Models\EmailReceiver;
 use App\Services\GenerateBookingUid;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 class BookingController extends Controller
 {
@@ -100,7 +104,25 @@ class BookingController extends Controller
 
                 DB::commit();
 
-                $booking = Booking::with(['rooms.roomType', 'addOns.packageAddOn'])->find($booking->id);
+                $booking = Booking::with(['package', 'rooms.roomType', 'addOns.packageAddOn'])->find($booking->id);
+
+                // Queue booking confirmation emails
+                if (config('booking.email_enabled')) {
+                    try {
+                        if ($booking->booking_email) {
+                            Mail::to($booking->booking_email)
+                                ->queue(new BookingConfirmationMail($booking));
+                        }
+
+                        $adminEmails = EmailReceiver::pluck('email');
+                        foreach ($adminEmails as $adminEmail) {
+                            Mail::to($adminEmail)
+                                ->queue(new BookingConfirmationMail($booking));
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Failed to queue booking confirmation email: ' . $e->getMessage());
+                    }
+                }
 
                 return response()->json([
                     'success' => true,
