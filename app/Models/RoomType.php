@@ -25,6 +25,7 @@ class RoomType extends Model
         'images',
         'disabled_pax_combinations',
         'default_show_surcharge',
+        'sequence',
     ];
 
     protected $casts = [

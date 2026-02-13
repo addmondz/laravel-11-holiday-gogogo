@@ -67,7 +67,7 @@ class Package extends Model
      */
     public function getLoadRoomTypesAttribute()
     {
-        $roomTypes = $this->loadRoomTypes()->get();
+        $roomTypes = $this->loadRoomTypes()->orderBy('sequence')->get();
         
         // Filter out room types where all combinations are disabled
         return $roomTypes->filter(function ($roomType) {

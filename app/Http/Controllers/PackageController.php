@@ -19,6 +19,8 @@ use App\Models\SeasonType;
 use App\Models\DateTypeRange;
 use App\Services\GeneratePackageUid;
 use App\Services\CreatePriceConfigurationsService;
+use App\Exports\PackageExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
@@ -73,9 +75,13 @@ class PackageController extends Controller
         }
 
         // Sort functionality
-        $sortField = $request->get('sort', 'created_at');
-        $sortDirection = $request->get('direction', 'desc');
-        $query->orderBy($sortField, $sortDirection);
+        $sortField = $request->get('sort', 'last_modified_at');
+        $sortDirection = in_array($request->get('direction'), ['asc', 'desc']) ? $request->get('direction') : 'desc';
+        if ($sortField === 'last_modified_at') {
+            $query->orderByRaw("last_modified_at {$sortDirection}");
+        } else {
+            $query->orderBy($sortField, $sortDirection);
+        }
 
         // Add last_modified_at computed column
         $query->addSelect([
@@ -280,7 +286,8 @@ class PackageController extends Controller
                     'max_children' => !empty($roomTypeData['max_children']) ? (int)$roomTypeData['max_children'] : null,
                     'max_infants' => !empty($roomTypeData['max_infants']) ? (int)$roomTypeData['max_infants'] : null,
                     'package_id' => $package->id,
-                    'images' => $roomTypeImages
+                    'images' => $roomTypeImages,
+                    'sequence' => $roomTypeIndex,
                 ]);
             });
 
@@ -302,7 +309,7 @@ class PackageController extends Controller
     {
         // Set up pagination for each section
         $roomTypes = $package->loadRoomTypes()
-            ->latest()
+            ->orderBy('sequence')
             ->paginate(50);
 
         $defaultSeasonTypeId = SeasonType::where('name', 'Default')->value('id');
@@ -336,7 +343,7 @@ class PackageController extends Controller
             $query->where('package_id', $package->id);
         })->get();
 
-        $packageUniqueRoomTypes = $package->loadRoomTypes()->get()->pluck('name', 'id');
+        $packageUniqueRoomTypes = $package->loadRoomTypes()->orderBy('sequence')->get()->pluck('name', 'id');
 
         $assignedSeasonTypes = SeasonType::whereHas('seasons', function ($query) use ($package) {
             $query->where('package_id', $package->id);
@@ -371,7 +378,7 @@ class PackageController extends Controller
     public function getRoomTypes(Package $package, Request $request)
     {
         $roomTypes = $package->loadRoomTypes()
-            ->latest()
+            ->orderBy('sequence')
             ->paginate(50, ['*'], 'page');
 
         return response()->json($roomTypes);
@@ -638,6 +645,15 @@ class PackageController extends Controller
         return "{$baseName} (Copy {$i})";
     }
 
+    public function export(Package $package)
+    {
+        $slug = Str::slug($package->name);
+        $date = now()->format('Y-m-d');
+        $filename = "Package_{$slug}_{$date}.xlsx";
+
+        return Excel::download(new PackageExport($package), $filename);
+    }
+
     public function duplicate(Request $request, Package $package)
     {
         try {
@@ -787,6 +803,7 @@ class PackageController extends Controller
                 }
                 
                 $newRoomType->images = $roomTypeImages;
+                $newRoomType->sequence = $index;
                 $newRoomType->save();
                 
                 // Map old room type ID to new room type ID by matching name

@@ -94,6 +94,8 @@ class RoomTypeController extends Controller
         }
         $validated['images'] = $images;
 
+        $validated['sequence'] = (RoomType::where('package_id', $validated['package_id'])->max('sequence') ?? -1) + 1;
+
         $roomType = RoomType::create($validated);
         $this->ensurePriceConfigService->syncPriceConfigurationsBySeasonsAndDateTypes($validated['package_id'], [], []);
 
@@ -315,6 +317,7 @@ class RoomTypeController extends Controller
             }
             
             // Create new room type with form data
+            $maxSequence = RoomType::where('package_id', $validated['package_id'])->max('sequence') ?? -1;
             $newRoomType = RoomType::create([
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
@@ -325,6 +328,7 @@ class RoomTypeController extends Controller
                 'max_infants' => $validated['max_infants'] ?? null,
                 'package_id' => $validated['package_id'],
                 'images' => $duplicatedImages,
+                'sequence' => $maxSequence + 1,
             ]);
             
             // Sync price configurations
@@ -387,6 +391,20 @@ class RoomTypeController extends Controller
         }
         
         return $baseName . ' (Copy ' . ($maxCopy + 1) . ')';
+    }
+
+    public function updateSequence(Request $request)
+    {
+        $request->validate([
+            'ordered_ids' => 'required|array',
+            'ordered_ids.*' => 'integer|exists:room_types,id',
+        ]);
+
+        foreach ($request->ordered_ids as $index => $id) {
+            RoomType::where('id', $id)->update(['sequence' => $index]);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     public function destroy(RoomType $roomType)

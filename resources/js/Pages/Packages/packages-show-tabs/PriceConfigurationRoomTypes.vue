@@ -170,6 +170,50 @@
           </div>
         </div>
 
+        <!-- Set Price for Selected Rows Panel -->
+        <div v-if="isEditMode" class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+          <h4 class="text-sm font-medium text-gray-700 mb-3">
+            Set Price for Selected Rows
+            <span class="text-xs text-gray-500 font-normal ml-2">
+              (Replaces base charge prices for checked rows across all rooms)
+            </span>
+            <span v-if="totalCheckedCount > 0" class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              {{ totalCheckedCount }} row{{ totalCheckedCount === 1 ? '' : 's' }} selected
+            </span>
+          </h4>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <!-- Adult -->
+            <div class="flex flex-col space-y-1">
+              <label class="text-xs font-medium text-gray-600">Adult</label>
+              <input type="number" step="0.01" min="0" v-model.number="setPriceValues.adult"
+                class="w-full rounded-md border-gray-300 text-sm" placeholder="Leave blank to skip" />
+            </div>
+
+            <!-- Child -->
+            <div v-if="!noChildrenAndInfant" class="flex flex-col space-y-1">
+              <label class="text-xs font-medium text-gray-600">Child</label>
+              <input type="number" step="0.01" min="0" v-model.number="setPriceValues.child"
+                class="w-full rounded-md border-gray-300 text-sm" placeholder="Leave blank to skip" />
+            </div>
+
+            <!-- Infant -->
+            <div v-if="!noChildrenAndInfant" class="flex flex-col space-y-1">
+              <label class="text-xs font-medium text-gray-600">Infant</label>
+              <input type="number" step="0.01" min="0" v-model.number="setPriceValues.infant"
+                class="w-full rounded-md border-gray-300 text-sm" placeholder="Leave blank to skip" />
+            </div>
+
+            <!-- Apply Button -->
+            <div>
+              <button @click="applySetPrice"
+                class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 w-full">
+                Apply to Selected
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- PER ROOM -->
         <div
           v-for="room in compactRooms"
@@ -278,6 +322,15 @@
               <table class="min-w-full text-sm">
                 <thead class="bg-gray-200">
                   <tr>
+                    <th v-if="isEditMode" class="px-2 py-2 w-10">
+                      <input
+                        type="checkbox"
+                        :checked="allRowsChecked(room)"
+                        @change="toggleAllRows(room)"
+                        class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                        title="Select / deselect all rows"
+                      />
+                    </th>
                     <th
                       class="px-4 py-2 text-left"
                       :colspan="getLargestIndexNumber(room.base)"
@@ -292,6 +345,14 @@
                     :key="comboKey"
                     :class="idx % 2 ? 'bg-white' : 'bg-gray-50'"
                   >
+                    <td v-if="isEditMode" class="px-2 py-2 align-middle w-10">
+                      <input
+                        type="checkbox"
+                        :value="comboKey"
+                        v-model="checkedRows[room.room_type_id]"
+                        class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                      />
+                    </td>
                     <td
                       class="px-4 py-2 align-middle whitespace-nowrap font-medium text-gray-800"
                     >
@@ -639,6 +700,10 @@ const showSurchargeTable = ref({});
 
 // State for global price adjustments per room
 const roomAdjustments = ref({});
+
+// State for "Set Price" panel with row checkboxes
+const checkedRows = ref({}); // { [room_type_id]: string[] } — array of checked comboKeys per room
+const setPriceValues = ref({ adult: null, child: null, infant: null });
 
 // Duplicate functionality
 const showDuplicateModal = ref(false);
@@ -1048,6 +1113,76 @@ const checkCrossTypeSamePriceForSingleQty = (room, comboKey) => {
   }
 };
 
+// ---- Set Price helpers ------------------------------------------------------
+const totalCheckedCount = computed(() => {
+  let count = 0;
+  for (const arr of Object.values(checkedRows.value)) {
+    count += (arr || []).length;
+  }
+  return count;
+});
+
+const allRowsChecked = (room) => {
+  const entries = filteredComboEntries(room.base);
+  if (!entries.length) return false;
+  const checked = checkedRows.value[room.room_type_id] || [];
+  return entries.every(([comboKey]) => checked.includes(comboKey));
+};
+
+const toggleAllRows = (room) => {
+  const entries = filteredComboEntries(room.base);
+  const allKeys = entries.map(([comboKey]) => comboKey);
+  if (allRowsChecked(room)) {
+    checkedRows.value[room.room_type_id] = [];
+  } else {
+    checkedRows.value[room.room_type_id] = [...allKeys];
+  }
+};
+
+const applySetPrice = () => {
+  // Validate: at least one row checked
+  if (totalCheckedCount.value === 0) {
+    Swal.fire({ icon: 'warning', title: 'No Rows Selected', text: 'Please check at least one row before applying.', timer: 2500 });
+    return;
+  }
+
+  // Validate: at least one price field has a value
+  const adultVal = setPriceValues.value.adult;
+  const childVal = setPriceValues.value.child;
+  const infantVal = setPriceValues.value.infant;
+  const hasAdult = adultVal !== null && adultVal !== '' && !isNaN(adultVal);
+  const hasChild = childVal !== null && childVal !== '' && !isNaN(childVal);
+  const hasInfant = infantVal !== null && infantVal !== '' && !isNaN(infantVal);
+
+  if (!hasAdult && !hasChild && !hasInfant) {
+    Swal.fire({ icon: 'warning', title: 'No Price Entered', text: 'Please enter at least one price value.', timer: 2500 });
+    return;
+  }
+
+  // Apply to each room's checked rows
+  compactRooms.value.forEach(room => {
+    const checked = checkedRows.value[room.room_type_id] || [];
+    checked.forEach(comboKey => {
+      const slots = room.base[comboKey];
+      if (!slots) return;
+      Object.keys(slots).forEach(slotKey => {
+        const prefix = slotKey[0];
+        if (prefix === 'a' && hasAdult) slots[slotKey] = Number(adultVal);
+        if (prefix === 'c' && hasChild) slots[slotKey] = Number(childVal);
+        if (prefix === 'i' && hasInfant) slots[slotKey] = Number(infantVal);
+      });
+    });
+  });
+
+  // Clear checkboxes and inputs
+  for (const key of Object.keys(checkedRows.value)) {
+    checkedRows.value[key] = [];
+  }
+  setPriceValues.value = { adult: null, child: null, infant: null };
+
+  Swal.fire({ icon: 'success', title: 'Prices Applied', timer: 1200, showConfirmButton: false });
+};
+
 // ---- Display helpers -------------------------------------------------------
 const displayRoomName = (id) =>
   roomNamesMap.value[id] || props.packageUniqueRoomTypes?.[id] || `Room Type #${id}`;
@@ -1127,6 +1262,13 @@ const fetchPrices = () => {
 
       // Initialize global adjustment state for each room
       initializeRoomAdjustments();
+
+      // Initialize checkedRows for each room
+      const newChecked = {};
+      compactRooms.value.forEach(room => {
+        newChecked[room.room_type_id] = [];
+      });
+      checkedRows.value = newChecked;
     })
     .catch((err) => {
       console.error(err);

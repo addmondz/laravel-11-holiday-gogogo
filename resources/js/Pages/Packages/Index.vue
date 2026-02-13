@@ -92,11 +92,61 @@
                                                 </span>
                                             </button>
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Package ID</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Modified</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <button
+                                                @click="sort('uuid')"
+                                                class="flex items-center space-x-1"
+                                            >
+                                                <span>Package ID</span>
+                                                <span v-if="sortField === 'uuid'" class="text-indigo-600">
+                                                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                                                </span>
+                                            </button>
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <button
+                                                @click="sort('location')"
+                                                class="flex items-center space-x-1"
+                                            >
+                                                <span>Location</span>
+                                                <span v-if="sortField === 'location'" class="text-indigo-600">
+                                                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                                                </span>
+                                            </button>
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <button
+                                                @click="sort('display_price_adult')"
+                                                class="flex items-center space-x-1"
+                                            >
+                                                <span>Price</span>
+                                                <span v-if="sortField === 'display_price_adult'" class="text-indigo-600">
+                                                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                                                </span>
+                                            </button>
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <button
+                                                @click="sort('package_start_date')"
+                                                class="flex items-center space-x-1"
+                                            >
+                                                <span>Period</span>
+                                                <span v-if="sortField === 'package_start_date'" class="text-indigo-600">
+                                                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                                                </span>
+                                            </button>
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <button
+                                                @click="sort('last_modified_at')"
+                                                class="flex items-center space-x-1"
+                                            >
+                                                <span>Last Modified</span>
+                                                <span v-if="sortField === 'last_modified_at'" class="text-indigo-600">
+                                                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                                                </span>
+                                            </button>
+                                        </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
@@ -157,6 +207,12 @@
                                             >
                                                 Duplicate
                                             </button>
+                                            <a
+                                                :href="route('packages.export', pkg.id)"
+                                                class="text-green-600 hover:text-green-900 mr-3"
+                                            >
+                                                Export
+                                            </a>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -195,7 +251,7 @@ const props = defineProps({
 
 const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || '');
-const sortField = ref(props.filters.sort || 'created_at');
+const sortField = ref(props.filters.sort || 'last_modified_at');
 const sortDirection = ref(props.filters.direction || 'desc');
 const dateFrom = ref(props.filters.dateFrom || '');
 const dateTo = ref(props.filters.dateTo || '');

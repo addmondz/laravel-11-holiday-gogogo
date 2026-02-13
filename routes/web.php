@@ -81,6 +81,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'packages.destroy'
     ]);
 
+    Route::get('/packages/{package}/export', [PackageController::class, 'export'])->name('packages.export');
     Route::get('/packages/{package}/duplicate', [PackageController::class, 'duplicateForm'])->name('packages.duplicate-form');
     Route::post('/packages/{package}/duplicate', [PackageController::class, 'duplicate'])->name('packages.duplicate');
     Route::get('/packages/{package}/room-types', [PackageController::class, 'getRoomTypes'])->name('packages.room-types');
@@ -121,6 +122,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'date-types.destroy'
     ]);
 
+    Route::post('/room-types/update-sequence', [RoomTypeController::class, 'updateSequence'])->name('room-types.update-sequence');
     Route::resource('room-types', RoomTypeController::class)->names([
         'create' => 'room-types.create',
         'edit' => 'room-types.edit',
