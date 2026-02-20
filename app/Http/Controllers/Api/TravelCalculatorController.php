@@ -401,7 +401,8 @@ class TravelCalculatorController extends Controller
                         $fallbackType = $loopDate->isWeekend() ? 'weekend' : 'weekday';
                         if (!empty($package->weekend_days)) {
                             $weekendDays = is_array($package->weekend_days) ? $package->weekend_days : json_decode($package->weekend_days, true);
-                            $fallbackType = in_array($loopDate->dayOfWeek, (array)$weekendDays, true) ? 'weekend' : 'weekday';
+                            $weekendDays = array_map('intval', (array)$weekendDays);
+                            $fallbackType = in_array($loopDate->dayOfWeek, $weekendDays, true) ? 'weekend' : 'weekday';
                         }
                         $dateType = DateType::where('name', 'LIKE', "%$fallbackType%")->first();
                         if (!$dateType) {
