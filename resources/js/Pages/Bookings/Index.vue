@@ -212,6 +212,9 @@
                                             Booking Name as per I/C
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Created At
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Booking ID
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -242,6 +245,9 @@
                                             <div class="text-sm font-medium text-gray-900">{{ booking.booking_name }}</div>
                                             <div class="text-sm text-gray-500">{{ booking.phone_number }}</div>
                                             <div class="text-sm text-gray-500">{{ booking.booking_email }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ moment(booking.created_at).format('DD MMM YYYY, hh:mm A') }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">{{ booking.uuid }}</div>
