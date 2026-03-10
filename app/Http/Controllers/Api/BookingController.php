@@ -106,18 +106,22 @@ class BookingController extends Controller
 
                 $booking = Booking::with(['package', 'rooms.roomType', 'addOns.packageAddOn'])->find($booking->id);
 
-                // Queue booking confirmation emails
+                // Queue booking confirmation emails (staggered to respect Resend 2 req/s rate limit)
                 if (config('booking.email_enabled')) {
                     try {
+                        $delay = 0;
+
                         if ($booking->booking_email) {
                             Mail::to($booking->booking_email)
-                                ->queue(new BookingConfirmationMail($booking));
+                                ->later(now()->addSeconds($delay), new BookingConfirmationMail($booking));
+                            $delay += 1;
                         }
 
                         $adminEmails = EmailReceiver::pluck('email');
                         foreach ($adminEmails as $adminEmail) {
                             Mail::to($adminEmail)
-                                ->queue(new BookingConfirmationMail($booking));
+                                ->later(now()->addSeconds($delay), new BookingConfirmationMail($booking));
+                            $delay += 1;
                         }
                     } catch (\Exception $e) {
                         Log::error('Failed to queue booking confirmation email: ' . $e->getMessage());

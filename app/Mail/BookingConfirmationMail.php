@@ -14,6 +14,9 @@ class BookingConfirmationMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    public int $tries = 3;
+    public array $backoff = [5, 30, 60];
+
     public Booking $booking;
 
     public function __construct(Booking $booking)
