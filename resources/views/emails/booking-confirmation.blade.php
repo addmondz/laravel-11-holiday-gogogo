@@ -19,6 +19,28 @@
                         </td>
                     </tr>
 
+                    <!-- Package Details -->
+                    @if($booking->package)
+                    <tr>
+                        <td style="padding: 30px 40px 0 40px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
+                                <tr>
+                                    <td style="padding: 16px;">
+                                        <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Package</p>
+                                        <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: 700; color: #1f2937;">{{ $booking->package->name }}</p>
+                                        @if($booking->package->location)
+                                        <p style="margin: 0 0 4px 0; font-size: 13px; color: #4b5563;">{{ $booking->package->location }}</p>
+                                        @endif
+                                        @if($booking->package->description)
+                                        <p style="margin: 4px 0 0 0; font-size: 13px; color: #6b7280;">{{ $booking->package->description }}</p>
+                                        @endif
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    @endif
+
                     <!-- Body -->
                     <tr>
                         <td style="padding: 30px 40px;">
@@ -38,7 +60,8 @@
                                             <tr>
                                                 <td style="padding: 16px;">
                                                     <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Booking Reference</p>
-                                                    <p style="margin: 0; font-size: 18px; font-weight: 700; color: #1f2937;">{{ $booking->uuid }}</p>
+                                                    <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: 700; color: #1f2937;">{{ $booking->uuid }}</p>
+                                                    <p style="margin: 0; font-size: 12px; color: #6b7280;">Booked on: {{ $booking->created_at->format('d M Y, h:i A') }}</p>
                                                 </td>
                                             </tr>
                                         </table>
