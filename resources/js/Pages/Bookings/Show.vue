@@ -124,11 +124,14 @@
                                         <p class="mt-1 text-sm text-gray-900">{{ booking.booking_name }}</p>
                                     </div>
                                     <div>
+                                        <label class="block text-sm font-medium text-gray-700">IC / Passport Number</label>
+                                        <p class="mt-1 text-sm text-gray-900">{{ booking.ic_passport_number || '-' }}</p>
+                                    </div>
+                                    <div>
                                         <label class="block text-sm font-medium text-gray-700">Phone Number</label>
                                         <p class="mt-1 text-sm text-gray-900">{{ booking.phone_number }}</p>
                                     </div>
                                     <div>
-                                        <!-- <label class="block text-sm font-medium text-gray-700">IC/Passport Number</label> -->
                                         <label class="block text-sm font-medium text-gray-700">Tin Number</label>
                                         <p class="mt-1 text-sm text-gray-900">{{ booking.booking_ic || '-' }}</p>
                                     </div>

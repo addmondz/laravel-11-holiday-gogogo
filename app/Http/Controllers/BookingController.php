@@ -197,6 +197,7 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'booking_name' => 'required|string|max:255',
+            'ic_passport_number' => 'required|string|max:50',
             'phone_number' => 'required|string|max:20',
             'booking_ic' => 'string|max:50',
             'special_remarks' => 'nullable|string',
@@ -206,6 +207,7 @@ class BookingController extends Controller
         try {
             $booking->update([
                 'booking_name' => $validated['booking_name'],
+                'ic_passport_number' => $validated['ic_passport_number'],
                 'phone_number' => $validated['phone_number'],
                 'booking_ic' => $validated['booking_ic'],
                 'special_remarks' => $validated['special_remarks']

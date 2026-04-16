@@ -1269,7 +1269,26 @@
                                 />
                                 <p v-if="bookingValidationErrors.booking_name" class="mt-1 text-sm text-red-600">
                                     {{ bookingValidationErrors.booking_name }}
-                                </p>    
+                                </p>
+                            </div>
+
+                            <!-- IC / Passport Number -->
+                            <div>
+                                <label for="ic_passport_number" class="block text-sm font-medium text-gray-700">IC / Passport Number</label>
+                                <input
+                                    type="text"
+                                    id="ic_passport_number"
+                                    v-model="bookingForm.ic_passport_number"
+                                    placeholder="e.g., 900101-01-1234 or A12345678"
+                                    :class="[
+                                        'mt-1 block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500',
+                                        bookingValidationErrors.ic_passport_number ? 'border-red-500' : 'border-gray-300'
+                                    ]"
+                                    required
+                                />
+                                <p v-if="bookingValidationErrors.ic_passport_number" class="mt-1 text-sm text-red-600">
+                                    {{ bookingValidationErrors.ic_passport_number }}
+                                </p>
                             </div>
 
                             <!-- Booking Email -->
@@ -2422,6 +2441,7 @@ const computedPromoPeriod = computed(() => {
 
 const bookingForm = ref({
     booking_name: '',
+    ic_passport_number: '',
     phone_number: '',
     country_code: '+60', // Default to Malaysia
     booking_ic: '',
@@ -2671,6 +2691,7 @@ const closeDropdownOnOutsideClick = (event) => {
 // Add booking form validation errors
 const bookingValidationErrors = ref({
     booking_name: '',
+    ic_passport_number: '',
     phone_number: '',
     booking_ic: '',
     booking_email: ''
@@ -3494,6 +3515,7 @@ const validateBookingForm = () => {
     let isValid = true;
     bookingValidationErrors.value = {
         booking_name: '',
+        ic_passport_number: '',
         phone_number: '',
         booking_ic: '',
         booking_email: ''
@@ -3502,6 +3524,12 @@ const validateBookingForm = () => {
     // Validate booking name
     if (!bookingForm.value.booking_name.trim()) {
         bookingValidationErrors.value.booking_name = 'Booking name is required';
+        isValid = false;
+    }
+
+    // Validate IC / Passport number
+    if (!bookingForm.value.ic_passport_number.trim()) {
+        bookingValidationErrors.value.ic_passport_number = 'IC / Passport number is required';
         isValid = false;
     }
 
@@ -3541,6 +3569,7 @@ const submitBooking = async () => {
                 infants: room.infants || 0
             })),
             booking_name: bookingForm.value.booking_name,
+            ic_passport_number: bookingForm.value.ic_passport_number,
             phone_number: bookingForm.value.country_code + bookingForm.value.phone_number,
             booking_ic: bookingForm.value.booking_ic,
             booking_email: bookingForm.value.booking_email,

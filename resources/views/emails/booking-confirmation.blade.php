@@ -72,6 +72,7 @@
                                                 <td style="padding: 16px;">
                                                     <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Booking Name As Per I/C</p>
                                                     <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: 700; color: #1f2937;">{{ $booking->booking_name }}</p>
+                                                    <p style="margin: 0 0 2px 0; font-size: 13px; color: #4b5563;">IC/Passport: {{ $booking->ic_passport_number }}</p>
                                                     <p style="margin: 0 0 2px 0; font-size: 13px; color: #4b5563;">Phone: {{ $booking->phone_number }}</p>
                                                     <p style="margin: 0; font-size: 13px; color: #4b5563;">Email: {{ $booking->booking_email }}</p>
                                                 </td>

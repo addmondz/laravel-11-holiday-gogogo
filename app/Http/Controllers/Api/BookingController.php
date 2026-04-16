@@ -29,6 +29,7 @@ class BookingController extends Controller
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'booking_name' => 'required|string|max:255',
+                'ic_passport_number' => 'required|string|max:50',
                 'phone_number' => 'required|string|max:20',
                 'booking_ic' => 'string|max:20|nullable',
                 'total_price' => 'required|numeric|min:0',
@@ -65,6 +66,7 @@ class BookingController extends Controller
                 $booking = Booking::create([
                     'package_id' => $request->package_id,
                     'booking_name' => $request->booking_name,
+                    'ic_passport_number' => $request->ic_passport_number,
                     'phone_number' => $request->phone_number,
                     'booking_ic' => $request->booking_ic,
                     'booking_email' => $request->booking_email,
